@@ -329,7 +329,7 @@ scorep_oa_sockets_write_line
     const char* str
 )
 {
-    write( sock, str, strlen( str ) );
+    int result = write( sock, str, strlen( str ) );
 }
 
 void
@@ -340,7 +340,7 @@ scorep_oa_sockets_write_data
     int         nbyte
 )
 {
-    write( sock, buf, nbyte );
+    int result = write( sock, buf, nbyte );
 }
 
 int
@@ -452,7 +452,8 @@ scorep_oa_sockets_register_with_registry
 (
     uint64_t port,
     uint64_t reg_port,
-    char*    reg_host
+    char*    reg_host,
+    char*    app_name
 )
 {
     SCOREP_DEBUG_RAW_PRINTF( SCOREP_DEBUG_OA, "Entering %s", __FUNCTION__ );
@@ -477,8 +478,8 @@ scorep_oa_sockets_register_with_registry
     char   machine_name[ 50 ];
     char   library_name[ 50 ];
 
-    sprintf( appl_name, "appl" );
-    sprintf( psc_reghost, reg_host );
+    sprintf( appl_name, "%s", app_name );
+    sprintf( psc_reghost, "%s", reg_host );
     //SCOREP_IO_GetHostname( psc_reghost, 100 );
     psc_regport = ( int )reg_port;
     sprintf( site_name, "none" );

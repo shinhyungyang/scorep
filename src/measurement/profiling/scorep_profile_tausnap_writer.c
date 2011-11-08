@@ -377,7 +377,7 @@ scorep_profile_write_atomicdata_tau( scorep_profile_node*      node,
             curr = curr->next;
         }
 
-        fprintf( file, "%d %ld %.16G %.16G %.16G %.16G\n",
+        fprintf( file, "%d %lld %.16G %.16G %.16G %.16G\n",
                  eventID, metric->count, metric->max, metric->min,
                  metric->sum / metric->count, metric->squares );
         metric = metric->next_metric;
@@ -410,7 +410,6 @@ scorep_profile_write_userevent_data_metric_tau( scorep_profile_node*      node,
     scorep_profile_sparse_metric_double* metric = node->first_double_sparse;
     while ( metric != NULL )
     {
-        printf( "min:\n" );
         curr = head;
         int eventID = -1;
         while ( curr != NULL )
@@ -579,9 +578,14 @@ scorep_profile_write_thread_tau( scorep_profile_node*      node,
     }
     fprintf( file, "</interval_data>\n" );
 /*Write Atomic Data*/
-    fprintf( file, "<atomicl_data>\n" );
+    fprintf( file, "<atomic_data>\n" );
     child            = node->first_child;
     callpath_counter = 0;
+    if ( child->next_sibling != NULL )
+    {
+        child = child->next_sibling;
+    }
+
     while ( child != NULL )
     {
         scorep_profile_write_atomicdata_tau( child, file, &callpath_counter, manager );
