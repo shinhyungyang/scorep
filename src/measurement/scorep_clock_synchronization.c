@@ -56,8 +56,10 @@ SCOREP_BeginEpoch()
 void
 SCOREP_EndEpoch()
 {
-    assert( !scorep_epoch_end );
-    scorep_epoch_end     = SCOREP_GetClockTicks();
+    assert( scorep_epoch_begin_set );
+    assert( !scorep_epoch_end_set );
+    scorep_epoch_end = SCOREP_GetClockTicks();
+    assert( scorep_epoch_end > scorep_epoch_begin );
     scorep_epoch_end_set = true;
 }
 
@@ -65,6 +67,8 @@ SCOREP_EndEpoch()
 void
 scorep_interpolate_epoch( uint64_t* epochBegin, uint64_t* epochEnd )
 {
+    // transform "worker" scorep_epoch_(begin|end) to "master" time.
+
     if ( scorep_epoch_interpolated )
     {
         *epochBegin = scorep_epoch_begin;
@@ -72,18 +76,24 @@ scorep_interpolate_epoch( uint64_t* epochBegin, uint64_t* epochEnd )
         return;
     }
 
-    // transform "worker" scorep_epoch_(begin|end) to "master" time.
     assert( scorep_epoch_begin_set );
     assert( scorep_epoch_end_set );
-    uint64_t timestamp1 = 1; // dummy initialization to prevent devision by 0
-    uint64_t timestamp2 = 2;
-    int64_t  offset1, offset2;
 
-    SCOREP_GetFirstClockSyncPair( &offset1, &timestamp1, &offset2, &timestamp2 );
-    scorep_epoch_begin = scorep_interpolate( scorep_epoch_begin, offset1, timestamp1, offset2, timestamp2 );
+    {
+        uint64_t timestamp1, timestamp2;
+        int64_t  offset1, offset2;
+        SCOREP_GetFirstClockSyncPair( &offset1, &timestamp1, &offset2, &timestamp2 );
+        scorep_epoch_begin = scorep_interpolate( scorep_epoch_begin, offset1, timestamp1, offset2, timestamp2 );
+    }
 
-    SCOREP_GetLastClockSyncPair( &offset1, &timestamp1, &offset2, &timestamp2 );
-    scorep_epoch_end = scorep_interpolate( scorep_epoch_end, offset1, timestamp1, offset2, timestamp2 );
+    {
+        uint64_t timestamp1, timestamp2;
+        int64_t  offset1, offset2;
+        SCOREP_GetLastClockSyncPair( &offset1, &timestamp1, &offset2, &timestamp2 );
+        scorep_epoch_end = scorep_interpolate( scorep_epoch_end, offset1, timestamp1, offset2, timestamp2 );
+    }
+
+    assert( scorep_epoch_end > scorep_epoch_begin );
 
     *epochBegin = scorep_epoch_begin;
     *epochEnd   = scorep_epoch_end;
@@ -95,5 +105,9 @@ scorep_interpolate_epoch( uint64_t* epochBegin, uint64_t* epochEnd )
 static uint64_t
 scorep_interpolate( uint64_t workerTime, int64_t offset1, uint64_t workerTime1, int64_t offset2, uint64_t workerTime2 )
 {
-    return workerTime + ( offset2 - offset1 ) / ( workerTime2 - workerTime1 ) * ( workerTime - workerTime1 ) + offset1;
+    // Without the casts we get non-deterministic results from time to time.
+    // There might be a better way to do it though.
+    double interpolated_time = workerTime + ( offset2 - offset1 ) / ( double )( workerTime2 - workerTime1 ) * ( ( double )workerTime - workerTime1 ) + offset1;
+    assert( interpolated_time > 0 );
+    return interpolated_time;
 }

@@ -157,7 +157,7 @@ SCOREP_ConfigVariable scorep_metric_rusage_configs[] = {
         NULL,
         ",",
         "Separator of resource usage metric names.",
-        "Character that separates resource ussage metric names in RUSAGE.\n"
+        "Character that separates resource usage metric names in RUSAGE.\n"
     },
     SCOREP_CONFIG_TERMINATOR
 };
@@ -421,12 +421,15 @@ scorep_metric_rusage_read( SCOREP_Metric_EventSet* eventSet,
     assert( eventSet );
     assert( values );
 
-    /* Get resource usage */
-    #if HAVE( RUSAGE_THREAD )
-    assert( getrusage( RUSAGE_THREAD, &( eventSet->ru ) ) != -1 );
-    #else
-    assert( getrusage( RUSAGE_SELF, &( eventSet->ru ) ) != -1 );
-    #endif
+    /* Get resource usage statistics
+     *
+     * SCOREP_RUSAGE_SCOPE refers to one of the two modes:
+     *  - RUSAGE_THREAD: statistics for calling thread
+     *  - RUSAGE_SELF:   statistics for calling process, in multi-threaded applications
+     *                   it is the sum of resources used by all threads of calling process
+     * Please see configuration output to determine which mode is used by Score-P on your system. */
+    int ret = getrusage( SCOREP_RUSAGE_SCOPE, &( eventSet->ru ) );
+    assert( ret != -1 );
 
     for ( uint32_t i = 0; i < number_of_metrics; i++ )
     {

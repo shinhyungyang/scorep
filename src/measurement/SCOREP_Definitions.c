@@ -535,6 +535,18 @@ scorep_system_tree_node_definition_define( SCOREP_DefinitionManager*   definitio
 /////////////////////////////////////////////////////////////////////////////
 
 
+static SCOREP_RegionHandle
+scorep_region_definition_define( SCOREP_DefinitionManager* definition_manager,
+                                 SCOREP_StringHandle       regionNameHandle,
+                                 SCOREP_StringHandle       descriptionNameHandle,
+                                 SCOREP_StringHandle       fileNameHandle,
+                                 SCOREP_LineNo             beginLine,
+                                 SCOREP_LineNo             endLine,
+                                 SCOREP_AdapterType        adapter,
+                                 SCOREP_RegionType         regionType );
+
+
+
 static void
 scorep_region_definition_initialize( SCOREP_Region_Definition* definition,
                                      SCOREP_DefinitionManager* definition_manager,
@@ -1609,6 +1621,9 @@ scorep_scoped_sampling_set_definition_initialize(
     SCOREP_MetricScope                   scopeType,
     SCOREP_AnyHandle                     scopeHandle )
 {
+    definition->is_scoped = true;
+    HASH_ADD_POD( definition, is_scoped );
+
     definition->sampling_set_handle = samplingSet;
     HASH_ADD_HANDLE( definition, sampling_set_handle, SamplingSet );
 
@@ -2228,6 +2243,7 @@ SCOREP_GetFirstClockSyncPair( int64_t*  offset1,
     *timestamp1 = scorep_clock_offset_head->time;
     *offset2    = scorep_clock_offset_head->next->offset;
     *timestamp2 = scorep_clock_offset_head->next->time;
+    assert( *timestamp2 > *timestamp1 );
 }
 
 
@@ -2253,6 +2269,7 @@ SCOREP_GetLastClockSyncPair( int64_t*  offset1,
     *timestamp1 = previous->time;
     *offset2    = current->offset;
     *timestamp2 = current->time;
+    assert( *timestamp2 > *timestamp1 );
 }
 
 /////////////////////////////////////////////////////////////////////////////
@@ -2441,6 +2458,60 @@ SCOREP_Callpath_GetNumberOfUnifiedDefinitions()
 {
     return scorep_unified_definition_manager->callpath_definition_counter;
 }
+
+/**
+ * Returns the sequence number of the unified defintions for a local metric handle from
+ * the mappings.
+ * @param handle handle to local metric handle.
+ */
+uint32_t
+SCOREP_Metric_GetUnifiedSequenceNumber( SCOREP_CallpathHandle handle )
+{
+    uint32_t local_id = SCOREP_LOCAL_HANDLE_TO_ID( handle, Metric );
+    return scorep_local_definition_manager.mappings->metric_mappings[ local_id ];
+}
+
+/**
+ * Returns the unified handle from a local handle.
+ */
+SCOREP_MetricHandle
+SCOREP_Metric_GetUnifiedHandle( SCOREP_MetricHandle handle )
+{
+    return SCOREP_HANDLE_GET_UNIFIED( handle, Metric,
+                                      SCOREP_Memory_GetLocalDefinitionPageManager() );
+}
+
+/**
+ * Returns the number of unified metric definitions.
+ */
+uint32_t
+SCOREP_Metric_GetNumberOfUnifiedDefinitions()
+{
+    return scorep_unified_definition_manager->metric_definition_counter;
+}
+
+/**
+ * Returns the value type of a metric.
+ * @param handle to local meric definition.
+ */
+SCOREP_MetricValueType
+SCOREP_Metric_GetValueType( SCOREP_MetricHandle handle )
+{
+    return SCOREP_LOCAL_HANDLE_DEREF( handle, Metric )->value_type;
+}
+
+/**
+ * Returns the name of a metric.
+ * @param handle to local meric definition.
+ */
+const char*
+SCOREP_Metric_GetName( SCOREP_MetricHandle handle )
+{
+    SCOREP_Metric_Definition* metric = SCOREP_LOCAL_HANDLE_DEREF( handle, Metric );
+
+    return SCOREP_LOCAL_HANDLE_DEREF( metric->name_handle, String )->string_data;
+}
+
 
 /**
  * @}
