@@ -85,7 +85,7 @@ SCOREP_DefineSourceFile
 );
 
 
-// scorep_meets_tau_begin
+
 /**
  * Associate a code region with a process unique file handle.
  *
@@ -140,7 +140,7 @@ SCOREP_DefineRegion
     SCOREP_RegionType       regionType
 );
 
-// scorep_meets_tau_end
+
 
 const char*
 SCOREP_String_Get( SCOREP_StringHandle handle );
@@ -161,10 +161,10 @@ SCOREP_AdapterType
 SCOREP_Region_GetAdapterType( SCOREP_RegionHandle handle );
 
 SCOREP_LineNo
-SCOREP_Region_GetRfl( SCOREP_RegionHandle handle );
+SCOREP_Region_GetBeginLine( SCOREP_RegionHandle handle );
 
 SCOREP_LineNo
-SCOREP_Region_GetRel( SCOREP_RegionHandle handle );
+SCOREP_Region_GetEndLine( SCOREP_RegionHandle handle );
 
 const char*
 SCOREP_Parameter_GetName( SCOREP_ParameterHandle handle );

@@ -678,8 +678,8 @@ SCOREP_OmpJoin( SCOREP_RegionHandle regionHandle )
  * Process an OpenMP acquire lock event in the measurement system.
  */
 void
-SCOREP_OmpAcquireLock( uint32_t lockId/*,
-                                         uint32_t acquire_release_count*/)
+SCOREP_OmpAcquireLock( uint32_t lockId,
+                       uint32_t acquisitionOrder )
 {
     SCOREP_Thread_LocationData* location  = SCOREP_Thread_GetLocationData();
     uint64_t                    timestamp = SCOREP_Thread_GetLastTimestamp( location ); // use the timestamp from the associated enter
@@ -688,16 +688,11 @@ SCOREP_OmpAcquireLock( uint32_t lockId/*,
 
     if ( SCOREP_IsTracingEnabled() && scorep_recording_enabled )
     {
-        uint32_t dummy_acquire_release_count = 0;
-        uint32_t dummy_region_id             = 0; // OTF2_EvtWriter_OmpALock needs to be changed, there
-                                                  // is no need for a region id here
-        OTF2_EvtWriter_OmpALock( SCOREP_Thread_GetTraceLocationData( location )->otf_writer,
-                                 NULL,
-                                 timestamp,
-                                 lockId,
-                                 dummy_acquire_release_count,
-                                 dummy_region_id );
-        SCOREP_DEBUG_PRINTF( 0, "Only partially implemented." );
+        OTF2_EvtWriter_OmpAcquireLock( SCOREP_Thread_GetTraceLocationData( location )->otf_writer,
+                                       NULL,
+                                       timestamp,
+                                       lockId,
+                                       acquisitionOrder );
     }
 
     if ( SCOREP_IsProfilingEnabled() )
@@ -711,8 +706,8 @@ SCOREP_OmpAcquireLock( uint32_t lockId/*,
  * Process an OpenMP release lock event in the measurement system.
  */
 void
-SCOREP_OmpReleaseLock( uint32_t lockId/*,
-                                         uint32_t acquire_release_count*/)
+SCOREP_OmpReleaseLock( uint32_t lockId,
+                       uint32_t acquisitionOrder )
 {
     SCOREP_Thread_LocationData* location  = SCOREP_Thread_GetLocationData();
     uint64_t                    timestamp = SCOREP_Thread_GetLastTimestamp( location ); // use the timestamp from the associated enter
@@ -721,16 +716,11 @@ SCOREP_OmpReleaseLock( uint32_t lockId/*,
 
     if ( SCOREP_IsTracingEnabled() && scorep_recording_enabled )
     {
-        uint32_t dummy_acquire_release_count = 0;
-        uint32_t dummy_region_id             = 0; // OTF2_EvtWriter_OmpRLock needs to be changed, there
-                                                  // is no need for a region id here
-        OTF2_EvtWriter_OmpRLock( SCOREP_Thread_GetTraceLocationData( location )->otf_writer,
-                                 NULL,
-                                 timestamp,
-                                 lockId,
-                                 dummy_acquire_release_count,
-                                 dummy_region_id );
-        SCOREP_DEBUG_PRINTF( 0, "Only partially implemented." );
+        OTF2_EvtWriter_OmpReleaseLock( SCOREP_Thread_GetTraceLocationData( location )->otf_writer,
+                                       NULL,
+                                       timestamp,
+                                       lockId,
+                                       acquisitionOrder );
     }
 
     if ( SCOREP_IsProfilingEnabled() )
@@ -741,6 +731,8 @@ SCOREP_OmpReleaseLock( uint32_t lockId/*,
 
 /**
  * Process an OpenMP TaskCreateBegin event in the measurement system.
+ * @param regionHandle Region handle of the task region
+ * @param taskId       The ID of the created task
  */
 void
 SCOREP_OmpTaskCreateBegin( SCOREP_RegionHandle regionHandle,
@@ -774,6 +766,8 @@ SCOREP_OmpTaskCreateBegin( SCOREP_RegionHandle regionHandle,
 
 /**
  * Process an OpenMP TaskCreateEnd event in the measurement system.
+ * @param regionHandle Region handle of the task region
+ * @param taskId       The ID of the creating task
  */
 void
 SCOREP_OmpTaskCreateEnd( SCOREP_RegionHandle regionHandle,
@@ -807,6 +801,8 @@ SCOREP_OmpTaskCreateEnd( SCOREP_RegionHandle regionHandle,
 
 /**
  * Process an OpenMP TaskBegin event in the measurement system.
+ * @param regionHandle Region handle of the task region
+ * @param taskId       The ID of the starting task
  */
 void
 SCOREP_OmpTaskBegin( SCOREP_RegionHandle regionHandle,
@@ -839,6 +835,8 @@ SCOREP_OmpTaskBegin( SCOREP_RegionHandle regionHandle,
 
 /**
  * Process an OpenMP TaskResume event in the measurement system.
+ * @param regionHandle Region handle of the task region
+ * @param taskId       The ID of the resumeing task
  */
 void
 SCOREP_OmpTaskResume( SCOREP_RegionHandle regionHandle,

@@ -96,9 +96,10 @@ SCOREP_Instrumenter::SCOREP_Instrumenter()
     c_compiler                     = SCOREP_CC;
     openmp_cflags                  = SCOREP_OPENMP_CFLAGS;
     nm                             = "`" OPARI_CONFIG " --nm`";
-    awk                            =  "`" OPARI_CONFIG " --awk_cmd`";
+    awk                            =  "`" OPARI_CONFIG " --awk-cmd`";
     opari                          = OPARI;
-    opari_script                   = "`" OPARI_CONFIG " --awk_script`";
+    opari_script                   = "`" OPARI_CONFIG " --awk-script`";
+    opari_config                   = OPARI_CONFIG;
     grep                           =  "`" OPARI_CONFIG " --egrep`";
     language                       = unknown_language;
     scorep_config                  = "";
@@ -463,15 +464,20 @@ SCOREP_Instrumenter::parse_parameter( std::string arg )
         print_help();
         exit( EXIT_SUCCESS );
     }
-    /* Configuration file */
+    /* Misc parameters */
+    else if ( arg == "--version" )
+    {
+        printf( PACKAGE_STRING "\n" );
+        exit( EXIT_SUCCESS );
+    }
     else if ( CheckForCommonArg( arg ) )
     {
         return scorep_parse_mode_param;
     }
     else
     {
-        std::cerr << "ERROR: Unknown parameter: " << arg << std::endl;
-        abort();
+        std::cerr << "ERROR: Unknown parameter: " << arg << ". Abort." << std::endl;
+        exit( EXIT_FAILURE );
     }
 
     /* Never executed but removes a warning with xl-compilers. */
@@ -540,6 +546,13 @@ SCOREP_Instrumenter::parse_command( std::string arg )
     }
     else if ( arg[ 1 ] == 'D' )
     {
+        // we need to escape quotes since they get lost otherwise when calling system()
+        size_t pos = 0;
+        while ( ( pos = arg.find( '"', pos ) ) != std::string::npos )
+        {
+            arg.insert( pos, 1, '\\' );
+            pos += 2;
+        }
         define_flags += " " + arg;
     }
 
@@ -614,13 +627,13 @@ SCOREP_Instrumenter::check_parameter()
         std::cout << "ERROR: Could not identify compiler name." << std::endl;
         abort();
     }
-
-    if ( output_name != "" && !is_linking && input_file_number > 1 )
-    {
+    /*
+       if ( output_name != "" && !is_linking && input_file_number > 1 )
+       {
         std::cerr << "ERROR: Can not specify -o with multiple files if only"
                   << " compiling or preprocessing." << std::endl;
-    }
-
+       }
+     */
     if ( input_files == "" || input_file_number < 1 )
     {
         std::cout << "WARNING: Found no input files." << std::endl;
@@ -692,9 +705,10 @@ SCOREP_Instrumenter::SetValue( std::string key,
     else if ( key == "OPARI_CONFIG" && value != "" )
     {
         nm           = "`" + value + " --nm`";
-        awk          = "`" + value + " --awk_cmd`";
-        opari_script = "`" + value + " --awk_script`";
+        awk          = "`" + value + " --awk-cmd`";
+        opari_script = "`" + value + " --awk-script`";
         grep         = "`" + value + " --egrep`";
+        opari_config = value;
     }
     else if ( key == "PREFIX" && value != "" )
     {
@@ -907,6 +921,10 @@ SCOREP_Instrumenter::prepare_config_tool_calls( std::string arg )
     // Generate calls
     scorep_include_path = "`" + scorep_config + mode + " --inc` ";
     scorep_libs         = "`" + scorep_config + mode + " --libs` ";
+    if ( opari_instrumentation == enabled )
+    {
+        scorep_include_path += "`" + opari_config + " --cflags` ";
+    }
 
     // Handle manual -lmpi flag
     if ( lmpi_set )
@@ -977,7 +995,7 @@ SCOREP_Instrumenter::invoke_opari( std::string input_file,
                           "--nosrc "
 #endif
 #ifdef OPARI_MANGLING_SCHEME
-                          "--tpd-mangling " OPARI_MANGLING_SCHEME " "
+                          "--tpd-mangling=" OPARI_MANGLING_SCHEME " "
 #endif
                           + input_file
                           + " " + output_file;
@@ -1029,6 +1047,7 @@ SCOREP_Instrumenter::compile_init_file( std::string input_file,
 {
     std::string command = c_compiler
                           + " -c " + input_file
+                          + " `" + opari_config + " --cflags` "
                           + " -o " + output_file;
     if ( verbosity >= 1 )
     {

@@ -3,8 +3,6 @@ AC_INIT([scorep], m4_esyscmd([vendor/common/build-config/generate-package-versio
 
 AC_SCOREP_SUMMARY_INIT([Score-P configuration summary])
 
-#echo "cross_compiling = $cross_compiling"
-
 AC_SCOREP_REVISION
 
 AC_SCOREP_TOPLEVEL_ARGS
@@ -25,8 +23,8 @@ AC_CONFIG_MACRO_DIR([vendor/common/build-config/m4])
 AC_PREFIX_DEFAULT([/opt/scorep])
 
 ## Call not before AC_CONFIG_MACRO_DIR
-AM_INIT_AUTOMAKE([foreign silent-rules color-tests 1.11.1 -Wall tar-pax])
-
+AM_INIT_AUTOMAKE([foreign color-tests 1.11.1 -Wall tar-pax])
+AM_SILENT_RULES([yes])
 
 
 # don't detect and load defaults in nested configures (e.g. otf2)
@@ -81,9 +79,7 @@ if test "x${ac_scorep_cross_compiling}" = "xyes"; then
     AC_CONFIG_SUBDIR_CUSTOM([build-frontend], [${args} ac_scorep_platform=${ac_scorep_platform}])
 fi
 
-AC_CONFIG_FILES([
-	Makefile include/scorep/scorep_meets_tau_tmp.h 
-])
+AC_CONFIG_FILES([Makefile])
 
 
 AC_OUTPUT

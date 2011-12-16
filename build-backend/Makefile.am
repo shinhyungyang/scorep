@@ -75,9 +75,6 @@ LIB_DIR_SCOREP_MPI = ../build-mpi/
 clean-local: clean-local-scorep-experiment-dirs clean-local-scorep-config-tests
 	rm -f lex.yy.c scanner.h yacc.c yacc.h y.tab.h 
 
-PHONY_TARGETS += install-scorep-meets-tau \
-	$(CONFIG_HEADER_BACKEND)
-
 clean-local-scorep-experiment-dirs:
 	rm -rf scorep-2*
 	rm -rf scorep-measurement-tmp
@@ -160,7 +157,7 @@ $(builddir)/scorep_config.dat:
 	    echo LIBDIR=\"$(TIMER_LIBDIR)\"; \
 	    echo LIBDIR=\"$(SCOREP_PAPI_LIBDIR)\"; \
 	    echo INCDIR=\"$(PWD)/$(PUBLIC_INC_DIR)\"; \
-	    echo INCDIR=\"$(PWD)/$(PUBLIC_INC_DIR)/scorep\"; \
+	    echo INCDIR=\"$(PWD)/$(INC_DIR_OPARI2)\"; \
 	    echo SRC_ROOT=\"$(abs_top_srcdir)/..\"; \
 	    echo CC=\"$(CC)\"; \
 	    echo CXX=\"$(CXX)\"; \
@@ -221,13 +218,5 @@ installcheck-local:
         test -z "$$fail"
 else
 installcheck-local:
-	@fail= failcom='exit 1'; \
-	for f in x $$MAKEFLAGS; do \
-	  case $$f in \
-	    *=* | --[!k]*);; \
-	    *k*) failcom='fail=yes';; \
-	  esac; \
-	done; \
-	($(am__cd) ../test/jacobi/serial/C && $(MAKE) $(AM_MAKEFLAGS)) || eval $$failcom; \
-        test -z "$$fail"
+	@$(am__cd) ../test/jacobi/serial/C && $(MAKE) $(AM_MAKEFLAGS)
 endif

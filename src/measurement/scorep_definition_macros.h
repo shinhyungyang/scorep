@@ -540,13 +540,20 @@
              scorep_local_definition_manager.mappings->type ## _mappings && \
              scorep_local_definition_manager.type ## _definition_counter > 0 ) \
         { \
-            SCOREP_Error_Code status = OTF2_DefWriter_WriteMappingTable( \
-                definition_writer, \
-                SCOREP_IdMap_CreateDenseFromArray( \
-                    scorep_local_definition_manager.mappings->type ## _mappings, \
-                    scorep_local_definition_manager.type ## _definition_counter ), \
-                OTF2_MAPPING_ ## TYPE ); \
-            assert( status == SCOREP_SUCCESS ); \
+            OTF2_IdMap* map = OTF2_IdMap_CreateFromUint32Array( \
+                scorep_local_definition_manager.type ## _definition_counter, \
+                scorep_local_definition_manager.mappings->type ## _mappings, \
+                true ); \
+            /* map can be NULL if the mapping is the identity */ \
+            if ( map ) \
+            { \
+                SCOREP_Error_Code status = OTF2_DefWriter_WriteMappingTable( \
+                    definition_writer, \
+                    map, \
+                    OTF2_MAPPING_ ## TYPE ); \
+                assert( status == SCOREP_SUCCESS ); \
+                OTF2_IdMap_Free( map ); \
+            } \
         } \
     } \
     while ( 0 )

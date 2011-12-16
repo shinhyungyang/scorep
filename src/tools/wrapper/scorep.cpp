@@ -41,7 +41,7 @@ print_short_usage()
 {
     std::cout << "\nThis is the SCOREP instrumentation tool. The usage is:\n"
               << toolname << " <options> <orginal command>\n\n"
-              << "To print out more detailed help information on available parameters "
+              << "To print out more detailed help information on available parameters, "
               << "type\n"
               << toolname << " --help\n"
               << std::endl;
@@ -53,7 +53,7 @@ print_short_usage()
 void
 print_help()
 {
-    std::cout << "\nThis is the SCOREP user tool. The usage is:\n"
+    std::cout << "\nThis is the SCOREP instrumentation tool. The usage is:\n"
               << toolname << " <options> <orginal command>\n\n"
               << "Common options are:\n"
               << "  --help, -h      Show help output. Does not execute any other command.\n"
@@ -65,6 +65,7 @@ print_help()
               << "                  2 = Detailed information is displayed\n"
               << "  --dry-run       Only displays the executed commands. It does not\n"
               << "                  execute any command.\n"
+              << "  --version       Prints the Score-P version and exits.\n"
               << "  --compiler      Enables compiler instrumentation. Is enabled by default.\n"
               << "  --nocompiler    Disables compiler instrumentation.\n"
               << "  --mpi           Enables mpi wrapper. They are enabled by default if it is an\n"

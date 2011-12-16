@@ -223,27 +223,6 @@ SCOREP_Definitions_Write()
 }
 
 
-int
-SCOREP_GetNumberOfDefinitions()
-{
-    assert( !omp_in_parallel() );
-
-    int n_definitions = 0; /// @todo might overflow
-
-    /* this list must match the list in scorep_write_local_definitions() */
-    n_definitions += scorep_local_definition_manager.string_definition_counter;
-    n_definitions += scorep_local_definition_manager.system_tree_node_definition_counter;
-    n_definitions += scorep_local_definition_manager.location_group_definition_counter;
-    n_definitions += scorep_local_definition_manager.location_definition_counter;
-    n_definitions += scorep_local_definition_manager.region_definition_counter;
-    n_definitions += scorep_local_definition_manager.group_definition_counter;
-    n_definitions += scorep_local_definition_manager.metric_definition_counter;
-    n_definitions += scorep_local_definition_manager.sampling_set_definition_counter;
-    n_definitions += scorep_local_definition_manager.parameter_definition_counter;
-    n_definitions += scorep_local_definition_manager.callpath_definition_counter;
-    return n_definitions;
-}
-
 uint32_t
 SCOREP_GetNumberOfRegionDefinitions()
 {
@@ -264,29 +243,4 @@ SCOREP_CallPathHandleToRegionID( SCOREP_CallpathHandle handle )
     SCOREP_Callpath_Definition* callpath = SCOREP_LOCAL_HANDLE_DEREF( handle, Callpath );
 
     return SCOREP_GetRegionHandleToID( callpath->callpath_argument.region_handle );
-}
-
-
-static void
-scorep_update_location_definition_cb( SCOREP_Thread_LocationData* locationData,
-                                      void*                       data )
-{
-    int                         number_of_definitions = *( int* )data;
-    SCOREP_LocationHandle       location_handle       =
-        SCOREP_Thread_GetLocationHandle( locationData );
-    SCOREP_Location_Definition* location_definition =
-        SCOREP_LOCAL_HANDLE_DEREF( location_handle, Location );
-
-    location_definition->number_of_definitions = number_of_definitions;
-    location_definition->number_of_events      =
-        SCOREP_Trace_GetNumberOfEvents( locationData );
-}
-
-void
-SCOREP_UpdateLocationDefinitions()
-{
-    int number_of_definitions = SCOREP_GetNumberOfDefinitions();
-
-    SCOREP_Thread_ForAllLocations( scorep_update_location_definition_cb,
-                                   &number_of_definitions );
 }

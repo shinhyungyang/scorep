@@ -29,6 +29,7 @@ common_libadd = libscorep_measurement.la              \
                 libscorep_cube_writer.la              \
                 libscorep_profile.la                  \
                 libscorep_platform.la                 \
+                libscorep_utils.la                    \
                 $(LIB_DIR_OTF2)libotf2.la             \
                 $(LIB_DIR_UTIL)libscorep_utilities.la \
                 libjenkins_hash.la                    \
@@ -51,6 +52,19 @@ common_ldflags += @SCOREP_PAPI_LDFLAGS@
 ## MPI
 
 if MPI_SUPPORTED
+
+$(LIB_DIR_SCOREP_MPI)libscorep_adapter_mpi.la:
+	@$(am__cd) $(LIB_DIR_SCOREP_MPI) && $(MAKE) $(AM_MAKEFLAGS) libscorep_adapter_mpi.la
+
+$(LIB_DIR_SCOREP_MPI)libscorep_paradigm_mpi.la:
+	@$(am__cd) $(LIB_DIR_SCOREP_MPI) && $(MAKE) $(AM_MAKEFLAGS) libscorep_paradigm_mpi.la
+
+$(LIB_DIR_SCOREP_MPI)libscorep_sion_mpi.la:
+	@$(am__cd) $(LIB_DIR_SCOREP_MPI) && $(MAKE) $(AM_MAKEFLAGS) libscorep_sion_mpi.la
+
+$(LIB_DIR_SCOREP_MPI)libscorep_oa_mpi.la:
+	@$(am__cd) $(LIB_DIR_SCOREP_MPI) && $(MAKE) $(AM_MAKEFLAGS) libscorep_oa_mpi.la
+
 lib_LTLIBRARIES                      += libscorep_mpi.la
 libscorep_mpi_la_SOURCES              = $(SRC_ROOT)src/measurement/paradigm/scorep_adapter_libscorep_mpi.c
 nodist_EXTRA_libscorep_mpi_la_SOURCES = force_link_with_F77LD.f
@@ -102,6 +116,11 @@ endif
 
 if MPI_SUPPORTED
 if OPENMP_SUPPORTED
+
+$(LIB_DIR_SCOREP_MPI)libscorep_sion_mpi_omp.la:
+	@$(am__cd) $(LIB_DIR_SCOREP_MPI) && $(MAKE) $(AM_MAKEFLAGS) libscorep_sion_mpi_omp.la
+
+
 lib_LTLIBRARIES                          += libscorep_mpi_omp.la
 libscorep_mpi_omp_la_SOURCES              = $(SRC_ROOT)src/measurement/paradigm/scorep_adapter_libscorep_mpi_omp.c
 nodist_EXTRA_libscorep_mpi_omp_la_SOURCES = force_link_with_F77LD.f

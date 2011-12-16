@@ -501,6 +501,11 @@ receive_and_unify_remote_definitions( int                           rank,
             remote_page_manager,
             ( *moved_page_ids )[ page ],
             ( *moved_page_fills )[ page ] );
+        if ( !page_memory )
+        {
+            // aborts
+            SCOREP_Memory_HandleOutOfMemory();
+        }
 
         SCOREP_Mpi_Recv( page_memory,
                          ( *moved_page_fills )[ page ],

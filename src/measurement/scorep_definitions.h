@@ -262,9 +262,6 @@ SCOREP_CopyCallpathDefinitionToUnified( SCOREP_Callpath_Definition*   definition
                                         SCOREP_Allocator_PageManager* handlesPageManager );
 
 
-int
-SCOREP_GetNumberOfDefinitions();
-
 uint32_t
 SCOREP_GetNumberOfRegionDefinitions();
 
@@ -276,8 +273,5 @@ SCOREP_CallPathHandleToRegionID( SCOREP_CallpathHandle handle );
 
 uint32_t
 SCOREP_GetHandleToID( SCOREP_RegionHandle handle );
-
-void
-SCOREP_UpdateLocationDefinitions();
 
 #endif /* SCOREP_INTERNAL_DEFINITIONS_H */

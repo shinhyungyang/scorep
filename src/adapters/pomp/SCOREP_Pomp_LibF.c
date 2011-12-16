@@ -27,7 +27,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
-#include "scorep/pomp2_lib.h"
+#include <opari2/pomp2_lib.h>
 #include "SCOREP_Fortran_Wrapper.h"
 #include "SCOREP_Pomp_Variables.h"
 #include "SCOREP_Pomp_Fortran.h"
@@ -388,6 +388,11 @@ void FSUB(POMP2_Workshare_exit)( POMP2_Region_handle_fortran* region_handle )
     {
           POMP2_Workshare_exit(SCOREP_POMP_F2C_REGION( region_handle ));
     }
+}
+
+int FSUB(POMP2_Lib_get_max_threads)()
+{
+    return omp_get_max_threads();
 }
 
 void FSUB(POMP2_Init_lock)(omp_lock_t *s) {
