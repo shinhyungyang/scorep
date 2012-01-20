@@ -121,6 +121,10 @@ POMP2_Barrier_exit( POMP2_Region_handle* pomp_handle,
     if ( scorep_pomp_is_tracing_on )
     {
         SCOREP_Pomp_Region* region = *( SCOREP_Pomp_Region** )pomp_handle;
+        if ( pomp_current_task != pomp_old_task )
+        {
+            SCOREP_OmpTaskSwitch( pomp_current_task );
+        }
         SCOREP_ExitRegion( region->outerBlock );
     }
 }
@@ -150,6 +154,10 @@ POMP2_Implicit_barrier_exit( POMP2_Region_handle* pomp_handle,
     pomp_current_task = pomp_old_task;
     if ( scorep_pomp_is_tracing_on )
     {
+        if ( pomp_current_task != pomp_old_task )
+        {
+            SCOREP_OmpTaskSwitch( pomp_current_task );
+        }
         SCOREP_ExitRegion( scorep_pomp_implicit_barrier_region );
     }
 }
@@ -318,7 +326,7 @@ POMP2_Parallel_fork( POMP2_Region_handle* pomp_handle,
     {
         SCOREP_Pomp_Region* region = *( SCOREP_Pomp_Region** )pomp_handle;
         SCOREP_ASSERT( region != NULL );
-        SCOREP_OmpFork( region->outerParallel, num_threads );
+        SCOREP_OmpFork( num_threads );
     }
 }
 
@@ -332,7 +340,7 @@ POMP2_Parallel_join( POMP2_Region_handle* pomp_handle,
     if ( !scorep_pomp_is_finalized )
     {
         SCOREP_Pomp_Region* region = *( SCOREP_Pomp_Region** )pomp_handle;
-        SCOREP_OmpJoin( region->outerParallel );
+        SCOREP_OmpJoin();
     }
 }
 
@@ -486,18 +494,23 @@ POMP2_Ordered_exit( POMP2_Region_handle* pomp_handle )
 void
 POMP2_Task_create_begin( POMP2_Region_handle* pomp_handle,
                          POMP2_Task_handle*   pomp_new_task,
+                         POMP2_Task_handle*   pomp_old_task,
                          int                  pomp_if,
                          const char           ctc_string[] )
 {
     SCOREP_DEBUG_PRINTF( SCOREP_DEBUG_OPENMP, "In POMP2_Task_create_begin" );
     SCOREP_POMP2_ENSURE_INITIALIZED;
 
+    /* We must use pomp_old_task to reset the old task id after the creation.
+       We cannot store the new task id in pomp_current_task, because other tasks
+       maybe executed before. */
+    *pomp_old_task = pomp_current_task;
     *pomp_new_task = POMP2_Get_new_task_handle();
-
     if ( scorep_pomp_is_tracing_on )
     {
         SCOREP_Pomp_Region* region = *( SCOREP_Pomp_Region** )pomp_handle;
-        SCOREP_OmpTaskCreateBegin( region->outerBlock, *pomp_new_task );
+        SCOREP_EnterRegion( region->outerBlock );
+        SCOREP_OmpTaskCreate( *pomp_new_task );
     }
 }
 
@@ -510,23 +523,29 @@ POMP2_Task_create_end( POMP2_Region_handle* pomp_handle,
     if ( scorep_pomp_is_tracing_on )
     {
         SCOREP_Pomp_Region* region = *( SCOREP_Pomp_Region** )pomp_handle;
-        SCOREP_OmpTaskCreateEnd( region->outerBlock, pomp_old_task );
+        if ( pomp_current_task != pomp_old_task )
+        {
+            SCOREP_OmpTaskSwitch( pomp_old_task );
+        }
+        SCOREP_ExitRegion( region->outerBlock );
     }
+    pomp_current_task = pomp_old_task;
 }
 
 void
 POMP2_Task_begin( POMP2_Region_handle* pomp_handle,
-                  POMP2_Task_handle    pomp_new_task )
+                  POMP2_Task_handle    pomp_task )
 {
     SCOREP_DEBUG_PRINTF( SCOREP_DEBUG_OPENMP, "In POMP2_Task_begin" );
     SCOREP_POMP2_ENSURE_INITIALIZED;
 
-    pomp_current_task = pomp_new_task;
+    pomp_current_task = pomp_task;
 
     if ( scorep_pomp_is_tracing_on )
     {
         SCOREP_Pomp_Region* region = *( SCOREP_Pomp_Region** )pomp_handle;
-        SCOREP_OmpTaskBegin( region->innerBlock, pomp_current_task );
+        SCOREP_OmpTaskSwitch( pomp_current_task );
+        SCOREP_EnterRegion( region->innerBlock );
     }
 }
 
@@ -537,26 +556,28 @@ POMP2_Task_end( POMP2_Region_handle* pomp_handle )
     if ( scorep_pomp_is_tracing_on )
     {
         SCOREP_Pomp_Region* region = *( SCOREP_Pomp_Region** )pomp_handle;
-        SCOREP_OmpTaskCompleted( region->innerBlock );
+        SCOREP_ExitRegion( region->innerBlock );
+        SCOREP_OmpTaskComplete( pomp_current_task );
     }
 }
 
 void
 POMP2_Untied_task_create_begin( POMP2_Region_handle* pomp_handle,
+                                POMP2_Task_handle*   pomp_new_task,
                                 POMP2_Task_handle*   pomp_old_task,
                                 int                  pomp_if,
                                 const char           ctc_string[] )
 {
     SCOREP_DEBUG_PRINTF( SCOREP_DEBUG_OPENMP, "In POMP2_Untied_task_create_begin" );
     SCOREP_POMP2_ENSURE_INITIALIZED;
-
-    *pomp_old_task    = pomp_current_task;
-    pomp_current_task = POMP2_Get_new_task_handle();
+    *pomp_new_task = POMP2_Get_new_task_handle();
+    *pomp_old_task = pomp_current_task;
 
     if ( scorep_pomp_is_tracing_on )
     {
         SCOREP_Pomp_Region* region = *( SCOREP_Pomp_Region** )pomp_handle;
-        SCOREP_OmpTaskCreateBegin( region->outerBlock, pomp_current_task );
+        SCOREP_EnterRegion( region->outerBlock );
+        SCOREP_OmpTaskCreate( *pomp_new_task );
     }
 }
 
@@ -566,27 +587,32 @@ POMP2_Untied_task_create_end( POMP2_Region_handle* pomp_handle,
 {
     SCOREP_DEBUG_PRINTF( SCOREP_DEBUG_OPENMP, "In POMP2_Untied_task_create_end" );
 
-    pomp_current_task = pomp_old_task;
     if ( scorep_pomp_is_tracing_on )
     {
         SCOREP_Pomp_Region* region = *( SCOREP_Pomp_Region** )pomp_handle;
-        SCOREP_OmpTaskCreateEnd( region->outerBlock, pomp_current_task );
+        if ( pomp_current_task != pomp_old_task )
+        {
+            SCOREP_OmpTaskSwitch( pomp_old_task );
+        }
+        SCOREP_ExitRegion( region->outerBlock );
     }
+    pomp_current_task = pomp_old_task;
 }
 
 void
 POMP2_Untied_task_begin( POMP2_Region_handle* pomp_handle,
-                         POMP2_Task_handle    pomp_new_task )
+                         POMP2_Task_handle    pomp_task )
 {
     SCOREP_DEBUG_PRINTF( SCOREP_DEBUG_OPENMP, "In POMP2_Untied_task_begin" );
     SCOREP_POMP2_ENSURE_INITIALIZED;
 
-    pomp_current_task = pomp_new_task;
+    pomp_current_task = pomp_task;
 
     if ( scorep_pomp_is_tracing_on )
     {
         SCOREP_Pomp_Region* region = *( SCOREP_Pomp_Region** )pomp_handle;
-        SCOREP_OmpTaskBegin( region->innerBlock, pomp_current_task );
+        SCOREP_OmpTaskSwitch( pomp_current_task );
+        SCOREP_EnterRegion( region->innerBlock );
     }
 }
 
@@ -597,7 +623,8 @@ POMP2_Untied_task_end( POMP2_Region_handle* pomp_handle )
     if ( scorep_pomp_is_tracing_on )
     {
         SCOREP_Pomp_Region* region = *( SCOREP_Pomp_Region** )pomp_handle;
-        SCOREP_OmpTaskCompleted( region->innerBlock );
+        SCOREP_ExitRegion( region->innerBlock );
+        SCOREP_OmpTaskComplete( pomp_current_task );
     }
 }
 
@@ -613,7 +640,6 @@ POMP2_Taskwait_begin( POMP2_Region_handle* pomp_handle,
     if ( scorep_pomp_is_tracing_on )
     {
         SCOREP_Pomp_Region* region = *( SCOREP_Pomp_Region** )pomp_handle;
-        SCOREP_OmpTaskSuspend( region->innerBlock );
         SCOREP_EnterRegion( region->outerBlock );
     }
 }
@@ -624,13 +650,16 @@ POMP2_Taskwait_end( POMP2_Region_handle* pomp_handle,
 {
     SCOREP_DEBUG_PRINTF( SCOREP_DEBUG_OPENMP, "In POMP2_Taskwait_end" );
 
-    pomp_current_task = pomp_old_task;
     if ( scorep_pomp_is_tracing_on )
     {
         SCOREP_Pomp_Region* region = *( SCOREP_Pomp_Region** )pomp_handle;
-        SCOREP_OmpTaskResume( region->innerBlock, pomp_current_task );
+        if ( pomp_current_task != pomp_old_task )
+        {
+            SCOREP_OmpTaskSwitch( pomp_old_task );
+        }
         SCOREP_ExitRegion( region->outerBlock );
     }
+    pomp_current_task = pomp_old_task;
 }
 
 //=======================================================================================

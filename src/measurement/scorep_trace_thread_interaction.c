@@ -35,6 +35,7 @@
 #include "scorep_thread.h"
 #include "scorep_status.h"
 #include "scorep_mpi.h"
+#include "SCOREP_Tracing.h"
 #include <stdlib.h>
 
 
@@ -60,7 +61,7 @@ SCOREP_Trace_DeleteLocationData( SCOREP_Trace_LocationData* traceLocationData )
     if ( traceLocationData && traceLocationData->otf_writer )
     {
         traceLocationData->otf_writer = 0;
-        // writer will be deleted by otf in call to OTF2_Archive_Delete()
+        // writer will be deleted by otf in call to OTF2_Archive_Close()
     }
 }
 
@@ -117,14 +118,8 @@ SCOREP_Trace_OnLocationCreation( SCOREP_Thread_LocationData* locationData,
 
     #pragma omp critical (trace_on_location_creation)
     {
-        trace_data->otf_writer =
-            SCOREP_Trace_GetEventWriter( OTF2_UNDEFINED_UINT64 );
-    }
-
-    if ( !trace_data->otf_writer )
-    {
-        SCOREP_ERROR( SCOREP_ERROR_ENOMEM, "Can't create event buffer" );
-        _Exit( EXIT_FAILURE );
+        /* SCOREP_Tracing_GetEventWriter aborts on failure */
+        trace_data->otf_writer = SCOREP_Tracing_GetEventWriter();
     }
 
     if ( !SCOREP_Mpi_IsInitialized() )
@@ -158,22 +153,4 @@ SCOREP_SetOtf2WriterLocationId( SCOREP_Thread_LocationData* threadLocationData )
     {
         _Exit( EXIT_FAILURE );
     }
-}
-
-uint64_t
-SCOREP_Trace_GetNumberOfEvents( SCOREP_Thread_LocationData* locationData )
-{
-    if ( !SCOREP_IsTracingEnabled() )
-    {
-        return 0;
-    }
-
-    SCOREP_Trace_LocationData* trace_data =
-        SCOREP_Thread_GetTraceLocationData( locationData );
-
-    uint64_t number_of_events;
-    OTF2_EvtWriter_GetNumberOfEvents( trace_data->otf_writer,
-                                      &number_of_events );
-
-    return number_of_events;
 }

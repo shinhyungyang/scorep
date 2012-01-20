@@ -46,7 +46,7 @@ SCOREP_DefineSystemTree()
         return;
     }
 
-    /* Create SystemTreeNode defintions */
+    /* Create SystemTreeNode definitions */
     SCOREP_SystemTreeNodeHandle            parent = SCOREP_INVALID_SYSTEM_TREE_NODE;
     SCOREP_Platform_SystemTreePathElement* node;
     SCOREP_PLATFORM_SYSTEM_TREE_FORALL( path, node )
@@ -62,7 +62,7 @@ SCOREP_DefineSystemTree()
 
     /* Create Location Group definition */
     char     name[ 32 ];
-    uint64_t location_group_id = 0;
+    uint32_t location_group_id = 0;
     if ( SCOREP_Mpi_HasMpi() )
     {
         int rank = SCOREP_Mpi_GetRank();

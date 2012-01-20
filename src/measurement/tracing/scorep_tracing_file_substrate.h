@@ -2,7 +2,7 @@
  * This file is part of the Score-P software (http://www.score-p.org)
  *
  * Copyright (c) 2009-2011,
- *    RWTH Aachen University, Germany
+ *    RWTH Aachen, Germany
  *    Gesellschaft fuer numerische Simulation mbH Braunschweig, Germany
  *    Technische Universitaet Dresden, Germany
  *    University of Oregon, Eugene, USA
@@ -15,23 +15,23 @@
  */
 
 
+#ifndef SCOREP_TRACING_FILE_SUBSTRATE_H
+#define SCOREP_TRACING_FILE_SUBSTRATE_H
+
 
 /**
- * @file       not_filtered.c
- * @maintainer Daniel Lorenz <d.lorenz@fz-juelich.de>
- *
- * @status alpha
+ * @file       src/measurement/tracing/scorep_tracing_file_substrate.h
+ * @maintainer Bert Wesarg <Bert.Wesarg@tu-dresden.de>
  *
  */
 
-#include <config.h>
-#include <stdio.h>
-#include <scorep/SCOREP_User.h>
 
 void
-filter_not2()
-{
-    SCOREP_USER_FUNC_BEGIN();
-    printf( "4\n" );
-    SCOREP_USER_FUNC_END();
-}
+scorep_tracing_register_sion_callbacks( OTF2_Archive* archive );
+
+
+OTF2_FileSubstrate
+scorep_tracing_get_file_substrate();
+
+
+#endif /* SCOREP_TRACING_FILE_SUBSTRATE_H */

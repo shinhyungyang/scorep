@@ -24,7 +24,7 @@
  * @status alpha
  *
  * The interface to the filtering system.  The file that contains the filter
- * defintions can be set via the envirionment variable
+ * definitions can be set via the envirionment variable
  * SCOREP_FILTERING_FILE. If no file is specified or the given file is not
  * found, filtering is disabled.
  */
@@ -42,6 +42,9 @@ SCOREP_Filter_Initialize();
  */
 SCOREP_Error_Code
 SCOREP_Filter_Register();
+
+void
+SCOREP_Filter_Finalize();
 
 void
 SCOREP_Filter_Enable();

@@ -94,7 +94,6 @@ scorep_pomp_free_region_members( SCOREP_Pomp_Region* region )
         scorep_pomp_free_region_member( &region->name );
         scorep_pomp_free_region_member( &region->startFileName );
         scorep_pomp_free_region_member( &region->endFileName );
-        scorep_pomp_free_region_member( &region->regionName );
     }
 }
 
@@ -144,8 +143,8 @@ scorep_pomp_init()
         /* If initialized from user instrumentation initialize measurement before. */
         SCOREP_InitMeasurement();
 
-        /* Initialize file handle for implicit barrier */
-        scorep_pomp_file_handle = SCOREP_DefineSourceFile( "POMP2" );
+        /* Initialize file handle for OpenMP API functions */
+        scorep_pomp_file_handle = SCOREP_DefineSourceFile( "OMP" );
 
         /* Allocate memory for your POMP2_Get_num_regions() regions */
         scorep_pomp_regions = calloc( POMP2_Get_num_regions(),

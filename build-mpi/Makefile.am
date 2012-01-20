@@ -81,23 +81,26 @@ distclean-local:
 	rm -rf ../test/jacobi/MPI
 	rm -rf ../test/jacobi/hybrid
 
+## Provide the scorep-config build with information from this mpi Makefile.
+$(CONFIG_HEADER_MPI):
+	$(AM_V_GEN)( \
+	    echo "#define SCOREP_MPI_SION_LIBS     \"$(SCOREP_SION_MPI_LIBS)\""; \
+	    echo "#define SCOREP_MPI_SION_LDFLAGS  \"$(SCOREP_SION_MPI_LDFLAGS)\""; \
+	    echo "#define SCOREP_MPI_SION_CPPFLAGS \"$(SCOREP_SION_MPI_CPPFLAGS)\""; \
+	    echo "#define SCOREP_MPICC             \"$(CC)\"";\
+	    echo "#define SCOREP_MPICXX            \"$(CXX)\"";\
+	    echo "#define SCOREP_MPIFC             \"$(FC)\"";\
+	) >$@
+
 
 if MPI_SUPPORTED
 if OPENMP_SUPPORTED
 installcheck-local:
-	@fail= failcom='exit 1'; \
-	for f in x $$MAKEFLAGS; do \
-	  case $$f in \
-	    *=* | --[!k]*);; \
-	    *k*) failcom='fail=yes';; \
-	  esac; \
-	done; \
-	($(am__cd) ../test/jacobi/MPI/C && $(MAKE) $(AM_MAKEFLAGS))    || eval $$failcom; \
-	($(am__cd) ../test/jacobi/hybrid/C && $(MAKE) $(AM_MAKEFLAGS)) || eval $$failcom; \
-        test -z "$$fail"
+	@$(am__cd) ../test/jacobi/MPI/C    && $(MAKE) $(AM_MAKEFLAGS)
+	@$(am__cd) ../test/jacobi/hybrid/C && $(MAKE) $(AM_MAKEFLAGS)
 else
 installcheck-local:
-	@$(am__cd) ../test/jacobi/MPI/C && $(MAKE) $(AM_MAKEFLAGS)
+	@$(am__cd) ../test/jacobi/MPI/C    && $(MAKE) $(AM_MAKEFLAGS)
 endif
 else
 installcheck-local:

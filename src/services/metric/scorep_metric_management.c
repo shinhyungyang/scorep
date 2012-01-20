@@ -204,7 +204,7 @@ scorep_metric_initialize_service()
                 }
             }
 
-            /* Write definiton of sampling set */
+            /* Write definition of sampling set */
             sampling_set_handle = SCOREP_DefineSamplingSet( ( uint8_t )metric_sources_management_data.overall_number_of_metrics,
                                                             all_metric_handles,
                                                             SCOREP_METRIC_OCCURRENCE_SYNCHRONOUS_STRICT );
@@ -235,6 +235,8 @@ scorep_metric_finalize_service()
             metric_sources_management_data.number_of_metrics_vector[ i ] = 0;
         }
         metric_sources_management_data.overall_number_of_metrics = 0;
+
+        free( all_metric_handles );
 
         /* Set initialization flag */
         scorep_metric_management_initialize = 1;

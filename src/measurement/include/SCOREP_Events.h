@@ -158,28 +158,10 @@ SCOREP_MpiRecv( SCOREP_MpiRank                    sourceRank,
  * @param regionHandle The region handle corresponding to the MPI function
  * that triggers this event.
  *
- * @param communicatorHandle The previously defined handle belonging to the
- * communicator that is used in this communication.
- *
- * @param globalRootRank Root rank of the collective operation in
- * the communicator specified with @a communicatorHandle,
- * or SCOREP_INVALID_ROOT_RANK.
- *
- * @param bytesSent The number of bytes send in the communication.
- *
- * @param bytesReceived The number of bytes received in the communication.
- *
- * @param matchingId A process unique sequence number to match the corresponding
- *                   SCOREP_MpiCollectiveEnd event
- *
  * @return The used timestamp for this event.
  */
 uint64_t
-SCOREP_MpiCollectiveBegin( SCOREP_RegionHandle               regionHandle,
-                           SCOREP_LocalMPICommunicatorHandle communicatorHandle,
-                           SCOREP_MpiRank                    rootRank,
-                           SCOREP_MpiCollectiveType          collectiveType,
-                           uint64_t                          matchingId );
+SCOREP_MpiCollectiveBegin( SCOREP_RegionHandle regionHandle );
 
 /**
  * Process an mpi collective event in the measurement system.
@@ -189,13 +171,25 @@ SCOREP_MpiCollectiveBegin( SCOREP_RegionHandle               regionHandle,
  * @param regionHandle The region handle corresponding to the MPI function
  * that triggers this event.
  *
- * @param matchingId A process unique sequence number to match the corresponding
- *                   SCOREP_MpiCollectiveBegin event
+ * @param communicatorHandle The previously defined handle belonging to the
+ * communicator that is used in this communication.
+ *
+ * @param rootRank Root rank of the collective operation in
+ * the communicator specified with @a communicatorHandle,
+ * or SCOREP_INVALID_ROOT_RANK.
+ *
+ * @param collectiveType The type ff the collective.
+ *
+ * @param bytesSent The number of bytes send in the communication.
+ *
+ * @param bytesReceived The number of bytes received in the communication.
+ *
  */
 void
 SCOREP_MpiCollectiveEnd( SCOREP_RegionHandle               regionHandle,
                          SCOREP_LocalMPICommunicatorHandle communicatorHandle,
-                         uint64_t                          matchingId,
+                         SCOREP_MpiRank                    rootRank,
+                         SCOREP_MpiCollectiveType          collectiveType,
                          uint64_t                          bytesSent,
                          uint64_t                          bytesReceived );
 
@@ -302,11 +296,7 @@ SCOREP_MpiIrecv( SCOREP_MpiRank                    sourceRank,
  * @see SCOREP_DefineRegion()
  */
 void
-SCOREP_OmpFork
-(
-    SCOREP_RegionHandle regionHandle,
-    uint32_t            nRequestedThreads
-);
+SCOREP_OmpFork( uint32_t nRequestedThreads );
 
 
 /**
@@ -318,10 +308,7 @@ SCOREP_OmpFork
  * @see SCOREP_DefineRegion()
  */
 void
-SCOREP_OmpJoin
-(
-    SCOREP_RegionHandle regionHandle
-);
+SCOREP_OmpJoin( void );
 
 
 /**
@@ -365,85 +352,33 @@ SCOREP_ExitRegionOnException
     SCOREP_RegionHandle regionHandle
 );
 
-/**
- * Process an OpenMP task create begin event in the measurement system.
- *
- * @param regionHandle The previous defined region handle which identifies
- *                     the region where the task is created.
- * @param taskId       The ID of the task beeing created.
- */
-void
-SCOREP_OmpTaskCreateBegin
-(
-    SCOREP_RegionHandle regionHandle,
-    uint64_t            taskId
-);
 
 /**
- * Process an OpenMP task create end event in the measurement system.
+ * Process an OpenMP task create event in the measurement system.
  *
- * @param regionHandle The previous defined region handle which identifies
- *                     the region where the task is created.
- * @param taskId       The ID of the task beeing created.
+ * @param taskId Id of the created task.
  */
 void
-SCOREP_OmpTaskCreateEnd
-(
-    SCOREP_RegionHandle regionHandle,
-    uint64_t            taskId
-);
+SCOREP_OmpTaskCreate( uint64_t taskId );
+
 
 /**
- * Process an OpenMP task begin event in the measurement system.
+ * Process an OpenMP task switch event in the measurement system.
  *
- * @param regionHandle The previous defined region handle which identifies
- *                     the region the task executes.
- * @param taskId       The ID of the task which starts execution.
+ * @param taskId Id of the task the runtime switched to.
  */
 void
-SCOREP_OmpTaskBegin
-(
-    SCOREP_RegionHandle regionHandle,
-    uint64_t            taskId
-);
+SCOREP_OmpTaskSwitch( uint64_t taskId );
 
-/**
- * Process an OpenMP task resume event in the measurement system.
- *
- * @param regionHandle The previous defined region handle which identifies
- *                     the region the task executes.
- * @param taskId       The ID of the task which is resumed.
- */
-void
-SCOREP_OmpTaskResume
-(
-    SCOREP_RegionHandle regionHandle,
-    uint64_t            taskId
-);
-
-/**
- * Process an OpenMP task suspend event in the measurement system.
- *
- * @param regionHandle The previous defined region handle which identifies
- *                     the region the task executes.
- */
-void
-SCOREP_OmpTaskSuspend
-(
-    SCOREP_RegionHandle regionHandle
-);
 
 /**
  * Process an OpenMP task completed event in the measurement system.
  *
- * @param regionHandle The previous defined region handle which identifies
- *                     the region the task has executed.
+ * @param taskId Id of the completed task.
  */
 void
-SCOREP_OmpTaskCompleted
-(
-    SCOREP_RegionHandle regionHandle
-);
+SCOREP_OmpTaskComplete( uint64_t taskId );
+
 
 /**
  *

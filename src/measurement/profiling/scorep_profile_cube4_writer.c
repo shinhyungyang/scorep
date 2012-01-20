@@ -125,7 +125,7 @@ scorep_cube4_make_callpath_mapping( scorep_profile_node* node,
 }
 
 /**
-   Creates a mapping from global sequence numbers to local metric defintions. The
+   Creates a mapping from global sequence numbers to local metric definitions. The
    global sequence numbers define the order in which the metrics are written.
  */
 static SCOREP_MetricHandle*
@@ -337,7 +337,7 @@ scorep_profile_write_cube_##cube_type(                                          
         cubew_reset( write_set->cube_writer );                                          \
         cubew_set_array( write_set->cube_writer, write_set->callpath_number );          \
         cube_set_known_cnodes_for_metric( write_set->my_cube, metric,                   \
-                                          write_set->bit_vector );                      \
+                                          (char*)write_set->bit_vector );               \
     }                                                                                   \
     /* Iterate over all unified callpathes */                                           \
     for ( uint64_t cp_index = 0; cp_index < write_set->callpath_number; cp_index++ )    \
@@ -464,7 +464,7 @@ scorep_profile_init_cube_writing_data( scorep_cube_writing_data* write_set )
     write_set->local_threads = scorep_profile_get_number_of_threads();
     write_set->ranks_number  = SCOREP_Mpi_GetCommWorldSize();
 
-    /* Get the number of unified callpath defintions to all ranks */
+    /* Get the number of unified callpath definitions to all ranks */
     if ( write_set->my_rank == 0 )
     {
         write_set->callpath_number = SCOREP_Callpath_GetNumberOfUnifiedDefinitions();
@@ -492,9 +492,9 @@ scorep_profile_init_cube_writing_data( scorep_cube_writing_data* write_set )
     /* Calculate the offsets of all ranks and the number of locations per rank */
     if ( write_set->my_rank == 0 )
     {
-        size_t buffer_size = write_set->ranks_number * sizeof( uint32_t );
-        write_set->threads_per_rank = ( uint32_t* )malloc( buffer_size );
-        write_set->offsets_per_rank = ( uint32_t* )malloc( buffer_size );
+        size_t buffer_size = write_set->ranks_number * sizeof( int );
+        write_set->threads_per_rank = ( int* )malloc( buffer_size );
+        write_set->offsets_per_rank = ( int* )malloc( buffer_size );
     }
     SCOREP_Mpi_Gather( &write_set->local_threads, 1, SCOREP_MPI_UNSIGNED,
                        write_set->threads_per_rank, 1, SCOREP_MPI_INT, 0 );
@@ -506,7 +506,7 @@ scorep_profile_init_cube_writing_data( scorep_cube_writing_data* write_set )
     if ( write_set->map == NULL )
     {
         SCOREP_ERROR( SCOREP_ERROR_MEM_ALLOC_FAILED,
-                      "Failed to allocate memory for defintion mapping\n"
+                      "Failed to allocate memory for definition mapping\n"
                       "Failed to write Cube 4 profile" );
 
         scorep_profile_delete_cube_writing_data( write_set );
@@ -592,7 +592,7 @@ scorep_profile_write_cube4()
     SCOREP_DEBUG_PRINTF( SCOREP_DEBUG_PROFILE,
                          "Writing profile in Cube 4 format ..." );
 
-    /* -------------------------------- Initialization, header and defintions */
+    /* -------------------------------- Initialization, header and definitions */
 
     SCOREP_DEBUG_PRINTF( SCOREP_DEBUG_PROFILE, "Prepare writing" );
 
@@ -605,10 +605,9 @@ scorep_profile_write_cube4()
     if ( write_set.my_rank == 0 )
     {
         /* generate header */
-        cube_def_mirror( write_set.my_cube, "http://icl.cs.utk.edu/software/kojak/" );
-        cube_def_mirror( write_set.my_cube, "http://www.fz-juelich.de/jsc/kojak/" );
-        cube_def_attr( write_set.my_cube, "description", "need a description" );
-        cube_def_attr( write_set.my_cube, "experiment time", "need a date" );
+        cube_def_attr( write_set.my_cube, "Creator", "Score-P " PACKAGE_VERSION );
+        cube_def_attr( write_set.my_cube, "CUBE_CT_AGGR", "SUM" );
+        cube_def_mirror( write_set.my_cube, "file://" DOCDIR "/profile/" );
 
         /* Write definitions to cube */
         SCOREP_DEBUG_PRINTF( SCOREP_DEBUG_PROFILE, "Writing definitions" );
@@ -724,7 +723,7 @@ scorep_profile_write_cube4()
     SCOREP_DEBUG_PRINTF( SCOREP_DEBUG_PROFILE, "Profile writing done" );
 
     /* Clean up */
-cleanup:
+    //cleanup:
     SCOREP_DEBUG_PRINTF( SCOREP_DEBUG_PROFILE, "Clean up" );
     scorep_profile_delete_cube_writing_data( &write_set );
 }

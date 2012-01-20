@@ -92,7 +92,7 @@ install-data-local: $(INSTALL_DATA_LOCAL_TARGETS)
 
 install-data-hook: $(INSTALL_DATA_HOOK_TARGETS)
 
-SCOREP_SHARE_INSTALL_DIR = $(DESTDIR)$(datadir)/scorep
+SCOREP_SHARE_INSTALL_DIR = $(DESTDIR)$(datadir)/@PACKAGE_NAME@
 SCOREP_SHARE_LOCAL_DIR=$(PWD)/../share
 SCOREP_SHARE_GLOBAL_DIR=$(abs_top_srcdir)/../share
 SCOREP_PDT_CONFIG_INSTALL_TARGET = $(SCOREP_SHARE_INSTALL_DIR)/SCOREP_Pdt_Instrumentation.conf
@@ -124,10 +124,10 @@ scorep-config-tool-install:
 
 clean-local-scorep-config-tool:
 	rm -f $(builddir)/scorep_config.dat
-	@(cd ../vendor/otf2/build-backend; make clean-local-otf2-config-tool)
+	@$(am__cd) ../vendor/otf2/build-backend && $(MAKE) $(AM_MAKEFLAGS) clean-local-otf2-config-tool
 
 scorep-config-tool-local: $(builddir)/scorep_config.dat
-	@(cd ../vendor/otf2/build-backend; make otf2-config-tool-local)
+	@$(am__cd) ../vendor/otf2/build-backend && $(MAKE) $(AM_MAKEFLAGS) otf2-config-tool-local
 
 create-cobi-config-local:
 	@$(MKDIR_P) $(SCOREP_SHARE_LOCAL_DIR)
@@ -147,8 +147,7 @@ config_tool_build_dir = build-backend
 endif
 
 $(builddir)/scorep_config.dat: 
-	@echo "Creating $(builddir)/scorep_config.dat"
-	@( \
+	$(AM_V_GEN)( \
 	    echo COMPILER_INSTRUMENTATION_CPPFLAGS=\"$(COMPILER_INSTRUMENTATION_CPPFLAGS)\"; \
 	    echo OPENMP_CFLAGS=\"$(OPENMP_CFLAGS)\"; \
 	    echo LIBDIR=\"$(PWD)/.libs\"; \
@@ -157,6 +156,7 @@ $(builddir)/scorep_config.dat:
 	    echo LIBDIR=\"$(TIMER_LIBDIR)\"; \
 	    echo LIBDIR=\"$(SCOREP_PAPI_LIBDIR)\"; \
 	    echo INCDIR=\"$(PWD)/$(PUBLIC_INC_DIR)\"; \
+	    echo INCDIR=\"$(PWD)/$(PUBLIC_INC_DIR)/scorep\"; \
 	    echo INCDIR=\"$(PWD)/$(INC_DIR_OPARI2)\"; \
 	    echo SRC_ROOT=\"$(abs_top_srcdir)/..\"; \
 	    echo CC=\"$(CC)\"; \
@@ -168,19 +168,16 @@ $(builddir)/scorep_config.dat:
 	    echo OPARI=\"$(PWD)/../vendor/opari2/build-frontend/opari2\"; \
 	    echo OPARI_CONFIG=\"$(PWD)/../vendor/opari2/build-frontend/opari2-config --config=$(PWD)/../vendor/opari2/build-frontend/opari2_config.dat\"; \
 	    echo PDT=\"$(PDT_PATH)\"; \
-	    echo PDT_CONFIG=\"$(INC_ROOT)src/tools/wrapper/SCOREP_Pdt_Instrumentation.conf\"; \
+	    echo PDT_CONFIG=\"$(SCOREP_SHARE_GLOBAL_DIR)/SCOREP_Pdt_Instrumentation.conf\"; \
 	    echo OTF2_CONFIG=\"$(PWD)/../vendor/otf2/$(config_tool_build_dir)/otf2-config --config=$(PWD)/../vendor/otf2/build-backend/otf2_config.dat\"; \
 	    echo SCOREP_CONFIG=\"$(PWD)/scorep-config --config=$(PWD)/scorep_config.dat\"; \
 	    echo OTF2_PRINT=\"$(PWD)/../vendor/otf2/$(config_tool_build_dir)/otf2_print\"; \
 	    echo COBI_CONFIG_DIR=\"$(SCOREP_SHARE_LOCAL_DIR)\"; \
-	) >$(builddir)/scorep_config.dat
+	) >$@
 
-## Here we write only the backend values.
-create-config-tool-headers: $(CONFIG_HEADER_BACKEND)
-
+## Provide the scorep-config build with information from this backend Makefile.
 $(CONFIG_HEADER_BACKEND):
-	@echo "Creating $(CONFIG_HEADER_BACKEND)"
-	@( \
+	$(AM_V_GEN)( \
 	    echo "#define SCOREP_CFLAGS \"$(COMPILER_INSTRUMENTATION_CPPFLAGS)\""; \
 	    echo "#define SCOREP_OPENMP_CFLAGS \"$(OPENMP_CFLAGS)\""; \
 	    echo "#define SCOREP_PREFIX  \"$(prefix)\""; \
@@ -201,21 +198,16 @@ $(CONFIG_HEADER_BACKEND):
 	    echo "#define PDT_CONFIG     \"$(SCOREP_SHARE_INSTALL_DIR)/SCOREP_Pdt_Instrumentation.conf\""; \
 	    echo "#define RPATH_FLAG     \"$(am_libscorep_serial_la_rpath)\""; \
 	    echo "#define COBI_CONFIG_DIR \"$(SCOREP_SHARE_INSTALL_DIR)\""; \
-	) >$(CONFIG_HEADER_BACKEND)
+	    echo "#define SCOREP_BACKEND_SION_LIBS     \"$(SCOREP_SION_SERIAL_LIBS)\""; \
+	    echo "#define SCOREP_BACKEND_SION_LDFLAGS  \"$(SCOREP_SION_SERIAL_LDFLAGS)\""; \
+	    echo "#define SCOREP_BACKEND_SION_CPPFLAGS \"$(SCOREP_SION_SERIAL_CPPFLAGS)\""; \
+	) >$@
 
 
 if OPENMP_SUPPORTED
 installcheck-local:
-	@fail= failcom='exit 1'; \
-	for f in x $$MAKEFLAGS; do \
-	  case $$f in \
-	    *=* | --[!k]*);; \
-	    *k*) failcom='fail=yes';; \
-	  esac; \
-	done; \
-	($(am__cd) ../test/jacobi/serial/C && $(MAKE) $(AM_MAKEFLAGS)) || eval $$failcom; \
-	($(am__cd) ../test/jacobi/OpenMP/C && $(MAKE) $(AM_MAKEFLAGS)) || eval $$failcom; \
-        test -z "$$fail"
+	@$(am__cd) ../test/jacobi/serial/C && $(MAKE) $(AM_MAKEFLAGS)
+	@$(am__cd) ../test/jacobi/OpenMP/C && $(MAKE) $(AM_MAKEFLAGS)
 else
 installcheck-local:
 	@$(am__cd) ../test/jacobi/serial/C && $(MAKE) $(AM_MAKEFLAGS)
