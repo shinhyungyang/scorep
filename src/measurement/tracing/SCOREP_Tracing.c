@@ -95,6 +95,7 @@ scorep_on_trace_pre_flush( void*         userData,
                          "[%d]: %s flush on %s#%" PRIu64 "\n",
                          SCOREP_Mpi_GetRank(),
                          final ? "final" : "intermediate",
+                         fileType == OTF2_FILETYPE_ANCHOR ? "Anchor" :
                          fileType == OTF2_FILETYPE_GLOBAL_DEFS ? "GlobalDef" :
                          fileType == OTF2_FILETYPE_LOCAL_DEFS ? "Def" : "Evt",
                          fileType == OTF2_FILETYPE_GLOBAL_DEFS ? 0 : locationId );
@@ -385,7 +386,11 @@ SCOREP_Tracing_WriteDefinitions()
             SCOREP_Memory_HandleOutOfMemory();
         }
 
-        OTF2_GlobalDefWriter_WriteTimeRange( global_definition_writer, epoch_begin, epoch_end - epoch_begin );
+        OTF2_GlobalDefWriter_WriteClockProperties(
+            global_definition_writer,
+            SCOREP_GetClockResolution(),
+            epoch_begin,
+            epoch_end - epoch_begin );
         scorep_tracing_write_global_definitions( global_definition_writer );
 
         /* There is no OTF2_Archive_CloseGlobalDefWriter in OTF2 */
