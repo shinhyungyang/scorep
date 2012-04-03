@@ -1,7 +1,7 @@
 /*
  * This file is part of the Score-P software (http://www.score-p.org)
  *
- * Copyright (c) 2009-2011,
+ * Copyright (c) 2009-2012,
  *    RWTH Aachen University, Germany
  *    Gesellschaft fuer numerische Simulation mbH Braunschweig, Germany
  *    Technische Universitaet Dresden, Germany
@@ -46,7 +46,7 @@ SCOREP_DEFINE_DEFINITION_TYPE( String )
 
     uint32_t string_length;
     // variable array member
-    char     string_data[];
+    char string_data[];
 };
 
 
@@ -120,7 +120,7 @@ SCOREP_DEFINE_DEFINITION_TYPE( Group )
     SCOREP_StringHandle name_handle;    // currently not used
     uint64_t            number_of_members;
     // variable array member
-    uint64_t            members[];
+    uint64_t members[];
 };
 
 
@@ -128,17 +128,19 @@ SCOREP_DEFINE_DEFINITION_TYPE( LocalMPICommunicator )
 {
     SCOREP_DEFINE_DEFINITION_HEADER( LocalMPICommunicator );
 
-    bool     is_self_like;
-    uint32_t local_rank;
-    uint32_t global_root_rank;
-    uint32_t root_id;
+    bool                is_self_like;
+    uint32_t            local_rank;
+    uint32_t            global_root_rank;
+    uint32_t            root_id;
+    SCOREP_StringHandle name_handle;
 };
 
 SCOREP_DEFINE_DEFINITION_TYPE( MPICommunicator )
 {
     SCOREP_DEFINE_DEFINITION_HEADER( MPICommunicator );
 
-    SCOREP_GroupHandle group;
+    SCOREP_GroupHandle group_handle;
+    uint32_t           name_id;
 };
 
 SCOREP_DEFINE_DEFINITION_TYPE( MPIWindow )
@@ -187,7 +189,7 @@ SCOREP_DEFINE_DEFINITION_TYPE( SamplingSet )
     SCOREP_DEFINE_DEFINITION_HEADER( SamplingSet );
 
     // order is important
-    bool                    is_scoped;
+    bool is_scoped;
 
     SCOREP_MetricOccurrence occurrence;
     uint8_t                 number_of_metrics;
@@ -205,13 +207,13 @@ SCOREP_DEFINE_DEFINITION_TYPE( ScopedSamplingSet )
     SCOREP_DEFINE_DEFINITION_HEADER( SamplingSet );
 
     // order is important
-    bool                     is_scoped;
+    bool is_scoped;
 
     SCOREP_SamplingSetHandle sampling_set_handle;
     SCOREP_LocationHandle    recorder_handle;
     SCOREP_MetricScope       scope_type;
     /* all types are handles */
-    SCOREP_AnyHandle         scope_handle;
+    SCOREP_AnyHandle scope_handle;
 };
 
 
