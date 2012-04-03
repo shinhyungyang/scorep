@@ -1,2 +1,21 @@
-Version 0.1 (Nov-08-2010)
-- first technology preview
+------------------- Released version 1.0.1 ---------------------------
+
+- Renaming of the configure related variable LD_FLAGS_FOR_BUILD to 
+  LDFLAGS_FOR_BUILD for consistency.
+
+- Renaming of installed tool and options for consistency.
+
+- Improved linking on AIX systems.
+
+- Robustness improvements when instrumenting with PDT.
+
+- On x86 platforms, be more cautious using the tsc counter. If
+  /proc/cpuinfo reports constant_tsc but not nonstop_tsc, then it is
+  likely that the counter is unreliable.
+
+- Improved configure summary.
+
+- configure will not fail if -q or --silent is passed.
+
+
+------------------- Released version 1.0 -----------------------------
