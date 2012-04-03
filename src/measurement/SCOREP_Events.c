@@ -53,7 +53,7 @@
 extern bool                     scorep_recording_enabled;
 extern SCOREP_SamplingSetHandle scorep_current_sampling_set;
 extern uint8_t                  scorep_number_of_metrics;
-extern OTF2_TypeID*             scorep_current_metric_types;
+extern OTF2_Type*               scorep_current_metric_types;
 
 /* *INDENT-OFF* */
 static uint64_t scorep_get_timestamp( SCOREP_Thread_LocationData* location );
@@ -65,7 +65,7 @@ static uint64_t scorep_get_timestamp( SCOREP_Thread_LocationData* location );
 static void
 scorep_enter_region( uint64_t            timestamp,
                      SCOREP_RegionHandle regionHandle,
-                     uint64_t*           metricValues )
+                     const uint64_t*     metricValues )
 {
     SCOREP_Thread_LocationData* location = SCOREP_Thread_GetLocationData();
 
@@ -89,7 +89,7 @@ scorep_enter_region( uint64_t            timestamp,
                                    SCOREP_LOCAL_HANDLE_TO_ID( scorep_current_sampling_set, SamplingSet ),
                                    scorep_number_of_metrics,
                                    scorep_current_metric_types,
-                                   ( OTF2_MetricValue* )metricValues );
+                                   ( const OTF2_MetricValue* )metricValues );
         }
 
         OTF2_EvtWriter_Enter( evt_writer,
@@ -282,7 +282,7 @@ SCOREP_MpiRecv( SCOREP_MpiRank                    sourceRank,
     }
 }
 
-static OTF2_Mpi_CollectiveType
+static OTF2_MpiCollectiveType
 scorep_collective_to_otf2( SCOREP_MpiCollectiveType scorep_type )
 {
     switch ( scorep_type )
@@ -805,7 +805,7 @@ SCOREP_TriggerCounterInt64( SCOREP_SamplingSetHandle counterHandle,
 
     if ( SCOREP_IsTracingEnabled() && scorep_recording_enabled )
     {
-        OTF2_TypeID      value_type = OTF2_INT64_T;
+        OTF2_Type        value_type = OTF2_TYPE_INT64;
         OTF2_MetricValue values;
         values.signed_int = value;
 
@@ -847,7 +847,7 @@ SCOREP_TriggerCounterUint64( SCOREP_SamplingSetHandle counterHandle,
 
     if ( SCOREP_IsTracingEnabled() && scorep_recording_enabled )
     {
-        OTF2_TypeID      value_type = OTF2_UINT64_T;
+        OTF2_Type        value_type = OTF2_TYPE_UINT64;
         OTF2_MetricValue values;
         values.unsigned_int = value;
 
@@ -889,7 +889,7 @@ SCOREP_TriggerCounterDouble( SCOREP_SamplingSetHandle counterHandle,
 
     if ( SCOREP_IsTracingEnabled() && scorep_recording_enabled )
     {
-        OTF2_TypeID      value_type = OTF2_DOUBLE;
+        OTF2_Type        value_type = OTF2_TYPE_DOUBLE;
         OTF2_MetricValue values;
         values.floating_point = value;
 

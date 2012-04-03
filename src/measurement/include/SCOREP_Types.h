@@ -225,7 +225,7 @@ typedef enum SCOREP_MetricValueType
     SCOREP_METRIC_VALUE_DOUBLE,
 
     SCOREP_INVALID_METRIC_VALUE_TYPE /**< For internal use only. */
-} SCOREP_MetricValueType;            // maps to OTF2_TypeID
+} SCOREP_MetricValueType;            // maps to OTF2_Type
 
 /**
  * Types to be used in defining metric mode (SCOREP_DefineMetric()).

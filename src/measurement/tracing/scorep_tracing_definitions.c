@@ -155,13 +155,13 @@ scorep_group_type_to_otf_group_type( SCOREP_GroupType scorepType )
     {
 #define case_return( SCOREP, OTF2 ) \
     case SCOREP_GROUP_ ## SCOREP: \
-        return OTF2_GROUPTYPE_ ## OTF2
+        return OTF2_GROUP_TYPE_ ## OTF2
 
         case_return( UNKNOWN,       UNKNOWN );
         case_return( LOCATIONS,     LOCATIONS );
         case_return( REGIONS,       REGIONS );
         case_return( METRIC,        METRIC );
-        case_return( COMM_SELF,     COMMUNICATOR_SELF );
+        case_return( COMM_SELF,     MPI_COMM_SELF );
         case_return( MPI_GROUP,     MPI_GROUP );
         case_return( MPI_LOCATIONS, MPI_LOCATIONS );
 
@@ -219,17 +219,17 @@ scorep_metric_mode_to_otf_metric_mode( SCOREP_MetricMode mode )
     }
 }
 
-static inline OTF2_TypeID
+static inline OTF2_Type
 scorep_metric_value_type_to_otf_metric_value_type( SCOREP_MetricValueType valueType )
 {
     switch ( valueType )
     {
 #define case_return( SCOREP, OTF2 ) \
     case SCOREP_METRIC_VALUE_ ## SCOREP: \
-        return OTF2_ ## OTF2
+        return OTF2_TYPE_ ## OTF2
 
-        case_return( INT64,  INT64_T );
-        case_return( UINT64, UINT64_T );
+        case_return( INT64,  INT64 );
+        case_return( UINT64, UINT64 );
         case_return( DOUBLE, DOUBLE );
 
 #undef case_return
@@ -559,7 +559,7 @@ scorep_write_group_definitions( void*                     writerHandle,
                                                         uint32_t,
                                                         OTF2_GroupType,
                                                         uint32_t,
-                                                        uint64_t* );
+                                                        const uint64_t* );
 
     def_group_pointer_t defGroup = ( def_group_pointer_t )
                                    OTF2_DefWriter_WriteGroup;
@@ -600,7 +600,7 @@ scorep_write_metric_definitions( void*                     writerHandle,
                                                          uint32_t,
                                                          OTF2_MetricType,
                                                          OTF2_MetricMode,
-                                                         OTF2_TypeID,
+                                                         OTF2_Type,
                                                          OTF2_MetricBase,
                                                          int64_t,
                                                          uint32_t );
@@ -647,7 +647,7 @@ scorep_write_sampling_set_definitions( void*                     writerHandle,
     typedef SCOREP_Error_Code ( *def_metric_class_pointer_t )( void*,
                                                                uint32_t,
                                                                uint8_t,
-                                                               uint32_t*,
+                                                               const uint32_t*,
                                                                OTF2_MetricOccurrence );
     def_metric_class_pointer_t defMetricClass = ( def_metric_class_pointer_t )
                                                 OTF2_DefWriter_WriteMetricClass;
@@ -844,7 +844,7 @@ scorep_tracing_write_mappings( OTF2_DefWriter* localDefinitionWriter )
     if ( SCOREP_Mpi_HasMpi() )
     {
         SCOREP_WRITE_DEFINITION_MAPPING_TO_OTF2( local_mpi_communicator,
-                                                 MPI_COMMUNICATOR,
+                                                 MPI_COMM,
                                                  localDefinitionWriter );
     }
     SCOREP_WRITE_DEFINITION_MAPPING_TO_OTF2( sampling_set, METRIC, localDefinitionWriter );

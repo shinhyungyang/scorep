@@ -79,11 +79,11 @@ static bool scorep_finalized = false;
 static SCOREP_ExitCallback scorep_exit_callbacks[ scorep_max_exit_callbacks ];
 static int                 scorep_n_exit_callbacks = 0;
 
-bool                       scorep_recording_enabled = true;
+bool scorep_recording_enabled = true;
 
-SCOREP_SamplingSetHandle   scorep_current_sampling_set = SCOREP_INVALID_SAMPLING_SET;
-uint8_t                    scorep_number_of_metrics    = 0;
-OTF2_TypeID*               scorep_current_metric_types = NULL;
+SCOREP_SamplingSetHandle scorep_current_sampling_set = SCOREP_INVALID_SAMPLING_SET;
+uint8_t                  scorep_number_of_metrics    = 0;
+OTF2_Type*               scorep_current_metric_types = NULL;
 
 
 /* *INDENT-OFF* */
@@ -706,7 +706,7 @@ scorep_metrics_initialize( void )
     scorep_number_of_metrics = sampling_set_definition->number_of_metrics;
 
     /* still in the intialization, can use calloc() here */
-    scorep_current_metric_types = calloc( scorep_number_of_metrics, sizeof( OTF2_TypeID ) );
+    scorep_current_metric_types = calloc( scorep_number_of_metrics, sizeof( OTF2_Type ) );
     assert( scorep_current_metric_types );
     for ( uint8_t i = 0; i < scorep_number_of_metrics; i++ )
     {
@@ -717,13 +717,13 @@ scorep_metrics_initialize( void )
         switch ( metric->value_type )
         {
             case SCOREP_METRIC_VALUE_INT64:
-                scorep_current_metric_types[ i ] = OTF2_INT64_T;
+                scorep_current_metric_types[ i ] = OTF2_TYPE_INT64;
                 break;
             case SCOREP_METRIC_VALUE_UINT64:
-                scorep_current_metric_types[ i ] = OTF2_UINT64_T;
+                scorep_current_metric_types[ i ] = OTF2_TYPE_UINT64;
                 break;
             case SCOREP_METRIC_VALUE_DOUBLE:
-                scorep_current_metric_types[ i ] = OTF2_DOUBLE;
+                scorep_current_metric_types[ i ] = OTF2_TYPE_DOUBLE;
                 break;
         }
     }
