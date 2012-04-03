@@ -116,6 +116,7 @@ void
 scorep_compiler_deregister()
 {
     SCOREP_DEBUG_PRINTF( SCOREP_DEBUG_COMPILER, " compiler adapter deregister!n" );
+    free( scorep_compiler_executable );
 }
 
 

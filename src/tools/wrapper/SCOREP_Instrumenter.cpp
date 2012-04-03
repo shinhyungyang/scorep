@@ -1,7 +1,7 @@
 /*
  * This file is part of the Score-P software (http://www.score-p.org)
  *
- * Copyright (c) 2009-2011,
+ * Copyright (c) 2009-2012,
  *    RWTH Aachen University, Germany
  *    Gesellschaft fuer numerische Simulation mbH Braunschweig, Germany
  *    Technische Universitaet Dresden, Germany
@@ -500,12 +500,12 @@ SCOREP_Instrumenter::parse_parameter( std::string arg )
 #endif
 
     /* Check for application type settings */
-    else if ( arg == "--openmp_support" )
+    else if ( arg == "--openmp" )
     {
         is_openmp_application = enabled;
         return scorep_parse_mode_param;
     }
-    else if ( arg == "--noopenmp_support" )
+    else if ( arg == "--noopenmp" )
     {
         is_openmp_application = disabled;
         return scorep_parse_mode_param;
@@ -657,8 +657,7 @@ SCOREP_Instrumenter::add_define( std::string arg )
         arg.append( 1, '\"' );
     }
 
-    define_flags   += " " + arg;
-    compiler_flags += " " + arg;
+    define_flags += " " + arg;
 }
 
 SCOREP_Instrumenter::scorep_parse_mode_t
@@ -1153,12 +1152,12 @@ SCOREP_Instrumenter::prepare_user()
     #ifdef SCOREP_COMPILER_IBM
     if ( language == fortran_language )
     {
-        compiler_flags = " -WF,-DSCOREP_USER_ENABLE=1" + compiler_flags;
+        define_flags += " -WF,-DSCOREP_USER_ENABLE=1";
         return;
     }
     #endif // SCOREP_COMPILER_IBM
 
-    compiler_flags = " -DSCOREP_USER_ENABLE=1" + compiler_flags;
+    define_flags += " -DSCOREP_USER_ENABLE=1";
 }
 
 void
@@ -1261,7 +1260,7 @@ SCOREP_Instrumenter::compile_source_file( std::string input_file,
     std::string command = compiler_name + " "
                           + scorep_include_path
                           + " -c " + input_file
-                          + compiler_flags
+                          + compiler_flags + define_flags
                           + " -o " + output_file;
 
     if ( verbosity >= 1 )
@@ -1333,7 +1332,7 @@ SCOREP_Instrumenter::instrument_pdt( std::string source_file )
     }
     else if ( is_fortran_file( source_file ) )
     {
-        command = pdt_bin_path + "/f90parse " + source_file;
+        command = pdt_bin_path + "/gfparse " + source_file;
     }
     else
     {
@@ -1359,7 +1358,7 @@ SCOREP_Instrumenter::instrument_pdt( std::string source_file )
     command = pdt_bin_path + "/tau_instrumentor "
               + pdb_file + " "
               + source_file
-              + compiler_flags + " "
+              + compiler_flags + define_flags
               + " -o " + modified_file
               + " -spec " + pdt_config_file;
 

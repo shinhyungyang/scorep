@@ -333,7 +333,7 @@ SCOREP_DefineLocation( uint64_t              globalLocationId,
 {
     SCOREP_Definitions_Lock();
 
-    SCOREP_SourceFileHandle new_handle = scorep_location_definition_define(
+    SCOREP_LocationHandle new_handle = scorep_location_definition_define(
         &scorep_local_definition_manager,
         globalLocationId,
         parent,
@@ -1595,7 +1595,7 @@ scorep_scoped_sampling_set_definition_define(
     {
         SCOREP_SamplingSet_Definition* new_definition
             = ( SCOREP_SamplingSet_Definition* )scoped_definition;
-        SCOREP_SamplingSetHandle       new_handle = scoped_handle;
+        SCOREP_SamplingSetHandle new_handle = scoped_handle;
 
         /* Does return */
         SCOREP_DEFINITION_MANAGER_ADD_DEFINITION( SamplingSet,
@@ -2209,7 +2209,7 @@ SCOREP_AddClockOffset( uint64_t time,
 
     SCOREP_Definitions_Lock();
 
-    SCOREP_AnyHandle    new_handle =
+    SCOREP_AnyHandle new_handle =
         SCOREP_Memory_AllocForDefinitions( sizeof( SCOREP_ClockOffset ) );
     SCOREP_ClockOffset* new_clock_offset =
         SCOREP_MEMORY_DEREF_LOCAL( new_handle, SCOREP_ClockOffset* );
