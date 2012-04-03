@@ -3,6 +3,8 @@ AC_INIT([scorep], m4_esyscmd([../vendor/common/build-config/generate-package-ver
 
 AC_SCOREP_SUMMARY_INIT([Score-P frontend configuration summary])
 
+AC_DEFUN([AC_SCOREP_FRONTEND], [])
+
 ac_scorep_frontend="yes"
 ac_scorep_backend="no"
 
@@ -30,7 +32,7 @@ AC_SCOREP_SVN_CONTROLLED
 AH_SCOREP_CONFIG_HEADER_CUSTOM
 AC_CONFIG_HEADERS([../src/config-frontend.h])
 
-AC_SCOREP_ONLINE_ACCESS_HEADERS
+AC_SCOREP_ONLINE_ACCESS
 
 AC_SCOREP_PDT
 AC_SCOREP_COBI
