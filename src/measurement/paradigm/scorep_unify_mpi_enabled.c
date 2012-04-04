@@ -1,7 +1,7 @@
 /*
  * This file is part of the Score-P software (http://www.score-p.org)
  *
- * Copyright (c) 2009-2012,
+ * Copyright (c) 2009-2011,
  *    RWTH Aachen University, Germany
  *    Gesellschaft fuer numerische Simulation mbH Braunschweig, Germany
  *    Technische Universitaet Dresden, Germany
@@ -788,8 +788,7 @@ scorep_unify_mpi_communicators_create_local_mapping( uint32_t comm_world_size,
  *         this communicator.
  */
 static int
-scorep_unify_mpi_is_this_rank_in_communicator( uint32_t  global_comm_id,
-                                               uint32_t* global_name_id )
+scorep_unify_mpi_is_this_rank_in_communicator( uint32_t global_comm_id )
 {
     SCOREP_DEFINITION_FOREACH_DO( &scorep_local_definition_manager,
                                   LocalMPICommunicator,
@@ -799,25 +798,6 @@ scorep_unify_mpi_is_this_rank_in_communicator( uint32_t  global_comm_id,
              scorep_local_definition_manager.mappings->
              local_mpi_communicator_mappings[ definition->sequence_number ] )
         {
-            if ( definition->local_rank == 0 )
-            {
-                /*
-                 * If this comm does still not have a name (Ie. its
-                 * SCOREP_INVALID_STRING), assign it the empty string,
-                 * which has global id 0, and *global_name_id is already
-                 * initialized with 0
-                 */
-                if ( definition->name_handle != SCOREP_INVALID_STRING )
-                {
-                    SCOREP_String_Definition* name_definition = SCOREP_HANDLE_DEREF(
-                        definition->name_handle,
-                        String,
-                        scorep_local_definition_manager.page_manager );
-                    *global_name_id =
-                        scorep_local_definition_manager.mappings
-                        ->string_mappings[ name_definition->sequence_number ];
-                }
-            }
             return definition->local_rank;
         }
     }
@@ -863,10 +843,8 @@ scorep_unify_mpi_communicators_define_comms( uint32_t comm_world_size,
          * It's either my local rank in this communicator, or -1 if I'm not
          * a member of this communicator.
          */
-        uint32_t global_name_id  = 0;
-        int32_t  my_rank_in_comm =
-            scorep_unify_mpi_is_this_rank_in_communicator( global_comm_id,
-                                                           &global_name_id );
+        int32_t my_rank_in_comm =
+            scorep_unify_mpi_is_this_rank_in_communicator( global_comm_id );
 
         /* gather communicator information */
         SCOREP_Mpi_Gather( &my_rank_in_comm,
@@ -886,13 +864,6 @@ scorep_unify_mpi_communicators_define_comms( uint32_t comm_world_size,
             {
                 if ( ranks_in_comm[ i ] != -1 )
                 {
-                    if ( i > 0 && ranks_in_comm[ i ] == 0 )
-                    {
-                        SCOREP_Mpi_Recv( &global_name_id,
-                                         1, SCOREP_MPI_UNSIGNED,
-                                         i, SCOREP_MPI_STATUS_IGNORE );
-                    }
-
                     ranks_in_group[ ranks_in_comm[ i ] ] = i;
                     size++;
                 }
@@ -905,14 +876,9 @@ scorep_unify_mpi_communicators_define_comms( uint32_t comm_world_size,
 
             /* Define the global MPI communicator with this group */
             SCOREP_MPICommunicatorHandle handle =
-                SCOREP_DefineUnifiedMPICommunicator( group, global_name_id );
+                SCOREP_DefineUnifiedMPICommunicator( group );
             assert( SCOREP_UNIFIED_HANDLE_TO_ID( handle, MPICommunicator ) ==
                     global_comm_id );
-        }
-        else if ( my_rank_in_comm == 0 )
-        {
-            SCOREP_Mpi_Send( &global_name_id,
-                             1, SCOREP_MPI_UNSIGNED, 0 );
         }
     }
 
@@ -948,7 +914,7 @@ scorep_unify_mpi_communicators_define_self_likes( uint32_t comm_world_size,
         for ( uint32_t i = 0; i < max_number_of_self_ids; i++ )
         {
             SCOREP_MPICommunicatorHandle handle =
-                SCOREP_DefineUnifiedMPICommunicator( self, 0 );
+                SCOREP_DefineUnifiedMPICommunicator( self );
             assert( SCOREP_UNIFIED_HANDLE_TO_ID( handle, MPICommunicator ) ==
                     number_of_comms + i );
         }
