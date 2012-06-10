@@ -41,6 +41,17 @@
 void
 print_help();
 
+static std::string
+remove_multiple_whitespaces( std::string str );
+
+static std::string
+replace_all( std::string &pattern,
+             std::string &replacement,
+             std::string  original );
+
+static std::string
+extract_path( std::string filename );
+
 /* ****************************************************************************
    Compiler specific defines
 ******************************************************************************/
@@ -206,6 +217,12 @@ SCOREP_Instrumenter::Run()
                         object_file = get_basename(
                             SCOREP_IO_GetWithoutPath( current_file.c_str() ) ) + ".o";
                     }
+
+                    /* If we create modified source, we must add the original source
+                       directory to the include dirs, because local files may be
+                       included
+                     */
+                    compiler_flags += " -I" + extract_path( current_file );
 
                     // If compiling and linking is performed in one step.
                     // The compiler leave no object file.
@@ -1527,4 +1544,89 @@ SCOREP_Instrumenter::invoke_cobi( std::string orig_name )
     temp_files += " " + orig_name;
 
     return EXIT_SUCCESS;
+}
+
+/** Trim  and replace multiple white-spaces in @ str by a single one.
+ *
+ *  @param str              String to be processed.
+ *
+ *  @return Returns string where all multiple white-spaces are replaced
+ *          by a single one.
+ */
+static std::string
+remove_multiple_whitespaces( std::string str )
+{
+    std::string            search = "  "; // this string contains 2 spaces
+    std::string::size_type pos;
+
+    /* Trim */
+    pos = str.find_last_not_of( ' ' );
+    if ( pos != std::string::npos )
+    {
+        str.erase( pos + 1 );
+        pos = str.find_first_not_of( ' ' );
+        if ( pos != std::string::npos )
+        {
+            str.erase( 0, pos );
+        }
+    }
+    else
+    {
+        str.erase( str.begin(), str.end() );
+    }
+
+    /* Remove multiple white-spaces */
+    while ( ( pos = str.find( search ) ) != std::string::npos )
+    {
+        /* remove 1 character from the string at index */
+        str.erase( pos, 1 );
+    }
+
+    return str;
+}
+
+/** Replace all occurrences of @ pattern in string @ original by
+ *  @ replacement.
+ *
+ *  @param pattern          String that should be replaced.
+ *  @param replacement      Replacement for @ pattern.
+ *  @param original         Input string.
+ *
+ *  @return Returns a string where all occurrences of @ pattern are
+ *          replaced by @ replacement.
+ */
+static std::string
+replace_all( std::string &pattern,
+             std::string &replacement,
+             std::string  original )
+{
+    std::string::size_type pos            = original.find( pattern, 0 );
+    int                    pattern_length = pattern.length();
+
+    while ( pos != std::string::npos )
+    {
+        original.replace( pos, pattern_length, replacement );
+        pos = original.find( pattern, 0 );
+    }
+
+    return original;
+}
+
+/**
+ * Returns the path contained in @ filename
+ * @param filename a file name with a full path
+ */
+static std::string
+extract_path( std::string filename )
+{
+    size_t pos = filename.find_last_of( '/' );
+    if ( pos == 0 )
+    {
+        return "/";
+    }
+    if ( pos != std::string::npos )
+    {
+        return filename.substr( 0, pos );
+    }
+    return "";
 }
