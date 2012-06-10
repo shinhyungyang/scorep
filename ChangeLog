@@ -1,3 +1,21 @@
+------------------- Released version 1.0.2 ---------------------------
+
+- Several instrumentation fixes:
+  - Improvements for PDT Fortran instrumentation.
+  - Improvements for C++ user instrumentation.
+  - Return real failure if instrumentation is erroneous. Failures may
+    went undetected previously.
+  - Allow for out-of-place builds.
+  - Provide correct parameter to SCOREP_USER_REGION_ENTER macro.
+
+- Provide correct timestamp to OmpTaskCreate events.
+
+- Fix invalid order of arguments provided to MpiCollectiveEnd events.
+
+- Fix bug in parameter profiling.
+
+- Enable SIONlib support, currently just for MPI applications. 
+
 ------------------- Released version 1.0.1 ---------------------------
 
 - Renaming of the configure related variable LD_FLAGS_FOR_BUILD to
