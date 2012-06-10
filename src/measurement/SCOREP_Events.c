@@ -697,7 +697,7 @@ void
 SCOREP_OmpTaskCreate( uint64_t taskId )
 {
     SCOREP_Thread_LocationData* location  = SCOREP_Thread_GetLocationData();
-    uint64_t                    timestamp = scorep_get_timestamp( location );
+    uint64_t                    timestamp = SCOREP_Thread_GetLastTimestamp( location );
 
     if ( SCOREP_IsTracingEnabled() && scorep_recording_enabled )
     {
