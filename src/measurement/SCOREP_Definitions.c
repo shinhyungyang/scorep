@@ -2030,7 +2030,8 @@ SCOREP_CopyCallpathDefinitionToUnified( SCOREP_Callpath_Definition*   definition
             unified_parameter_handle = parameter->unified;
             assert( unified_parameter_handle != SCOREP_MOVABLE_NULL );
 
-            if ( parameter->parameter_type == SCOREP_PARAMETER_INT64 )
+            if ( ( parameter->parameter_type == SCOREP_PARAMETER_INT64 ) ||
+                 ( parameter->parameter_type == SCOREP_PARAMETER_UINT64 ) )
             {
                 integer_value = definition->parameter_value.integer_value;
             }
@@ -2132,7 +2133,8 @@ scorep_callpath_definition_initialize( SCOREP_Callpath_Definition* definition,
                 Parameter,
                 definition_manager->page_manager );
 
-            if ( parameter->parameter_type == SCOREP_PARAMETER_INT64 )
+            if ( ( parameter->parameter_type == SCOREP_PARAMETER_INT64 ) ||
+                 ( parameter->parameter_type == SCOREP_PARAMETER_UINT64 ) )
             {
                 definition->parameter_value.integer_value = integerValue;
                 HASH_ADD_POD( definition, parameter_value.integer_value );

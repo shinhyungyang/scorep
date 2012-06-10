@@ -98,6 +98,15 @@ SCOREP_ConfigVariable scorep_env_core_environment_variables[] = {
         "TOTAL_MEMORY will be split up into pages of size PAGE_SIZE."
     },
     {
+        "use_sion_substrate",
+        SCOREP_CONFIG_TYPE_BOOL,
+        &scorep_env_use_sion_substrate,
+        NULL,
+        "false",
+        "Whether or not to use libsion as OTF2 substrate.",
+        "Long help"
+    },
+    {
         "compress_traces",
         SCOREP_CONFIG_TYPE_BOOL,
         &scorep_env_compress_traces,

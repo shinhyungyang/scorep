@@ -258,7 +258,7 @@ SCOREP_Tracing_Initialize()
     scorep_tracing_register_sion_callbacks( scorep_otf2_archive );
     scorep_tracing_register_memory_callbacks( scorep_otf2_archive );
 
-    OTF2_Archive_SetCreator( scorep_otf2_archive, "Score-P " PACKAGE_VERSION );
+    OTF2_Archive_SetCreator( scorep_otf2_archive, PACKAGE_STRING );
 }
 
 
@@ -304,7 +304,7 @@ static void
 scorep_trace_finalize_event_writer_cb( SCOREP_Thread_LocationData* locationData,
                                        void*                       userData )
 {
-    SCOREP_LocationHandle       location_handle =
+    SCOREP_LocationHandle location_handle =
         SCOREP_Thread_GetLocationHandle( locationData );
     SCOREP_Location_Definition* location_definition =
         SCOREP_LOCAL_HANDLE_DEREF( location_handle, Location );
