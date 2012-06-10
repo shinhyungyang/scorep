@@ -392,9 +392,9 @@ SCOREP_MpiCollectiveEnd( SCOREP_RegionHandle               regionHandle,
         OTF2_EvtWriter_MpiCollectiveEnd( SCOREP_Thread_GetTraceLocationData( location )->otf_writer,
                                          NULL,
                                          timestamp,
+                                         scorep_collective_to_otf2( collectiveType ),
                                          SCOREP_LOCAL_HANDLE_TO_ID( communicatorHandle, LocalMPICommunicator ),
                                          root_rank,
-                                         scorep_collective_to_otf2( collectiveType ),
                                          bytesSent,
                                          bytesReceived );
     }
