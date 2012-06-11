@@ -92,7 +92,8 @@ static const scorep_pomp_token_map_entry scorep_pomp_token_map[] =
 };
 
 /** Number of entries in @ref scorep_pomp_token_map */
-const size_t scorep_pomp_token_map_size = 6;
+const size_t scorep_pomp_token_map_size =
+    sizeof( scorep_pomp_token_map ) / sizeof( scorep_pomp_token_map_entry );
 
 /** Contains the data for one region type */
 typedef struct
@@ -136,7 +137,8 @@ static const scorep_pomp_region_type_map_entry scorep_pomp_region_type_map[] =
 /* *INDENT-ON* */
 
 /** Number of entries in scorep_pomp_region_type_map */
-const size_t scorep_pomp_region_type_map_size = 19;
+const size_t scorep_pomp_region_type_map_size =
+    sizeof( scorep_pomp_region_type_map ) / sizeof( scorep_pomp_region_type_map_entry );
 
 /* **************************************************************************************
  *                                                                    Init/free functions
@@ -181,6 +183,16 @@ scorep_pomp_register_region( SCOREP_Pomp_Region* region )
        from the same source file.                                                 */
     static char*                   last_file_name = 0;
     static SCOREP_SourceFileHandle last_file      = SCOREP_INVALID_SOURCE_FILE;
+
+    /* Consistency checks */
+    if ( ( 0 > region->regionType ) ||
+         ( region->regionType > scorep_pomp_region_type_map_size ) )
+    {
+        SCOREP_ERROR( SCOREP_ERROR_INDEX_OUT_OF_BOUNDS,
+                      "Region type %d not found in region type table.\n",
+                      region->regionType );
+        exit( EXIT_FAILURE );
+    }
 
     /* Evtl. register new source file */
     if ( ( last_file == SCOREP_INVALID_SOURCE_FILE ) ||
