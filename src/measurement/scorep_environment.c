@@ -107,15 +107,6 @@ SCOREP_ConfigVariable scorep_env_core_environment_variables[] = {
         "Long help"
     },
     {
-        "compress_traces",
-        SCOREP_CONFIG_TYPE_BOOL,
-        &scorep_env_compress_traces,
-        NULL,
-        "false",
-        "Whether or not to compress traces with libz.",
-        "Long help"
-    },
-    {
         "experiment_directory",
         SCOREP_CONFIG_TYPE_STRING,
         &scorep_env_experiment_directory,
