@@ -16,6 +16,11 @@
 
 - Enable SIONlib support, currently just for MPI applications. 
 
+- Various fixes for the generated OpenMP region names:
+  - Inner and outer blocks got different names.
+  - Regions with the ordered clause got a special name.
+  - All region names got it '@file:lno' appended, to make them distinguishable.
+
 ------------------- Released version 1.0.1 ---------------------------
 
 - Renaming of the configure related variable LD_FLAGS_FOR_BUILD to
