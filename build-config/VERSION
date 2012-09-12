@@ -10,7 +10,7 @@ library interface version:
 package.major=1
 package.minor=1
 package.bugfix=0
-package.suffix=trunk
+package.suffix=beta
 
 library.current=1
 library.revision=0
