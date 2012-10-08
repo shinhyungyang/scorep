@@ -195,6 +195,9 @@ SCOREP_DEFINE_DEFINITION_TYPE( SamplingSet )
     // order is important
     bool is_scoped;
 
+    /* offset after this struct to the caching for tracing */
+    size_t tracing_cache_offset;
+
     SCOREP_MetricOccurrence occurrence;
     uint8_t                 number_of_metrics;
     SCOREP_MetricHandle     metric_handles[];
@@ -294,9 +297,10 @@ SCOREP_DEFINE_DEFINITION_TYPE( Property )
 {
     SCOREP_DEFINE_DEFINITION_HEADER( Property );
 
-    // Add SCOREP_Property stuff from here on.
-    SCOREP_Property property;
-    bool            value;
+    SCOREP_Property          property;
+    SCOREP_PropertyCondition condition;
+    bool                     initialValue;
+    bool                     invalidated;
 };
 
 

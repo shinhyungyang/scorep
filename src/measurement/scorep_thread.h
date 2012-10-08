@@ -73,6 +73,10 @@ void
 SCOREP_Thread_OnThreadJoin();
 
 
+
+void
+SCOREP_Location_Initialize();
+
 /**
  * Call from master thread, e.g. SCOREP_FinalizeMeasurement(). Cleans up
  * locations data structures.
@@ -105,8 +109,13 @@ SCOREP_Location_SetLastTimestamp( SCOREP_Location* locationData,
                                   int64_t          timestamp );
 
 
+// temporary to get nesting running. nesting_level will be replaced by
+// fork_count (in generic threading) to match parent- and child-threads.
+uint32_t
+scorep_thread_get_nesting_level();
+
+
 void
 SCOREP_Location_ProcessDeferredOnes();
-
 
 #endif /* SCOREP_INTERNAL_THREAD_H */

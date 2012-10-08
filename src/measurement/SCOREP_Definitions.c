@@ -35,11 +35,11 @@
 #include <string.h>
 #include <stdint.h>
 #include <inttypes.h>
-#include <sys/stat.h>
 
 
-#include <UTILS_Debug.h>
 #include <UTILS_Error.h>
+#define SCOREP_DEBUG_MODULE_NAME DEFINITIONS
+#include <UTILS_Debug.h>
 
 
 #include <jenkins_hash.h>
@@ -52,9 +52,7 @@
 #include <scorep_definition_structs.h>
 #include <scorep_definitions.h>
 #include <scorep_types.h>
-
-
-#define SCOREP_DEBUG_MODULE_NAME DEFINITIONS
+#include <tracing/SCOREP_Tracing_Events.h>
 
 
 extern SCOREP_DefinitionManager  scorep_local_definition_manager;
@@ -134,8 +132,10 @@ scorep_string_definition_define( SCOREP_DefinitionManager* definition_manager,
      *    - discard new if an old one was found
      *    - if not, link new one into the hash chain and into definition list
      */
-    /* Does return */
+    /* Does return if it is a duplicate */
     SCOREP_DEFINITION_MANAGER_ADD_DEFINITION( String, string );
+
+    return new_handle;
 }
 
 
@@ -202,8 +202,10 @@ scorep_source_file_definition_define( SCOREP_DefinitionManager* definition_manag
     new_definition->name_handle = fileNameHandle;
     new_definition->hash_value  = SCOREP_GET_HASH_OF_LOCAL_HANDLE( new_definition->name_handle, String );
 
-    /* Does return */
+    /* Does return if it is a duplicate */
     SCOREP_DEFINITION_MANAGER_ADD_DEFINITION( SourceFile, source_file );
+
+    return new_handle;
 }
 
 
@@ -305,8 +307,10 @@ scorep_location_group_definition_define( SCOREP_DefinitionManager*   definition_
     new_definition->name_handle              = nameHandle;
     new_definition->location_group_type      = locationGroupType;
 
-    /* Does return */
+    /* Does return if it is a duplicate */
     SCOREP_DEFINITION_MANAGER_ADD_DEFINITION( LocationGroup, location_group );
+
+    return new_handle;
 }
 
 
@@ -410,8 +414,10 @@ scorep_location_definition_define( SCOREP_DefinitionManager* definition_manager,
     new_definition->number_of_events   = numberOfEvents;
     new_definition->location_group_id  = locationGroupId;
 
-    /* Does return */
+    /* Does return if it is a duplicate */
     SCOREP_DEFINITION_MANAGER_ADD_DEFINITION( Location, location );
+
+    return new_handle;
 }
 
 /////////////////////////////////////////////////////////////////////////////
@@ -515,8 +521,10 @@ scorep_system_tree_node_definition_define( SCOREP_DefinitionManager*   definitio
     new_definition->class_handle = class;
     HASH_ADD_HANDLE( new_definition, class_handle, String );
 
-    /* Does return */
+    /* Does return if it is a duplicate */
     SCOREP_DEFINITION_MANAGER_ADD_DEFINITION( SystemTreeNode, system_tree_node );
+
+    return new_handle;
 }
 
 /////////////////////////////////////////////////////////////////////////////
@@ -662,8 +670,10 @@ scorep_region_definition_define( SCOREP_DefinitionManager* definition_manager,
                                          adapter,
                                          regionType );
 
-    /* Does return */
+    /* Does return if it is a duplicate */
     SCOREP_DEFINITION_MANAGER_ADD_DEFINITION( Region, region );
+
+    return new_handle;
 }
 
 
@@ -841,9 +851,11 @@ scorep_local_mpi_communicator_definitions_define( SCOREP_DefinitionManager*     
     new_definition->name_handle      = SCOREP_INVALID_STRING;
     new_definition->parent_handle    = parentComm;
 
-    /* Does return */
+    /* Does return if it is a duplicate */
     SCOREP_DEFINITION_MANAGER_ADD_DEFINITION( LocalMPICommunicator,
                                               local_mpi_communicator );
+
+    return new_handle;
 }
 
 bool
@@ -881,9 +893,11 @@ SCOREP_DefineUnifiedMPICommunicator( SCOREP_GroupHandle           group_handle,
     new_definition->name_id       = unified_name_id;
     new_definition->parent_handle = unified_parent_handle;
 
-    /* Does return */
+    /* Does return if it is a duplicate */
     SCOREP_DEFINITION_MANAGER_ADD_DEFINITION( MPICommunicator,
                                               mpi_communicator );
+
+    return new_handle;
 }
 
 bool
@@ -1059,8 +1073,10 @@ scorep_group_definition_define( SCOREP_DefinitionManager* definition_manager,
     }
     HASH_ADD_ARRAY( new_definition, members, number_of_members );
 
-    /* Does return */
+    /* Does return if it is a duplicate */
     SCOREP_DEFINITION_MANAGER_ADD_DEFINITION( Group, group );
+
+    return new_handle;
 }
 
 bool
@@ -1324,8 +1340,10 @@ scorep_metric_definition_define( SCOREP_DefinitionManager*  definition_manager,
                                          unitNameHandle,
                                          profilingType );
 
-    /* Does return */
+    /* Does return if it is a duplicate */
     SCOREP_DEFINITION_MANAGER_ADD_DEFINITION( Metric, metric );
+
+    return new_handle;
 }
 
 
@@ -1545,9 +1563,15 @@ scorep_sampling_set_definition_define( SCOREP_DefinitionManager*     definition_
     SCOREP_SamplingSet_Definition* new_definition = NULL;
     SCOREP_SamplingSetHandle       new_handle     = SCOREP_INVALID_SAMPLING_SET;
 
-    SCOREP_DEFINITION_ALLOC_VARIABLE_ARRAY( SamplingSet,
-                                            SCOREP_MetricHandle,
-                                            numberOfMetrics );
+    size_t size_for_sampling_set = SCOREP_Allocator_RoundupToAlignment(
+        sizeof( SCOREP_SamplingSet_Definition ) +
+        ( ( numberOfMetrics ) * sizeof( SCOREP_MetricHandle ) ) );
+    if ( !handlesPageManager )
+    {
+        size_for_sampling_set += SCOREP_Tracing_GetSamplingSetCacheSize( numberOfMetrics );
+    }
+
+    SCOREP_DEFINITION_ALLOC_SIZE( SamplingSet, size_for_sampling_set );
 
     scorep_sampling_set_definition_initialize( new_definition,
                                                definition_manager,
@@ -1556,8 +1580,17 @@ scorep_sampling_set_definition_define( SCOREP_DefinitionManager*     definition_
                                                occurrence,
                                                handlesPageManager );
 
-    /* Does return */
+    /* Does return if it is a duplicate */
     SCOREP_DEFINITION_MANAGER_ADD_DEFINITION( SamplingSet, sampling_set );
+
+    if ( !handlesPageManager )
+    {
+        size_for_sampling_set               -= SCOREP_Tracing_GetSamplingSetCacheSize( numberOfMetrics );
+        new_definition->tracing_cache_offset = size_for_sampling_set;
+        SCOREP_Tracing_CacheSamplingSet( new_handle );
+    }
+
+    return new_handle;
 }
 
 
@@ -1571,6 +1604,9 @@ scorep_sampling_set_definition_initialize( SCOREP_SamplingSet_Definition* defini
 {
     definition->is_scoped = false;
     HASH_ADD_POD( definition, is_scoped );
+
+    /* not unify relevant */
+    definition->tracing_cache_offset = 0;
 
     definition->number_of_metrics = numberOfMetrics;
     HASH_ADD_POD( definition, number_of_metrics );
@@ -1634,9 +1670,11 @@ scorep_scoped_sampling_set_definition_define( SCOREP_DefinitionManager* definiti
             = ( SCOREP_SamplingSet_Definition* )scoped_definition;
         SCOREP_SamplingSetHandle new_handle = scoped_handle;
 
-        /* Does return */
+        /* Does return if it is a duplicate */
         SCOREP_DEFINITION_MANAGER_ADD_DEFINITION( SamplingSet,
                                                   sampling_set );
+
+        return new_handle;
     }
 }
 
@@ -1890,8 +1928,10 @@ scorep_parameter_definition_define( SCOREP_DefinitionManager* definition_manager
     new_definition->parameter_type = type;
     HASH_ADD_POD( new_definition, parameter_type );
 
-    /* Does return */
+    /* Does return if it is a duplicate */
     SCOREP_DEFINITION_MANAGER_ADD_DEFINITION( Parameter, parameter );
+
+    return new_handle;
 }
 
 
@@ -2111,8 +2151,10 @@ scorep_callpath_definition_define( SCOREP_DefinitionManager* definition_manager,
                                            integerValue,
                                            stringHandle );
 
-    /* Does return */
+    /* Does return if it is a duplicate */
     SCOREP_DEFINITION_MANAGER_ADD_DEFINITION( Callpath, callpath );
+
+    return new_handle;
 }
 
 
@@ -2225,7 +2267,9 @@ scorep_callpath_definitions_equal( const SCOREP_Callpath_Definition* existingDef
 static SCOREP_PropertyHandle
 scorep_property_definition_define( SCOREP_DefinitionManager* definition_manager,
                                    SCOREP_Property           property,
-                                   bool                      value );
+                                   SCOREP_PropertyCondition  condition,
+                                   bool                      initialValue,
+                                   bool                      invalidated );
 
 
 static bool
@@ -2237,19 +2281,25 @@ scorep_property_definitions_equal( const SCOREP_Property_Definition* existingDef
  * Associate a name with a process unique property handle.
  */
 SCOREP_PropertyHandle
-SCOREP_DefineProperty( SCOREP_Property property,
-                       bool            value )
+SCOREP_DefineProperty( SCOREP_Property          property,
+                       SCOREP_PropertyCondition condition,
+                       bool                     initialValue )
 {
-    UTILS_DEBUG_ENTRY( "%d", property );
+    UTILS_DEBUG_ENTRY( "%d, %d, %s",
+                       property,
+                       condition,
+                       initialValue ? "true" : "false" );
 
-    UTILS_BUG_ON( property >= SCOREP_PROPERTY_MAX, "Invalid property enum value" );
+    UTILS_ASSERT( property < SCOREP_PROPERTY_MAX );
 
     SCOREP_Definitions_Lock();
 
     SCOREP_PropertyHandle new_handle = scorep_property_definition_define(
         &scorep_local_definition_manager,
         property,
-        value );
+        condition,
+        initialValue,
+        false );
 
     SCOREP_Definitions_Unlock();
 
@@ -2268,14 +2318,18 @@ SCOREP_CopyPropertyDefinitionToUnified( SCOREP_Property_Definition*   definition
     definition->unified = scorep_property_definition_define(
         scorep_unified_definition_manager,
         definition->property,
-        definition->value );
+        definition->condition,
+        definition->initialValue,
+        definition->invalidated );
 }
 
 
 SCOREP_PropertyHandle
 scorep_property_definition_define( SCOREP_DefinitionManager* definition_manager,
                                    SCOREP_Property           property,
-                                   bool                      value )
+                                   SCOREP_PropertyCondition  condition,
+                                   bool                      initialValue,
+                                   bool                      invalidated )
 {
     assert( definition_manager );
 
@@ -2284,8 +2338,13 @@ scorep_property_definition_define( SCOREP_DefinitionManager* definition_manager,
 
     SCOREP_DEFINITION_ALLOC( Property );
     new_definition->property = property;
-    new_definition->value    = value;
     HASH_ADD_POD( new_definition, property );
+    new_definition->condition = condition;
+    HASH_ADD_POD( new_definition, condition );
+    new_definition->initialValue = initialValue;
+    HASH_ADD_POD( new_definition, initialValue );
+    new_definition->invalidated = invalidated;
+    // no hashing, can be modified
 
     // modified SCOREP_DEFINITION_MANAGER_ADD_DEFINITION macro:
 
@@ -2303,9 +2362,21 @@ scorep_property_definition_define( SCOREP_DefinitionManager* definition_manager,
                 hash_list_iterator, Property );
             if ( scorep_property_definitions_equal( existing_definition, new_definition ) )
             {
-                /* boolean AND operation for property values */
+                /* the hash guarantees that both properties have the same condition */
+                switch ( existing_definition->condition )
+                {
+                    case SCOREP_PROPERTY_CONDITION_ALL:
+                        existing_definition->invalidated =
+                            existing_definition->invalidated && new_definition->invalidated;
+                        break;
 
-                existing_definition->value = existing_definition->value && new_definition->value;
+                    case SCOREP_PROPERTY_CONDITION_ANY:
+                        existing_definition->invalidated =
+                            existing_definition->invalidated || new_definition->invalidated;
+                        break;
+                    default:
+                        UTILS_BUG( "Invalid condition for property" );
+                }
 
                 SCOREP_Allocator_RollbackAllocMovable(
                     SCOREP_Memory_GetLocalDefinitionPageManager(),

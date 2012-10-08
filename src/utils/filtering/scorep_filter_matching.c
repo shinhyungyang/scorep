@@ -29,19 +29,19 @@
  */
 
 #include <config.h>
+#include <scorep_filter_matching.h>
+
 #include <fnmatch.h>
 #include <ctype.h>
 #include <malloc.h>
 #include <string.h>
 #include <assert.h>
 
-#include <UTILS_CStr.h>
+#include <UTILS_Error.h>
 #include <UTILS_Debug.h>
+#include <UTILS_CStr.h>
 #include <SCOREP_Filter.h>
-#include <scorep_filter_matching.h>
 
-#define STR( x ) STR_( x )
-#define STR_( x ) #x
 
 /* **************************************************************************************
    Variable and type definitions
@@ -67,24 +67,22 @@ struct scorep_filter_rule_struct
 /**
  * Pointer to the head of the filter rules for source file names.
  */
-scorep_filter_rule_t* scorep_filter_file_rules_head = NULL;
+static scorep_filter_rule_t* scorep_filter_file_rules_head = NULL;
 
 /**
  * Pointer to the tail of the filter rules for source file names.
  */
-scorep_filter_rule_t* scorep_filter_file_rules_tail = NULL;
+static scorep_filter_rule_t* scorep_filter_file_rules_tail = NULL;
 
 /**
  * Pointer to the head of the filter rules for function names.
  */
-scorep_filter_rule_t* scorep_filter_function_rules_head = NULL;
+static scorep_filter_rule_t* scorep_filter_function_rules_head = NULL;
 
 /**
  * Pointer to the tail of the filter rules for function names.
  */
-scorep_filter_rule_t* scorep_filter_function_rules_tail = NULL;
-
-bool scorep_filter_is_enabled = false;
+static scorep_filter_rule_t* scorep_filter_function_rules_tail = NULL;
 
 /* **************************************************************************************
    Rule representation manipulation functions
@@ -109,7 +107,7 @@ scorep_filter_mangle_pattern( const char* pattern )
     strcpy( result, pattern );
 
     /* Put everything to lower or upper case */
-    char* test_case = STR( FC_FUNC( x, X ) );
+    char* test_case = UTILS_STRINGIFY( FC_FUNC( x, X ) );
 
     if ( *test_case == 'x' )
     {
@@ -218,26 +216,28 @@ void
 SCOREP_Filter_FreeRules()
 {
     /* Free function rules. */
-    scorep_filter_rule_t* current_rule = scorep_filter_function_rules_head;
-    scorep_filter_rule_t* deleted_rule;
-    while ( current_rule != NULL )
+    while ( scorep_filter_function_rules_head )
     {
+        scorep_filter_rule_t* current_rule = scorep_filter_function_rules_head;
+        scorep_filter_function_rules_head = current_rule->next;
+
         free( current_rule->pattern );
         free( current_rule->pattern2 );
-        deleted_rule = current_rule;
-        current_rule = current_rule->next;
-        free( deleted_rule );
+        free( current_rule );
     }
+    scorep_filter_function_rules_tail = NULL;
 
     /* Free file rules. */
-    current_rule = scorep_filter_file_rules_head;
-    while ( current_rule != NULL )
+    while ( scorep_filter_file_rules_head )
     {
+        scorep_filter_rule_t* current_rule = scorep_filter_file_rules_head;
+        scorep_filter_file_rules_head = current_rule->next;
+
         free( current_rule->pattern );
-        deleted_rule = current_rule;
-        current_rule = current_rule->next;
-        free( deleted_rule );
+        free( current_rule->pattern2 );
+        free( current_rule );
     }
+    scorep_filter_file_rules_tail = NULL;
 }
 
 /* **************************************************************************************

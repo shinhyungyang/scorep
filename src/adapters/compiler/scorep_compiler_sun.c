@@ -16,7 +16,7 @@
 
 /**
  * @status     alpha
- * @file       scorep_compiler_gnu.c
+ * @file       scorep_compiler_sun.c
  * @maintainer Daniel Lorenz <d.lorenz@fz-juelich.de>
  *
  * @brief SUN f90 compiler PHAT interface.
@@ -28,6 +28,7 @@
 #include <string.h>
 
 #include <SCOREP_Types.h>
+#include <UTILS_Error.h>
 #include <UTILS_Debug.h>
 #include <SCOREP_Events.h>
 #include <SCOREP_Definitions.h>

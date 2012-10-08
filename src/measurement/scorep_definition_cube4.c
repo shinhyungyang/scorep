@@ -80,6 +80,10 @@ find_system_node( scorep_cube_system_node* system_tree, uint32_t size,
 {
     assert( node );
     uint32_t pos = SCOREP_UNIFIED_HANDLE_DEREF( node, SystemTreeNode )->sequence_number;
+    if ( pos >= size )
+    {
+        return NULL;
+    }
     return &system_tree[ pos ];
 }
 
@@ -108,6 +112,26 @@ get_cube_machine( scorep_cube_system_node* node )
 }
 
 /**
+   If the system tree implementation does not provide a node defintion, we must create
+   a default node.
+   @param my_cube Pointer to the Cube instance.
+   @param node    An arbitrary node from the system tree. Best choice for perfromance is
+                  the machine node.
+ */
+static cube_node*
+get_default_node( cube_t*                  my_cube,
+                  scorep_cube_system_node* node )
+{
+    static cube_node* default_node = NULL;
+    if ( default_node == NULL )
+    {
+        default_node = cube_def_node( my_cube, "default node",
+                                      get_cube_machine( node ) );
+    }
+    return default_node;
+}
+
+/**
    Lookup the cube node definition for a Score-P system tree handle.
    In cases the Score-P system tree does not provide a node definition, a default node
    is defined to Cube and returned.
@@ -115,6 +139,8 @@ get_cube_machine( scorep_cube_system_node* node )
    @param system_tree Pointer to an array of scorep_cube_system_node nodes that contain
                       the system tree mapping structure.
    @param size        Number of entries in @a system_tree.
+   @param node        The Score-P handle of the node for which we look up the Cube
+                      handle
    @returns A pointer to the Cube node definition.
  */
 static cube_node*
@@ -122,24 +148,14 @@ get_cube_node(  cube_t* my_cube,
                 scorep_cube_system_node* system_tree,
                 SCOREP_SystemTreeNodeHandle node, uint32_t size )
 {
-    static cube_node* default_node = NULL;
-
-    /* Need a default node, in cases a system tree implmentation does provide no node
-       definition. However, Cube insists of a node definition. */
-    if ( node == SCOREP_INVALID_SYSTEM_TREE_NODE )
-    {
-        if ( default_node == NULL )
-        {
-            default_node = cube_def_node( my_cube, "default node",
-                                          get_cube_machine( &system_tree[ 0 ] ) );
-        }
-        return default_node;
-    }
-
     /* Lookup the cube node  */
     scorep_cube_system_node* scorep_node = find_system_node( system_tree, size, node );
     assert( scorep_node );
-    assert( scorep_node->my_cube_node );
+
+    if ( scorep_node->my_cube_node == NULL )
+    {
+        return get_default_node( my_cube, system_tree );
+    }
     return scorep_node->my_cube_node;
 }
 
@@ -176,12 +192,12 @@ get_cube_node(  cube_t* my_cube,
     }                                                                         \
     else                                                                      \
     {                                                                         \
-        UTILS_ASSERT( false );                                               \
+        UTILS_ASSERT( false );                                                \
         goto cleanup;                                                         \
     }                                                                         \
     if ( map-> type ## _table_cube == NULL )                                  \
     {                                                                         \
-        UTILS_ERROR_POSIX( "Unable to create " #type " mapping table" );     \
+        UTILS_ERROR_POSIX( "Unable to create " #type " mapping table" );      \
         goto cleanup;                                                         \
     }                                                                         \
     map-> type ## _table_scorep                                               \
@@ -190,7 +206,7 @@ get_cube_node(  cube_t* my_cube,
                                    &SCOREP_Hashtab_ComparePointer );          \
     if ( map-> type ## _table_scorep == NULL )                                \
     {                                                                         \
-        UTILS_ERROR_POSIX( "Unable to create " #type " mapping table" );     \
+        UTILS_ERROR_POSIX( "Unable to create " #type " mapping table" );      \
         goto cleanup;                                                         \
     }
 /* *INDENT-ON* */
@@ -460,6 +476,7 @@ write_metric_definitions( cube_t*                       my_cube,
     char*                     metric_unit;
     char*                     metric_description;
     char*                     data_type;
+    bool                      free_unit;
     enum CubeMetricType       cube_metric_type;
 
     //for ( uint8_t i = 0; i < num_metrics; i++ )
@@ -472,6 +489,16 @@ write_metric_definitions( cube_t*                       my_cube,
                                                    String )->string_data;
         metric_description = SCOREP_UNIFIED_HANDLE_DEREF( definition->description_handle,
                                                           String )->string_data;
+
+        free_unit = false;
+        if ( definition->exponent != 0 )
+        {
+            free_unit = true;
+            char*    unit = ( char* )malloc( strlen( metric_unit ) + 32 );
+            uint32_t base = ( definition->base == SCOREP_METRIC_BASE_BINARY ? 2 : 10 );
+            sprintf( unit, "%u^%" PRIi64 " %s", base, definition->exponent, metric_unit );
+            metric_unit = unit;
+        }
 
         switch ( definition->value_type )
         {
@@ -525,6 +552,11 @@ write_metric_definitions( cube_t*                       my_cube,
                                         cube_metric_type );
 
             add_metric_mapping( map, cube_handle, handle );
+        }
+
+        if ( free_unit )
+        {
+            free( metric_unit );
         }
     }
     SCOREP_DEFINITION_FOREACH_WHILE();

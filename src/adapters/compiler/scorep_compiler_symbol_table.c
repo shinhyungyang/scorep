@@ -49,6 +49,9 @@
 #include <SCOREP_Timing.h>
 #endif /* HAVE_LIBBFD / HAVE_NM */
 
+#include <UTILS_Error.h>
+#include <UTILS_Debug.h>
+
 #include <SCOREP_Types.h>
 #include <SCOREP_Events.h>
 #include <SCOREP_Definitions.h>

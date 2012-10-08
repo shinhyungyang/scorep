@@ -35,7 +35,7 @@
 #include <SCOREP_Platform.h>
 #include <SCOREP_Config.h>
 #include <scorep_environment.h>
-
+#include <scorep_config_tool_backend.h>
 
 /**
    Contains the name of the tool for help output
@@ -71,7 +71,11 @@ print_help()
     std::cout << "      --values      Displays the current values for each config variable." << std::endl;
     std::cout << "                    Warning: These values may be wrong, please consult the\n";
     std::cout << "                             manual of the batch system how to pass the values\n";
-    std::cout << "                             the measurement job." << std::endl;
+    std::cout << "                             to the measurement job." << std::endl;
+    std::cout << std::endl;
+    std::cout << "  config-summary:" << std::endl;
+    std::cout << "    Shows the configure summary of the Score-P package." << std::endl;
+    std::cout << std::endl;
 }
 
 int
@@ -87,15 +91,16 @@ main( int   argc,
             return EXIT_SUCCESS;
         }
 
+
         if ( info_command == "config-vars" )
         {
             SCOREP_ConfigInit();
-            SCOREP_RegisterAllConfigVariables();
 
             std::string mode( argc > 2 ? argv[ 2 ] : "" );
             if ( mode == "--values" )
             {
                 // @todo print warning again
+                SCOREP_RegisterAllConfigVariables();
                 SCOREP_ConfigApplyEnv();
                 SCOREP_ConfigDump( stdout );
             }
@@ -107,11 +112,27 @@ main( int   argc,
                 {
                     full = true;
                 }
-                if ( mode == "--full=html" )
+                else if ( mode == "--full=html" )
                 {
                     full = true;
                     html = true;
                 }
+                else if ( mode == "--doxygen" )
+                {
+                    full = true;
+                    html = true;
+                    SCOREP_ConfigForceConditionalRegister();
+                }
+                else
+                {
+                    std::cout << "Invalid option for info command "
+                              << info_command << ": " << mode << std::endl;
+                    print_short_usage();
+                    SCOREP_ConfigFini();
+                    return EXIT_FAILURE;
+                }
+
+                SCOREP_RegisterAllConfigVariables();
                 SCOREP_ConfigHelp( full, html );
             }
 
@@ -120,7 +141,20 @@ main( int   argc,
         }
 
 
-        std::cout << "Invalid info command:" << argv[ 1 ] << std::endl;
+        if ( info_command == "config-summary" )
+        {
+            std::string summary_command( "cat " CONFIG_SUMMARY_FILE );
+            int         return_value = system( summary_command.c_str() );
+            if ( return_value != 0 )
+            {
+                std::cerr << "Error executing: " << summary_command << std::endl;
+                return EXIT_FAILURE;
+            }
+            return EXIT_SUCCESS;
+        }
+
+
+        std::cout << "Invalid info command: " << argv[ 1 ] << std::endl;
         print_short_usage();
         return EXIT_FAILURE;
     }

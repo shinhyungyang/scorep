@@ -28,6 +28,8 @@
 
 #include <SCOREP_Mpi.h>
 
+#include <UTILS_Error.h>
+
 /**
  * @internal
  * size of element list behind a hash entry
@@ -440,14 +442,18 @@ scorep_mpi_request_create( MPI_Request         request,
         hash_entry->lastreq++;
     }
     /* store request information */
-    hash_entry->lastreq->request             = request;
-    hash_entry->lastreq->flags               = SCOREP_MPI_REQUEST_NONE;
-    hash_entry->lastreq->flags              |= flags;
-    hash_entry->lastreq->tag                 = tag;
-    hash_entry->lastreq->dest                = dest;
-    hash_entry->lastreq->bytes               = bytes;
-    hash_entry->lastreq->datatype            = datatype;
-    hash_entry->lastreq->comm                = comm;
+    hash_entry->lastreq->request = request;
+    hash_entry->lastreq->flags   = SCOREP_MPI_REQUEST_NONE;
+    hash_entry->lastreq->flags  |= flags;
+    hash_entry->lastreq->tag     = tag;
+    hash_entry->lastreq->dest    = dest;
+    hash_entry->lastreq->bytes   = bytes;
+#if HAVE( DECL_PMPI_TYPE_DUP )
+    PMPI_Type_dup( datatype, &hash_entry->lastreq->datatype );
+#else
+    hash_entry->lastreq->datatype = datatype;
+#endif
+    hash_entry->lastreq->comm_handle         = SCOREP_MPI_COMM_HANDLE( comm );
     hash_entry->lastreq->id                  = id;
     hash_entry->lastreq->online_analysis_pod = NULL;
 }
@@ -497,10 +503,19 @@ scorep_mpi_request_free( scorep_mpi_request* req )
 {
     struct scorep_mpi_request_hash* hash_entry = scorep_mpi_get_request_hash_entry( req->request );
 
+    /*
+     * Drop type duplicate, but only if we could have make a duplicate in the
+     * first place
+     */
+#if HAVE( DECL_PMPI_TYPE_DUP )
+    PMPI_Type_free( &req->datatype );
+#endif
+
     /* delete request by copying last request in place of req */
     if ( !hash_entry->lastreq )
     {
-        UTILS_ERROR( SCOREP_ERROR_MPI_NO_LAST_REQUEST );
+        UTILS_ERROR( SCOREP_ERROR_MPI_NO_LAST_REQUEST,
+                     "Please tell me what you were trying to do!" );
     }
     *req                         = *( hash_entry->lastreq );
     hash_entry->lastreq->flags   = SCOREP_MPI_REQUEST_NONE;
@@ -571,8 +586,7 @@ scorep_mpi_check_request( scorep_mpi_request* req, MPI_Status* status )
 
             if ( xnb_active )
             {
-                SCOREP_MpiIrecv( SCOREP_MPI_RANK_TO_PE( status->MPI_SOURCE, req->comm ),
-                                 SCOREP_MPI_COMM_HANDLE( req->comm ),
+                SCOREP_MpiIrecv( status->MPI_SOURCE, req->comm_handle,
                                  status->MPI_TAG, count * sz, req->id );
             }
         }

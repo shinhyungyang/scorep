@@ -6,7 +6,6 @@ AC_SUBST([LIBRARY_INTERFACE_VERSION], m4_esyscmd([../vendor/common/build-config/
 AC_CONFIG_AUX_DIR([../build-config])
 AC_CONFIG_MACRO_DIR([../vendor/common/build-config/m4])
 
-AH_SCOREP_CONFIG_HEADER
 AC_CONFIG_HEADERS([../src/config-backend.h])
 AS_IF([test "x${ac_scorep_cross_compiling}" = "xyes"],
     [AC_CONFIG_HEADERS([../src/config-backend-for-frontend.h])])
@@ -37,7 +36,7 @@ AC_SCOREP_SVN_CONTROLLED
 AM_INIT_AUTOMAKE([foreign color-tests 1.11.1 -Wall tar-pax])
 AM_SILENT_RULES([yes])
 
-AC_COMMON_PACKAGE([scorep])
+AC_SCOREP_COMMON_PACKAGE([scorep])
 
 AM_CONDITIONAL([BUILD_TESTS], [test "x${ac_scorep_cross_compiling}" = "xno"])
 AM_CONDITIONAL([CROSS_BUILD], [test "x${ac_scorep_cross_compiling}" = "xyes"])
@@ -46,7 +45,7 @@ AC_SCOREP_PLATFORM_SETTINGS
 AC_SCOREP_COMMON_CHECKS
 AC_SCOREP_COMPILER_INSTRUMENTATION_FLAGS
 AC_SCOREP_BACKEND_TEST_RUNS
-SCOREP_ATTRIBUTE_ALIGNMENT
+AC_SCOREP_ATTRIBUTE_ALIGNMENT
 AC_SCOREP_FORTRAN_SUPPORT_ALLOCATABLE
 AC_SCOREP_LIBSION([SERIAL])
 AC_SCOREP_LIBSION([OMP])
@@ -210,9 +209,8 @@ AC_SCOREP_OPENMP
 AC_SCOREP_PDT
 AC_SCOREP_COBI
 
-SCOREP_TIMER
+AC_SCOREP_TIMER
 AC_SCOREP_COMPILER_INSTRUMENTATION
-
 
 AC_SCOREP_ONLINE_ACCESS
 
@@ -230,9 +228,9 @@ AC_SEARCH_LIBS([ceil], [m])
 AC_SCOREP_POSIX_FUNCTIONS
 
 # assuming that mpi configure already ran
-AM_CONDITIONAL([MPI_SUPPORTED], [test -f ../build-mpi/mpi_supported])
-AM_COND_IF([MPI_SUPPORTED],
-           [AC_SCOREP_DEFINE_HAVE([MPI_SUPPORTED], [1], [Defined if MPI support is available.])])
+AC_SCOREP_COND_HAVE([MPI_SUPPORT],
+                    [test -f ../build-mpi/mpi_supported],
+                    [Defined if MPI support is available.])
 
 AC_SCOREP_PACKAGE_AND_LIBRARY_VERSION([../])
 

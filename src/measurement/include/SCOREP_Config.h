@@ -62,7 +62,7 @@
 #include <stdbool.h>
 
 
-#include <UTILS_Error.h>
+#include <SCOREP_ErrorCodes.h>
 
 
 #include <SCOREP_Types.h>
@@ -124,6 +124,22 @@ SCOREP_ErrorCode
 SCOREP_ConfigRegister( const char*            nameSpace,
                        SCOREP_ConfigVariable* variables );
 
+/**
+ *  Same as @a SCOREP_ConfigRegister() but is effective only if either
+ *  @a isAvailable is set, or a prior call to
+ *  @a SCOREP_ConfigForceConditionalRegister() was made.
+ *
+ */
+SCOREP_ErrorCode
+SCOREP_ConfigRegisterCond( const char*            nameSpaceName,
+                           SCOREP_ConfigVariable* variables,
+                           bool                   isAvailable );
+
+/**
+ *  Force registrations made with @a SCOREP_ConfigRegisterCond.
+ */
+void
+SCOREP_ConfigForceConditionalRegister( void );
 
 /**
  * Evaluate all corresponding environment variables and assign the values to

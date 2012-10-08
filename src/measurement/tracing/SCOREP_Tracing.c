@@ -31,13 +31,13 @@
 #include <stdio.h>
 #include <stdint.h>
 #include <inttypes.h>
-#include <assert.h>
 
 
 #include <otf2/otf2.h>
 
 
 #include <UTILS_Error.h>
+#define SCOREP_DEBUG_MODULE_NAME TRACING
 #include <UTILS_Debug.h>
 
 
@@ -60,8 +60,6 @@
 #include "SCOREP_Tracing_ThreadInteraction.h"
 #include "scorep_tracing_definitions.h"
 #include "scorep_tracing_file_substrate.h"
-
-#define SCOREP_DEBUG_MODULE_NAME TRACING
 
 static OTF2_Archive* scorep_otf2_archive;
 static SCOREP_Mutex  scorep_otf2_archive_lock;
@@ -90,6 +88,23 @@ scorep_tracing_get_compression()
     }
 }
 
+static void
+scorep_trace_find_location_for_evt_writer_cb( SCOREP_Location* locationData,
+                                              void*            userData )
+{
+    void**            find_location_args = userData;
+    OTF2_EvtWriter*   evt_writer         = find_location_args[ 0 ];
+    SCOREP_Location** found_location     = find_location_args[ 1 ];
+
+    SCOREP_TracingData* tracing_data =
+        SCOREP_Location_GetTracingData( locationData );
+
+    if ( evt_writer == tracing_data->otf_writer )
+    {
+        *found_location = locationData;
+    }
+}
+
 
 static OTF2_FlushType
 scorep_on_trace_pre_flush( void*         userData,
@@ -101,7 +116,7 @@ scorep_on_trace_pre_flush( void*         userData,
     if ( !SCOREP_Mpi_IsInitialized() )
     {
         // flush before MPI_Init, we are lost.
-        assert( false );
+        UTILS_FATAL( "Trace buffer flush before MPI was initialized." );
     }
 
     UTILS_DEBUG_PRINTF( SCOREP_DEBUG_TRACING,
@@ -125,14 +140,11 @@ scorep_on_trace_pre_flush( void*         userData,
          *   because we still need this to correctly finalize
          */
 
-        if ( SCOREP_Env_RunVerbose() )
-        {
-            fprintf( stderr,
-                     "Score-P: Trace buffer flush on rank %d.\n",
-                     SCOREP_Mpi_GetRank() );
-            fprintf( stderr,
-                     "Score-P: Increase SCOREP_TOTAL_MEMORY and try again.\n" );
-        }
+        fprintf( stderr,
+                 "[Score-P] Trace buffer flush on rank %d.\n",
+                 SCOREP_Mpi_GetRank() );
+        fprintf( stderr,
+                 "[Score-P] Increase SCOREP_TOTAL_MEMORY and try again.\n" );
     }
 
     OTF2_FlushType do_flush = OTF2_FLUSH;
@@ -142,8 +154,16 @@ scorep_on_trace_pre_flush( void*         userData,
         do_flush = OTF2_FLUSH;
     }
 
-    /* Delete the whole rewind stack. */
-    scorep_rewind_stack_delete();
+
+    if ( fileType == OTF2_FILETYPE_EVENTS )
+    {
+        SCOREP_Location* location                = NULL;
+        void*            find_location_args[ 2 ] = { callerData, &location };
+        SCOREP_Location_ForAll( scorep_trace_find_location_for_evt_writer_cb,
+                                &find_location_args );
+        UTILS_ASSERT( location );
+        scorep_rewind_stack_delete( location );
+    }
 
     return do_flush;
 }
@@ -177,7 +197,7 @@ scorep_tracing_register_flush_callbacks( OTF2_Archive* archive )
         OTF2_Archive_SetFlushCallbacks( archive,
                                         &flush_callbacks,
                                         NULL );
-    assert( status == OTF2_SUCCESS );
+    UTILS_ASSERT( status == OTF2_SUCCESS );
 }
 
 
@@ -245,14 +265,33 @@ scorep_tracing_register_memory_callbacks( OTF2_Archive* archive )
         OTF2_Archive_SetMemoryCallbacks( archive,
                                          &scorep_tracing_chunk_callbacks,
                                          NULL );
-    assert( status == OTF2_SUCCESS );
+    UTILS_ASSERT( status == OTF2_SUCCESS );
 }
+
+
+#if !HAVE( SCOREP_DEBUG )
+static OTF2_ErrorCode
+scorep_tracing_otf2_error_callback( void*          userData,
+                                    const char*    file,
+                                    uint64_t       line,
+                                    const char*    function,
+                                    OTF2_ErrorCode errorCode,
+                                    const char*    msgFormatString,
+                                    va_list        va )
+{
+    return errorCode;
+}
+#endif
 
 
 void
 SCOREP_Tracing_Initialize( void )
 {
-    assert( !scorep_otf2_archive );
+    UTILS_ASSERT( !scorep_otf2_archive );
+
+#if !HAVE( SCOREP_DEBUG )
+    OTF2_Error_RegisterCallback( scorep_tracing_otf2_error_callback, NULL );
+#endif
 
     /* @todo croessel step1: remove the "4 *" intoduced on Michael's request
      * when overflow checking for definitions is implemented.
@@ -266,7 +305,7 @@ SCOREP_Tracing_Initialize( void )
                                              4 * SCOREP_TRACING_CHUNK_SIZE,
                                              scorep_tracing_get_file_substrate(),
                                              scorep_tracing_get_compression() );
-    assert( scorep_otf2_archive );
+    UTILS_BUG_ON( !scorep_otf2_archive, "Couldn't create OTF2 archive." );
 
     scorep_tracing_register_flush_callbacks( scorep_otf2_archive );
     scorep_tracing_register_sion_callbacks( scorep_otf2_archive );
@@ -281,7 +320,7 @@ SCOREP_Tracing_Initialize( void )
 void
 SCOREP_Tracing_Finalize( void )
 {
-    assert( scorep_otf2_archive );
+    UTILS_ASSERT( scorep_otf2_archive );
 
     /// @todo? set archive to "unified"/"not unified"
     OTF2_Archive_Close( scorep_otf2_archive );
@@ -310,16 +349,13 @@ SCOREP_Tracing_SetIsMaster( bool isMaster )
 {
     // call this function only once
     static int master_mode_set;
-    assert( !master_mode_set );
+    UTILS_ASSERT( !master_mode_set );
     master_mode_set = 1;
 
     OTF2_ErrorCode err =
         OTF2_Archive_SetMasterSlaveMode( scorep_otf2_archive,
                                          isMaster ? OTF2_MASTER : OTF2_SLAVE );
-    if ( err != OTF2_SUCCESS )
-    {
-        _Exit( EXIT_FAILURE );
-    }
+    UTILS_ASSERT( err == OTF2_SUCCESS );
 }
 
 OTF2_EvtWriter*
@@ -327,7 +363,7 @@ SCOREP_Tracing_GetEventWriter( void )
 {
     OTF2_EvtWriter* evt_writer = OTF2_Archive_GetEvtWriter(
         scorep_otf2_archive,
-        OTF2_UNDEFINED_UINT64 );
+        OTF2_UNDEFINED_LOCATION );
     if ( !evt_writer )
     {
         /* aborts */
@@ -349,7 +385,7 @@ scorep_trace_finalize_event_writer_cb( SCOREP_Location* locationData,
     SCOREP_TracingData* tracing_data =
         SCOREP_Location_GetTracingData( locationData );
 
-    assert( tracing_data->otf_writer );
+    UTILS_ASSERT( tracing_data->otf_writer );
 
     uint64_t number_of_events;
     OTF2_EvtWriter_GetNumberOfEvents( tracing_data->otf_writer,
@@ -373,7 +409,7 @@ SCOREP_Tracing_FinalizeEventWriters( void )
         return;
     }
 
-    assert( scorep_otf2_archive );
+    UTILS_ASSERT( scorep_otf2_archive );
 
     SCOREP_Location_ForAll( scorep_trace_finalize_event_writer_cb,
                             NULL );
@@ -383,7 +419,7 @@ SCOREP_Tracing_FinalizeEventWriters( void )
 void
 SCOREP_Tracing_WriteDefinitions( void )
 {
-    assert( scorep_otf2_archive );
+    UTILS_ASSERT( scorep_otf2_archive );
 
     extern SCOREP_DefinitionManager scorep_local_definition_manager;
 
@@ -437,7 +473,7 @@ SCOREP_Tracing_WriteDefinitions( void )
 void
 SCOREP_Tracing_WriteProperties()
 {
-    assert( scorep_otf2_archive );
+    UTILS_ASSERT( scorep_otf2_archive );
 
     scorep_tracing_set_properties( scorep_otf2_archive );
 }

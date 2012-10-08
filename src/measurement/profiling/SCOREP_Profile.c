@@ -26,6 +26,8 @@
 
 #include <config.h>
 #include <SCOREP_Memory.h>
+#include <UTILS_Error.h>
+#define SCOREP_DEBUG_MODULE_NAME PROFILE
 #include <UTILS_Debug.h>
 #include <SCOREP_Profile.h>
 #include <SCOREP_Config.h>
@@ -46,8 +48,6 @@
 #include <SCOREP_Timing.h>
 #include <SCOREP_Location.h>
 #include "SCOREP_Metric_Management.h"
-
-#define SCOREP_DEBUG_MODULE_NAME PROFILE
 
 /* ***************************************************************************************
    Type definitions and variables
@@ -583,7 +583,8 @@ SCOREP_Profile_OnThreadCreation( SCOREP_Location* locationData,
 
 void
 SCOREP_Profile_OnThreadActivation( SCOREP_Location* locationData,
-                                   SCOREP_Location* parentLocationData )
+                                   SCOREP_Location* parentLocationData,
+                                   uint32_t         nestingLevel )
 {
     SCOREP_Profile_LocationData* thread_data    = NULL;
     SCOREP_Profile_LocationData* parent_data    = NULL;
@@ -620,7 +621,8 @@ SCOREP_Profile_OnThreadActivation( SCOREP_Location* locationData,
         parent_data = SCOREP_Location_GetProfileData( parentLocationData );
         if ( parent_data != NULL )
         {
-            creation_point = parent_data->fork_node;
+            creation_point             = scorep_profile_get_fork_node( parent_data, nestingLevel );
+            thread_data->current_depth = scorep_profile_get_fork_depth( parent_data, nestingLevel );
         }
     }
 
@@ -723,8 +725,8 @@ SCOREP_Profile_OnLocationCreation( SCOREP_Location* locationData,
     if ( parentLocationData != NULL )
     {
         parent_data                = SCOREP_Location_GetProfileData( parentLocationData );
-        thread_data->creation_node = parent_data->fork_node;
-        thread_data->current_depth = parent_data->fork_depth;
+        thread_data->creation_node = NULL;
+        thread_data->current_depth = 0;
     }
 
     /* Add it to the profile node list */
@@ -750,7 +752,8 @@ SCOREP_Profile_OnLocationCreation( SCOREP_Location* locationData,
 
 void
 SCOREP_Profile_OnFork( SCOREP_Location* threadData,
-                       size_t           maxChildThreads )
+                       size_t           maxChildThreads,
+                       uint32_t         nestingLevel )
 {
     scorep_profile_node*         fork_node = NULL;
     SCOREP_Profile_LocationData* location  = NULL;
@@ -769,6 +772,13 @@ SCOREP_Profile_OnFork( SCOREP_Location* threadData,
     }
 
     /* Store current fork node */
-    location->fork_node  = fork_node;
-    location->fork_depth = location->current_depth;
+    scorep_profile_add_fork_node( location, fork_node, location->current_depth, nestingLevel );
+}
+
+void
+SCOREP_Profile_OnJoin( SCOREP_Location* locationData )
+{
+    SCOREP_Profile_LocationData* location =
+        SCOREP_Location_GetProfileData( locationData );
+    scorep_profile_remove_fork_node( location );
 }

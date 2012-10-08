@@ -40,7 +40,9 @@
 #include "scorep_status.h"
 #include "scorep_subsystem.h"
 #include <tracing/SCOREP_Tracing_ThreadInteraction.h>
+#include <SCOREP_Mutex.h>
 
+#include <UTILS_Error.h>
 #include <UTILS_Debug.h>
 
 #include "scorep_environment.h"
@@ -80,7 +82,7 @@ static SCOREP_Location* scorep_thread_create_location_data_for(SCOREP_Thread_Thr
 static SCOREP_Thread_ThreadPrivateData* scorep_thread_create_thread_private_data();
 static void scorep_thread_call_externals_on_new_location(SCOREP_Location* locationData, SCOREP_Location* parent, bool isMainLocation );
 static void scorep_thread_call_externals_on_new_thread(SCOREP_Location* locationData, SCOREP_Location* parent);
-static void scorep_thread_call_externals_on_thread_activation(SCOREP_Location* locationData, SCOREP_Location* parent);
+static void scorep_thread_call_externals_on_thread_activation(SCOREP_Location* locationData, SCOREP_Location* parent, uint32_t nestingLevel);
 static void scorep_thread_call_externals_on_thread_deactivation(SCOREP_Location* locationData, SCOREP_Location* parent);
 static void scorep_thread_delete_thread_private_data_recursively( SCOREP_Thread_ThreadPrivateData* tpd );
 static void scorep_thread_init_children_to_null(SCOREP_Thread_ThreadPrivateData** children, size_t startIndex, size_t endIndex);
@@ -107,6 +109,8 @@ struct SCOREP_Thread_ThreadPrivateData
     SCOREP_Thread_ThreadPrivateData** children;
     uint32_t                          n_children;
     bool                              is_active;
+    uint32_t                          n_reusages;
+    uint32_t                          nesting_level; // starting at 1, but SCOREP_Thread_Initialize passes 0 to profiling
     SCOREP_Location*                  location_data;
 };
 
@@ -138,6 +142,7 @@ static struct SCOREP_Location**                location_list_tail = &location_li
 static struct SCOREP_Thread_ThreadPrivateData* initial_thread;
 static struct SCOREP_Location*                 initial_location;
 static uint32_t                                location_counter;
+static SCOREP_Mutex                            scorep_location_list_mutex;
 
 
 void
@@ -164,9 +169,16 @@ SCOREP_Thread_Initialize()
 
     scorep_thread_call_externals_on_new_thread( TPD->location_data, 0 );
     scorep_thread_call_externals_on_new_location( TPD->location_data, 0, true );
-    scorep_thread_call_externals_on_thread_activation( TPD->location_data, 0 );
+    scorep_thread_call_externals_on_thread_activation( TPD->location_data, 0, 0 /* nesting level */ );
 }
 
+
+void
+SCOREP_Location_Initialize()
+{
+    SCOREP_ErrorCode result = SCOREP_MutexCreate( &scorep_location_list_mutex );
+    UTILS_BUG_ON( result != SCOREP_SUCCESS );
+}
 
 SCOREP_Location*
 SCOREP_Location_CreateNonCPULocation( SCOREP_Location*    parent,
@@ -201,7 +213,8 @@ SCOREP_Location_CreateNonCPULocation( SCOREP_Location*    parent,
     scorep_thread_call_externals_on_new_thread( new_location,
                                                 parent );
     scorep_thread_call_externals_on_thread_activation( new_location,
-                                                       parent );
+                                                       parent,
+                                                       1 /* nesting level for non CPU "threads" */ );
 
     return new_location;
 }
@@ -316,11 +329,12 @@ scorep_thread_call_externals_on_new_location( SCOREP_Location* locationData,
 
 void
 scorep_thread_call_externals_on_thread_activation( SCOREP_Location* locationData,
-                                                   SCOREP_Location* parent )
+                                                   SCOREP_Location* parent,
+                                                   uint32_t         nestingLevel )
 {
     if ( SCOREP_IsProfilingEnabled() )
     {
-        SCOREP_Profile_OnThreadActivation( locationData, parent );
+        SCOREP_Profile_OnThreadActivation( locationData, parent, nestingLevel );
     }
     SCOREP_Tracing_OnThreadActivation( locationData, parent );
 }
@@ -374,13 +388,17 @@ scorep_thread_create_location_data_for( SCOREP_Thread_ThreadPrivateData* tpd )
         assert( new_location->tracing_data );
     }
 
-    SCOREP_PRAGMA_OMP( critical( new_location ) )
-    {
-        new_location->local_id = location_counter++;
-        new_location->next     = NULL;
-        *location_list_tail    = new_location;
-        location_list_tail     = &new_location->next;
-    }
+
+    SCOREP_ErrorCode result = SCOREP_MutexLock( scorep_location_list_mutex );
+    UTILS_BUG_ON( result != SCOREP_SUCCESS );
+
+    new_location->local_id = location_counter++;
+    new_location->next     = NULL;
+    *location_list_tail    = new_location;
+    location_list_tail     = &new_location->next;
+
+    result = SCOREP_MutexUnlock( scorep_location_list_mutex );
+    UTILS_BUG_ON( result != SCOREP_SUCCESS );
 
     return new_location;
 }
@@ -391,11 +409,20 @@ scorep_thread_create_thread_private_data()
 {
     // need synchronized malloc here
     SCOREP_Thread_ThreadPrivateData* new_tpd;
-    new_tpd                = malloc( sizeof( SCOREP_Thread_ThreadPrivateData ) );
-    new_tpd->parent        = TPD;
-    new_tpd->children      = 0;
-    new_tpd->n_children    = 0;
-    new_tpd->is_active     = true;
+    new_tpd             = malloc( sizeof( SCOREP_Thread_ThreadPrivateData ) );
+    new_tpd->parent     = TPD;
+    new_tpd->children   = 0;
+    new_tpd->n_children = 0;
+    new_tpd->is_active  = true;
+    new_tpd->n_reusages = 0;
+    if ( TPD )
+    {
+        new_tpd->nesting_level = TPD->nesting_level + 1;
+    }
+    else
+    {
+        new_tpd->nesting_level = 1;
+    }
     new_tpd->location_data = 0;
     return new_tpd;
 }
@@ -473,6 +500,10 @@ SCOREP_Location_Finalize()
     assert( location_counter == 0 );
     location_list_head = 0;
     location_list_tail = &location_list_head;
+
+    SCOREP_ErrorCode result = SCOREP_MutexDestroy( &scorep_location_list_mutex );
+    UTILS_ASSERT( result == SCOREP_SUCCESS );
+    scorep_location_list_mutex = 0;
 }
 
 
@@ -510,15 +541,19 @@ scorep_thread_init_children_to_null( SCOREP_Thread_ThreadPrivateData** children,
 void
 SCOREP_Thread_OnThreadJoin()
 {
-    if ( TPD->parent )
+    // We are still referencing the TPD object of the previous parallel
+    // regions's master thread.
+
+    if ( TPD->n_reusages == 0 )
     {
+        assert( TPD->parent );
         scorep_thread_update_tpd( TPD->parent );
     }
     else
     {
-        // There was no parallelism in the previous parallel region and
-        // we are are the initial thread. Then, there is no parent and
-        // we don't need to update TPD.
+        assert( TPD->is_active );
+        // There was no parallelism in the previous parallel region
+        // so we must not update TPD.
     }
 
     if ( !TPD->is_active )
@@ -538,6 +573,8 @@ SCOREP_Thread_OnThreadJoin()
     }
     else
     {
+        assert( TPD->n_reusages > 0 );
+        TPD->n_reusages--;
         // no parallelism in last parallel region, parent == child
         scorep_thread_call_externals_on_thread_deactivation( TPD->location_data,
                                                              TPD->location_data );
@@ -572,6 +609,7 @@ SCOREP_Location_GetCurrentCPULocation()
         // there is no additional parallelism in this parallel region. don't
         // update TPD with a child but reuse the parent.
         TPD->is_active = true;
+        TPD->n_reusages++;
         if ( !TPD->children[ 0 ] )
         {
             /// @todo do we see this as a new thread?
@@ -579,13 +617,15 @@ SCOREP_Location_GetCurrentCPULocation()
                                                         TPD->location_data );
         }
         scorep_thread_call_externals_on_thread_activation( TPD->location_data,
-                                                           TPD->location_data );
+                                                           TPD->location_data,
+                                                           TPD->nesting_level ); // use same nesting level as in fork
     }
     else
     {
         // set TPD to a child of itself, create new one if neccessary
-        size_t                            my_thread_id = omp_get_thread_num();
-        SCOREP_Thread_ThreadPrivateData** my_tpd       = &( TPD->children[ my_thread_id ] );
+        size_t my_thread_id = omp_get_thread_num();
+        assert( my_thread_id < TPD->n_children );
+        SCOREP_Thread_ThreadPrivateData** my_tpd = &( TPD->children[ my_thread_id ] );
         if ( *my_tpd )
         {
             // already been in this thread
@@ -614,7 +654,8 @@ SCOREP_Location_GetCurrentCPULocation()
                                                         TPD->parent->location_data );
         }
         scorep_thread_call_externals_on_thread_activation( TPD->location_data,
-                                                           TPD->parent->location_data );
+                                                           TPD->parent->location_data,
+                                                           TPD->parent->nesting_level ); // use same nesting level as in fork
     }
 
     return TPD->location_data;
@@ -755,4 +796,11 @@ SCOREP_Location_ForAll( void  ( * cb )( SCOREP_Location*,
     {
         cb( location_data, data );
     }
+}
+
+
+uint32_t
+scorep_thread_get_nesting_level()
+{
+    return TPD->nesting_level;
 }

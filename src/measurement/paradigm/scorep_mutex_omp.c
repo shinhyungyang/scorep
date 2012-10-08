@@ -36,6 +36,9 @@
 #include <omp.h>
 
 
+#include <UTILS_Error.h>
+
+
 #include <SCOREP_Mutex.h>
 #include <SCOREP_RuntimeManagement.h>
 
@@ -57,7 +60,8 @@ SCOREP_MutexCreate( SCOREP_Mutex* scorepMutex )
 {
     if ( !scorepMutex )
     {
-        return UTILS_ERROR( SCOREP_ERROR_INVALID_ARGUMENT );
+        return UTILS_ERROR( SCOREP_ERROR_INVALID_ARGUMENT,
+                            "Invalid mutex handle given." );
     }
 
     omp_lock_t** omp_lock = ( omp_lock_t** )scorepMutex;
@@ -91,7 +95,8 @@ SCOREP_MutexDestroy( SCOREP_Mutex* scorepMutex )
 {
     if ( !scorepMutex )
     {
-        return UTILS_ERROR( SCOREP_ERROR_INVALID_ARGUMENT );
+        return UTILS_ERROR( SCOREP_ERROR_INVALID_ARGUMENT,
+                            "Invalid mutex handle given." );
     }
 
     omp_lock_t** omp_lock = ( omp_lock_t** )scorepMutex;
@@ -144,7 +149,8 @@ SCOREP_MutexLock( SCOREP_Mutex scorepMutex )
 
     if ( !scorepMutex )
     {
-        return UTILS_ERROR( SCOREP_ERROR_INVALID_ARGUMENT );
+        return UTILS_ERROR( SCOREP_ERROR_INVALID_ARGUMENT,
+                            "Invalid mutex handle given." );
     }
 
     omp_lock_t* omp_lock = ( omp_lock_t* )scorepMutex;
@@ -180,7 +186,8 @@ SCOREP_MutexUnlock( SCOREP_Mutex scorepMutex )
 
     if ( !scorepMutex )
     {
-        return UTILS_ERROR( SCOREP_ERROR_INVALID_ARGUMENT );
+        return UTILS_ERROR( SCOREP_ERROR_INVALID_ARGUMENT,
+                            "Invalid mutex handle given." );
     }
 
     omp_lock_t* omp_lock = ( omp_lock_t* )scorepMutex;

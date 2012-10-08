@@ -33,6 +33,7 @@
 
 
 #include <UTILS_Error.h>
+#define SCOREP_DEBUG_MODULE_NAME CUDA
 #include <UTILS_Debug.h>
 
 
@@ -43,11 +44,21 @@
 #include "scorep_cuda.h"
 
 
-#define SCOREP_DEBUG_MODULE_NAME CUDA
-
-
 #include "scorep_cuda_confvars.inc.c"
 
+
+/** Registers the required configuration variables of the CUDA adapter
+    to the measurement system.
+ */
+static SCOREP_ErrorCode
+scorep_cuda_register( size_t subsystem_id )
+{
+    UTILS_DEBUG( "Register environment variables" );
+
+    return SCOREP_ConfigRegisterCond( "cuda",
+                                      scorep_cuda_configs,
+                                      HAVE_BACKEND_CUDA );
+}
 
 SCOREP_Subsystem SCOREP_Cuda_Adapter =
 {
@@ -57,5 +68,5 @@ SCOREP_Subsystem SCOREP_Cuda_Adapter =
     NULL,
     NULL,
     NULL,
-    &scorep_cuda_deregister
+    NULL
 };

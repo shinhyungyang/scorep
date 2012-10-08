@@ -31,6 +31,9 @@
 #include <stdio.h>
 #include <mpi.h>
 
+#include <UTILS_Error.h>
+#include <UTILS_Debug.h>
+
 #include <SCOREP_Config.h>
 #include <SCOREP_Types.h>
 #include <SCOREP_Mpi.h>
@@ -41,31 +44,31 @@
 #include "scorep_mpiprofile.h"
 
 
-static int64_t lateThreshold;
-int            myrank;
-static int     numprocs;
-static int     mpiprofiling_initialized = 0;
-static int     metrics_initialized      = 0;
+static int64_t scorep_mpiprofiling_lateThreshold;
+int            scorep_mpiprofiling_myrank;
+static int     scorep_mpiprofiling_numprocs;
+static int     scorep_mpiprofiling_initialized         = 0;
+static int     scorep_mpiprofiling_metrics_initialized = 0;
 
-static void* mpi_profiling_remote_time_packs;
-static void* mpi_profiling_local_time_pack;
-static void* mpi_profiling_remote_time_pack;
-static int   remote_time_packs_in_use = 0;
-static int   local_time_pack_in_use   = 0;
-static int   remote_time_pack_in_use  = 0;
+static void* scorep_mpiprofiling_remote_time_packs;
+static void* scorep_mpiprofiling_local_time_pack;
+static void* scorep_mpiprofiling_remote_time_pack;
+static int   scorep_mpiprofiling_remote_time_packs_in_use = 0;
+static int   scorep_mpiprofiling_local_time_pack_in_use   = 0;
+static int   scorep_mpiprofiling_remote_time_pack_in_use  = 0;
 
-static void**       send_timepack_pool = 0;
-static MPI_Request* timepack_requests  = 0;
-static int          timepack_pool_size = 0;
+static void**       scorep_mpiprofiling_send_timepack_pool = 0;
+static MPI_Request* scorep_mpiprofiling_timepack_requests  = 0;
+static int          scorep_mpiprofiling_timepack_pool_size = 0;
 
 #define POOL_INITIAL_SIZE       5
 #define POOL_SIZE_INCREMENT             2
 
 
-scorep_mpiprofile_world_comm_dup world_comm_dup;
+scorep_mpiprofile_world_comm_dup scorep_mpiprofiling_world_comm_dup;
 
-SCOREP_USER_METRIC_LOCAL( lateSend )
-SCOREP_USER_METRIC_LOCAL( lateRecv )
+SCOREP_USER_METRIC_LOCAL( scorep_mpiprofiling_lateSend )
+SCOREP_USER_METRIC_LOCAL( scorep_mpiprofiling_lateRecv )
 
 
 #define _WITH_PREALLOCATION_OF_TIME_PACKS
@@ -79,42 +82,43 @@ scorep_mpiprofile_init
 (
 )
 {
-    if ( mpiprofiling_initialized )
+    if ( scorep_mpiprofiling_initialized )
     {
         return;
     }
     UTILS_DEBUG_PRINTF( SCOREP_DEBUG_MPIPROFILING, "Initialization of mpiprofiling\n" );
     /* -- duplicate MPI_COMM_WORLD to be used for mpi profiling messages -- */
-    if ( PMPI_Comm_dup( MPI_COMM_WORLD, &( world_comm_dup.comm ) ) != MPI_SUCCESS )
+    if ( PMPI_Comm_dup( MPI_COMM_WORLD, &( scorep_mpiprofiling_world_comm_dup.comm ) ) != MPI_SUCCESS )
     {
         UTILS_DEBUG_PRINTF( SCOREP_DEBUG_MPIPROFILING, "Could not duplicate MPI_COMM_WORLD\n" );
         return;
     }
-    if ( PMPI_Comm_group( world_comm_dup.comm, &( world_comm_dup.group ) ) != MPI_SUCCESS )
+    if ( PMPI_Comm_group( scorep_mpiprofiling_world_comm_dup.comm, &( scorep_mpiprofiling_world_comm_dup.group ) ) != MPI_SUCCESS )
     {
         UTILS_DEBUG_PRINTF( SCOREP_DEBUG_MPIPROFILING, "Could not get the group of the MPI_COMM_WORLD duplicate\n" );
         return;
     }
 
-    PMPI_Comm_size( world_comm_dup.comm, &numprocs );
-    PMPI_Comm_rank( world_comm_dup.comm, &myrank );
-    UTILS_DEBUG_PRINTF( SCOREP_DEBUG_MPIPROFILING, "INIT: myrank = %d, numprocs = %d", myrank, numprocs );
+    PMPI_Comm_size( scorep_mpiprofiling_world_comm_dup.comm, &scorep_mpiprofiling_numprocs );
+    PMPI_Comm_rank( scorep_mpiprofiling_world_comm_dup.comm, &scorep_mpiprofiling_myrank );
+    UTILS_DEBUG_PRINTF( SCOREP_DEBUG_MPIPROFILING, "INIT: myrank = %d, numprocs = %d", scorep_mpiprofiling_myrank, scorep_mpiprofiling_numprocs );
 
     /* -- allocate timepack buffers -- */
         #ifdef _WITH_PREALLOCATION_OF_TIME_PACKS
-    mpi_profiling_local_time_pack   = malloc( MPIPROFILER_TIMEPACK_BUFSIZE );
-    mpi_profiling_remote_time_pack  = malloc( MPIPROFILER_TIMEPACK_BUFSIZE );
-    mpi_profiling_remote_time_packs = malloc( numprocs * MPIPROFILER_TIMEPACK_BUFSIZE );
-    if ( mpi_profiling_remote_time_packs == NULL
-         || mpi_profiling_local_time_pack == NULL
-         || mpi_profiling_remote_time_pack == NULL )
+    scorep_mpiprofiling_local_time_pack   = malloc( MPIPROFILER_TIMEPACK_BUFSIZE );
+    scorep_mpiprofiling_remote_time_pack  = malloc( MPIPROFILER_TIMEPACK_BUFSIZE );
+    scorep_mpiprofiling_remote_time_packs = malloc( scorep_mpiprofiling_numprocs * MPIPROFILER_TIMEPACK_BUFSIZE );
+    if ( scorep_mpiprofiling_remote_time_packs == NULL
+         || scorep_mpiprofiling_local_time_pack == NULL
+         || scorep_mpiprofiling_remote_time_pack == NULL )
     {
-        UTILS_ERROR( SCOREP_ERROR_MEM_ALLOC_FAILED );
+        UTILS_ERROR( SCOREP_ERROR_MEM_ALLOC_FAILED,
+                     "We have UTILS_FATAL() to abort!" );
         abort();
     }
     #endif
 
-    mpiprofiling_initialized = 1;
+    scorep_mpiprofiling_initialized = 1;
 }
 
 void
@@ -122,17 +126,17 @@ scorep_mpiprofile_init_metrics
 (
 )
 {
-    if ( metrics_initialized )
+    if ( scorep_mpiprofiling_metrics_initialized )
     {
         return;
     }
     /* -- initialize late metrics -- */
-    lateThreshold = 0.001;
-    SCOREP_USER_METRIC_INIT( lateSend, "late_send", "s", SCOREP_USER_METRIC_TYPE_INT64,
+    scorep_mpiprofiling_lateThreshold = 0.001;
+    SCOREP_USER_METRIC_INIT( scorep_mpiprofiling_lateSend, "late_send", "s", SCOREP_USER_METRIC_TYPE_INT64,
                              SCOREP_USER_METRIC_CONTEXT_CALLPATH );
-    SCOREP_USER_METRIC_INIT( lateRecv, "late_receive", "s", SCOREP_USER_METRIC_TYPE_INT64,
+    SCOREP_USER_METRIC_INIT( scorep_mpiprofiling_lateRecv, "late_receive", "s", SCOREP_USER_METRIC_TYPE_INT64,
                              SCOREP_USER_METRIC_CONTEXT_CALLPATH );
-    metrics_initialized = 1;
+    scorep_mpiprofiling_metrics_initialized = 1;
 }
 
 void
@@ -140,7 +144,7 @@ scorep_mpiprofile_reinit_metrics
 (
 )
 {
-    metrics_initialized = 0;
+    scorep_mpiprofiling_metrics_initialized = 0;
     scorep_mpiprofile_init_metrics();
 }
 
@@ -149,35 +153,35 @@ scorep_mpiprofile_finalize
 (
 )
 {
-    if ( !mpiprofiling_initialized )
+    if ( !scorep_mpiprofiling_initialized )
     {
         return;
     }
     UTILS_DEBUG_PRINTF( SCOREP_DEBUG_MPIPROFILING, "Finalization of mpiprofiling\n" );
-    mpiprofiling_initialized = 0;
-    if ( remote_time_packs_in_use )
+    scorep_mpiprofiling_initialized = 0;
+    if ( scorep_mpiprofiling_remote_time_packs_in_use )
     {
-        UTILS_DEBUG_PRINTF( SCOREP_DEBUG_MPIPROFILING, "%s: remote_time_packs_in_use is still in use\n", __FUNCTION__ );
+        UTILS_DEBUG_PRINTF( SCOREP_DEBUG_MPIPROFILING, "%s: remote_time_packs_in_use is still in use\n", __func__ );
     }
-    if ( local_time_pack_in_use )
+    if ( scorep_mpiprofiling_local_time_pack_in_use )
     {
-        UTILS_DEBUG_PRINTF( SCOREP_DEBUG_MPIPROFILING, "%s: local_time_pack_in_use is still in use\n", __FUNCTION__ );
+        UTILS_DEBUG_PRINTF( SCOREP_DEBUG_MPIPROFILING, "%s: scorep_mpiprofiling_local_time_pack_in_use is still in use\n", __func__ );
     }
-    if ( remote_time_pack_in_use )
+    if ( scorep_mpiprofiling_remote_time_pack_in_use )
     {
-        UTILS_DEBUG_PRINTF( SCOREP_DEBUG_MPIPROFILING, "%s: remote_time_pack_in_use is still in use\n", __FUNCTION__ );
+        UTILS_DEBUG_PRINTF( SCOREP_DEBUG_MPIPROFILING, "%s: scorep_mpiprofiling_remote_time_pack_in_use is still in use\n", __func__ );
     }
-    MPI_Status statuses[ timepack_pool_size ];
+    MPI_Status statuses[ scorep_mpiprofiling_timepack_pool_size ];
     int        flag = 0;
-    PMPI_Testall( timepack_pool_size, timepack_requests, &flag, statuses );
+    PMPI_Testall( scorep_mpiprofiling_timepack_pool_size, scorep_mpiprofiling_timepack_requests, &flag, statuses );
     if ( !flag )
     {
-        UTILS_DEBUG_PRINTF( SCOREP_DEBUG_MPIPROFILING, "%s: at least one timepack buffer in the pool is busy\n", __FUNCTION__ );
+        UTILS_DEBUG_PRINTF( SCOREP_DEBUG_MPIPROFILING, "%s: at least one timepack buffer in the pool is busy\n", __func__ );
     }
     scorep_mpiprofile_free_timepack_pool();
-    free( mpi_profiling_local_time_pack );
-    free( mpi_profiling_remote_time_pack );
-    free( mpi_profiling_remote_time_packs );
+    free( scorep_mpiprofiling_local_time_pack );
+    free( scorep_mpiprofiling_remote_time_pack );
+    free( scorep_mpiprofiling_remote_time_packs );
     UTILS_DEBUG_PRINTF( SCOREP_DEBUG_MPIPROFILING, "Finalization of mpiprofiling completed\n" );
 }
 
@@ -194,29 +198,29 @@ int
 scorep_mpiprofile_get_timepack_from_pool( void** free_buffer, int* index )
 {
     int insert_position;
-    if ( !metrics_initialized )
+    if ( !scorep_mpiprofiling_metrics_initialized )
     {
         scorep_mpiprofile_init_metrics();
     }
-    if ( timepack_pool_size == 0 )
+    if ( scorep_mpiprofiling_timepack_pool_size == 0 )
     {
         /* -- never used: initialize -- */
-        send_timepack_pool = malloc( POOL_INITIAL_SIZE * sizeof( void* ) );
-        timepack_requests  = malloc( POOL_INITIAL_SIZE * sizeof( MPI_Request ) );
-        if ( send_timepack_pool == NULL || timepack_requests == NULL )
+        scorep_mpiprofiling_send_timepack_pool = malloc( POOL_INITIAL_SIZE * sizeof( void* ) );
+        scorep_mpiprofiling_timepack_requests  = malloc( POOL_INITIAL_SIZE * sizeof( MPI_Request ) );
+        if ( scorep_mpiprofiling_send_timepack_pool == NULL || scorep_mpiprofiling_timepack_requests == NULL )
         {
-            UTILS_ERROR( SCOREP_ERROR_MEM_ALLOC_FAILED );
+            UTILS_ERROR( SCOREP_ERROR_MEM_ALLOC_FAILED, "We have SCOREP_BUG() to abort!" );
             abort();
         }
-        timepack_pool_size = POOL_INITIAL_SIZE;
+        scorep_mpiprofiling_timepack_pool_size = POOL_INITIAL_SIZE;
         int i;
-        for ( i = 0; i < timepack_pool_size; i++ )
+        for ( i = 0; i < scorep_mpiprofiling_timepack_pool_size; i++ )
         {
-            timepack_requests[ i ]  = MPI_REQUEST_NULL;
-            send_timepack_pool[ i ] = malloc( MPIPROFILER_TIMEPACK_BUFSIZE );
-            if ( send_timepack_pool[ i ] == NULL )
+            scorep_mpiprofiling_timepack_requests[ i ]  = MPI_REQUEST_NULL;
+            scorep_mpiprofiling_send_timepack_pool[ i ] = malloc( MPIPROFILER_TIMEPACK_BUFSIZE );
+            if ( scorep_mpiprofiling_send_timepack_pool[ i ] == NULL )
             {
-                UTILS_ERROR( SCOREP_ERROR_MEM_ALLOC_FAILED );
+                UTILS_ERROR( SCOREP_ERROR_MEM_ALLOC_FAILED, "We have SCOREP_BUG() to abort!" );
                 abort();
             }
         }
@@ -227,7 +231,7 @@ scorep_mpiprofile_get_timepack_from_pool( void** free_buffer, int* index )
         /* -- check for the completed timepack send requests -- */
         int        flag;
         MPI_Status tp_status;
-        if ( PMPI_Testany( timepack_pool_size, timepack_requests, &insert_position, &flag, &tp_status ) != MPI_SUCCESS )
+        if ( PMPI_Testany( scorep_mpiprofiling_timepack_pool_size, scorep_mpiprofiling_timepack_requests, &insert_position, &flag, &tp_status ) != MPI_SUCCESS )
         {
             return 1;
         }
@@ -236,74 +240,74 @@ scorep_mpiprofile_get_timepack_from_pool( void** free_buffer, int* index )
             /* -- one of the previous timepack sends was completed (or there are no pending sends) -- */
             if ( insert_position == MPI_UNDEFINED )
             {
-                UTILS_DEBUG_PRINTF( SCOREP_DEBUG_MPIPROFILING, "%s, MPI_UNDEFINED: buffer %d is available\n", __FUNCTION__, insert_position );
+                UTILS_DEBUG_PRINTF( SCOREP_DEBUG_MPIPROFILING, "%s, MPI_UNDEFINED: buffer %d is available\n", __func__, insert_position );
                 insert_position = 0;
             }
             else
             {
-                UTILS_DEBUG_PRINTF( SCOREP_DEBUG_MPIPROFILING, "%s, buffer %d tested available\n", __FUNCTION__, insert_position );
+                UTILS_DEBUG_PRINTF( SCOREP_DEBUG_MPIPROFILING, "%s, buffer %d tested available\n", __func__, insert_position );
             }
         }
         else
         {
             /* -- all the slots for timepack send buffers are busy, need to increase the pool -- */
-            int old_size = timepack_pool_size;
-            timepack_pool_size += POOL_SIZE_INCREMENT;
-            send_timepack_pool  = realloc( send_timepack_pool, timepack_pool_size * sizeof( void* ) );
-            timepack_requests   = realloc( timepack_requests, timepack_pool_size * sizeof( MPI_Request ) );
-            if ( send_timepack_pool == NULL || timepack_requests == NULL )
+            int old_size = scorep_mpiprofiling_timepack_pool_size;
+            scorep_mpiprofiling_timepack_pool_size += POOL_SIZE_INCREMENT;
+            scorep_mpiprofiling_send_timepack_pool  = realloc( scorep_mpiprofiling_send_timepack_pool, scorep_mpiprofiling_timepack_pool_size * sizeof( void* ) );
+            scorep_mpiprofiling_timepack_requests   = realloc( scorep_mpiprofiling_timepack_requests, scorep_mpiprofiling_timepack_pool_size * sizeof( MPI_Request ) );
+            if ( scorep_mpiprofiling_send_timepack_pool == NULL || scorep_mpiprofiling_timepack_requests == NULL )
             {
-                UTILS_ERROR( SCOREP_ERROR_MEM_ALLOC_FAILED );
+                UTILS_ERROR( SCOREP_ERROR_MEM_ALLOC_FAILED, "We have SCOREP_BUG() to abort!" );
                 abort();
             }
             int i;
-            for ( i = old_size; i < timepack_pool_size; i++ )
+            for ( i = old_size; i < scorep_mpiprofiling_timepack_pool_size; i++ )
             {
-                timepack_requests[ i ]  = MPI_REQUEST_NULL;
-                send_timepack_pool[ i ] = malloc( MPIPROFILER_TIMEPACK_BUFSIZE );
-                if ( send_timepack_pool[ i ] == NULL )
+                scorep_mpiprofiling_timepack_requests[ i ]  = MPI_REQUEST_NULL;
+                scorep_mpiprofiling_send_timepack_pool[ i ] = malloc( MPIPROFILER_TIMEPACK_BUFSIZE );
+                if ( scorep_mpiprofiling_send_timepack_pool[ i ] == NULL )
                 {
-                    UTILS_ERROR( SCOREP_ERROR_MEM_ALLOC_FAILED );
+                    UTILS_ERROR( SCOREP_ERROR_MEM_ALLOC_FAILED, "We have SCOREP_BUG() to abort!" );
                     abort();
                 }
             }
             insert_position = old_size;
-            UTILS_DEBUG_PRINTF( SCOREP_DEBUG_MPIPROFILING, "%s, buffers are not available, have to increase pool size to %d\n", __FUNCTION__, timepack_pool_size );
+            UTILS_DEBUG_PRINTF( SCOREP_DEBUG_MPIPROFILING, "%s, buffers are not available, have to increase pool size to %d\n", __func__, scorep_mpiprofiling_timepack_pool_size );
         }
     }
     ( *index )       = insert_position;
-    ( *free_buffer ) = send_timepack_pool[ insert_position ];
+    ( *free_buffer ) = scorep_mpiprofiling_send_timepack_pool[ insert_position ];
     return 0;
 }
 void
 scorep_mpiprofile_store_timepack_request_in_pool( MPI_Request request, int position )
 {
-    if ( position >= timepack_pool_size )
+    if ( position >= scorep_mpiprofiling_timepack_pool_size )
     {
         return;
     }
-    timepack_requests[ position ] = request;
+    scorep_mpiprofiling_timepack_requests[ position ] = request;
 }
 void
 scorep_mpiprofile_free_timepack_pool()
 {
     int i;
-    for ( i = 0; i < timepack_pool_size; i++ )
+    for ( i = 0; i < scorep_mpiprofiling_timepack_pool_size; i++ )
     {
-        free( send_timepack_pool[ i ] );
+        free( scorep_mpiprofiling_send_timepack_pool[ i ] );
     }
-    free( send_timepack_pool );
-    free( timepack_requests );
+    free( scorep_mpiprofiling_send_timepack_pool );
+    free( scorep_mpiprofiling_timepack_requests );
 }
 void
 scorep_mpiprofile_init_timepack( void* buf, uint64_t time )
 {
     int pos = 0;
-    if ( !metrics_initialized )
+    if ( !scorep_mpiprofiling_metrics_initialized )
     {
         scorep_mpiprofile_init_metrics();
     }
-    UTILS_DEBUG_PRINTF( SCOREP_DEBUG_MPIPROFILING, "%s: timestamp %llu\n", __FUNCTION__, time );
+    UTILS_DEBUG_PRINTF( SCOREP_DEBUG_MPIPROFILING, "%s: timestamp %llu\n", __func__, time );
     PMPI_Pack(      &time,
                     1,
                     MPI_LONG_LONG_INT,
@@ -311,7 +315,7 @@ scorep_mpiprofile_init_timepack( void* buf, uint64_t time )
                     MPIPROFILER_TIMEPACK_BUFSIZE,
                     &pos,
                     MPI_COMM_WORLD );
-    PMPI_Pack(      &myrank,
+    PMPI_Pack(      &scorep_mpiprofiling_myrank,
                     1,
                     MPI_INT,
                     buf,
@@ -321,40 +325,51 @@ scorep_mpiprofile_init_timepack( void* buf, uint64_t time )
 }
 
 int
-scorep_mpiprofiling_rank_to_pe( int      rank,
-                                MPI_Comm comm,
-                                int*     global_rank )
+scorep_mpiprofiling_get_group( MPI_Comm   comm,
+                               MPI_Group* group )
 {
-    MPI_Group group;
-    int32_t   inter;
-    int       ret_value;
+    *group = MPI_GROUP_NULL;
 
     if ( comm == MPI_COMM_WORLD )
     {
-        ( *global_rank ) = rank;
         return 0;
     }
+
+    int32_t inter;
+    int     ret_value;
     /* inter-communicators need different call than intra-communicators */
     PMPI_Comm_test_inter( comm, &inter );
     if ( inter )
     {
-        ret_value = PMPI_Comm_remote_group( comm, &group );
+        ret_value = PMPI_Comm_remote_group( comm, group );
     }
     else
     {
-        ret_value = PMPI_Comm_group( comm, &group );
+        ret_value = PMPI_Comm_group( comm, group );
     }
 
     if ( ret_value == MPI_ERR_COMM )
     {
-        UTILS_DEBUG_PRINTF( SCOREP_DEBUG_MPIPROFILING, "%s: WARNING: the communicator is not valid\n", __FUNCTION__ );
+        UTILS_WARNING( "The communicator is not valid" );
         return 2;
     }
 
+    return 0;
+}
+
+int
+scorep_mpiprofiling_rank_to_pe_by_group( int       rank,
+                                         MPI_Group group,
+                                         int*      global_rank )
+{
+    if ( group == MPI_GROUP_NULL )
+    {
+        ( *global_rank ) = rank;
+        return 0;
+    }
+
     /* translate rank with respect to \a MPI_COMM_WORLD */
-    PMPI_Group_translate_ranks( group, 1, &rank, world_comm_dup.group, global_rank );
-    /* free internal group of input communicator */
-    PMPI_Group_free( &group );
+    PMPI_Group_translate_ranks( group, 1, &rank, scorep_mpiprofiling_world_comm_dup.group, global_rank );
 
     if ( *global_rank == MPI_UNDEFINED )
     {
@@ -362,6 +377,30 @@ scorep_mpiprofiling_rank_to_pe( int      rank,
     }
 
     return 0;
+}
+
+int
+scorep_mpiprofiling_rank_to_pe( int      rank,
+                                MPI_Comm comm,
+                                int*     global_rank )
+{
+    MPI_Group group;
+    if ( scorep_mpiprofiling_get_group( comm, &group ) )
+    {
+        return 2;
+    }
+
+    int ret_value = scorep_mpiprofiling_rank_to_pe_by_group( rank,
+                                                             group,
+                                                             global_rank );
+
+    /* free internal group of input communicator */
+    if ( group != MPI_GROUP_NULL )
+    {
+        PMPI_Group_free( &group );
+    }
+
+    return ret_value;
 }
 
 /**
@@ -376,26 +415,26 @@ scorep_mpiprofile_get_time_pack
     uint64_t time
 )
 {
-    UTILS_DEBUG_PRINTF( SCOREP_DEBUG_MPIPROFILING, "mpiprofile : myrank = %d,%s", myrank, __FUNCTION__ );
+    UTILS_DEBUG_PRINTF( SCOREP_DEBUG_MPIPROFILING, "mpiprofile : myrank = %d,%s", scorep_mpiprofiling_myrank, __func__ );
 
-    if ( !metrics_initialized )
+    if ( !scorep_mpiprofiling_metrics_initialized )
     {
         scorep_mpiprofile_init_metrics();
     }
 
     #ifdef _WITH_PREALLOCATION_OF_TIME_PACKS
-    if ( local_time_pack_in_use == 1 )
+    if ( scorep_mpiprofiling_local_time_pack_in_use == 1 )
     {
         fprintf( stderr, "1 Warning attempt of multiple use of time packs pool. MPI_Profiling will be disabled.\n" );
         return malloc( MPIPROFILER_TIMEPACK_BUFSIZE );
     }
-    local_time_pack_in_use = 1;
-    void* buf = mpi_profiling_local_time_pack;
+    scorep_mpiprofiling_local_time_pack_in_use = 1;
+    void* buf = scorep_mpiprofiling_local_time_pack;
     #else
     void* buf = malloc( MPIPROFILER_TIMEPACK_BUFSIZE );
     #endif
 
-    UTILS_DEBUG_PRINTF( SCOREP_DEBUG_MPIPROFILING, "%s: timestamp %llu\n", __FUNCTION__, time );
+    UTILS_DEBUG_PRINTF( SCOREP_DEBUG_MPIPROFILING, "%s: timestamp %llu\n", __func__, time );
 
     int pos = 0;
     PMPI_Pack(      &time,
@@ -405,7 +444,7 @@ scorep_mpiprofile_get_time_pack
                     MPIPROFILER_TIMEPACK_BUFSIZE,
                     &pos,
                     MPI_COMM_WORLD );
-    PMPI_Pack(      &myrank,
+    PMPI_Pack(      &scorep_mpiprofiling_myrank,
                     1,
                     MPI_INT,
                     buf,
@@ -427,19 +466,19 @@ scorep_mpiprofile_get_remote_time_packs
     int size
 )
 {
-    if ( !metrics_initialized )
+    if ( !scorep_mpiprofiling_metrics_initialized )
     {
         scorep_mpiprofile_init_metrics();
     }
 
     #ifdef _WITH_PREALLOCATION_OF_TIME_PACKS
-    if ( remote_time_packs_in_use == 1 )
+    if ( scorep_mpiprofiling_remote_time_packs_in_use == 1 )
     {
         fprintf( stderr, "2 Warning attempt of multiple use of time packs pool. MPI_Profiling will be disabled.\n" );
         return malloc( size * MPIPROFILER_TIMEPACK_BUFSIZE );
     }
-    remote_time_packs_in_use = 1;
-    return mpi_profiling_remote_time_packs;
+    scorep_mpiprofiling_remote_time_packs_in_use = 1;
+    return scorep_mpiprofiling_remote_time_packs;
         #else
     return malloc( size * MPIPROFILER_TIMEPACK_BUFSIZE );
         #endif
@@ -454,19 +493,19 @@ scorep_mpiprofile_get_remote_time_pack
 (
 )
 {
-    if ( !metrics_initialized )
+    if ( !scorep_mpiprofiling_metrics_initialized )
     {
         scorep_mpiprofile_init_metrics();
     }
 
     #ifdef _WITH_PREALLOCATION_OF_TIME_PACKS
-    if ( remote_time_pack_in_use == 1 )
+    if ( scorep_mpiprofiling_remote_time_pack_in_use == 1 )
     {
         fprintf( stderr, "3 Warning attempt of multiple use of time packs pool. MPI_Profiling will be disabled.\n" );
         return malloc( MPIPROFILER_TIMEPACK_BUFSIZE );
     }
-    remote_time_pack_in_use = 1;
-    return mpi_profiling_remote_time_pack;
+    scorep_mpiprofiling_remote_time_pack_in_use = 1;
+    return scorep_mpiprofiling_remote_time_pack;
         #else
     return malloc( MPIPROFILER_TIMEPACK_BUFSIZE );
         #endif
@@ -478,13 +517,13 @@ scorep_mpiprofile_release_local_time_pack
     void* local_time_pack
 )
 {
-    if ( !metrics_initialized )
+    if ( !scorep_mpiprofiling_metrics_initialized )
     {
         scorep_mpiprofile_init_metrics();
     }
 
     #ifdef _WITH_PREALLOCATION_OF_TIME_PACKS
-    local_time_pack_in_use = 0;
+    scorep_mpiprofiling_local_time_pack_in_use = 0;
         #else
     free( local_time_pack );
         #endif
@@ -496,7 +535,7 @@ scorep_mpiprofile_release_remote_time_pack
 )
 {
     #ifdef _WITH_PREALLOCATION_OF_TIME_PACKS
-    remote_time_pack_in_use = 0;
+    scorep_mpiprofiling_remote_time_pack_in_use = 0;
         #else
     free( remote_time_pack );
         #endif
@@ -508,7 +547,7 @@ scorep_mpiprofile_release_remote_time_packs
 )
 {
     #ifdef _WITH_PREALLOCATION_OF_TIME_PACKS
-    remote_time_packs_in_use = 0;
+    scorep_mpiprofiling_remote_time_packs_in_use = 0;
         #else
     free( remote_time_packs );
         #endif
@@ -525,7 +564,7 @@ scorep_mpiprofile_eval_1x1_time_packs
     void* dstTimePack
 )
 {
-    UTILS_DEBUG_PRINTF( SCOREP_DEBUG_MPIPROFILING, "mpiprofile : myrank = %d,%s", myrank, __FUNCTION__ );
+    UTILS_DEBUG_PRINTF( SCOREP_DEBUG_MPIPROFILING, "mpiprofile : myrank = %d,%s", scorep_mpiprofiling_myrank, __func__ );
     int      src;
     int      dst;
     uint64_t sendTime;
@@ -563,7 +602,7 @@ scorep_mpiprofile_eval_1x1_time_packs
                     MPI_INT,
                     MPI_COMM_WORLD );
 
-    UTILS_DEBUG_PRINTF( SCOREP_DEBUG_MPIPROFILING, "%s: timestamps: (send %llu) (recv %llu)\n", __FUNCTION__, sendTime, recvTime );
+    UTILS_DEBUG_PRINTF( SCOREP_DEBUG_MPIPROFILING, "%s: timestamps: (send %llu) (recv %llu)\n", __func__, sendTime, recvTime );
     scorep_mpiprofile_eval_time_stamps(       src,
                                               dst,
                                               sendTime,
@@ -581,7 +620,7 @@ scorep_mpiprofile_eval_nx1_time_packs
     int   size
 )
 {
-    UTILS_DEBUG_PRINTF( SCOREP_DEBUG_MPIPROFILING, "mpiprofile : myrank = %d,%s", myrank, __FUNCTION__ );
+    UTILS_DEBUG_PRINTF( SCOREP_DEBUG_MPIPROFILING, "mpiprofile : myrank = %d,%s", scorep_mpiprofiling_myrank, __func__ );
     int      src;
     int      dst;
     uint64_t sendTime;
@@ -619,7 +658,7 @@ scorep_mpiprofile_eval_nx1_time_packs
     }
 
     srcTimePack = ( void* )( ( long )timePacks + last * MPIPROFILER_TIMEPACK_BUFSIZE );
-    dstTimePack = ( void* )( ( long )timePacks + myrank * MPIPROFILER_TIMEPACK_BUFSIZE );
+    dstTimePack = ( void* )( ( long )timePacks + scorep_mpiprofiling_myrank * MPIPROFILER_TIMEPACK_BUFSIZE );
     scorep_mpiprofile_eval_1x1_time_packs(    dstTimePack,
                                               srcTimePack );
 }
@@ -636,7 +675,7 @@ scorep_mpiprofile_eval_multi_time_packs
     int   size
 )
 {
-    UTILS_DEBUG_PRINTF( SCOREP_DEBUG_MPIPROFILING, "mpiprofile : myrank = %d,%s", myrank, __FUNCTION__ );
+    UTILS_DEBUG_PRINTF( SCOREP_DEBUG_MPIPROFILING, "mpiprofile : myrank = %d,%s", scorep_mpiprofiling_myrank, __func__ );
     int      src;
     int      dst;
     uint64_t sendTime;
@@ -690,7 +729,7 @@ scorep_mpiprofile_eval_time_stamps
     uint64_t recvTime
 )
 {
-    UTILS_DEBUG_PRINTF( SCOREP_DEBUG_MPIPROFILING, "mpiprofile : myrank = %d,%s", myrank, __FUNCTION__ );
+    UTILS_DEBUG_PRINTF( SCOREP_DEBUG_MPIPROFILING, "mpiprofile : myrank = %d,%s", scorep_mpiprofiling_myrank, __func__ );
     if ( src == dst )
     {
         return;
@@ -701,21 +740,21 @@ scorep_mpiprofile_eval_time_stamps
     if ( delta > mpiprofiling_get_late_threshold() )
     {
         //UTILS_DEBUG_PRINTF( SCOREP_DEBUG_MPIPROFILING, "LATE RECEIVE: myrank=%d, src/dst = (%d/%d) Delta = %ld = %ld-%ld", myrank, src, dst, delta, recvTime, sendTime );
-        //SCOREP_USER_METRIC_INT64( lateRecv, delta );
+        //SCOREP_USER_METRIC_INT64( scorep_mpiprofiling_lateRecv, delta );
         ///receive process is late: store EARLY_SEND/LATE_RECEIVE=delta value for the remote side, currently not supported
         ///trigger user metric here
     }
     else if ( delta < -mpiprofiling_get_late_threshold() )
     {
-        UTILS_DEBUG_PRINTF( SCOREP_DEBUG_MPIPROFILING, "LATE SENDER: myrank=%d, src/dst = (%d/%d) Delta = %ld = %ld-%ld", myrank, src, dst, delta, recvTime, sendTime );
-        SCOREP_USER_METRIC_INT64( lateSend, -delta );
+        UTILS_DEBUG_PRINTF( SCOREP_DEBUG_MPIPROFILING, "LATE SENDER: myrank=%d, src/dst = (%d/%d) Delta = %ld = %ld-%ld", scorep_mpiprofiling_myrank, src, dst, delta, recvTime, sendTime );
+        SCOREP_USER_METRIC_INT64( scorep_mpiprofiling_lateSend, -delta );
         ///sending process is late: store LATE_SEND/EARLY_RECEIVE=-delta value on the current process
         ///trigger user metric here
     }
     else
     {
         delta = abs( delta );
-        UTILS_DEBUG_PRINTF( SCOREP_DEBUG_MPIPROFILING, "IN TIME: myrank=%d, src/dst = (%d/%d) Delta = %ld = %ld-%ld\n", myrank, src, dst, delta, recvTime, sendTime );
+        UTILS_DEBUG_PRINTF( SCOREP_DEBUG_MPIPROFILING, "IN TIME: myrank=%d, src/dst = (%d/%d) Delta = %ld = %ld-%ld\n", scorep_mpiprofiling_myrank, src, dst, delta, recvTime, sendTime );
         ///no late state
         ///trigger user metric here
     }
@@ -726,7 +765,7 @@ mpiprofiling_get_late_threshold
 (
 )
 {
-    return lateThreshold;
+    return scorep_mpiprofiling_lateThreshold;
 }
 
 void
@@ -735,5 +774,5 @@ mpiprofiling_set_late_threshold
     int64_t newThreshold
 )
 {
-    lateThreshold = newThreshold;
+    scorep_mpiprofiling_lateThreshold = newThreshold;
 }

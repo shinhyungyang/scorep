@@ -37,14 +37,13 @@
 #include <SCOREP_Config.h>
 
 #include <UTILS_Error.h>
+#define SCOREP_DEBUG_MODULE_NAME CONFIG
 #include <UTILS_Debug.h>
 #include <UTILS_CStr.h>
 
 #include <SCOREP_Hashtab.h>
 
 #include "scorep_types.h"
-
-#define SCOREP_DEBUG_MODULE_NAME CONFIG
 
 static size_t
 hash_variable( const void* key );
@@ -338,6 +337,28 @@ SCOREP_ConfigRegister( const char*            nameSpaceName,
     return SCOREP_SUCCESS;
 }
 
+static bool force_conditional_registrations;
+
+SCOREP_ErrorCode
+SCOREP_ConfigRegisterCond( const char*            nameSpaceName,
+                           SCOREP_ConfigVariable* variables,
+                           bool                   isAvailable )
+{
+    if ( isAvailable || force_conditional_registrations )
+    {
+        return SCOREP_ConfigRegister( nameSpaceName,
+                                      variables );
+    }
+
+    return SCOREP_SUCCESS;
+}
+
+void
+SCOREP_ConfigForceConditionalRegister( void )
+{
+    force_conditional_registrations = true;
+}
+
 
 SCOREP_ErrorCode
 SCOREP_ConfigApplyEnv( void )
@@ -505,9 +526,12 @@ SCOREP_ConfigHelp( bool full, bool html )
               variable;
               variable = variable->next )
         {
-            printf( "%s%s%s%s\n",
+            printf( "%s%s%s%s%s%s%s\n",
                     sep,
-                    html ? " <dt><tt>" : "",
+                    html ? " <dt>" : "",
+                    html ? "@anchor " : "",
+                    html ? variable->env_var_name : "",
+                    html ? "<tt>" : "",
                     variable->env_var_name,
                     html ? "</tt></dt>" : "" );
             printf( "%s%s%s\n",

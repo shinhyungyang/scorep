@@ -37,6 +37,7 @@
 #include <sys/resource.h>
 
 #include "SCOREP_Config.h"
+#include <UTILS_Error.h>
 #include <UTILS_Debug.h>
 #include <UTILS_CStr.h>
 
@@ -76,7 +77,7 @@
  *  information displayed is valid for the whole process and not for each single thread.
  *
  *  In addition it is possible to specify metrics that will be recorded per-process. Please use
- *  \c SCOREP_RUSAGE_PER_PROCESS for that reason.
+ *  \c SCOREP_METRIC_RUSAGE_PER_PROCESS for that reason.
  */
 
 /** Resource usage counter indices */

@@ -32,6 +32,9 @@
 #include <stdio.h>
 
 
+#include <UTILS_Error.h>
+
+
 #include <SCOREP_Location.h>
 
 
@@ -93,7 +96,7 @@ scorep_subsystems_initialize( void )
         }
         else if ( SCOREP_Env_RunVerbose() )
         {
-            fprintf( stderr, "SCOREP successfully initialized %s subsystem\n",
+            fprintf( stderr, "[Score-P] successfully initialized %s subsystem\n",
                      scorep_subsystems[ i ]->subsystem_name );
         }
     }
@@ -125,7 +128,7 @@ scorep_subsystems_initialize_location( SCOREP_Location* locationData )
         }
         else if ( SCOREP_Env_RunVerbose() )
         {
-            fprintf( stderr, "SCOREP successfully initialized location for %s subsystem\n",
+            fprintf( stderr, "[Score-P] successfully initialized location for %s subsystem\n",
                      scorep_subsystems[ i ]->subsystem_name );
         }
     }
@@ -144,7 +147,7 @@ scorep_subsystems_finalize_location( SCOREP_Location* locationData )
 
         if ( SCOREP_Env_RunVerbose() )
         {
-            fprintf( stderr, "SCOREP finalized %s subsystem location\n",
+            fprintf( stderr, "[Score-P] finalized %s subsystem location\n",
                      scorep_subsystems[ i ]->subsystem_name );
         }
     }
@@ -164,7 +167,7 @@ scorep_subsystems_finalize( void )
 
         if ( SCOREP_Env_RunVerbose() )
         {
-            fprintf( stderr, "SCOREP finalized %s subsystem\n",
+            fprintf( stderr, "[Score-P] finalized %s subsystem\n",
                      scorep_subsystems[ i ]->subsystem_name );
         }
     }
@@ -184,7 +187,7 @@ scorep_subsystems_deregister( void )
 
         if ( SCOREP_Env_RunVerbose() )
         {
-            fprintf( stderr, "SCOREP de-registered %s subsystem\n",
+            fprintf( stderr, "[Score-P] de-registered %s subsystem\n",
                      scorep_subsystems[ i ]->subsystem_name );
         }
     }

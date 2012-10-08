@@ -31,6 +31,9 @@
 #include <assert.h>
 
 #include "SCOREP_Mpi.h"
+
+#include <UTILS_Error.h>
+
 #include "SCOREP_Mpi_Communicator.h"
 #include <SCOREP_Definitions.h>
 #include <SCOREP_Mutex.h>
@@ -404,7 +407,8 @@ scorep_mpi_win_id( MPI_Win win )
     else
     {
         SCOREP_MutexUnlock( scorep_mpi_window_mutex );
-        UTILS_ERROR( SCOREP_ERROR_MPI_NO_WINDOW );
+        UTILS_ERROR( SCOREP_ERROR_MPI_NO_WINDOW,
+                     "Please tell me what you were trying to do!" );
         return SCOREP_INVALID_MPI_WINDOW;
     }
 }

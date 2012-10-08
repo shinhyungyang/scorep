@@ -35,10 +35,10 @@
 #include <opari2/pomp2_lib.h>
 #include "SCOREP_Pomp_RegionInfo.h"
 #include "SCOREP_Pomp_Lock.h"
+#define SCOREP_DEBUG_MODULE_NAME OPENMP
+#include <UTILS_Error.h>
 #include <UTILS_Debug.h>
 #include "SCOREP_Pomp_Variables.h"
-
-#define SCOREP_DEBUG_MODULE_NAME OPENMP
 
 /** @ingroup POMP2
     @{
@@ -50,9 +50,6 @@
 
 /** Pointer to an array of all pomp regions */
 SCOREP_Pomp_Region* scorep_pomp_regions;
-
-/** Contains the region handle for all implicit barriers */
-SCOREP_RegionHandle scorep_pomp_implicit_barrier_region = SCOREP_INVALID_REGION;
 
 /** Flag to indicate, wether POMP2 traceing is enable/disabled */
 bool scorep_pomp_is_tracing_on = true;
@@ -156,17 +153,7 @@ scorep_pomp_init()
         scorep_pomp_regions = calloc( POMP2_Get_num_regions(),
                                       sizeof( SCOREP_Pomp_Region ) );
 
-        /* Initialize implicit barrier region */
 #ifdef _OPENMP
-        scorep_pomp_implicit_barrier_region =
-            SCOREP_DefineRegion( "!$omp implicit barrier",
-                                 NULL,
-                                 scorep_pomp_file_handle,
-                                 SCOREP_INVALID_LINE_NO,
-                                 SCOREP_INVALID_LINE_NO,
-                                 SCOREP_ADAPTER_POMP,
-                                 SCOREP_REGION_OMP_IMPLICIT_BARRIER );
-
         /* Register regions for locking functions */
         scorep_pomp_register_lock_regions();
 #endif  // _OPENMP

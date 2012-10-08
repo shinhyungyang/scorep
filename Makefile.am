@@ -21,12 +21,22 @@ include vendor/common/build-config/platforms.am
 ## directory will be recursively copied into the distribution. Please note that
 ## this will also copy everything in the directory, including CVS/RCS version
 ## control files. We recommend against using this feature.
-EXTRA_DIST += $(srcdir)/src/config.h                                     \
-              $(srcdir)/src/config-custom.h                              \
-              $(srcdir)/doc/doxygen-user/scorep_usage.dox.in             \
-              $(srcdir)/doc/doxygen-user/scorep_config_usage.dox.in      \
-              $(srcdir)/doc/profile/scorep_metrics.html                  \
-              $(srcdir)/src/utils/include/SCOREP_Omp.h                   \
+EXTRA_DIST += $(srcdir)/src/config.h                                      \
+              $(srcdir)/src/config-custom.h                               \
+              $(srcdir)/doc/doxygen-user/scorep_usage.dox.in              \
+              $(srcdir)/doc/doxygen-user/scorep_config_usage.dox.in       \
+              $(srcdir)/doc/doxygen-user/scorep_info_usage.dox.in         \
+              $(srcdir)/doc/doxygen-user/scorep_backend_info_usage.dox.in \
+              $(srcdir)/doc/doxygen-user/scorep_score_usage.dox.in        \
+              $(srcdir)/doc/doxygen-user/main_1.dox.in                    \
+              $(srcdir)/doc/doxygen-user/main_2.dox.in                    \
+              $(srcdir)/doc/doxygen-user/main_3.dox.in                    \
+              $(srcdir)/doc/doxygen-user/main_4.dox.in                    \
+              $(srcdir)/doc/doxygen-user/main_5.dox.in                    \
+              $(srcdir)/doc/doxygen-user/main_6.dox.in                    \
+              $(srcdir)/doc/doxygen-user/main_7.dox.in                    \
+              $(srcdir)/doc/profile/scorep_metrics.html                   \
+              $(srcdir)/src/utils/include/SCOREP_Omp.h                    \
               $(srcdir)/share/scorep.errors
 
 
@@ -77,15 +87,21 @@ CLEANFILES += doc/doxygen-user/confvars.dox.in
 
 doc/doxygen-user/confvars.dox.in: $(INFO_TOOL_BUILD)/scorep-info
 	$(AM_V_GEN)$(MKDIR_P) `dirname $@` && \
-	./$(INFO_TOOL_BUILD)/scorep-info config-vars --full=html >$@
+	./$(INFO_TOOL_BUILD)/scorep-info config-vars --doxygen >$@
 
 doc/doxygen-user/main.dox: $(srcdir)/doc/doxygen-user/main_1.dox.in \
     $(srcdir)/doc/doxygen-user/scorep_usage.dox.in \
     $(srcdir)/doc/doxygen-user/main_2.dox.in \
     $(srcdir)/doc/doxygen-user/scorep_config_usage.dox.in \
     $(srcdir)/doc/doxygen-user/main_3.dox.in \
+    $(srcdir)/doc/doxygen-user/scorep_info_usage.dox.in \
+    $(srcdir)/doc/doxygen-user/main_4.dox.in \
+    $(srcdir)/doc/doxygen-user/scorep_score_usage.dox.in \
+    $(srcdir)/doc/doxygen-user/main_5.dox.in \
+    $(srcdir)/doc/doxygen-user/scorep_backend_info_usage.dox.in \
+    $(srcdir)/doc/doxygen-user/main_6.dox.in \
     doc/doxygen-user/confvars.dox.in \
-    $(srcdir)/doc/doxygen-user/main_4.dox.in
+    $(srcdir)/doc/doxygen-user/main_7.dox.in
 	$(AM_V_GEN)$(MKDIR_P) `dirname $@` && \
 	cat $^ >$@
 

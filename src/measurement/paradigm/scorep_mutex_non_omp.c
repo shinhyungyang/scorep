@@ -38,6 +38,9 @@
 #include <SCOREP_Mutex.h>
 
 
+#include <UTILS_Error.h>
+
+
 /** Magic number to identify an initialized lock */
 #define SCOREP_MUTEXT_MARKER ( void* )0x10C88c01
 
@@ -51,7 +54,8 @@ SCOREP_MutexCreate( SCOREP_Mutex* scorepMutex )
 {
     if ( !scorepMutex )
     {
-        return UTILS_ERROR( SCOREP_ERROR_INVALID_ARGUMENT );
+        return UTILS_ERROR( SCOREP_ERROR_INVALID_ARGUMENT,
+                            "Invalid mutex handle given." );
     }
 
     /* mark this lock initialized */
@@ -70,7 +74,8 @@ SCOREP_MutexDestroy( SCOREP_Mutex* scorepMutex )
 {
     if ( !scorepMutex )
     {
-        return UTILS_ERROR( SCOREP_ERROR_INVALID_ARGUMENT );
+        return UTILS_ERROR( SCOREP_ERROR_INVALID_ARGUMENT,
+                            "Invalid mutex handle given." );
     }
 
     if ( *scorepMutex == NULL )
@@ -98,7 +103,8 @@ SCOREP_MutexLock( SCOREP_Mutex scorepMutex )
 {
     if ( !scorepMutex )
     {
-        return UTILS_ERROR( SCOREP_ERROR_INVALID_ARGUMENT );
+        return UTILS_ERROR( SCOREP_ERROR_INVALID_ARGUMENT,
+                            "Invalid mutex handle given." );
     }
 
     if ( scorepMutex != SCOREP_MUTEXT_MARKER )
@@ -119,7 +125,8 @@ SCOREP_MutexUnlock( SCOREP_Mutex scorepMutex )
 {
     if ( !scorepMutex )
     {
-        return UTILS_ERROR( SCOREP_ERROR_INVALID_ARGUMENT );
+        return UTILS_ERROR( SCOREP_ERROR_INVALID_ARGUMENT,
+                            "Invalid mutex handle given." );
     }
 
     if ( scorepMutex != SCOREP_MUTEXT_MARKER )

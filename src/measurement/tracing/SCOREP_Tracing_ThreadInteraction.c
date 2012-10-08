@@ -134,8 +134,7 @@ SCOREP_Tracing_AssignLocationId( SCOREP_Location* threadLocationData )
     }
 
     SCOREP_TracingData* tracing_data = SCOREP_Location_GetTracingData( threadLocationData );
-    //assert( threadLocationData->location_id == UINT64_MAX );
-    uint64_t location_id = SCOREP_Location_GetGlobalId( threadLocationData );
+    uint64_t            location_id  = SCOREP_Location_GetGlobalId( threadLocationData );
 
     OTF2_ErrorCode error = OTF2_EvtWriter_SetLocationID( tracing_data->otf_writer,
                                                          location_id );

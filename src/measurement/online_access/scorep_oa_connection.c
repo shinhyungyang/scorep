@@ -24,6 +24,8 @@
 
 #include <config.h>
 
+#include <UTILS_Debug.h>
+
 #include "scorep_oa_connection.h"
 #include "scorep_oa_sockets.h"
 #include "scorep_mpi.h"
@@ -42,7 +44,7 @@ scorep_oa_connection_connect
 (
 )
 {
-    UTILS_DEBUG_RAW_PRINTF( SCOREP_DEBUG_OA, "Entering %s", __FUNCTION__ );
+    UTILS_DEBUG_RAW_PRINTF( SCOREP_DEBUG_OA, "Entering %s", __func__ );
     if ( scorep_oa_is_connected )
     {
         return SCOREP_SUCCESS;
@@ -79,7 +81,7 @@ scorep_oa_connection_send_string
     const char* message_string
 )
 {
-    UTILS_DEBUG_RAW_PRINTF( SCOREP_DEBUG_OA, "%s sending: %s", __FUNCTION__, message_string );
+    UTILS_DEBUG_RAW_PRINTF( SCOREP_DEBUG_OA, "%s sending: %s", __func__, message_string );
     scorep_oa_sockets_write_line( connection, message_string );
     return SCOREP_SUCCESS;
 }

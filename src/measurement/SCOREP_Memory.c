@@ -26,12 +26,15 @@
 
 #include <config.h>
 #include <SCOREP_Memory.h>
+#include <UTILS_Error.h>
 #include <SCOREP_Mutex.h>
+#include "scorep_environment.h"
 #include "scorep_thread.h"
 #include "scorep_status.h"
 #include <assert.h>
 #include <stdbool.h>
 #include <stdlib.h>
+#include <string.h>
 #include <inttypes.h>
 
 /* *INDENT-OFF* */
@@ -128,7 +131,19 @@ SCOREP_Memory_HandleOutOfMemory( void )
     UTILS_ERROR( SCOREP_ERROR_MEMORY_OUT_OF_PAGES,
                  "Out of memory. Please increase SCOREP_TOTAL_MEMORY=%" PRIu64 " and try again.",
                  scorep_memory_total_memory );
-    assert( false );
+    if ( SCOREP_Env_DoTracing() )
+    {
+        UTILS_ERROR( SCOREP_ERROR_MEMORY_OUT_OF_PAGES,
+                     "Please ensure that there are at least 2MB available for each intended thread." );
+        const char* omp_num_threads = getenv( "OMP_NUM_THREADS" );
+        if ( omp_num_threads && strlen( omp_num_threads ) )
+        {
+            UTILS_ERROR( SCOREP_ERROR_MEMORY_OUT_OF_PAGES,
+                         "And you seem to have requested %s threads for the measurement.",
+                         omp_num_threads );
+        }
+    }
+    abort();
 }
 
 SCOREP_Allocator_PageManager*

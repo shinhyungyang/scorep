@@ -33,13 +33,15 @@
 #include <stdio.h>
 #include <stdbool.h>
 #include <sys/types.h>
-#include <sys/stat.h>
 #include <errno.h>
 #include <assert.h>
 #include <string.h>
 #include <inttypes.h>
 
+#include <UTILS_Error.h>
+#define SCOREP_DEBUG_MODULE_NAME CORE
 #include <UTILS_Debug.h>
+
 #include <SCOREP_Memory.h>
 #include <SCOREP_Subsystem.h>
 #include <SCOREP_Metric_Management.h>
@@ -55,6 +57,7 @@
 #include <scorep_openmp.h>
 #include <SCOREP_OA_Init.h>
 
+#include "scorep_error_callback.h"
 #include "scorep_types.h"
 #include "scorep_subsystem.h"
 #include "scorep_definitions.h"
@@ -65,9 +68,8 @@
 #include "scorep_runtime_management.h"
 #include "scorep_system_tree.h"
 #include "scorep_clock_synchronization.h"
+#include "scorep_properties.h"
 #include "scorep_runtime_management_timings.h"
-
-#define SCOREP_DEBUG_MODULE_NAME CORE
 
 /** @brief Measurement system initialized? */
 static bool scorep_initialized = false;
@@ -86,6 +88,11 @@ static SCOREP_Platform_SystemTreePathElement* system_tree_path = NULL;
 static SCOREP_ExitCallback scorep_exit_callbacks[ scorep_max_exit_callbacks ];
 static int                 scorep_n_exit_callbacks = 0;
 
+/** Temporally disable trace event consumption.
+ *
+ * Controlled by the SCOREP_EnableRecording() and SCOREP_DisableRecording()
+ * functions.
+ */
 bool scorep_recording_enabled = true;
 
 /* *INDENT-OFF* */
@@ -122,53 +129,55 @@ SCOREP_InitMeasurement()
 {
     UTILS_DEBUG_ENTRY();
 
+    SCOREP_InitErrorCallback();
+
     if ( scorep_initialized )
     {
         return;
     }
-
-    SCOREP_TIME_START_TIMING( SCOREP_InitMeasurement );
 
     // even if we are not ready with the initialization we must prevent recursive
     // calls e.g. during the subsystem initialization.
     scorep_initialized = true;
     scorep_initialization_sanity_checks();
 
-    /* initialize the config system */
-    SCOREP_TIME( SCOREP_ConfigInit );
+    SCOREP_Timer_Initialize();
+    SCOREP_TIME_START_TIMING( SCOREP_InitMeasurement );
 
-    /* Build system tree at an early date, because it will be used by
+    /* initialize the config system */
+    SCOREP_TIME( SCOREP_ConfigInit, ( ) );
+
+    /* Build system tree at an early time, because it will be used by
      * metric service to determine additional metrics (e.g. per-process
      * metrcis). */
     system_tree_path = SCOREP_BuildSystemTree();
 
     /* Register all config variables */
-    SCOREP_TIME( SCOREP_RegisterAllConfigVariables );
+    SCOREP_TIME( SCOREP_RegisterAllConfigVariables, ( ) );
 
     /* Parse the environment */
-    SCOREP_TIME( SCOREP_ConfigApplyEnv );
+    SCOREP_TIME( SCOREP_ConfigApplyEnv, ( ) );
 
     if ( SCOREP_Env_RunVerbose() )
     {
-        fprintf( stderr, "SCOREP running in verbose mode\n" );
+        fprintf( stderr, "[Score-P] running in verbose mode\n" );
     }
 
-    SCOREP_TIME( SCOREP_Status_Initialize );
-    SCOREP_TIME( SCOREP_Timer_Initialize );
-    SCOREP_TIME( SCOREP_BeginEpoch );
-    SCOREP_TIME( SCOREP_CreateExperimentDir );
+    SCOREP_TIME( SCOREP_Status_Initialize, ( ) );
+    SCOREP_TIME( SCOREP_CreateExperimentDir, ( ) );
 
     // Need to be called before the first use of any SCOREP_Alloc function, in
     // particular before SCOREP_Thread_Initialize
-    SCOREP_TIME_WITH_ARGS( SCOREP_Memory_Initialize, SCOREP_Env_GetTotalMemory(), SCOREP_Env_GetPageSize() );
+    SCOREP_TIME( SCOREP_Memory_Initialize,
+                 ( SCOREP_Env_GetTotalMemory(), SCOREP_Env_GetPageSize() ) );
 
     // initialize before SCOREP_Thread_Initialize() because latter may create a
     // writer that needs the archive.
-    SCOREP_TIME( scorep_otf2_initialize );
+    SCOREP_TIME( scorep_otf2_initialize, ( ) );
 
     // initialize before SCOREP_Thread_Initialize() because latter creates at least a
     // location definition.
-    SCOREP_TIME( SCOREP_Definitions_Initialize );
+    SCOREP_TIME( SCOREP_Definitions_Initialize, ( ) );
 
     /* Get location group handle from system tree */
     location_group_handle = SCOREP_DefineSystemTree( system_tree_path );
@@ -177,26 +186,35 @@ SCOREP_InitMeasurement()
     SCOREP_FreeSystemTree( system_tree_path );
     system_tree_path = NULL;
 
-    SCOREP_TIME( SCOREP_Thread_Initialize );
+    SCOREP_TIME( SCOREP_Location_Initialize, ( ) );
+    SCOREP_TIME( SCOREP_Thread_Initialize, ( ) );
 
     if ( !SCOREP_Mpi_HasMpi() )
     {
         scorep_set_otf2_archive_master_slave();
-        SCOREP_SynchronizeClocks();
     }
 
-    SCOREP_TIME( SCOREP_Filter_Initialize );
-    SCOREP_TIME( scorep_subsystems_initialize );
-    SCOREP_TIME_WITH_ARGS( scorep_subsystems_initialize_location, SCOREP_Location_GetCurrentCPULocation() );
-    SCOREP_TIME( scorep_profile_initialize );
+    SCOREP_TIME( SCOREP_Filter_Initialize, ( ) );
+    SCOREP_TIME( scorep_subsystems_initialize, ( ) );
+    SCOREP_TIME( scorep_subsystems_initialize_location,
+                 ( SCOREP_Location_GetCurrentCPULocation() ) );
+    SCOREP_TIME( scorep_profile_initialize, ( ) );
+
+    SCOREP_TIME( scorep_properties_initialize, ( ) );
 
     /* Register finalization handler, also called in SCOREP_InitMeasurementMPI() and
      * SCOREP_FinalizeMeasurementMPI(). We need to make sure that our handler is
      * called before the MPI one. */
     atexit( scorep_finalize );
 
+    SCOREP_TIME( SCOREP_BeginEpoch, ( ) );
+    if ( !SCOREP_Mpi_HasMpi() )
+    {
+        SCOREP_SynchronizeClocks();
+    }
+
     SCOREP_TIME_STOP_TIMING( SCOREP_InitMeasurement );
-    SCOREP_TIME_MEASUREMENT_START();
+    SCOREP_TIME_START_TIMING( MeasurementDuration );
 }
 
 
@@ -258,7 +276,7 @@ scorep_profile_initialize()
     SCOREP_Profile_AddLocationSpecificMetrics( SCOREP_Location_GetCurrentCPULocation(),
                                                SCOREP_Metric_GetNumberOfAdditionalScopedMetrics( SCOREP_Location_GetCurrentCPULocation() ) );
 
-    SCOREP_Profile_OnThreadActivation( SCOREP_Location_GetCurrentCPULocation(), NULL ); // called also from scorep_thread_call_externals_on_thread_activation
+    SCOREP_Profile_OnThreadActivation( SCOREP_Location_GetCurrentCPULocation(), NULL, 0 ); // called also from scorep_thread_call_externals_on_thread_activation
 }
 
 
@@ -438,7 +456,7 @@ scorep_finalize( void )
     SCOREP_TIME_STOP_TIMING( MeasurementDuration );
     SCOREP_TIME_START_TIMING( scorep_finalize );
 
-    SCOREP_TIME( scorep_trigger_exit_callbacks );
+    SCOREP_TIME( scorep_trigger_exit_callbacks, ( ) );
 
     // MPICH1 creates some extra processes that are not properly SCOREP
     // initialized and don't execute normal user code. We need to prevent SCOREP
@@ -448,50 +466,49 @@ scorep_finalize( void )
         return;
     }
 
-    SCOREP_TIME( SCOREP_SynchronizeClocks );
-    SCOREP_TIME( SCOREP_EndEpoch );
-    SCOREP_TIME( SCOREP_Filter_Finalize );
+    SCOREP_TIME( SCOREP_SynchronizeClocks, ( ) );
+    SCOREP_TIME( SCOREP_EndEpoch, ( ) );
+    SCOREP_TIME( SCOREP_Filter_Finalize, ( ) );
 
     /* finalize and close all event writers */
-    SCOREP_TIME( SCOREP_Tracing_FinalizeEventWriters );
+    SCOREP_TIME( SCOREP_Tracing_FinalizeEventWriters, ( ) );
 
     // Calling SCOREP_Event.h functions after this point is considered
     // an instrumentation error.
     // order is important
     if ( SCOREP_IsProfilingEnabled() )
     {
-        SCOREP_TIME_WITH_ARGS( SCOREP_Profile_Process, SCOREP_Location_GetCurrentCPULocation() );
+        SCOREP_TIME( SCOREP_Profile_Process, ( SCOREP_Location_GetCurrentCPULocation() ) );
     }
 
-    SCOREP_TIME( SCOREP_FinalizeLocationGroup );
+    SCOREP_TIME( SCOREP_FinalizeLocationGroup, ( ) );
 
-    SCOREP_Properties_Finalize(); // before SCOREP_Unify
+    SCOREP_TIME( SCOREP_Unify, ( ) );
 
-    SCOREP_TIME( SCOREP_Unify );
+    SCOREP_TIME( scorep_properties_write, ( ) );
 
-    SCOREP_Properties_Write();
+    SCOREP_TIME( scorep_profile_finalize, ( ) );
+    SCOREP_TIME( SCOREP_Definitions_Write, ( ) );
+    SCOREP_TIME( SCOREP_Definitions_Finalize, ( ) );
+    SCOREP_TIME( scorep_otf2_finalize, ( ) );
 
-    SCOREP_TIME( scorep_profile_finalize );
-    SCOREP_TIME( SCOREP_Definitions_Write );
-    SCOREP_TIME( SCOREP_Definitions_Finalize );
-    SCOREP_TIME( scorep_otf2_finalize );
+    SCOREP_TIME( SCOREP_Location_Finalize, ( ) );
 
-    SCOREP_TIME( SCOREP_Location_Finalize );
-
-    SCOREP_TIME( scorep_subsystems_finalize );  // Disables all adapters
+    SCOREP_TIME( scorep_subsystems_finalize, ( ) );  // Disables all adapters
 
     /* dump config variables into experiment directory */
-    SCOREP_TIME( scorep_dump_config );
+    SCOREP_TIME( scorep_dump_config, ( ) );
 
-    SCOREP_TIME( SCOREP_ConfigFini );
+    SCOREP_TIME( SCOREP_ConfigFini, ( ) );
 
-    SCOREP_TIME( SCOREP_RenameExperimentDir );   // needs MPI
-    SCOREP_TIME( SCOREP_Status_Finalize );       // Cleans up some measurement core MPI data
+    SCOREP_TIME( SCOREP_RenameExperimentDir, ( ) );   // needs MPI
+    SCOREP_TIME( SCOREP_Status_Finalize, ( ) );       // Cleans up some measurement core MPI data
 
-    SCOREP_TIME( scorep_subsystems_deregister ); // here PMPI_Finalize is called
+    SCOREP_TIME( scorep_subsystems_deregister, ( ) ); // here PMPI_Finalize is called
 
-    SCOREP_TIME( SCOREP_Thread_Finalize );
-    SCOREP_TIME( SCOREP_Memory_Finalize );
+    SCOREP_TIME( SCOREP_Thread_Finalize, ( ) );
+    SCOREP_TIME( SCOREP_Memory_Finalize, ( ) );
+
     SCOREP_TIME_STOP_TIMING( scorep_finalize );
 
     SCOREP_TIME_PRINT_TIMINGS();

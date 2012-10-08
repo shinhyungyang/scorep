@@ -45,10 +45,11 @@ typedef struct scorep_wait_state_tracking_struct
     int         tp_tag;
     int         tp_comm_partner_wc;
     int         tp_tag_wc;
+    MPI_Group   group;
 }scorep_wait_state_request_tracking;
 
 
-extern int myrank;
+extern int scorep_mpiprofiling_myrank;
 
 /**
  * @internal
@@ -63,7 +64,7 @@ typedef struct scorep_mpiprofile_world_comm_dup_struct
 /**
  * Contains the data of the MPI_COMM_WORLD definition.
  */
-extern scorep_mpiprofile_world_comm_dup world_comm_dup;
+extern scorep_mpiprofile_world_comm_dup scorep_mpiprofiling_world_comm_dup;
 
 int
 scorep_mpiprofile_get_timepack_from_pool
@@ -88,6 +89,15 @@ scorep_mpiprofile_init_timepack
     void*    buf,
     uint64_t time
 );
+
+int
+scorep_mpiprofiling_get_group( MPI_Comm   comm,
+                               MPI_Group* group );
+
+int
+scorep_mpiprofiling_rank_to_pe_by_group( int       rank,
+                                         MPI_Group group,
+                                         int*      global_rank );
 
 int
 scorep_mpiprofiling_rank_to_pe

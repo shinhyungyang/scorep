@@ -26,7 +26,7 @@ AC_PREFIX_DEFAULT([/opt/scorep])
 AM_INIT_AUTOMAKE([foreign color-tests 1.11.1 -Wall tar-pax])
 AM_SILENT_RULES([yes])
 
-AC_COMMON_PACKAGE([scorep], [subst-only])
+AC_SCOREP_COMMON_PACKAGE([scorep], [subst-only])
 
 # don't detect and load defaults in nested configures (e.g. otf2)
 if test ! -n "$ac_scorep_platform_data_provided" -o "x${ac_scorep_platform_data_provided}" = "xno"; then
@@ -68,9 +68,9 @@ AC_SCOREP_DEBUG_OPTION
 # used for EXTRA_DIST in Makefile.am
 AM_CONDITIONAL([CROSS_BUILD], [test "x${ac_scorep_cross_compiling}" = "xyes"])
 
-AC_SCOREP_HAVE_CONFIG_TOOL([otf2])
-AC_SCOREP_HAVE_CONFIG_TOOL([opari2])
-AC_SCOREP_HAVE_CONFIG_TOOL([cube])
+AC_SCOREP_HAVE_CONFIG_TOOL([otf2],   [2], [0])
+AC_SCOREP_HAVE_CONFIG_TOOL([opari2], [1], [0])
+AC_SCOREP_HAVE_CONFIG_TOOL([cube],   [1], [0])
 
 # handle external package's subdir configures
 AS_IF([test "x${scorep_have_opari2_config}" = "xno"],

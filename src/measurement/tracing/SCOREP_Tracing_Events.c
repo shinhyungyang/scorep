@@ -26,14 +26,13 @@
 
 #include <config.h>
 
+#include "SCOREP_Tracing_Events.h"
 
 #include <stdlib.h>
 #include <stdio.h>
 
 
 #include <UTILS_Error.h>
-
-
 #include <UTILS_Debug.h>
 
 
@@ -41,17 +40,16 @@
 
 
 #include <SCOREP_Types.h>
-#include <scorep_thread.h>
 #include <SCOREP_Definitions.h>
+#include <SCOREP_Properties.h>
+
+#include <scorep_thread.h>
 #include <scorep_definition_structs.h>
 #include <scorep_definitions.h>
 
 
 #include "scorep_tracing_internal.h"
 #include "scorep_tracing_types.h"
-
-
-extern bool scorep_properties[ SCOREP_PROPERTY_MAX ];
 
 
 void
@@ -89,16 +87,8 @@ SCOREP_Tracing_Metric( SCOREP_Location*         location,
                                                   SamplingSet );
     }
 
-    OTF2_Type value_types[ sampling_set->number_of_metrics ];
-    for ( uint8_t i = 0; i < sampling_set->number_of_metrics; i++ )
-    {
-        SCOREP_MetricHandle       metric_handle = sampling_set->metric_handles[ i ];
-        SCOREP_Metric_Definition* metric        =
-            SCOREP_LOCAL_HANDLE_DEREF( metric_handle, Metric );
-        value_types[ i ]
-            = scorep_tracing_metric_value_type_to_otf2( metric->value_type );
-    }
-
+    OTF2_Type* value_types = ( OTF2_Type* )(
+        ( char* )sampling_set + sampling_set->tracing_cache_offset );
     OTF2_EvtWriter_Metric( evt_writer,
                            NULL,
                            timestamp,
@@ -509,7 +499,7 @@ SCOREP_Tracing_StoreRewindPoint( SCOREP_Location*    location,
     OTF2_EvtWriter_StoreRewindPoint( evt_writer, region_id );
 
     /* Push this rewind region on the stack to manage nested rewind points. */
-    scorep_rewind_stack_push( region_id, timestamp );
+    scorep_rewind_stack_push( location, region_id, timestamp );
 }
 
 void
@@ -545,7 +535,7 @@ SCOREP_Tracing_ExitRewindRegion( SCOREP_Location*    location,
     id = SCOREP_LOCAL_HANDLE_TO_ID( regionHandle, Region );
 
     /* Search for the region id in the rewind stack, and print a warning when it is not found and leave function. */
-    if ( scorep_rewind_stack_find( id ) == false )
+    if ( scorep_rewind_stack_find( location, id ) == false )
     {
         UTILS_WARNING( "ID of rewind region is not in rewind stack, maybe "
                        "there was a buffer flush or a programming error!" );
@@ -559,7 +549,7 @@ SCOREP_Tracing_ExitRewindRegion( SCOREP_Location*    location,
     do
     {
         /* Remove from stack. */
-        scorep_rewind_stack_pop( &id_pop, &entertimestamp, paradigm_affected );
+        scorep_rewind_stack_pop( location, &id_pop, &entertimestamp, paradigm_affected );
 
         /* Remove nested rewind points from otf2 internal memory for rewind points. */
         if ( id != id_pop )
@@ -584,15 +574,39 @@ SCOREP_Tracing_ExitRewindRegion( SCOREP_Location*    location,
         /* Did it affect MPI events? */
         if ( paradigm_affected[ SCOREP_PARADIGM_MPI ] )
         {
-            scorep_properties[ SCOREP_PROPERTY_MPI_COMMUNICATION_COMPLETE ] = false;
+            SCOREP_InvalidateProperty( SCOREP_PROPERTY_MPI_COMMUNICATION_COMPLETE );
         }
         /* Did it affect OMP events? */
         if ( paradigm_affected[ SCOREP_PARADIGM_OPENMP ] )
         {
-            scorep_properties[ SCOREP_PROPERTY_OPENMP_EVENT_COMPLETE ] = false;
+            SCOREP_InvalidateProperty( SCOREP_PROPERTY_OPENMP_EVENT_COMPLETE );
         }
     }
 
     /* And remove the rewind point from otf2 internal memory. */
     SCOREP_Tracing_ClearRewindPoint( location, id );
+}
+
+size_t
+SCOREP_Tracing_GetSamplingSetCacheSize( uint32_t numberOfMetrics )
+{
+    return numberOfMetrics * sizeof( OTF2_Type );
+}
+
+void
+SCOREP_Tracing_CacheSamplingSet( SCOREP_SamplingSetHandle samplingSet )
+{
+    SCOREP_SamplingSet_Definition* sampling_set
+        = SCOREP_LOCAL_HANDLE_DEREF( samplingSet, SamplingSet );
+
+    OTF2_Type* value_types = ( OTF2_Type* )(
+        ( char* )sampling_set + sampling_set->tracing_cache_offset );
+    for ( uint8_t i = 0; i < sampling_set->number_of_metrics; i++ )
+    {
+        SCOREP_MetricHandle       metric_handle = sampling_set->metric_handles[ i ];
+        SCOREP_Metric_Definition* metric        =
+            SCOREP_LOCAL_HANDLE_DEREF( metric_handle, Metric );
+        value_types[ i ]
+            = scorep_tracing_metric_value_type_to_otf2( metric->value_type );
+    }
 }
