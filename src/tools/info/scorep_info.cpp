@@ -112,18 +112,13 @@ main( int   argc,
                 {
                     full = true;
                 }
-                else if ( mode == "--full=html" )
-                {
-                    full = true;
-                    html = true;
-                }
                 else if ( mode == "--doxygen" )
                 {
                     full = true;
                     html = true;
                     SCOREP_ConfigForceConditionalRegister();
                 }
-                else
+                else if ( mode != "" )
                 {
                     std::cout << "Invalid option for info command "
                               << info_command << ": " << mode << std::endl;
