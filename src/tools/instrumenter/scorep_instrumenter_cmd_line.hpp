@@ -107,55 +107,69 @@ public:
                   char** argv );
 
     bool
-    isCompilerInstrumenting();
+    isCompilerInstrumenting( void );
     bool
-    isOpariInstrumenting();
+    isOpariInstrumenting( void );
     bool
-    isUserInstrumenting();
+    isUserInstrumenting( void );
     bool
-    isMpiInstrumenting();
+    isMpiInstrumenting( void );
     bool
-    isPdtInstrumenting();
+    isPdtInstrumenting( void );
     bool
-    isCobiInstrumenting();
+    isCobiInstrumenting( void );
     bool
-    isMpiApplication();
+    isMpiApplication( void );
     bool
-    isOpenmpApplication();
+    isOpenmpApplication( void );
     bool
-    isCudaApplication();
+    isCudaApplication( void );
     bool
-    isCompiling();
+    isCompiling( void );
     bool
-    isLinking();
+    isLinking( void );
     std::string
-    getCompilerName();
+    getCompilerName( void );
     std::string
-    getCompilerFlags();
+    getFlagsBeforeLmpi( void );
     std::string
-    getIncludeFlags();
+    getFlagsAfterLmpi( void );
     std::string
-    getDefineFlags();
+    getIncludeFlags( void );
     std::string
-    getOutputName();
+    getDefineFlags( void );
     std::string
-    getInputFiles();
+    getOutputName( void );
     std::string
-    getLibraries();
+    getInputFiles( void );
     std::string
-    getLibDirs();
+    getLibraries( void );
+    std::string
+    getLibDirs( void );
     int
-    getInputFileNumber();
+    getInputFileNumber( void );
     bool
-    isLmpiSet();
+    isLmpiSet( void );
     bool
-    isDryRun();
+    isDryRun( void );
     bool
-    hasKeepFiles();
+    hasKeepFiles( void );
     int
-    getVerbosity();
+    getVerbosity( void );
     bool
-    isBuildCheck();
+    isBuildCheck( void );
+    std::string
+    getPdtParams( void );
+    bool
+    enforceStaticLinking( void );
+    bool
+    enforceDynamicLinking( void );
+
+    /**
+       Returns true if the link target is a shared library.
+     */
+    bool
+    isTargetSharedLib( void );
 
     /* ***************************************************** Private methods */
 private:
@@ -165,14 +179,14 @@ private:
        configuration file to screen.
      */
     virtual void
-    print_parameter();
+    print_parameter( void );
 
     /**
        Checks whether command line parameter parsing provided meaningful
        information, applies remaining detection decisions.
      */
     void
-    check_parameter();
+    check_parameter( void );
 
     /**
        Evaluates one parameter when in output mode.
@@ -245,6 +259,16 @@ private:
     void
     add_define( std::string arg );
 
+    /**
+       Extracts the paramter list out of @a arg. It assumes that it has
+       a structure like, e.g., "--opari=paramater"
+       @param arg  The full current argument.
+       @param pos  The length of the tool argument, e.g., length of --opari.
+     */
+    std::string
+    get_tool_params( std::string arg,
+                     size_t      pos );
+
 
     /* ***************************************************** Private members */
 private:
@@ -263,12 +287,18 @@ private:
     instrumentation_usage_t m_compiler_instrumentation;
 
     /**
-       Specifies if OPARI instrumentation is enabled. Default detect.
+       Specifies if OPARI2 instrumentation is enabled. Default detect.
      */
     instrumentation_usage_t m_opari_instrumentation;
 
     /**
-       Specifies if user instrumentation is enabled. Default is disabled.
+       Specifies if POMP2 user instrumentation is enabled. Default detect
+       which means it is enabled if opari is enabled.
+     */
+    instrumentation_usage_t m_pomp_instrumentation;
+
+    /**
+        Specifies if user instrumentation is enabled. Default is disabled.
      */
     instrumentation_usage_t m_user_instrumentation;
 
@@ -307,6 +337,11 @@ private:
      */
     instrumentation_usage_t m_is_cuda_application;
 
+    /**
+       True is the link target is a shared library.
+     */
+    bool m_target_is_shared_lib;
+
     /* --------------------------------------------
        Work mode information
        ------------------------------------------*/
@@ -320,6 +355,15 @@ private:
      */
     bool m_is_linking;
 
+    /**
+       Specification of static or dynamic linking of Score-P libraries into the
+       application.
+       Enabled means link static.
+       Detect means use compiler default.
+       Disabeld means link dynamic libraries if possible.
+     */
+    instrumentation_usage_t m_link_static;
+
     /* --------------------------------------------
        Input command elements
        ------------------------------------------*/
@@ -329,9 +373,22 @@ private:
     std::string m_compiler_name;
 
     /**
-       all compiler/linker flags, except defines.
+       all compiler/linker flags, before an explicit -lmpi,
+       except source files, object files, -c and -o options.
      */
-    std::string m_compiler_flags;
+    std::string m_flags_before_lmpi;
+
+    /**
+       all compiler/linker flags, after an explicit -lmpi,
+       except source files, object files, -c and -o options.
+     */
+    std::string m_flags_after_lmpi;
+
+    /**
+       Pointers to @a m_flags_before_lmpi or @a m_flags_after_lmpi, depending
+       whether -lmpi already occured.
+     */
+    std::string* m_current_flags;
 
     /**
        include flags
@@ -407,6 +464,15 @@ private:
        from an instrumented run, but from the build location.
      */
     bool m_is_build_check;
+
+
+    /* --------------------------------------------
+       Tools flags
+       ------------------------------------------*/
+    /**
+       Extra parameters for the tau_instrumenter
+     */
+    std::string m_pdt_params;
 };
 
 #endif

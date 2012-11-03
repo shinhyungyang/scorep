@@ -51,6 +51,7 @@ AC_SCOREP_LIBSION([SERIAL])
 AC_SCOREP_LIBSION([OMP])
 AC_SCOREP_LIBPAPI
 AC_SCOREP_RUSAGE
+AC_SCOREP_LINK_FLAGS_CHECK
 
 AS_IF([test -n "${scorep_otf2_bindir}"],
       [AC_SUBST([OTF2_CPPFLAGS], ["`${scorep_otf2_bindir}/otf2-config --cppflags ${scorep_otf2_config_backend_arg}`"])
@@ -105,15 +106,11 @@ AC_SUBST([LIBTOOL_DEPS])
 AC_SCOREP_BUILD_MODE
 AC_SCOREP_CUDA
 
-# don't use ${exec_prefix} here, evaluates to 'NONE' but use it in Makefile.am
-backend_bin_dir="/bin"
-backend_lib_dir="/lib"
-if test "x${ac_scorep_cross_compiling}" = "xyes"; then
-    backend_bin_dir="/bin/backend"
-    backend_lib_dir="/lib/backend"
-fi
-AC_SUBST(backend_bin_dir)
-AC_SUBST(backend_lib_dir)
+# On crosscompile machines, install backend stuff into $(bin|lid)dir/backend.
+backend_suffix=""
+AS_IF([test "x${ac_scorep_cross_compiling}" = "xyes"],
+      [backend_suffix="/backend"])
+AC_SUBST([backend_suffix])
 
 AC_CHECK_SIZEOF([void *])
 AC_CHECK_SIZEOF([int64_t])

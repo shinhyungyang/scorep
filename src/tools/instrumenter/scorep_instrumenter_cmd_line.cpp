@@ -24,12 +24,13 @@
 #include <scorep_instrumenter_cmd_line.hpp>
 #include <scorep_instrumenter_utils.hpp>
 #include <scorep_config_tool_mpi.h>
+#include <scorep_config_tool_backend.h>
 
 #include <iostream>
 #include <stdlib.h>
 
 extern void
-print_help();
+print_help( void );
 
 /* ****************************************************************************
    Main interface
@@ -41,6 +42,7 @@ SCOREP_Instrumenter_CmdLine::SCOREP_Instrumenter_CmdLine( SCOREP_Instrumenter_In
     /* Instrumentation methods */
     m_compiler_instrumentation = enabled;
     m_opari_instrumentation    = detect;
+    m_pomp_instrumentation     = detect;
     m_user_instrumentation     = disabled;
     m_mpi_instrumentation      = detect;
     m_pdt_instrumentation      = disabled;
@@ -50,14 +52,18 @@ SCOREP_Instrumenter_CmdLine::SCOREP_Instrumenter_CmdLine( SCOREP_Instrumenter_In
     m_is_mpi_application    = detect;
     m_is_openmp_application = detect;
     m_is_cuda_application   = detect;
+    m_target_is_shared_lib  = false;
 
     /* Execution modes */
     m_is_compiling = true; // Opposite recognized if no source files in input
     m_is_linking   = true; // Opposite recognized on existence of -c flag
+    m_link_static  = detect;
 
     /* Input command elements */
     m_compiler_name     = "";
-    m_compiler_flags    = "";
+    m_flags_before_lmpi = "";
+    m_flags_after_lmpi  = "";
+    m_current_flags     = &m_flags_before_lmpi;
     m_include_flags     = "";
     m_define_flags      = "";
     m_output_name       = "";
@@ -66,6 +72,7 @@ SCOREP_Instrumenter_CmdLine::SCOREP_Instrumenter_CmdLine( SCOREP_Instrumenter_In
     m_libraries         = "";
     m_libdirs           = "";
     m_lmpi_set          = false;
+    m_pdt_params        = "";
 
     /* Instrumenter flags */
     m_is_dry_run     = false;
@@ -129,153 +136,183 @@ SCOREP_Instrumenter_CmdLine::ParseCmdLine( int    argc,
 }
 
 bool
-SCOREP_Instrumenter_CmdLine::isCompilerInstrumenting()
+SCOREP_Instrumenter_CmdLine::isCompilerInstrumenting( void )
 {
     return m_compiler_instrumentation == enabled;
 }
 
 bool
-SCOREP_Instrumenter_CmdLine::isOpariInstrumenting()
+SCOREP_Instrumenter_CmdLine::isOpariInstrumenting( void )
 {
     return m_opari_instrumentation == enabled;
 }
 
 bool
-SCOREP_Instrumenter_CmdLine::isUserInstrumenting()
+SCOREP_Instrumenter_CmdLine::isUserInstrumenting( void )
 {
     return m_user_instrumentation == enabled;
 }
 
 bool
-SCOREP_Instrumenter_CmdLine::isMpiInstrumenting()
+SCOREP_Instrumenter_CmdLine::isMpiInstrumenting( void )
 {
     return m_mpi_instrumentation == enabled;
 }
 
 bool
-SCOREP_Instrumenter_CmdLine::isPdtInstrumenting()
+SCOREP_Instrumenter_CmdLine::isPdtInstrumenting( void )
 {
     return m_pdt_instrumentation == enabled;
 }
 
 bool
-SCOREP_Instrumenter_CmdLine::isCobiInstrumenting()
+SCOREP_Instrumenter_CmdLine::isCobiInstrumenting( void )
 {
     return m_cobi_instrumentation == enabled;
 }
 
 bool
-SCOREP_Instrumenter_CmdLine::isMpiApplication()
+SCOREP_Instrumenter_CmdLine::isMpiApplication( void )
 {
     return m_is_mpi_application == enabled;
 }
 
 bool
-SCOREP_Instrumenter_CmdLine::isOpenmpApplication()
+SCOREP_Instrumenter_CmdLine::isOpenmpApplication( void )
 {
     return m_is_openmp_application == enabled;
 }
 
 bool
-SCOREP_Instrumenter_CmdLine::isCudaApplication()
+SCOREP_Instrumenter_CmdLine::isCudaApplication( void )
 {
     return m_is_cuda_application == enabled;
 }
 
 bool
-SCOREP_Instrumenter_CmdLine::isCompiling()
+SCOREP_Instrumenter_CmdLine::isCompiling( void )
 {
     return m_is_compiling;
 }
 
 bool
-SCOREP_Instrumenter_CmdLine::isLinking()
+SCOREP_Instrumenter_CmdLine::isLinking( void )
 {
     return m_is_linking;
 }
 
 std::string
-SCOREP_Instrumenter_CmdLine::getCompilerName()
+SCOREP_Instrumenter_CmdLine::getCompilerName( void )
 {
     return m_compiler_name;
 }
 
 std::string
-SCOREP_Instrumenter_CmdLine::getCompilerFlags()
+SCOREP_Instrumenter_CmdLine::getFlagsBeforeLmpi( void )
 {
-    return m_compiler_flags;
+    return m_flags_before_lmpi;
 }
 
 std::string
-SCOREP_Instrumenter_CmdLine::getIncludeFlags()
+SCOREP_Instrumenter_CmdLine::getFlagsAfterLmpi( void )
+{
+    return m_flags_after_lmpi;
+}
+
+std::string
+SCOREP_Instrumenter_CmdLine::getIncludeFlags( void )
 {
     return m_include_flags;
 }
 
 std::string
-SCOREP_Instrumenter_CmdLine::getDefineFlags()
+SCOREP_Instrumenter_CmdLine::getDefineFlags( void )
 {
     return m_define_flags;
 }
 
 std::string
-SCOREP_Instrumenter_CmdLine::getOutputName()
+SCOREP_Instrumenter_CmdLine::getOutputName( void )
 {
     return m_output_name;
 }
 
 std::string
-SCOREP_Instrumenter_CmdLine::getLibraries()
+SCOREP_Instrumenter_CmdLine::getLibraries( void )
 {
     return m_libraries;
 }
 
 std::string
-SCOREP_Instrumenter_CmdLine::getLibDirs()
+SCOREP_Instrumenter_CmdLine::getLibDirs( void )
 {
     return m_libdirs;
 }
 
 std::string
-SCOREP_Instrumenter_CmdLine::getInputFiles()
+SCOREP_Instrumenter_CmdLine::getInputFiles( void )
 {
     return m_input_files;
 }
 
 int
-SCOREP_Instrumenter_CmdLine::getInputFileNumber()
+SCOREP_Instrumenter_CmdLine::getInputFileNumber( void )
 {
     return m_input_file_number;
 }
 
 bool
-SCOREP_Instrumenter_CmdLine::isLmpiSet()
+SCOREP_Instrumenter_CmdLine::isLmpiSet( void )
 {
     return m_lmpi_set;
 }
 
 bool
-SCOREP_Instrumenter_CmdLine::isDryRun()
+SCOREP_Instrumenter_CmdLine::isDryRun( void )
 {
     return m_is_dry_run;
 }
 
 bool
-SCOREP_Instrumenter_CmdLine::hasKeepFiles()
+SCOREP_Instrumenter_CmdLine::hasKeepFiles( void )
 {
     return m_keep_files;
 }
 
 int
-SCOREP_Instrumenter_CmdLine::getVerbosity()
+SCOREP_Instrumenter_CmdLine::getVerbosity( void )
 {
     return m_verbosity;
 }
 
 bool
-SCOREP_Instrumenter_CmdLine::isBuildCheck()
+SCOREP_Instrumenter_CmdLine::isBuildCheck( void )
 {
     return m_is_build_check;
+}
+
+std::string
+SCOREP_Instrumenter_CmdLine::getPdtParams( void )
+{
+    return m_pdt_params;
+}
+
+bool
+SCOREP_Instrumenter_CmdLine::enforceStaticLinking( void )
+{
+    return m_link_static == enabled;
+}
+
+bool
+SCOREP_Instrumenter_CmdLine::enforceDynamicLinking( void )
+{
+    return m_link_static == disabled;
+}
+
+bool
+SCOREP_Instrumenter_CmdLine::isTargetSharedLib( void )
+{
+    return m_target_is_shared_lib;
 }
 
 /* ****************************************************************************
@@ -283,7 +320,7 @@ SCOREP_Instrumenter_CmdLine::isBuildCheck()
 ******************************************************************************/
 
 void
-SCOREP_Instrumenter_CmdLine::print_parameter()
+SCOREP_Instrumenter_CmdLine::print_parameter( void )
 {
     std::cout << "\nEnabled instrumentation:";
     if ( m_compiler_instrumentation == enabled )
@@ -336,7 +373,8 @@ SCOREP_Instrumenter_CmdLine::print_parameter()
     }
 
     std::cout << "\nCompiler name: " << m_compiler_name << std::endl;
-    std::cout << "Compiler flags: " << m_compiler_flags << std::endl;
+    std::cout << "Flags before -lmpi: " << m_flags_before_lmpi << std::endl;
+    std::cout << "Flags after -lmpi: " << m_flags_after_lmpi << std::endl;
     std::cout << "Output file: " << m_output_name << std::endl;
     std::cout << "Input file(s): " << m_input_files << std::endl;
 }
@@ -383,14 +421,25 @@ SCOREP_Instrumenter_CmdLine::parse_parameter( std::string arg )
         m_compiler_instrumentation = disabled;
         return scorep_parse_mode_param;
     }
-    else if ( arg == "--opari" )
+    else if ( arg.substr( 0, 7 ) == "--opari" )
     {
         m_opari_instrumentation = enabled;
+        m_install_data->setOpariParams( get_tool_params( arg, 7 ) );
         return scorep_parse_mode_param;
     }
     else if ( arg == "--noopari" )
     {
         m_opari_instrumentation = disabled;
+        return scorep_parse_mode_param;
+    }
+    else if ( arg == "--pomp" )
+    {
+        m_pomp_instrumentation = enabled;
+        return scorep_parse_mode_param;
+    }
+    else if ( arg == "--nopomp" )
+    {
+        m_pomp_instrumentation = disabled;
         return scorep_parse_mode_param;
     }
     else if ( arg == "--user" )
@@ -416,9 +465,10 @@ SCOREP_Instrumenter_CmdLine::parse_parameter( std::string arg )
         return scorep_parse_mode_param;
     }
 #ifdef HAVE_PDT
-    else if ( arg == "--pdt" )
+    else if ( arg.substr( 0, 5 ) == "--pdt" )
     {
         m_pdt_instrumentation = enabled;
+        m_pdt_params          = get_tool_params( arg, 5 );
         return scorep_parse_mode_param;
     }
     else if ( arg == "--nopdt" )
@@ -428,9 +478,10 @@ SCOREP_Instrumenter_CmdLine::parse_parameter( std::string arg )
     }
 #endif
 #if HAVE( COBI )
-    else if ( arg == "--cobi" )
+    else if ( arg.substr( 0, 6 ) == "--cobi" )
     {
         m_cobi_instrumentation = enabled;
+        m_install_data->setOpariParams( get_tool_params( arg, 6 ) );
         return scorep_parse_mode_param;
     }
     else if ( arg == "--nocobi" )
@@ -456,6 +507,57 @@ SCOREP_Instrumenter_CmdLine::parse_parameter( std::string arg )
         print_help();
         exit( EXIT_SUCCESS );
     }
+
+    /* Link options */
+#if defined( SCOREP_STATIC_BUILD ) && defined( SCOREP_SHARED_BUILD )
+    else if ( arg == "--static" )
+    {
+#if HAVE_LINK_FLAG_BSTATIC
+        m_link_static = enabled;
+        return scorep_parse_mode_param;
+#else   // HAVE_LINK_FLAG_BSTATIC
+        std::cerr << "The --static option is not supported with the used compiler."
+                  << std::endl;
+        exit( EXIT_FAILURE );
+#endif  // HAVE_LINK_FLAG_BSTATIC
+    }
+    else if ( arg == "--dynamic" )
+    {
+#if HAVE_LINK_FLAG_BDYNAMIC
+        m_link_static = disabled;
+        return scorep_parse_mode_param;
+#else   // HAVE_LINK_FLAG_BDYNAMIC
+        std::cerr << "The --dynamic option is not supported with the used compiler."
+                  << std::endl;
+        exit( EXIT_FAILURE );
+#endif  // HAVE_LINK_FLAG_BDYNAMIC
+    }
+#elif defined( SCOREP_STATIC_BUILD )
+    else if ( arg == "--static" )
+    {
+        return scorep_parse_mode_param;
+    }
+    else if ( arg == "--dynamic" )
+    {
+        std::cerr << "Dynamic linking is not possible. This installation contains "
+                  << "no shared Score-P libraries."
+                  << std::endl;
+        exit( EXIT_FAILURE );
+    }
+#elif defined( SCOREP_SHARED_BUILD )
+    else if ( arg == "--static" )
+    {
+        std::cerr << "Static linking is not possible. This installation contains "
+                  << "no static Score-P libraries."
+                  << std::endl;
+        exit( EXIT_FAILURE );
+    }
+    else if ( arg == "--dynamic" )
+    {
+        return scorep_parse_mode_param;
+    }
+#endif
+
     /* Misc parameters */
     else if ( arg == "--version" )
     {
@@ -510,10 +612,13 @@ SCOREP_Instrumenter_CmdLine::parse_parameter( std::string arg )
 SCOREP_Instrumenter_CmdLine::scorep_parse_mode_t
 SCOREP_Instrumenter_CmdLine::parse_command( std::string arg )
 {
-    if ( ( arg[ 0 ] != '-' ) &&
-         ( is_source_file( arg ) || is_object_file( arg ) || is_library( arg ) ) )
+    if ( ( arg[ 0 ] != '-' ) && is_library( arg ) )
     {
-        /* Assume it is a input file */
+        m_libraries += " " + arg;
+    }
+    else if ( ( arg[ 0 ] != '-' ) &&
+              ( is_source_file( arg ) || is_object_file( arg ) ) )
+    {
         m_input_files += " " + arg;
         m_input_file_number++;
         if ( is_cuda_file( arg ) )
@@ -522,9 +627,11 @@ SCOREP_Instrumenter_CmdLine::parse_command( std::string arg )
         }
         return scorep_parse_mode_command;
     }
-    else if ( arg == "-lmpi" )
+    else if ( arg.substr( 0, 5 ) == "-lmpi" )
     {
-        m_lmpi_set = true;
+        m_lmpi_set      = true;
+        m_current_flags = &m_flags_after_lmpi;
+
         /* is_mpi_application can only be disabled, if --nompi was specified.
            In this case do not enable mpi wrappers.
          */
@@ -532,10 +639,7 @@ SCOREP_Instrumenter_CmdLine::parse_command( std::string arg )
         {
             m_is_mpi_application = enabled;
         }
-        /* We must append the -lmpi after our flags, else our mpi wrappers are
-           not used. Thus, do not store this flag in the flag list, but return.
-         */
-        return scorep_parse_mode_command;
+        m_libraries += arg;
     }
     else if ( arg == "-c" )
     {
@@ -566,13 +670,32 @@ SCOREP_Instrumenter_CmdLine::parse_command( std::string arg )
     }
     else if ( arg == "-MF" )
     {
-        m_compiler_flags += " " + arg;
+        *m_current_flags += " " + arg;
         return scorep_parse_mode_option_part;
     }
     else if ( arg == "-MT" )
     {
-        m_compiler_flags += " " + arg;
+        *m_current_flags += " " + arg;
         return scorep_parse_mode_option_part;
+    }
+
+    /* Check whether the target is a shared library */
+    else if ( 0
+#if HAVE_LINK_FLAG_SHARED
+              || arg == "-shared"
+#endif
+#if HAVE_LINK_FLAG_DYNAMICLIB
+              || arg == "-dynamiclib"
+#endif
+#if HAVE_LINK_FLAG_QMKSHROBJ
+              || arg == "-qmkshrobj"
+#endif
+#if HAVE_LINK_FLAG_G_FOR_SHARED
+              || arg == "-G"
+#endif
+              )
+    {
+        m_target_is_shared_lib = true;
     }
 
     /* Check for OpenMP flags. The compiler's OpenMP flag is detected during
@@ -608,7 +731,6 @@ SCOREP_Instrumenter_CmdLine::parse_command( std::string arg )
     else if ( arg[ 1 ] == 'D' )
     {
         add_define( arg );
-        return scorep_parse_mode_command;
     }
     else if ( arg[ 1 ] == 'L' )
     {
@@ -620,14 +742,14 @@ SCOREP_Instrumenter_CmdLine::parse_command( std::string arg )
     }
 
     /* In any case that not yet returned, save the flag */
-    m_compiler_flags += " " + arg;
+    *m_current_flags += " " + arg;
     return scorep_parse_mode_command;
 }
 
 SCOREP_Instrumenter_CmdLine::scorep_parse_mode_t
 SCOREP_Instrumenter_CmdLine::parse_option_part( std::string arg )
 {
-    m_compiler_flags += " " + arg;
+    *m_current_flags += " " + arg;
     return scorep_parse_mode_command;
 }
 
@@ -652,7 +774,8 @@ SCOREP_Instrumenter_CmdLine::add_define( std::string arg )
         arg.append( 1, '\"' );
     }
 
-    m_define_flags += " " + arg;
+    *m_current_flags += " " + arg;
+    m_define_flags   += " " + arg;
 }
 
 SCOREP_Instrumenter_CmdLine::scorep_parse_mode_t
@@ -663,7 +786,7 @@ SCOREP_Instrumenter_CmdLine::parse_output( std::string arg )
 }
 
 void
-SCOREP_Instrumenter_CmdLine::check_parameter()
+SCOREP_Instrumenter_CmdLine::check_parameter( void )
 {
     /* If is_mpi_application not manually specified, try a guess from the
        compiler name */
@@ -691,10 +814,33 @@ SCOREP_Instrumenter_CmdLine::check_parameter()
     {
         m_opari_instrumentation = m_is_openmp_application;
     }
+    if ( m_opari_instrumentation == disabled &&
+         m_is_openmp_application == enabled )
+    {
+        std::cerr << "\n"
+                  << "WARNING: You disabled OPARI2 instrumentation for an OpenMP\n"
+                  << "         enabled application. The application will crash at runtime\n"
+                  << "         if any event occurs inside a parallel region.\n"
+                  << std::endl;
+    }
 
     if ( m_mpi_instrumentation == detect )
     {
         m_mpi_instrumentation = m_is_mpi_application;
+    }
+
+    /* Check interference between POMP and Opari instrumentation */
+    if ( m_opari_instrumentation == enabled &&
+         m_pomp_instrumentation == disabled )
+    {
+        m_install_data->setOpariParams( "--disable=region" );
+    }
+
+    if ( m_opari_instrumentation == disabled &&
+         m_pomp_instrumentation == enabled )
+    {
+        m_opari_instrumentation = enabled;
+        m_install_data->setOpariParams( "--disable=omp" );
     }
 
     /* Check pdt dependencies */
@@ -756,7 +902,7 @@ SCOREP_Instrumenter_CmdLine::scorep_parse_mode_t
 SCOREP_Instrumenter_CmdLine::parse_library( std::string arg )
 {
     m_libraries += " -l" + arg;
-    if ( arg == "mpi" )
+    if ( arg.substr( 0, 3 )  == "mpi" )
     {
         m_lmpi_set = true;
         /* is_mpi_application can only be disabled, if --nompi was specified.
@@ -766,14 +912,8 @@ SCOREP_Instrumenter_CmdLine::parse_library( std::string arg )
         {
             m_is_mpi_application = enabled;
         }
-        /* We must append the -lmpi after our flags, else our mpi wrappers are
-           not used. Thus, do not store this flag in the flag list, but return.
-         */
     }
-    else
-    {
-        m_compiler_flags += " -l" + arg;
-    }
+    *m_current_flags += " -l" + arg;
     return scorep_parse_mode_command;
 }
 
@@ -788,14 +928,32 @@ SCOREP_Instrumenter_CmdLine::scorep_parse_mode_t
 SCOREP_Instrumenter_CmdLine::parse_incdir( std::string arg )
 {
     m_include_flags  += " -I" + arg;
-    m_compiler_flags += " -I" + arg;
+    *m_current_flags += " -I" + arg;
     return scorep_parse_mode_command;
 }
 
 SCOREP_Instrumenter_CmdLine::scorep_parse_mode_t
 SCOREP_Instrumenter_CmdLine::parse_libdir( std::string arg )
 {
-    m_compiler_flags += " -L" + arg;
+    *m_current_flags += " -L" + arg;
     m_libdirs        += " " + arg;
     return scorep_parse_mode_command;
+}
+
+std::string
+SCOREP_Instrumenter_CmdLine::get_tool_params( std::string arg, size_t pos )
+{
+    if ( arg.length() <= pos + 1 )
+    {
+        return "";
+    }
+
+    if ( arg[ pos ] !=  '=' )
+    {
+        std::cerr << "ERROR: Unknown paramter: " << arg << std::endl;
+        std::cerr << "You may specify " << arg.substr( 0, pos )
+                  << " or " << arg.substr( 0, pos ) << "=\"<parameter-list>\"" << std::endl;
+        exit( EXIT_FAILURE );
+    }
+    return arg.substr( pos + 1, std::string::npos );
 }

@@ -45,7 +45,7 @@ public:
     /**
        Creates a new SCOREP_Instrumenter_InstallData object.
      */
-    SCOREP_Instrumenter_InstallData();
+    SCOREP_Instrumenter_InstallData( void );
 
     /**
        Destroys a SCOREP_Instrumenter_InstallData object.
@@ -57,80 +57,80 @@ public:
        Returns the scorep-config tool.
      */
     std::string
-    getScorepConfig();
+    getScorepConfig( void );
 
     /**
        C compiler command
      */
     std::string
-    getCC();
+    getCC( void );
 
     /**
        Stores C compiler OpenMP flags
      */
     std::string
-    getOpenmpFlags();
+    getOpenmpFlags( void );
 
     /**
        The nm command
      */
     std::string
-    getNm();
+    getNm( void );
 
     /**
        The awk command
      */
     std::string
-    getAwk();
+    getAwk( void );
 
     /**
        The opari2 executable
      */
     std::string
-    getOpari();
+    getOpari( void );
 
     /**
        The awk script used to generate functions for initialization of Opari2
        instrumented regions.
      */
     std::string
-    getOpariScript();
+    getOpariScript( void );
 
     /**
        The opari2-config tool
      */
     std::string
-    getOpariConfig();
+    getOpariConfig( void );
 
     /**
        The grep command
      */
     std::string
-    getGrep();
+    getGrep( void );
 
     /**
        The cobi executable
      */
     std::string
-    getCobi();
+    getCobi( void );
 
     /**
         Directory of the Cobi configuration files
      */
     std::string
-    getCobiConfigDir();
+    getCobiConfigDir( void );
 
     /**
         Path to PDT binaries.
      */
     std::string
-    getPdtBinPath();
+    getPdtBinPath( void );
 
     /**
         PDT instrumentation specificaion file.
      */
     std::string
-    getPdtConfigFile();
+    getPdtConfigFile( void );
 
     /**
        Reads configuration data from a config file
@@ -144,7 +144,21 @@ public:
        directory.
      */
     void
-    setBuildCheck();
+    setBuildCheck( void );
+
+    /**
+       Sets user specified Opari2 flags.
+       @param params The Opari2 parameters
+     */
+    void
+    setOpariParams( std::string params );
+
+    /**
+       Sets user specified Cobi flags.
+       @param params The Cobi parameters
+     */
+    void
+    setCobiParams( std::string params );
 
 
     /* ***************************************************** Private methods */
@@ -247,6 +261,21 @@ private:
         PDT instrumentation specificaion file.
      */
     std::string m_pdt_config_file;
+
+    /**
+       Extra parameter for opari.
+     */
+    std::string m_opari_params;
+
+    /**
+       Extra parameters for the tau_instrumenter
+     */
+    std::string m_pdt_params;
+
+    /**
+       Extra parameter for the Cobi instrumenter
+     */
+    std::string m_cobi_params;
 };
 
 #endif

@@ -22,6 +22,7 @@
  */
 #include <config.h>
 #include <scorep_instrumenter.hpp>
+#include <scorep_config_tool_backend.h>
 
 #include <iostream>
 #include <string>
@@ -36,7 +37,7 @@ const std::string toolname = "scorep";
     Prints a short usage message.
  */
 void
-print_short_usage()
+print_short_usage( void )
 {
     std::cout << "\nThis is the SCOREP instrumentation tool. The usage is:\n"
               << toolname << " <options> <orginal command>\n\n"
@@ -50,7 +51,7 @@ print_short_usage()
    Prints the long help text.
  */
 void
-print_help()
+print_help( void )
 {
     std::cout << "\nThis is the SCOREP instrumentation tool. The usage is:\n"
               << toolname << " <options> <orginal command>\n\n"
@@ -76,25 +77,35 @@ print_help()
               << "                  mpi program.\n"
               << "  --nompi         Disables mpi wrappers. They are disabled by default if\n"
               << "                  it is no mpi program.\n"
-              << "  --opari         Enables Opari instrumentation. Is enabled by default\n"
+              << "  --opari[=\"<parameter-list>\"] Enables Opari2 instrumentation. Is enabled by default\n"
               << "                  if it is an OpenMP program.\n"
+              << "                  You may specify additional parameters that are passed to Opari2.\n"
     /*
-            << "  --noopari       Disables Opari instrumentation. Is disabled by default\n"
+            << "  --noopari       Disables Opari2 instrumentation. Is disabled by default\n"
             << "                  if it is no OpenMP program.\n"
      */
+              << "  --pomp          Enables semi-automatic pomp user instrumentation.\n"
+              << "                  By default, it is enabled if OPARI2 instrumentation is\n"
+              << "                  enabled.\n"
+              << "  --nopomp        Disables semi-automatic pomp user instrumentation.\n"
+              << "                  By default, it is enabled if OPARI2 instrumentation is\n"
+              << "                  enabled.\n"
               << "  --user          Enables manual user instrumentation.\n"
               << "  --nouser        Disables manual user instrumentation. Is disabled by default.\n"
 #ifdef HAVE_PDT
-              << "  --pdt           Enables source code instrumentation with PDT using\n"
+              << "  --pdt[=\"<parameter-list>\"] Enables source code instrumentation with PDT using\n"
               << "                  the TAU instrumentor.\n"
               << "                  It will automatically enable the user instrumentation\n"
               << "                  and disable compiler instrumentation.\n"
+              << "                  You may specify additional parameters that are passed\n"
+              << "                  to the TAU instrumentor.\n"
               << "  --nopdt         Disables the source code instrumentation with PDT.\n"
               << "                  It is disabled by default.\n"
 #endif
 #if HAVE( COBI )
-    << "  --cobi          Enables binary instrumentation with Cobi.\n"
+    << "  --cobi[=\"<parameter-list>\"] Enables binary instrumentation with Cobi.\n"
     << "                  Disables compiler instrumentation.\n"
+    << "                  You may specify additional parameters that are passed to Cobi.\n"
     << "  --nocobi        Disables the binary instrumentation with Cobi.\n"
     << "                  It is disabled by default.\n"
 #endif
@@ -102,6 +113,14 @@ print_help()
     << "                  does not correctly identify your application as OpenMP\n"
     << "                  program.\n"
     << "  --noopenmp      Disables OpenMP support.\n"
+#if defined( SCOREP_SHARED_BUILD ) && defined ( SCOREP_STATIC_BUILD )
+#if HAVE_LINK_FLAG_BSTATIC
+    << "  --static        Enforce static linking of the Score-P libraries.\n"
+#endif
+#if HAVE_LINK_FLAG_BDYNAMIC
+    << "  --dynamic       Enforce dynamic linking of the Score-P libraries.\n"
+#endif
+#endif
     << std::endl;
 }
 

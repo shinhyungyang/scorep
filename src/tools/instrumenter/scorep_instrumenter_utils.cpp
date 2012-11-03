@@ -58,9 +58,9 @@ remove_multiple_whitespaces( std::string str )
 }
 
 std::string
-replace_all( std::string &pattern,
-             std::string &replacement,
-             std::string  original )
+replace_all( std::string pattern,
+             std::string replacement,
+             std::string original )
 {
     std::string::size_type pos            = original.find( pattern, 0 );
     int                    pattern_length = pattern.length();
@@ -275,6 +275,10 @@ find_library( std::string library, std::string path_list, std::string delimiter 
     if ( library.substr( 0, 2 ) == "-l" )
     {
         library.replace( 0, 2, "lib" );
+    }
+    else
+    {
+        return library;
     }
     while ( cur_pos != std::string::npos )
     {
