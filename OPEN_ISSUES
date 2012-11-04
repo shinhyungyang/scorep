@@ -14,9 +14,9 @@
  *
  */
 
-                        Score-P v1.1 OPEN ISSUES
-                        ========================
-                                                           Status: Oct 2012
+                        Score-P v1.1.1-rc1 OPEN ISSUES
+                        ==============================
+                                                           Status: Nov 2012
 
 * Platform support
 
@@ -101,6 +101,10 @@
 --------------------------------------------------------------------------------
 
 * Score-P misc.
+
+  - Due to unreliabe results using the RDTSCP timer Score-P switched
+    to clock_gettime as default timer. Can be overridden by
+    --enable-timer-cycle_counter_tsc at configure time.
 
   - Applications using an autotools-based buildsystem should add the
     option "--disable-option-checking" to the usual configure

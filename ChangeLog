@@ -1,3 +1,31 @@
+------------------- Released version 1.1.1-rc1 -----------------------
+
+- Score-P's library installation directory matches the system library
+  directory (lib/lib64). Installation directory and the flags returned
+  by scorep-config now match.
+
+- Uninitialized POMP regions are initialized on the fly. Necessary if
+  pre-instrumented shared-libraries are involved.
+
+- Several fixes related to the order of libraries in the link-step.
+
+- Remove redundnacy in the Score-P link-step.
+
+- Provide options to the Score-P instrumenter to pass options to
+  opari2, cobi and pdt.
+
+- Fix segfault that occurred when the online access interface
+  reconfigures the measurement system.
+
+- Prevent generation of POMP2_Init_regions object file if compile
+  command creates a shared library rather than an executable.
+
+- If PDT and Opari2 were applied to a Fortran file, the OpenMP regions
+  did not show up, fixed.
+
+- Add LD_RUN_PATH contents (at instrumentation time) as rpath options
+  to Score-P's link line.
+
 ------------------- Released version 1.1 -----------------------------
 
 - Rewind, a new event-trace recording mode for long-running
