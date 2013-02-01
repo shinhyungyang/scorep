@@ -26,6 +26,7 @@ PROFILE_FLAGS =                                 \
     -I$(INC_ROOT)src/utils/include              \
     -I$(INC_ROOT)src/measurement/profiling      \
     -I$(INC_ROOT)src/measurement/include        \
+    -I$(INC_ROOT)src/measurement/paradigm       \
     -I$(INC_ROOT)src/services/include           \
     -I$(INC_ROOT)src/measurement                \
     @CUBE_WRITER_CPPFLAGS@                      \
@@ -55,6 +56,8 @@ libscorep_profile_la_SOURCES =                                           \
     $(SRC_ROOT)src/measurement/profiling/scorep_profile_location.c       \
     $(SRC_ROOT)src/measurement/profiling/scorep_profile_task_table.h     \
     $(SRC_ROOT)src/measurement/profiling/scorep_profile_task_table.c     \
+    $(SRC_ROOT)src/measurement/profiling/scorep_profile_debug.h          \
+    $(SRC_ROOT)src/measurement/profiling/scorep_profile_debug.c          \
     $(SRC_ROOT)src/measurement/profiling/scorep_profile_process.h        \
     $(SRC_ROOT)src/measurement/profiling/scorep_profile_expand.c         \
     $(SRC_ROOT)src/measurement/profiling/scorep_profile_collapse.c       \
@@ -63,7 +66,7 @@ libscorep_profile_la_SOURCES =                                           \
     $(SRC_ROOT)src/measurement/profiling/scorep_profile_tausnap_writer.c \
     $(SRC_ROOT)src/measurement/profiling/scorep_profile_writer.h         \
     $(SRC_ROOT)src/measurement/profiling/scorep_profile_callpath.c       \
-    $(SRC_ROOT)src/measurement/profiling/scorep_profile_substitute_paramater.c \
+    $(SRC_ROOT)src/measurement/profiling/scorep_profile_substitute_parameter.c \
     $(SRC_ROOT)src/measurement/profiling/scorep_profile_cube4_writer.c
 
 libscorep_profile_la_CPPFLAGS = $(PROFILE_FLAGS) -DDOCDIR='"$(docdir)"'

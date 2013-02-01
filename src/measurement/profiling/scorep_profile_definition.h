@@ -27,7 +27,8 @@
 
 #include <stdint.h>
 
-#include "scorep_profile_node.h"
+#include <scorep_profile_node.h>
+#include <scorep_profile_debug.h>
 
 /* **************************************************************************************
    Defines
@@ -43,7 +44,11 @@
    @def SCOREP_PROFILE_STOP
    Disables further construction of the profile.
  */
-#define SCOREP_PROFILE_STOP scorep_profile.is_initialized = false;
+#define SCOREP_PROFILE_STOP( location )       \
+    do {                                       \
+        scorep_profile.is_initialized = false; \
+        scorep_profile_on_error( location );   \
+    } while ( 0 );
 
 /* **************************************************************************************
    Typedefs
@@ -151,17 +156,23 @@ void
 scorep_profile_delete_definition();
 
 /**
+   Returns the configuration value for SCOREP_PROFILE_BASENAME.
+ */
+const char*
+scorep_profile_get_basename( void );
+
+/**
+   Returns the configuration value for SCORE_PROFILE_ENABLE_CORE_FILES.
+ */
+bool
+scorep_profile_do_core_files( void );
+
+/**
    Returns the number of locations stored in the profile.
    @return number of locations stored in the profile.
  */
 uint64_t
 scorep_profile_get_number_of_threads();
-
-/**
-   Dumps the tree structure to the screen.
- */
-void
-scorep_profile_dump();
 
 SCOREP_ParameterHandle scorep_profile_param_instance;
 

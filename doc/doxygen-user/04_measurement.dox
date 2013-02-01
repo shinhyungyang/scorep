@@ -1,3 +1,4 @@
+
 /** @page measurement Application Measurement
 \seclabel{measurement}
 
@@ -157,6 +158,39 @@ feature with care. If you are only interested in some parts of the application, 
 tracing (see Section @secref{selective_tracing}) might be a memory space save alternative.
 
 
+@subsection profile_debug_output Enabling additional debug output on inconsistent profiles
+@seclabel{profile_debug_output}
+
+If the @scorep profiling system detects inconsistencies during measurement, it stops
+recording the profile and prints an error message. Examples for reasons of an 
+inconsistent profile are, if the nesting order of function entries and exits is 
+broken, or events appear for an uninitialized thread. This might indicate an bug
+of the profile, but typically the cause is an erroneous instrumentation. E.g. if
+manual instrumentation is applied, but not all possible exit points of a function
+are instrumented. 
+
+In order to support debugging of manual instrumentation, or during the development
+of own automatic instrumentation techniques, the profile can write additional 
+information about its current state in a textual form into a file. This output
+may contain the following information:
+<ul>
+ <li> The current call stack of the failing thread </li>
+ <li> The profile structure of the failing thread </li>
+ <li> The complete profile structure </li>
+</ul>
+None of the three entries is guaranteed to appear in the output, it depends on 
+the current state of the profile. It might not be possible to provide any 
+output at all. Furthermore, the online representation of the profile structure may
+differ from the final profile structure.
+
+You can enable this additional output by setting the environment variable
+<tt>SCOREP_PROFILING_ENABLE_CORE_FILES</tt> to <tt>true</tt>. Then, if the
+profile detects an inconsistency, it will write a core file into
+your measurement directory. If an inconstant profiles is detected on multiple
+locations, every location where an inconsistency is detected will write a 
+core file. Thus, it is not recommended, to enable this feature for large scale runs.
+
+
 @section tracing Tracing
 @seclabel{tracing}
 
@@ -304,7 +338,7 @@ evaluating the expression. A Fortran rule would look like this:
       <tt>SCOREP_REGION_NAMES_END</tt>, <tt>EXCLUDE</tt>, <tt>INCLUDE</tt>, 
       and <tt>FORTRAN</tt>) are case-sensitive.
 
-@subsection selective_tracing Selective Tracing
+@section selective_tracing Selective Tracing
 @seclabel{selective_tracing}
 
 @scorep experiments record by default all events during the whole execution run.
@@ -669,6 +703,10 @@ idle    = GPU compute idle time
 yes/DEFAULT/1 = "runtime,kernel"
 no = disable CUDA measurement (same as unset SCOREP_CUDA_ENABLE)
 @endcode
+
+CUPTI uses an extra buffer to store its activity records.
+If the size of this buffer is too small, @scorep will print a warning about the current buffer size and the number of dropped records.
+To avoid dropping of records increase the buffer size via the environment variable \confvar{SCOREP_CUDA_BUFFER}.
 
 @note @scorep supports CUDA monitoring since CUDA toolkit version 4.1. Make sure that the @scorep installation has configured CUDA support. The configure summary should contain the line: 
 <pre>CUDA support: yes</pre>

@@ -695,8 +695,12 @@ write_system_tree( cube_t*                   my_cube,
         else if ( ( strcmp( "node", class ) == 0 ) ||
                   ( strcmp( "nodecard", class ) == 0 ) )
         {
+            char* label = calloc( 11 + strlen( name ), 1 );
+            strcat( label, "Node card " );
+            strcat( label, name );
+
             system_tree[ pos ].my_cube_node =
-                cube_def_node( my_cube, name, get_cube_machine( &system_tree[ pos ] ) );
+                cube_def_node( my_cube,  label, get_cube_machine( &system_tree[ pos ] ) );
         }
     }
     SCOREP_DEFINITION_FOREACH_WHILE();
@@ -760,16 +764,26 @@ write_location_definitions( cube_t*                   my_cube,
     /* Location group (processes) Mapping of sequence numbers to cube defintions */
     cube_process** processes = write_location_group_definitions( my_cube, manager, ranks );
     /* Buffer to construct the name of the locations */
-    char name[ 256 ];
+    char generic_name[ 256 ];
 
     SCOREP_DEFINITION_FOREACH_DO( manager, Location, location )
     {
-        uint32_t parent_id = definition->location_group_id;
-        uint32_t index     = offsets[ parent_id ] + threads[ parent_id ];
+        uint32_t    parent_id = definition->location_group_id;
+        uint32_t    index     = offsets[ parent_id ] + threads[ parent_id ];
+        const char* name      = generic_name;
         threads[ parent_id ]++;
-        sprintf( name, "%s %" PRIu64,
-                 scorep_location_type_to_string( definition->location_type ),
-                 definition->global_location_id >> 32 );
+
+        if ( definition->location_type == SCOREP_LOCATION_TYPE_CPU_THREAD )
+        {
+            sprintf( generic_name, "%s %" PRIu64,
+                     scorep_location_type_to_string( definition->location_type ),
+                     definition->global_location_id >> 32 );
+        }
+        else
+        {
+            name = SCOREP_UNIFIED_HANDLE_DEREF( definition->name_handle,
+                                                String )->string_data;
+        }
         cube_def_thrd( my_cube, name, index, processes[ parent_id ] );
     }
     SCOREP_DEFINITION_FOREACH_WHILE();

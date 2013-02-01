@@ -60,10 +60,11 @@ struct scorep_profile_task_table
 };
 
 static scorep_profile_task*
-insert_task( scorep_profile_task_table* table,
-             scorep_profile_task_id     task_id,
-             scorep_profile_node*       current_node,
-             uint32_t                   depth )
+insert_task( SCOREP_Profile_LocationData* location,
+             scorep_profile_task_table*   table,
+             scorep_profile_task_id       task_id,
+             scorep_profile_node*         current_node,
+             uint32_t                     depth )
 {
     /* Try to recycle older entry or allocate new memory */
     scorep_profile_task* new_entry = NULL;
@@ -81,7 +82,7 @@ insert_task( scorep_profile_task_table* table,
     {
         UTILS_ERROR( SCOREP_ERROR_PROFILE_INCONSISTENT,
                      "Failed to allocate memory for task instance tracking." );
-        SCOREP_PROFILE_STOP;
+        SCOREP_PROFILE_STOP( location );
         return NULL;
     }
 
@@ -227,7 +228,7 @@ scorep_profile_create_task( SCOREP_Profile_LocationData* location,
                             scorep_profile_task_id       task_id,
                             scorep_profile_node*         task_root )
 {
-    return insert_task( location->tasks, task_id, task_root, 1 );
+    return insert_task( location, location->tasks, task_id, task_root, 1 );
 }
 
 void
@@ -244,7 +245,7 @@ scorep_profile_store_task( SCOREP_Profile_LocationData* location )
 
     if ( current_task == NULL )
     {
-        SCOREP_PROFILE_STOP;
+        SCOREP_PROFILE_STOP( location );
         UTILS_ERROR( SCOREP_ERROR_PROFILE_INCONSISTENT,
                      "Encountered unknown task ID" );
         return;
@@ -268,7 +269,7 @@ scorep_profile_restore_task( SCOREP_Profile_LocationData* location )
 
     if ( current_task == NULL )
     {
-        SCOREP_PROFILE_STOP;
+        SCOREP_PROFILE_STOP( location );
         UTILS_ERROR( SCOREP_ERROR_PROFILE_INCONSISTENT,
                      "Encountered unknown task ID" );
         return;

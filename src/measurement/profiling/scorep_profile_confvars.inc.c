@@ -45,6 +45,12 @@ char* scorep_profile_basename = NULL;
 uint64_t scorep_profile_output_format;
 
 /**
+   Stores whether the profile shall write profile.core files on errors
+ */
+bool scorep_profile_enable_core_files;
+
+
+/**
    Bitset table for output format string configuration.
  */
 static const SCOREP_ConfigType_SetEntry scorep_profile_format_table[] = {
@@ -114,6 +120,18 @@ static SCOREP_ConfigVariable scorep_profile_configs[] = {
         "  cube4:        Cube4 format\n"
         "  default:      Default format. If Cube4 is supported, Cube4 is the default\n"
         "                else the Tau snapshot format is default"
+    },
+    {
+        "enable_core_files",
+        SCOREP_CONFIG_TYPE_BOOL,
+        &scorep_profile_enable_core_files,
+        NULL,
+        "false",
+        "Write .core files if an error occured.",
+        "If an error occures inside the profiling system, the profiling is disabled. "
+        "For dubugging reasons, it might be feasable to get the state of the local "
+        "local at these points. It is not recommended to enable this feature for "
+        "large scale measurements."
     },
     SCOREP_CONFIG_TERMINATOR
 };

@@ -424,7 +424,7 @@ SCOREP_Profile_TriggerInteger( SCOREP_Location*    thread,
     {
         UTILS_ERROR( SCOREP_ERROR_PROFILE_INCONSISTENT,
                      "Metric triggered outside of a region." );
-        SCOREP_PROFILE_STOP;
+        SCOREP_PROFILE_STOP( location );
         return;
     }
 
@@ -451,7 +451,7 @@ SCOREP_Profile_TriggerDouble( SCOREP_Location*    thread,
     {
         UTILS_ERROR( SCOREP_ERROR_PROFILE_INCONSISTENT,
                      "Metric triggered outside of a region." );
-        SCOREP_PROFILE_STOP;
+        SCOREP_PROFILE_STOP( location );
         return;
     }
 
@@ -494,7 +494,7 @@ SCOREP_Profile_ParameterString( SCOREP_Location*       thread,
     {
         UTILS_ERROR( SCOREP_ERROR_PROFILE_INCONSISTENT,
                      "Failed to create location" );
-        SCOREP_PROFILE_STOP;
+        SCOREP_PROFILE_STOP( location );
         return;
     }
 
@@ -560,7 +560,7 @@ SCOREP_Profile_ParameterInteger( SCOREP_Location*       thread,
     {
         UTILS_ERROR( SCOREP_ERROR_PROFILE_INCONSISTENT,
                      "Failed to create location" );
-        SCOREP_PROFILE_STOP;
+        SCOREP_PROFILE_STOP( location );
         return;
     }
 
@@ -609,7 +609,7 @@ SCOREP_Profile_OnThreadActivation( SCOREP_Location* locationData,
     {
         UTILS_ERROR( SCOREP_ERROR_PROFILE_INCONSISTENT,
                      "Thread activated which was not created." );
-        SCOREP_PROFILE_STOP;
+        SCOREP_PROFILE_STOP( thread_data );
         return;
     }
     root = thread_data->root_node;
@@ -650,7 +650,7 @@ SCOREP_Profile_OnThreadActivation( SCOREP_Location* locationData,
         {
             UTILS_ERROR( SCOREP_ERROR_PROFILE_INCONSISTENT,
                          "Failed to create location" );
-            SCOREP_PROFILE_STOP;
+            SCOREP_PROFILE_STOP( thread_data );
             return;
         }
 
@@ -715,7 +715,7 @@ SCOREP_Profile_OnLocationCreation( SCOREP_Location* locationData,
     {
         UTILS_ERROR( SCOREP_ERROR_PROFILE_INCONSISTENT,
                      "Failed to create location" );
-        SCOREP_PROFILE_STOP;
+        SCOREP_PROFILE_STOP( thread_data );
         return;
     }
 
@@ -766,7 +766,8 @@ SCOREP_Profile_OnFork( SCOREP_Location* threadData,
 
     /* In case the fork node is a thread start node, this thread started at the same
        node like its parent thread. Thus, transfer the pointer. */
-    if ( fork_node->node_type == scorep_profile_node_thread_start )
+    if ( fork_node->node_type == scorep_profile_node_thread_start &&
+         scorep_profile_type_get_fork_node( fork_node->type_specific_data ) != NULL )
     {
         fork_node = scorep_profile_type_get_fork_node( fork_node->type_specific_data );
     }

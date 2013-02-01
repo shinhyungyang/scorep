@@ -36,6 +36,11 @@
 #include "scorep_definitions.h"
 
 /*----------------------------------------------------------------------------------------
+   External configuration variables
+   -------------------------------------------------------------------------------------*/
+extern bool scorep_profile_enable_core_files;
+
+/*----------------------------------------------------------------------------------------
    Global variables
    -------------------------------------------------------------------------------------*/
 
@@ -106,50 +111,35 @@ scorep_profile_get_number_of_threads()
 }
 
 /*----------------------------------------------------------------------------------------
-   Debug
+   Get configuration variables
    -------------------------------------------------------------------------------------*/
-void
-scorep_profile_dump_subtree( scorep_profile_node* node,
-                             uint32_t             level )
+
+uint64_t
+scorep_profile_get_max_callapth_depth( void )
 {
-    static char* type_name_map[] = {
-        "regular region",
-        "paramater string",
-        "parameter integer",
-        "thread root",
-        "thread start"
-    };
-
-    if ( node == NULL )
-    {
-        return;
-    }
-
-    printf( "%p ", node );
-    for ( int i = 0; i < level; i++ )
-    {
-        printf( "| " );
-    }
-    printf( "+ type: %s", type_name_map[ node->node_type ] );
-    if ( node->node_type == scorep_profile_node_regular_region )
-    {
-        printf( "  name: %s", SCOREP_Region_GetName( scorep_profile_type_get_region_handle( node->type_specific_data ) ) );
-    }
-    printf( "\n" );
-    if ( node->first_child != NULL )
-    {
-        scorep_profile_dump_subtree( node->first_child, level + 1 );
-    }
-    if ( node->next_sibling != NULL )
-    {
-        scorep_profile_dump_subtree( node->next_sibling, level );
-    }
+    return scorep_profile_max_callpath_depth;
 }
 
-void
-scorep_profile_dump()
+uint64_t
+scorep_profile_get_task_table_size( void )
 {
-    printf( "\n" );
-    scorep_profile_dump_subtree( scorep_profile.first_root_node, 0 );
-    printf( "\n" );
+    return scorep_profile_task_table_size;
+}
+
+const char*
+scorep_profile_get_basename( void )
+{
+    return scorep_profile_basename;
+}
+
+uint64_t
+scorep_profile_get_output_format( void )
+{
+    return scorep_profile_output_format;
+}
+
+bool
+scorep_profile_do_core_files( void )
+{
+    return scorep_profile_enable_core_files;
 }

@@ -35,10 +35,9 @@ print_help( void );
 /* ****************************************************************************
    Main interface
 ******************************************************************************/
-SCOREP_Instrumenter_CmdLine::SCOREP_Instrumenter_CmdLine( SCOREP_Instrumenter_InstallData* install_data )
+SCOREP_Instrumenter_CmdLine::SCOREP_Instrumenter_CmdLine( SCOREP_Instrumenter_InstallData& install_data )
+    : m_install_data( install_data )
 {
-    m_install_data = install_data;
-
     /* Instrumentation methods */
     m_compiler_instrumentation = enabled;
     m_opari_instrumentation    = detect;
@@ -124,6 +123,9 @@ SCOREP_Instrumenter_CmdLine::ParseCmdLine( int    argc,
                 break;
             case scorep_parse_mode_libdir:
                 mode = parse_libdir( argv[ i ] );
+                break;
+            case scorep_parse_mode_fortran_form:
+                mode = parse_fortran_form( argv[ i ] );
                 break;
         }
     }
@@ -400,7 +402,7 @@ SCOREP_Instrumenter_CmdLine::parse_parameter( std::string arg )
     else if ( arg == "--build-check" )
     {
         m_is_build_check = true;
-        m_install_data->setBuildCheck();
+        m_install_data.setBuildCheck();
         return scorep_parse_mode_param;
     }
 
@@ -424,7 +426,7 @@ SCOREP_Instrumenter_CmdLine::parse_parameter( std::string arg )
     else if ( arg.substr( 0, 7 ) == "--opari" )
     {
         m_opari_instrumentation = enabled;
-        m_install_data->setOpariParams( get_tool_params( arg, 7 ) );
+        m_install_data.setOpariParams( get_tool_params( arg, 7 ) );
         return scorep_parse_mode_param;
     }
     else if ( arg == "--noopari" )
@@ -464,6 +466,18 @@ SCOREP_Instrumenter_CmdLine::parse_parameter( std::string arg )
         m_mpi_instrumentation = disabled;
         return scorep_parse_mode_param;
     }
+#if HAVE_BACKEND( CUDA )
+    else if ( arg == "--cuda" )
+    {
+        m_is_cuda_application = enabled;
+        return scorep_parse_mode_param;
+    }
+    else if ( arg == "--nocuda" )
+    {
+        m_is_cuda_application = disabled;
+        return scorep_parse_mode_param;
+    }
+#endif
 #ifdef HAVE_PDT
     else if ( arg.substr( 0, 5 ) == "--pdt" )
     {
@@ -481,7 +495,7 @@ SCOREP_Instrumenter_CmdLine::parse_parameter( std::string arg )
     else if ( arg.substr( 0, 6 ) == "--cobi" )
     {
         m_cobi_instrumentation = enabled;
-        m_install_data->setOpariParams( get_tool_params( arg, 6 ) );
+        m_install_data.setCobiParams( get_tool_params( arg, 6 ) );
         return scorep_parse_mode_param;
     }
     else if ( arg == "--nocobi" )
@@ -572,7 +586,7 @@ SCOREP_Instrumenter_CmdLine::parse_parameter( std::string arg )
             std::cerr << "ERROR: No config file specified." << std::endl;
             exit( EXIT_FAILURE );
         }
-        if ( m_install_data->readConfigFile( config_file ) != SCOREP_SUCCESS )
+        if ( m_install_data.readConfigFile( config_file ) != SCOREP_SUCCESS )
         {
             std::cerr << "ERROR: Failed to read config file." << std::endl;
             exit( EXIT_FAILURE );
@@ -627,6 +641,10 @@ SCOREP_Instrumenter_CmdLine::parse_command( std::string arg )
         }
         return scorep_parse_mode_command;
     }
+    else if ( arg.substr( 0, 6 ) == "-lcuda" )
+    {
+        m_is_cuda_application = enabled;
+    }
     else if ( arg.substr( 0, 5 ) == "-lmpi" )
     {
         m_lmpi_set      = true;
@@ -678,38 +696,11 @@ SCOREP_Instrumenter_CmdLine::parse_command( std::string arg )
         *m_current_flags += " " + arg;
         return scorep_parse_mode_option_part;
     }
-
-    /* Check whether the target is a shared library */
-    else if ( 0
-#if HAVE_LINK_FLAG_SHARED
-              || arg == "-shared"
-#endif
-#if HAVE_LINK_FLAG_DYNAMICLIB
-              || arg == "-dynamiclib"
-#endif
-#if HAVE_LINK_FLAG_QMKSHROBJ
-              || arg == "-qmkshrobj"
-#endif
-#if HAVE_LINK_FLAG_G_FOR_SHARED
-              || arg == "-G"
-#endif
-              )
+    else if (  m_install_data.isArgForShared( arg ) )
     {
         m_target_is_shared_lib = true;
     }
-
-    /* Check for OpenMP flags. The compiler's OpenMP flag is detected during
-       configure time. Unfortunately, newer intel compiler versions support
-       the gnu-like -fopenmp in addition. In this case the configure test
-       detects -fopenmp as the OpenMP flag. Thus, we hardcode support for the
-       standard -openmp flag for intel compilers.
-     */
-#ifdef SCOREP_COMPILER_INTEL
-    else if ( ( arg == "-openmp" ) ||
-              ( arg == m_install_data->getOpenmpFlags() ) )
-#else
-    else if ( arg == m_install_data->getOpenmpFlags() )
-#endif
+    else if ( m_install_data.isArgForOpenmp( arg ) )
     {
         if ( m_is_openmp_application == detect )
         {
@@ -720,6 +711,23 @@ SCOREP_Instrumenter_CmdLine::parse_command( std::string arg )
             m_opari_instrumentation = enabled;
         }
     }
+
+    /* Check whether free form or fixed form is explicitly enabled. */
+    else if ( m_install_data.isArgForFreeform( arg ) )
+    {
+        m_install_data.setOpariFortranForm( true );
+    }
+    else if (  m_install_data.isArgForFixedform( arg ) )
+    {
+        m_install_data.setOpariFortranForm( false );
+    }
+    else if ( arg == "-f" )
+    {
+        *m_current_flags += " " + arg;
+        return scorep_parse_mode_fortran_form;
+    }
+
+    /* Check standard parameters */
     else if ( arg[ 1 ] == 'o' )
     {
         m_output_name = arg.substr( 2, std::string::npos );
@@ -731,6 +739,7 @@ SCOREP_Instrumenter_CmdLine::parse_command( std::string arg )
     else if ( arg[ 1 ] == 'D' )
     {
         add_define( arg );
+        return scorep_parse_mode_command;
     }
     else if ( arg[ 1 ] == 'L' )
     {
@@ -833,14 +842,14 @@ SCOREP_Instrumenter_CmdLine::check_parameter( void )
     if ( m_opari_instrumentation == enabled &&
          m_pomp_instrumentation == disabled )
     {
-        m_install_data->setOpariParams( "--disable=region" );
+        m_install_data.setOpariParams( "--disable=region" );
     }
 
     if ( m_opari_instrumentation == disabled &&
          m_pomp_instrumentation == enabled )
     {
         m_opari_instrumentation = enabled;
-        m_install_data->setOpariParams( "--disable=omp" );
+        m_install_data.setOpariParams( "--disable=omp" );
     }
 
     /* Check pdt dependencies */
@@ -856,6 +865,19 @@ SCOREP_Instrumenter_CmdLine::check_parameter( void )
         m_compiler_instrumentation = disabled; // Avoid double instrumentation.
     }
 
+    /* Evaluate whether we have a cuda application */
+    if ( m_is_cuda_application == detect )
+    {
+        if ( m_compiler_name.substr( 0, 2 ) == "nv" )
+        {
+            m_is_cuda_application = enabled;
+        }
+        else
+        {
+            m_is_cuda_application = disabled;
+        }
+    }
+
     /* If this is a dry run, enable printing out commands, if it is not already */
     if ( m_is_dry_run && m_verbosity < 1 )
     {
@@ -865,7 +887,7 @@ SCOREP_Instrumenter_CmdLine::check_parameter( void )
     if ( m_compiler_name == "" )
     {
         std::cerr << "ERROR: Could not identify compiler name." << std::endl;
-        abort();
+        exit( EXIT_FAILURE );
     }
     /*
        if ( output_name != "" && !is_linking && input_file_number > 1 )
@@ -888,12 +910,12 @@ SCOREP_Instrumenter_CmdLine::check_parameter( void )
     {
         std::cerr << "Error: Your installation does not support PDT instrumentation for "
                   << "MPI applications." << std::endl;
-        abort();
+        exit( EXIT_FAILURE );
     }
 
     /* To avoid remarks from the compiler about VT_ROOT' environment variable not set
        we set those variables to harmless values when using intel compilers. */
-    #ifdef SCOREP_COMPILER_INTEL
+    #ifdef SCOREP_BACKEND_COMPILER_INTEL
     m_compiler_name = "VT_LIB_DIR=. VT_ROOT=. VT_ADD_LIBS=\"\" " + m_compiler_name;
     #endif
 }
@@ -913,6 +935,11 @@ SCOREP_Instrumenter_CmdLine::parse_library( std::string arg )
             m_is_mpi_application = enabled;
         }
     }
+    if ( arg.substr( 0, 4 ) == "cuda" )
+    {
+        m_is_cuda_application = enabled;
+    }
+
     *m_current_flags += " -l" + arg;
     return scorep_parse_mode_command;
 }
@@ -956,4 +983,23 @@ SCOREP_Instrumenter_CmdLine::get_tool_params( std::string arg, size_t pos )
         exit( EXIT_FAILURE );
     }
     return arg.substr( pos + 1, std::string::npos );
+}
+
+SCOREP_Instrumenter_CmdLine::scorep_parse_mode_t
+SCOREP_Instrumenter_CmdLine::parse_fortran_form( std::string arg )
+{
+    if ( m_install_data.isArgForFreeform( "-f" + arg ) )
+    {
+        m_install_data.setOpariFortranForm( true );
+    }
+    else if ( m_install_data.isArgForFixedform( "-f" + arg ) )
+    {
+        m_install_data.setOpariFortranForm( false );
+    }
+    else
+    {
+        return parse_command( arg );
+    }
+    *m_current_flags += " " + arg;
+    return scorep_parse_mode_command;
 }
