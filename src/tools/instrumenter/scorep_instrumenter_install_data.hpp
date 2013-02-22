@@ -72,12 +72,6 @@ public:
     getNm( void );
 
     /**
-       The awk command
-     */
-    std::string
-    getAwk( void );
-
-    /**
        The opari2 executable
      */
     std::string
@@ -95,12 +89,6 @@ public:
      */
     std::string
     getOpariConfig( void );
-
-    /**
-       The grep command
-     */
-    std::string
-    getGrep( void );
 
     /**
        The cobi executable
@@ -189,7 +177,14 @@ public:
        @param arg the argument that is considered
      */
     bool
-    isArgForFixedform( std::string );
+    isArgForFixedform( std::string arg );
+
+    /**
+       Checks whether an argument that starts with -o is an argument that does not
+       specify an output file name.
+     */
+    bool
+    isArgWithO( std::string arg );
 
     /* ***************************************************** Private methods */
 private:
@@ -247,11 +242,6 @@ private:
     std::string m_nm;
 
     /**
-       The awk command
-     */
-    std::string m_awk;
-
-    /**
        The opari2 executable
      */
     std::string m_opari;
@@ -266,11 +256,6 @@ private:
        The opari2-config tool
      */
     std::string m_opari_config;
-
-    /**
-       The grep command
-     */
-    std::string m_grep;
 
     /**
        The cobi executable

@@ -42,7 +42,7 @@ SCOREP_Instrumenter_CmdLine::SCOREP_Instrumenter_CmdLine( SCOREP_Instrumenter_In
     m_compiler_instrumentation = enabled;
     m_opari_instrumentation    = detect;
     m_pomp_instrumentation     = detect;
-    m_user_instrumentation     = disabled;
+    m_user_instrumentation     = detect;
     m_mpi_instrumentation      = detect;
     m_pdt_instrumentation      = disabled;
     m_cobi_instrumentation     = disabled;
@@ -466,44 +466,57 @@ SCOREP_Instrumenter_CmdLine::parse_parameter( std::string arg )
         m_mpi_instrumentation = disabled;
         return scorep_parse_mode_param;
     }
-#if HAVE_BACKEND( CUDA )
     else if ( arg == "--cuda" )
     {
+#if HAVE_BACKEND( CUDA )
         m_is_cuda_application = enabled;
         return scorep_parse_mode_param;
+#else
+        std::cerr << "ERROR: Cuda is not supported by this installation."
+                  << std::endl;
+        exit( EXIT_FAILURE );
+#endif
     }
     else if ( arg == "--nocuda" )
     {
         m_is_cuda_application = disabled;
         return scorep_parse_mode_param;
     }
-#endif
-#ifdef HAVE_PDT
     else if ( arg.substr( 0, 5 ) == "--pdt" )
     {
+#ifdef HAVE_PDT
         m_pdt_instrumentation = enabled;
         m_pdt_params          = get_tool_params( arg, 5 );
         return scorep_parse_mode_param;
+#else
+        std::cerr << "ERROR: PDT instrumentation is not supported by this installation."
+                  << std::endl;
+        exit( EXIT_FAILURE );
+#endif
     }
     else if ( arg == "--nopdt" )
     {
         m_pdt_instrumentation = disabled;
         return scorep_parse_mode_param;
     }
-#endif
-#if HAVE( COBI )
     else if ( arg.substr( 0, 6 ) == "--cobi" )
     {
+#if HAVE( COBI )
         m_cobi_instrumentation = enabled;
         m_install_data.setCobiParams( get_tool_params( arg, 6 ) );
         return scorep_parse_mode_param;
+#else
+        std::cerr << "ERROR: Binary instrumentation with Cobi is not supported\n"
+                  << "       by this installation."
+                  << std::endl;
+        exit( EXIT_FAILURE );
+#endif
     }
     else if ( arg == "--nocobi" )
     {
         m_cobi_instrumentation = disabled;
         return scorep_parse_mode_param;
     }
-#endif
 
     /* Check for application type settings */
     else if ( arg == "--openmp" )
@@ -641,10 +654,6 @@ SCOREP_Instrumenter_CmdLine::parse_command( std::string arg )
         }
         return scorep_parse_mode_command;
     }
-    else if ( arg.substr( 0, 6 ) == "-lcuda" )
-    {
-        m_is_cuda_application = enabled;
-    }
     else if ( arg.substr( 0, 5 ) == "-lmpi" )
     {
         m_lmpi_set      = true;
@@ -710,6 +719,13 @@ SCOREP_Instrumenter_CmdLine::parse_command( std::string arg )
         {
             m_opari_instrumentation = enabled;
         }
+    }
+    /* Some stupid compilers have options starting with -o that do not
+       specify an output filename */
+    else if ( m_install_data.isArgWithO( arg ) )
+    {
+        *m_current_flags += " " + arg;
+        return scorep_parse_mode_command;
     }
 
     /* Check whether free form or fixed form is explicitly enabled. */
@@ -855,12 +871,28 @@ SCOREP_Instrumenter_CmdLine::check_parameter( void )
     /* Check pdt dependencies */
     if ( m_pdt_instrumentation == enabled )
     {
-        m_user_instrumentation     = enabled;  // Needed to activate the inserted macros.
-        m_compiler_instrumentation = disabled; // Avoid double instrumentation.
+        if ( m_user_instrumentation == disabled )
+        {
+            std::cerr << "ERROR: You must not combine --pdt with --nouser.\n"
+                      << "       PDT instrumentation inserts user instrumentation macros\n"
+                      << "       into the source code. Thus, it implicitly enables user\n"
+                      << "       instrumentation.\n"
+                      << std::endl;
+            exit( EXIT_FAILURE );
+        }
+        m_user_instrumentation = enabled;      // Needed to activate the inserted macros.
     }
 
-    /* Check pdt dependencies */
-    if ( m_cobi_instrumentation == enabled )
+    /* Evaluate the default user instrumentation */
+    if ( m_user_instrumentation == detect )
+    {
+        m_user_instrumentation = disabled;
+    }
+
+    /* Evaluate the default compiler instrumentation. By default use compiler
+       instrumentation if no other generic functions instrumentation was
+       selected by the user. */
+    if ( m_compiler_instrumentation == detect )
     {
         m_compiler_instrumentation = disabled; // Avoid double instrumentation.
     }
@@ -934,10 +966,6 @@ SCOREP_Instrumenter_CmdLine::parse_library( std::string arg )
         {
             m_is_mpi_application = enabled;
         }
-    }
-    if ( arg.substr( 0, 4 ) == "cuda" )
-    {
-        m_is_cuda_application = enabled;
     }
 
     *m_current_flags += " -l" + arg;

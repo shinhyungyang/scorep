@@ -1,4 +1,3 @@
-
 /** @page measurement Application Measurement
 \seclabel{measurement}
 
@@ -100,9 +99,9 @@ with the names phase1 and phase2 are not of type
 <tt>SCOREP_USER_REGION_TYPE_PHASE</tt> on the left side and the forest if they are of 
 type <tt>SCOREP_USER_REGION_TYPE_PHASE</tt> on the right side.
 
-@img{phase_profiling.png,PhaseProfiling,Call-tree changes when using phases. The left 
+@img{phase_profiling,PhaseProfiling,Call-tree changes when using phases. The left 
 side shows the calltree if no region is of type phase. The right side shows the 
-call-tree forest with phases., width=0.9\textwidth}
+call-tree forest with phases., width=0.9\textwidth} 
 
 If the phase consists of multiple partitions, and thus can not be enclosed by a single
 code region, all code-regions that form the phase must have the same region handle.
@@ -615,6 +614,7 @@ recorded if the communicator has only one member.
 If @scorep has been built with performance metric support it is capable of recording performance counter information.
 To request the measurement of certain counters, the user is required to set individual environment variables. 
 The user can leave these environment variables unset to indicate that no counters are requested.
+Requested counters will be recorded with every enter/exit event.
 
 @subsection papi_counters PAPI Hardware Performance Counters
 @seclabel{papi_counters}
@@ -638,7 +638,7 @@ The PAPI utility programs <tt>papi_avail</tt> and <tt>papi_native_avail</tt> rep
 If you want to change the separator used in the list of PAPI counter names, set the environment variable \confvar{SCOREP_METRIC_PAPI_SEP} to the desired character.
 
 @note
-In addition it is possible to specify metrics that will be recorded per-process. Please use \confvar{SCOREP_METRIC_PAPI_PER_PROCESS} for that reason.
+In addition it is possible to specify metrics that will be recorded only by the initial thread of a process. Please use \confvar{SCOREP_METRIC_PAPI_PER_PROCESS} for that reason.
 
 @subsection rusage_counters Resource Usage Counters
 @seclabel{rusage_counters}
@@ -683,7 +683,7 @@ SCOREP_METRIC_RUSAGE_SEP=:
 This indicates that counter names in the list are separated by colons.
 
 @note
-In addition it is possible to specify metrics that will be recorded per-process. Please use \confvar{SCOREP_METRIC_RUSAGE_PER_PROCESS} for that reason.
+In addition it is possible to specify metrics that will be recorded only by the initial thread of a process. Please use \confvar{SCOREP_METRIC_RUSAGE_PER_PROCESS} for that reason.
 
 @section cuda_adapter CUDA Performance Measurement
 @seclabel{cuda_adapter}
