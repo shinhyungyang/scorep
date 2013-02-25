@@ -400,7 +400,7 @@ scorep_profile_merge_node_sparse( SCOREP_Profile_LocationData* location,
 
 
 /* ***************************************************************************************
-   Getter / Setter functions fro type dependent data
+   Getter / Setter functions for type dependent data
 *****************************************************************************************/
 
 /**
