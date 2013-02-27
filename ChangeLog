@@ -1,3 +1,117 @@
+------------------- Released version 1.1.1 ---------------------------
+
+- Two new environment variables were introduced to configure the
+  measurement:
+
+  - SCOREP_CUDA_BUFFER to specify the size of the CUDA record buffer.
+
+  - SCOREP_PROFILING_ENABLE_CORE_FILES to enable additional debug
+    output for inconsistent profiles (see documentation for details ).
+
+- There are two new and one enhanced options to the scorep command:
+
+  - The new options --pomp and --nopomp en/disbale semi-automatic pomp
+    user instrumentation. By default, it is enabled if OPARI2
+    instrumentation is used.
+
+  - The enhanced option --opari[="<parameter-list>"] now accepts a
+    list of parameters that is passed to OPARI2, e.g., to disable
+    specific OpenMP constructs from being instrumented.
+
+- There were several fixes and enhancements in the instrumenter:
+
+  - If given on the application's compile commandline, pass compiler
+    specific free-form and fix-form options to OPARI2 as --free-form
+    and --fix-form, respectively
+
+  - The filtering implementation in the PGI compiler adapter induced
+    significant overhead. This was significantly reduced.
+
+  - It is now possible run experiments with OPARI2-only
+    instrumentation.
+
+  - Fixed segfaulting error handling in the CUDA adapter.
+
+  - Fixed PDT instrumentation problems on ARM platforms.
+
+  - The scorep command now rejects invalid option combinations (like
+    --pdt and --nouser) and prints an error message.
+
+  - The scorep option --nocuda, --nopdt, and --nocobi can now be used
+    even if the the installation does not support CUDA/PDT/COBI. In
+    this case, the options are ignored.
+
+  - Fixed instrumentation problems for the configuration
+    PGI/C++/OpenMP/(PDT|User).
+
+  - If the applications's compiler is nvcc, add scorep's linker
+    options as -Xlinker.
+
+  - Redundant output from scorep-config was removed.
+
+  - Dependent shared libraries (e.g., CUDA, PAPI) are now correctly
+    located by the runtime loader. Modifying LD_LIBRARY_PATH is no
+    longer necessary.
+
+  - OpenMP applications instrumented with PDT and OPARI2 were lacking
+    the PDT instrumented regions. This is fixed now.
+
+  - Applications using a combined compile-link command couldn't be
+    instrumented with OPARI2 as the generated POMP2_Init_regions
+    object file failed to link. This is fixed now.
+
+  - Application's linker options now stay in the specified order to
+    prevent link failures.
+
+  - No POMP2_Init_regions object file is created when the application
+    creates a shared library. Only the application's final link step
+    creates the POMP2_Init_regions object file.
+
+  - Compiler flags that may impact performance but that are needed by
+    Score-P, e.g., -g to get debug symbols, are now added at the
+    beginning of the compile command to allow following options to
+    minimize the performance impact (e.g., with Intel compilers the
+    options -g -O3 and -O3 -g make the latter one to perform worse).
+
+  - Fortran applications that use OpenMP can now be instrumented with
+    PDT.
+
+  - The new Intel compiler options -offload-option and
+    -offload-attribute-target were misinterpreted as "-o
+    ffload-option" and "-o ffload-attribute-target". This is fixed
+    now.
+
+  - The scorep command was made more robust in cases where incomplete
+    arguments were provided.
+
+- There were a few fixes and enhancements in the buildsystem:
+
+  - The checks for libcuda, libcudart, and libcupti are now more robust.
+
+  - When installing the Score-P libraries we now follow the OS
+    distribution's conventions for installing libraries (either in
+    <prefix>/lib or <prefix>/lib64)
+
+  - A failing clock_gettime configure check was fixed.
+
+- Miscellanea:
+
+  - The MPI adapter part dealing with one-sided communication was
+    fixed.
+
+  - The documentation was improved.
+
+  - scorep-score's upper-bound trace size approximation is now in
+    bytes as compared to some fictional unit it was in previous
+    releases.
+
+  - Online access functionality on AIX systems was improved.
+
+  - A bug in creating TAU snapshot profile output was fixed.
+
+  - System tree information on BlueGene/Q systems now contains
+    relationships between racks, midplanes, nodeboards, and nodecards.
+
 ------------------- Released version 1.1.1-rc1 -----------------------
 
 - Score-P's library installation directory matches the system library
@@ -9,7 +123,7 @@
 
 - Several fixes related to the order of libraries in the link-step.
 
-- Remove redundnacy in the Score-P link-step.
+- Remove redundancy in the Score-P link-step.
 
 - Provide options to the Score-P instrumenter to pass options to
   opari2, cobi and pdt.

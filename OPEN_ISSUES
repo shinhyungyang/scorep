@@ -1,37 +1,26 @@
-/* 
- * This file is part of the Score-P software (http://www.score-p.org)
- *
- * Copyright (c) 2009-2012, 
- *    RWTH Aachen, Germany
- *    Gesellschaft fuer numerische Simulation mbH Braunschweig, Germany
- *    Technische Universitaet Dresden, Germany
- *    University of Oregon, Eugene, USA
- *    Forschungszentrum Juelich GmbH, Germany
- *    German Research School for Simulation Sciences GmbH, Juelich/Aachen, Germany
- *    Technische Universitaet Muenchen, Germany
- *
- * See the COPYING file in the package base directory for details.
- *
- */
 
-                        Score-P v1.1.1-rc1 OPEN ISSUES
-                        ==============================
-                                                           Status: Nov 2012
+                        Score-P v1.1.1 OPEN ISSUES
+                        ==========================
+                                                           Status: Feb 2013
 
 * Platform support
 
   - Score-P has been tested on the following platforms:
     + IBM Blue Gene/Q, only static libraries supported
     + IBM SP & BladeCenter clusters, only static libraries supported
-    + SGI Altix/ICE
     + various Linux/Intel (x86/x64) clusters
+    + Cray XE6/XK6: there have been preliminary tests with the
+      PrgEnvCray environment module. The scorep command does not
+      automatically detect a MPI or MPI+OpenMP application yet so you
+      need to add --mpi for MPI and additionally --opari for hybrid
+      applications manually. Support is still preliminary!
     The provided configure options (see INSTALL) may provide a good
     basis for building and testing the toolset on other systems.
 
   - The following platforms have not been tested recently:
     + IBM Blue Gene/P
-    + Cray XE6/XK6
     + Sun Solaris/SPARC-based clusters
+    + SGI Altix/ICE
     However the supplied buildsystem might still work on these
     systems.
 
@@ -102,7 +91,7 @@
 
 * Score-P misc.
 
-  - Due to unreliabe results using the RDTSCP timer Score-P switched
+  - Due to unreliable results using the RDTSCP timer Score-P switched
     to clock_gettime as default timer. Can be overridden by
     --enable-timer-cycle_counter_tsc at configure time.
 
@@ -137,9 +126,16 @@
 
   - Rusage-based metrics are not supported on BlueGene systems.
 
-  - In order to use CUDA/CUPTI support you need to add the directories
-    hosting libcuda, libcudart, and libcupti to your LD_LIBRARY_PATH
-    environment variable.
+  - Rusage-based metric assertions fail on some systems for unknown
+    reasons (ret != -1). Rusage-based metrics can't be used on these
+    systems.
+
+  - Currently it is not possible to reliably detect at configure time
+    if the NVIDIA driver (possibly installed via a distribution's
+    packet-manager) and the CUDA toolkit (possibly installed manually)
+    are compatible. A safe option is to install the NVIDIA driver that
+    comes with the toolkit and specify it's location via
+    --with-libcuda[-(include|lib)].
 
 --------------------------------------------------------------------------------
 
