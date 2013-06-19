@@ -78,8 +78,8 @@ AM_CONDITIONAL([HAVE_LOCKFILE_PROGS],
 AM_CONDITIONAL([CROSS_BUILD], [test "x${ac_scorep_cross_compiling}" = "xyes"])
 
 AC_SCOREP_HAVE_CONFIG_TOOL([otf2],   [3], [0])
-AC_SCOREP_HAVE_CONFIG_TOOL([opari2], [1], [0])
-AC_SCOREP_HAVE_CONFIG_TOOL([cube],   [4], [2])
+AC_SCOREP_HAVE_CONFIG_TOOL([opari2], [2], [0])
+AC_SCOREP_HAVE_CONFIG_TOOL([cube],   [5], [1])
 
 # handle external package's subdir configures
 AS_IF([test "x${scorep_have_opari2_config}" = "xno"],
