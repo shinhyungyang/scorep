@@ -87,7 +87,7 @@ public:
      * @param deps The library dependency class.
      */
     virtual void
-    addLibs( std::deque<std::string> &          libs,
+    addLibs( std::deque<std::string>&           libs,
              SCOREP_Config_LibraryDependencies& deps );
 
     /**
@@ -100,7 +100,7 @@ public:
      * @param fortran      True if the source file is a fortran file.
      */
     virtual void
-    addCFlags( std::string &cflags,
+    addCFlags( std::string& cflags,
                bool         build_check,
                bool         fortran );
 
@@ -110,7 +110,7 @@ public:
      * @param ldflgas  the linker flags to which you may modify or add new flags.
      */
     virtual void
-    addLdFlags( std::string &ldflags );
+    addLdFlags( std::string& ldflags );
 
     /**
      * Overwrite this function if you want to do adapter specific modifications
@@ -121,7 +121,7 @@ public:
      * @param build_check  True '--build-check' was specified.
      */
     virtual void
-    addIncFlags( std::string &incflags,
+    addIncFlags( std::string& incflags,
                  bool         build_check );
 
 protected:
@@ -174,11 +174,11 @@ class SCOREP_Config_CompilerAdapter : public SCOREP_Config_Adapter
 public:
     SCOREP_Config_CompilerAdapter();
     virtual void
-    addCFlags( std::string &cflags,
+    addCFlags( std::string& cflags,
                bool         build_check,
                bool         fortran );
     virtual void
-    addLdFlags( std::string &ldflags );
+    addLdFlags( std::string& ldflags );
 };
 
 /* **************************************************************************************
@@ -193,7 +193,7 @@ class SCOREP_Config_UserAdapter : public SCOREP_Config_Adapter
 public:
     SCOREP_Config_UserAdapter();
     virtual void
-    addCFlags( std::string &cflags,
+    addCFlags( std::string& cflags,
                bool         build_check,
                bool         fortran );
 };
@@ -210,10 +210,13 @@ class SCOREP_Config_CudaAdapter : public SCOREP_Config_Adapter
 public:
     SCOREP_Config_CudaAdapter();
     virtual void
-    addLdFlags( std::string &ldflags );
+    addLdFlags( std::string& ldflags );
     virtual void
-    addIncFlags( std::string &incflags,
+    addIncFlags( std::string& incflags,
                  bool         build_check );
+    virtual void
+    addLibs( std::deque<std::string>&           libs,
+             SCOREP_Config_LibraryDependencies& deps );
 };
 
 /* **************************************************************************************
@@ -224,10 +227,10 @@ class SCOREP_Config_PompAdapter : public SCOREP_Config_Adapter
 public:
     SCOREP_Config_PompAdapter();
     virtual void
-    addIncFlags( std::string &incflags,
+    addIncFlags( std::string& incflags,
                  bool         build_check );
     virtual void
-    addCFlags( std::string &cflags,
+    addCFlags( std::string& cflags,
                bool         build_check,
                bool         fortran );
 };

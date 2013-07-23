@@ -14,23 +14,25 @@
  *
  */
 
+
 /**
- * @file       scorep_platform_hostid_mockup.c
+ * @file       self_contained_public_header_SCOREP_MetricPlugins.c
+ * @author     Ronny Tschueter <ronny.tschueter@tu-dresden.de>
  * @maintainer Ronny Tschueter <ronny.tschueter@tu-dresden.de>
  *
  * @status alpha
+ *
  *
  */
 
 
 #include <config.h>
 
-#include <SCOREP_Platform.h>
+#include <scorep/SCOREP_MetricPlugins.h>
 
-int32_t
-SCOREP_Platform_GetHostId( void )
+
+int
+main()
 {
-    UTILS_WARNING( "Could not determine host ID." );
-
     return 0;
 }

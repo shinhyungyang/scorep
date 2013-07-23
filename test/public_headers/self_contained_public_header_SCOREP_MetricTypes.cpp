@@ -14,27 +14,25 @@
  *
  */
 
+
 /**
- * @file       scorep_platform_hostid_bgl.c
+ * @file       self_contained_public_header_SCOREP_MetricTypes.cpp
+ * @author     Ronny Tschueter <ronny.tschueter@tu-dresden.de>
  * @maintainer Ronny Tschueter <ronny.tschueter@tu-dresden.de>
  *
  * @status alpha
+ *
  *
  */
 
 
 #include <config.h>
 
-#include <SCOREP_Platform.h>
-
-#include <bglpersonality.h>
+#include <scorep/SCOREP_MetricTypes.h>
 
 
-int32_t
-SCOREP_Platform_GetHostId( void )
+int
+main()
 {
-    BGLPersonality mybgl;
-    rts_get_personality( &mybgl, sizeof( BGLPersonality ) );
-
-    return ( mybgl.location >> 6 ) & 0x1fff;
+    return 0;
 }

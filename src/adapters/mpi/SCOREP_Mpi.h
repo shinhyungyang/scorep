@@ -27,19 +27,10 @@
           Declarations common to all MPI wrappers.
  */
 
-#include <SCOREP_ErrorCodes.h>
-#include <scorep_mpi_communicator.h>
-#include <SCOREP_Mpi_Reg.h>
-#include <scorep_mpi_request.h>
+#include "SCOREP_Mpi_Reg.h"
 
-#include <SCOREP_Definitions.h>
-#include <SCOREP_Events.h>
-#include <SCOREP_RuntimeManagement.h>
-#include <SCOREP_DefinitionHandles.h>
-
-#include <stdio.h>
-#include <stdlib.h>
 #include <mpi.h>
+#include <stdbool.h>
 
 #if MPI_VERSION >= 3
 #define SCOREP_MPI_CONST_DECL const
@@ -48,7 +39,7 @@
 #endif
 
 #if !defined( SCOREP_MPI_NO_HOOKS )
-#include <scorep_mpi_oa_hooks.h>
+#include "scorep_mpi_oa_hooks.h"
 #endif
 
 /** @defgroup MPI_Wrapper SCOREP MPI wrapper library
@@ -99,20 +90,6 @@
 
    @{
  */
-
-/** internal array of statuses */
-extern MPI_Status* scorep_my_status_array;
-
-/** size of internal status array */
-extern int32_t scorep_my_status_array_size;
-
-/**
- * Get a pointer to a status array of at least 'size' statuses
- * @param  size minimal requested size
- * @return pointer to status array
- */
-extern MPI_Status*
-scorep_get_status_array( int32_t size );
 
 /** Flag to indicate whether MPI Profiling hooks are turned on or off.
  */

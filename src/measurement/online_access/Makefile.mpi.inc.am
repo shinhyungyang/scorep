@@ -21,18 +21,24 @@
 
 if HAVE_MPI_SUPPORT
 
-BUILT_SOURCES += scorep_oa_scanner.h
-
 lib_LTLIBRARIES += libscorep_online_access_mpi_mockup.la
 libscorep_online_access_mpi_mockup_la_SOURCES = \
     $(SRC_ROOT)src/measurement/online_access/scorep_oa_mri_control_mockup.c \
+    $(SRC_ROOT)src/measurement/online_access/scorep_oa_mockup.c	\
     $(SRC_ROOT)src/measurement/online_access/scorep_oa_connection.h
 libscorep_online_access_mpi_mockup_la_CPPFLAGS = \
     $(AM_CPPFLAGS) \
     $(UTILS_CPPFLAGS) \
+    -I$(PUBLIC_INC_DIR) \
+    -I$(INC_ROOT)src/measurement/include \
     -DWITH_MPI
 
 lib_LTLIBRARIES += libscorep_online_access_mpp_mpi.la
+
+if HAVE_ONLINE_ACCESS
+
+BUILT_SOURCES += scorep_oa_scanner.h
+
 libscorep_online_access_mpp_mpi_la_SOURCES =                               \
     $(SRC_ROOT)src/measurement/online_access/scorep_oa_scanner.y           \
     $(SRC_ROOT)src/measurement/online_access/scorep_oa_parser.l            \
@@ -54,7 +60,8 @@ libscorep_online_access_mpp_mpi_la_SOURCES =                               \
     $(SRC_ROOT)src/measurement/profiling/SCOREP_Profile_OAConsumer.h       \
     $(SRC_ROOT)src/measurement/profiling/SCOREP_Profile_OAConsumer.c       \
     $(SRC_ROOT)src/measurement/profiling/scorep_profile_oaconsumer_process.h \
-    $(SRC_ROOT)src/measurement/profiling/scorep_profile_oaconsumer_process.c
+    $(SRC_ROOT)src/measurement/profiling/scorep_profile_oaconsumer_process.c \
+    $(SRC_ROOT)src/measurement/online_access/scorep_oa_mri_control_mockup.c 
 
 libscorep_online_access_mpp_mpi_la_CPPFLAGS = \
     $(AM_CPPFLAGS) \
@@ -74,11 +81,16 @@ if ! PLATFORM_AIX
 libscorep_online_access_mpp_mpi_la_CPPFLAGS += -D_POSIX_SOURCE
 endif 
 
+else #if HAVE_ONLINE_ACCESS
+
+
 libscorep_online_access_mpp_mpi_la_LIBADD = \
     libscorep_online_access_mpi_mockup.la
 
 libscorep_online_access_mpp_mpi_la_LDFLAGS = \
     $(library_api_version_ldflags)
+
+endif #if HAVE_ONLINE_ACCESS
 
 endif #if HAVE_MPI_SUPPORT
 

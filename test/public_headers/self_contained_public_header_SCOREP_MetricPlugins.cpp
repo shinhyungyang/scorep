@@ -14,38 +14,25 @@
  *
  */
 
+
 /**
- * @file       scorep_platform_hostid_macos.c
+ * @file       self_contained_public_header_SCOREP_MetricPlugins.cpp
+ * @author     Ronny Tschueter <ronny.tschueter@tu-dresden.de>
  * @maintainer Ronny Tschueter <ronny.tschueter@tu-dresden.de>
  *
  * @status alpha
+ *
  *
  */
 
 
 #include <config.h>
 
-#include <sys/types.h>
-#include <sys/sysctl.h>
+#include <scorep/SCOREP_MetricPlugins.h>
 
-#define MIB_LEN 2
 
-int32_t
-SCOREP_Platform_GetHostId( void )
+int
+main()
 {
-    /* MIB (management information base) array */
-    int mib[ MIB_LEN ];
-    /* Node id */
-    uint32_t node_id;
-    /* Size of node_id */
-    size_t len;
-
-    /* Get unique numeric SMP-node identifier */
-    mib[ 0 ] = CTL_KERN;
-    mib[ 1 ] = KERN_HOSTID;
-    len      = sizeof( node_id );
-    if ( sysctl( mib, MIB_LEN, &node_id, &len, NULL, 0 ) == -1 )
-    {
-        vt_error_msg( "sysctl[KERN_HOSTID] failed: %s", strerror( errno ) );
-    }
+    return 0;
 }

@@ -1,7 +1,7 @@
 /*
  * This file is part of the Score-P software (http://www.score-p.org)
  *
- * Copyright (c) 2009-2011,
+ * Copyright (c) 2009-2013,
  *    RWTH Aachen University, Germany
  *    Gesellschaft fuer numerische Simulation mbH Braunschweig, Germany
  *    Technische Universitaet Dresden, Germany
@@ -14,44 +14,25 @@
  *
  */
 
+
 /**
- * @file SCOREP_OA_Dummy.c
- * @maintainer Yury Oleynik <oleynik@in.tum.de>
+ * @file       self_contained_public_header_SCOREP_MetricTypes.c
+ * @author     Ronny Tschueter <ronny.tschueter@tu-dresden.de>
+ * @maintainer Ronny Tschueter <ronny.tschueter@tu-dresden.de>
+ *
  * @status alpha
  *
- * This file contains dummy implementation of Online Access Phase functions
+ *
  */
 
+
 #include <config.h>
-#include <stdio.h>
 
-#include "SCOREP_Types.h"
+#include <scorep/SCOREP_MetricTypes.h>
 
 
-void
-SCOREP_OA_PhaseBegin
-(
-    const SCOREP_RegionHandle handle
-)
+int
+main()
 {
-    printf( "Dummy %s\n", __func__ );
-}
-
-void
-SCOREP_OA_PhaseEnd
-(
-    const SCOREP_RegionHandle handle
-)
-{
-    printf( "Dummy %s\n", __func__ );
-}
-
-void
-SCOREP_OA_Register()
-{
-}
-
-void
-SCOREP_OA_Finalize()
-{
+    return 0;
 }

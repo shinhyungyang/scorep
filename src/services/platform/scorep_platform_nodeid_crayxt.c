@@ -15,7 +15,7 @@
  */
 
 /**
- * @file       scorep_platform_hostid_crayxt.c
+ * @file
  * @maintainer Ronny Tschueter <ronny.tschueter@tu-dresden.de>
  *
  * @status alpha
@@ -34,7 +34,7 @@
 #endif
 
 int32_t
-SCOREP_Platform_GetHostId( void )
+SCOREP_Platform_GetNodeId( void )
 {
     /* Get unique numeric SMP-node identifier */
 #ifdef __LIBCATAMOUNT__

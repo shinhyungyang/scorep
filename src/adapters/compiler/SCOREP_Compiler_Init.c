@@ -29,11 +29,8 @@
 #include <config.h>
 #include "SCOREP_Compiler_Init.h"
 
-#include <stdio.h>
 #include <stdlib.h>
 
-#include "SCOREP_Types.h"
-#include <SCOREP_Location.h>
 #include "SCOREP_Config.h"
 #define SCOREP_DEBUG_MODULE_NAME COMPILER
 #include <UTILS_Debug.h>
@@ -53,14 +50,13 @@ scorep_compiler_init_adapter( void );
    compiler adapter implementation.
  */
 extern SCOREP_ErrorCode
-scorep_compiler_init_location( SCOREP_Location* location );
+scorep_compiler_init_location( struct SCOREP_Location* location );
 
 /**
-   The location finalize function is compiler specific. Thus it is contained in each
-   compiler adapter implementation.
+   The location finalize function.
  */
-extern void
-scorep_compiler_finalize_location( SCOREP_Location* location );
+static void
+scorep_compiler_finalize_location( struct SCOREP_Location* location );
 
 /**
    The adapter finalize function is compiler specific. Thus it is contained in each
@@ -83,3 +79,10 @@ const SCOREP_Subsystem SCOREP_Subsystem_CompilerAdapter =
     .subsystem_deregister        = &scorep_compiler_deregister,
     .subsystem_control           = NULL
 };
+
+/* Location finalization */
+static void
+scorep_compiler_finalize_location( struct SCOREP_Location* locationData )
+{
+    UTILS_DEBUG_PRINTF( SCOREP_DEBUG_COMPILER, "compiler adapter finalize location!" );
+}

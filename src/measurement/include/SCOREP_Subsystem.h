@@ -31,7 +31,9 @@
 
 #include <SCOREP_ErrorCodes.h>
 #include <SCOREP_Types.h>
-#include <SCOREP_Location.h>
+
+#include <stddef.h>
+
 
 /**
  * @defgroup SCOREP_Subsystem SCOREP Subsystem Management
@@ -43,7 +45,7 @@
  * Each subsystem exports these callbacks in a object of type @ref SCOREP_Subsystem
    wich is describted in this module.
 
- * All @ref SCOREP_Subsystem objects are referenced by an array inside the
+ * @ref SCOREP_Subsystem objects are referenced by an array inside the
    measurement system, so the measurement system does not need to know
    explicitly which subsystems are included at compile time.
 
@@ -71,6 +73,8 @@ typedef enum
     SCOREP_SUBSYSTEM_COMMAND_CUSTOM_BASE
 } SCOREP_Subsystem_Command;
 
+
+struct SCOREP_Location;
 
 /**
  * A subsystem can provide numerous callbacks for the measurement system.

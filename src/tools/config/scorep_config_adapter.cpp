@@ -162,7 +162,7 @@ SCOREP_Config_Adapter::checkArgument( std::string arg )
 }
 
 void
-SCOREP_Config_Adapter::addLibs( std::deque<std::string> &          libs,
+SCOREP_Config_Adapter::addLibs( std::deque<std::string>&           libs,
                                 SCOREP_Config_LibraryDependencies& deps )
 {
     if ( m_is_enabled )
@@ -172,19 +172,19 @@ SCOREP_Config_Adapter::addLibs( std::deque<std::string> &          libs,
 }
 
 void
-SCOREP_Config_Adapter::addCFlags( std::string &cflags,
+SCOREP_Config_Adapter::addCFlags( std::string& cflags,
                                   bool         build_check,
                                   bool         fortran )
 {
 }
 
 void
-SCOREP_Config_Adapter::addLdFlags( std::string &ldflags )
+SCOREP_Config_Adapter::addLdFlags( std::string& ldflags )
 {
 }
 
 void
-SCOREP_Config_Adapter::addIncFlags( std::string &incflags, bool build_check )
+SCOREP_Config_Adapter::addIncFlags( std::string& incflags, bool build_check )
 {
 }
 
@@ -198,7 +198,7 @@ SCOREP_Config_CompilerAdapter::SCOREP_Config_CompilerAdapter()
 }
 
 void
-SCOREP_Config_CompilerAdapter::addCFlags( std::string &cflags,
+SCOREP_Config_CompilerAdapter::addCFlags( std::string& cflags,
                                           bool         build_check,
                                           bool         fortran )
 {
@@ -209,7 +209,7 @@ SCOREP_Config_CompilerAdapter::addCFlags( std::string &cflags,
 }
 
 void
-SCOREP_Config_CompilerAdapter::addLdFlags( std::string &ldflags )
+SCOREP_Config_CompilerAdapter::addLdFlags( std::string& ldflags )
 {
     if ( m_is_enabled )
     {
@@ -226,7 +226,7 @@ SCOREP_Config_UserAdapter::SCOREP_Config_UserAdapter()
 }
 
 void
-SCOREP_Config_UserAdapter::addCFlags( std::string &cflags,
+SCOREP_Config_UserAdapter::addCFlags( std::string& cflags,
                                       bool         build_check,
                                       bool         fortran )
 {
@@ -256,7 +256,14 @@ SCOREP_Config_CudaAdapter::SCOREP_Config_CudaAdapter()
 }
 
 void
-SCOREP_Config_CudaAdapter::addIncFlags( std::string &incflags, bool build_check )
+SCOREP_Config_CudaAdapter::addLibs( std::deque<std::string>&           libs,
+                                    SCOREP_Config_LibraryDependencies& deps )
+{
+    libs.push_back( "lib" + m_library );
+}
+
+void
+SCOREP_Config_CudaAdapter::addIncFlags( std::string& incflags, bool build_check )
 {
     if ( m_is_enabled )
     {
@@ -272,7 +279,7 @@ SCOREP_Config_CudaAdapter::addIncFlags( std::string &incflags, bool build_check 
 }
 
 void
-SCOREP_Config_CudaAdapter::addLdFlags( std::string &ldflags )
+SCOREP_Config_CudaAdapter::addLdFlags( std::string& ldflags )
 {
     if ( m_is_enabled )
     {
@@ -305,7 +312,7 @@ SCOREP_Config_PompAdapter::SCOREP_Config_PompAdapter()
 }
 
 void
-SCOREP_Config_PompAdapter::addIncFlags( std::string &incflags, bool build_check )
+SCOREP_Config_PompAdapter::addIncFlags( std::string& incflags, bool build_check )
 {
     if ( m_is_enabled )
     {
@@ -314,7 +321,7 @@ SCOREP_Config_PompAdapter::addIncFlags( std::string &incflags, bool build_check 
 }
 
 void
-SCOREP_Config_PompAdapter::addCFlags( std::string &cflags,
+SCOREP_Config_PompAdapter::addCFlags( std::string& cflags,
                                       bool         build_check,
                                       bool         fortran )
 {

@@ -1,7 +1,7 @@
 /*
  * This file is part of the Score-P software (http://www.score-p.org)
  *
- * Copyright (c) 2009-2011,
+ * Copyright (c) 2009-2013,
  *    RWTH Aachen University, Germany
  *    Gesellschaft fuer numerische Simulation mbH Braunschweig, Germany
  *    Technische Universitaet Dresden, Germany
@@ -15,43 +15,26 @@
  */
 
 /**
- * @file SCOREP_OA_Dummy.c
- * @maintainer Yury Oleynik <oleynik@in.tum.de>
+ * @file
+ * @maintainer Ronny Tschueter <ronny.tschueter@tu-dresden.de>
+ *
  * @status alpha
  *
- * This file contains dummy implementation of Online Access Phase functions
  */
 
+
 #include <config.h>
-#include <stdio.h>
 
-#include "SCOREP_Types.h"
+#include <SCOREP_Platform.h>
+
+#include <bglpersonality.h>
 
 
-void
-SCOREP_OA_PhaseBegin
-(
-    const SCOREP_RegionHandle handle
-)
+int32_t
+SCOREP_Platform_GetNodeId( void )
 {
-    printf( "Dummy %s\n", __func__ );
-}
+    BGLPersonality mybgl;
+    rts_get_personality( &mybgl, sizeof( BGLPersonality ) );
 
-void
-SCOREP_OA_PhaseEnd
-(
-    const SCOREP_RegionHandle handle
-)
-{
-    printf( "Dummy %s\n", __func__ );
-}
-
-void
-SCOREP_OA_Register()
-{
-}
-
-void
-SCOREP_OA_Finalize()
-{
+    return ( mybgl.location >> 6 ) & 0x1fff;
 }

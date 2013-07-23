@@ -29,7 +29,6 @@
  */
 
 
-#include <SCOREP_Location.h>
 #include <SCOREP_Subsystem.h>
 
 
@@ -43,10 +42,10 @@ void
 scorep_subsystems_initialize( void );
 
 void
-scorep_subsystems_initialize_location( SCOREP_Location* locationData );
+scorep_subsystems_initialize_location( struct SCOREP_Location* locationData );
 
 void
-scorep_subsystems_finalize_location( SCOREP_Location* locationData );
+scorep_subsystems_finalize_location( struct SCOREP_Location* locationData );
 
 void
 scorep_subsystems_pre_unify( void );
