@@ -103,6 +103,7 @@ AFS_PACKAGE_INIT([MPI backend])
 AM_CONDITIONAL([BUILD_TESTS], [test "x${ac_scorep_cross_compiling}" = "xno"])
 AM_CONDITIONAL([CROSS_BUILD], [test "x${ac_scorep_cross_compiling}" = "xyes"])
 AC_SCOREP_PLATFORM_SETTINGS   
+AC_SCOREP_PLATFORM_AND_MACHINE_NAMES
 
 AC_SCOREP_COMMON_CHECKS
 AC_SCOREP_COMPILER_INSTRUMENTATION_FLAGS
@@ -120,11 +121,13 @@ AS_IF([test -n "${scorep_otf2_bindir}"],
       [AC_SUBST([OTF2_CPPFLAGS], ["`${scorep_otf2_bindir}/otf2-config --cppflags ${scorep_otf2_config_backend_arg}`"])
        AC_SUBST([OTF2_LIBS],     ["`${scorep_otf2_bindir}/otf2-config --libs ${scorep_otf2_config_backend_arg}`"])
        AC_SUBST([OTF2_LDFLAGS],  ["`${scorep_otf2_bindir}/otf2-config --ldflags ${scorep_otf2_config_backend_arg}`"])
-       AC_SUBST([OTF2_BINDIR],   ["${scorep_otf2_bindir}"])],
+       AC_SUBST([OTF2_BINDIR],   ["${scorep_otf2_bindir}"])
+       AM_CONDITIONAL([HAVE_SCOREP_EXTERNAL_OTF2], [test 1 -eq 1])],
       [AC_SUBST([OTF2_CPPFLAGS], ['-I../vendor/otf2/include -I$(srcdir)/../vendor/otf2/include'])
        AC_SUBST([OTF2_LIBS],     [../vendor/otf2/build-backend/libotf2.la])
        AC_SUBST([OTF2_LDFLAGS],  [])
-       AC_SUBST([OTF2_BINDIR],   [../vendor/otf2/build-backend])])
+       AC_SUBST([OTF2_BINDIR],   [../vendor/otf2/build-backend])
+       AM_CONDITIONAL([HAVE_SCOREP_EXTERNAL_OTF2], [test 1 -eq 0])])
 
 
 AS_IF([test -n "${scorep_opari2_bindir}"],
