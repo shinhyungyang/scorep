@@ -12,8 +12,6 @@ AS_IF([test "x${ac_scorep_cross_compiling}" = "xyes"],
 
 AC_DEFUN([AC_SCOREP_BACKEND], [])
 
-AC_SCOREP_SUMMARY_INIT([backend])
-
 ## require $ac_scorep_cross_compiling to be set to 'yes' or 'no'
 if test "x${ac_scorep_cross_compiling}" != "xyes" -a "x${ac_scorep_cross_compiling}" != "xno"; then
     AC_MSG_ERROR([invalid value '$ac_scorep_cross_compiling' for variable \$ac_scorep_cross_compiling.], [1])
@@ -33,10 +31,12 @@ AC_SCOREP_CHECK_COMPILER_VAR_SET([F77])
 AC_SCOREP_CHECK_COMPILER_VAR_SET([FC])
 
 AC_SCOREP_SVN_CONTROLLED
+
 AM_INIT_AUTOMAKE([foreign color-tests 1.11.1 -Wall tar-pax])
 AM_SILENT_RULES([yes])
 
 AFS_PACKAGE_INIT([backend])
+AFS_SUMMARY_INIT
 
 AM_CONDITIONAL([BUILD_TESTS], [test "x${ac_scorep_cross_compiling}" = "xno"])
 AM_CONDITIONAL([CROSS_BUILD], [test "x${ac_scorep_cross_compiling}" = "xyes"])
@@ -77,13 +77,15 @@ AS_IF([test -n "${scorep_opari2_bindir}"],
        AC_SUBST([POMP2_REGION_INFO_SRC_DIR],["${scorep_opari2_bindir}/../share/opari2/devel"])
        AC_SUBST([POMP2_REGION_INFO_INC_DIR],["${scorep_opari2_bindir}/../share/opari2/devel"])
        ${scorep_opari2_bindir}/opari2-config --fix-form > /dev/null 2>&1
-       AS_IF([test $? -ne 0], [opari_fix_and_free_form_options=0])],
+       AS_IF([test $? -ne 0], [opari_fix_and_free_form_options=0])
+       AM_CONDITIONAL([HAVE_SCOREP_EXTERNAL_OPARI2], [true])],
       [AC_SUBST([OPARI2_BINDIR],            ["${prefix}/bin"])
        AC_SUBST([OPARI2_MAKE_CHECK_BINDIR], ["../vendor/opari2/build-frontend"])
        AC_SUBST([OPARI2_CPPFLAGS],          ['-I$(srcdir)/../vendor/opari2/include'])
        AC_SUBST([HAVE_EXTERNAL_OPARI2],     [0])
        AC_SUBST([POMP2_REGION_INFO_SRC_DIR],["../vendor/opari2/src/pomp-lib-dummy"])
-       AC_SUBST([POMP2_REGION_INFO_INC_DIR],['$(srcdir)/../vendor/opari2/src/pomp-lib-dummy'])])
+       AC_SUBST([POMP2_REGION_INFO_INC_DIR],['$(srcdir)/../vendor/opari2/src/pomp-lib-dummy'])
+       AM_CONDITIONAL([HAVE_SCOREP_EXTERNAL_OPARI2], [false])])
 AC_SUBST([HAVE_OPARI2_FIX_AND_FREE_FORM_OPTIONS], [${opari2_fix_and_free_form_options}])
 
 AS_IF([test -n "${scorep_cube_bindir}"],

@@ -34,6 +34,8 @@ include ../vendor/common/build-config/Makefile.tests-omp.inc.am
 
 AM_CPPFLAGS += -DBACKEND_BUILD_NOMPI
 
+frontend_bindir = @bindir@
+frontend_libdir = @libdir@
 bindir = @bindir@@backend_suffix@
 libdir = @libdir@@backend_suffix@
 
@@ -140,7 +142,7 @@ INSTALLCHECK_SUBDIRS += ../test/jacobi/OpenMP/C
 else
 endif
 
-installcheck-local: instrumenter-checks
+installcheck-local: instrumenter-checks installcheck-public-headers
 	@fail= failcom='exit 1'; \
 	for f in x $$MAKEFLAGS; do \
 	  case $$f in \

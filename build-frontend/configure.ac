@@ -10,8 +10,6 @@ AC_CONFIG_HEADERS([../src/config-frontend.h])
 
 AC_DEFUN([AC_SCOREP_FRONTEND], [])
 
-AC_SCOREP_SUMMARY_INIT([frontend])
-
 ac_scorep_frontend="yes"
 ac_scorep_backend="no"
 
@@ -37,19 +35,11 @@ AC_SCOREP_CONVERT_FOR_BUILD_COMPILER([FC])
 
 AC_SCOREP_SVN_CONTROLLED
 
-AC_SCOREP_ONLINE_ACCESS
-
-AC_SCOREP_PDT
-AC_SCOREP_COBI
-
-AS_IF([test "x${scorep_have_score_build}" = "xno"],
-      [AC_SCOREP_CUBE_READER],
-      [AM_CONDITIONAL([HAVE_SCORE], [test 1 -eq 0])])
-
 AM_INIT_AUTOMAKE([foreign color-tests 1.11.1 -Wall tar-pax])
 AM_SILENT_RULES([yes])
 
 AFS_PACKAGE_INIT([frontend])
+AFS_SUMMARY_INIT
 
 AM_CONDITIONAL([BUILD_TESTS], [true])
 AM_CONDITIONAL([CROSS_BUILD], [true])
@@ -57,6 +47,14 @@ AC_SCOREP_PLATFORM_SETTINGS
 AC_SCOREP_PLATFORM_AND_MACHINE_NAMES
 
 AC_SCOREP_COMMON_CHECKS
+AC_SCOREP_ONLINE_ACCESS
+AC_SCOREP_PDT
+AC_SCOREP_COBI
+
+AS_IF([test "x${scorep_have_score_build}" = "xno"],
+      [AC_SCOREP_CUBE_READER],
+      [AM_CONDITIONAL([HAVE_SCORE], [test 1 -eq 0])])
+
 AC_CHECK_FUNCS_ONCE([readlink])
 
 LT_PREREQ([2.4])
