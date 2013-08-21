@@ -238,6 +238,9 @@ AC_SCOREP_POSIX_FUNCTIONS
 AC_SCOREP_COND_HAVE([MPI_SUPPORT],
                     [test -f ../build-mpi/mpi_supported],
                     [Defined if MPI support is available.])
+# Generate header in case that user configured with --without-mpi
+AS_IF([test ! -d ../build-mpi],
+    [AC_CONFIG_FILES([../src/scorep_config_tool_mpi.h:../src/tools/config/scorep_config_tool_without_mpi.h.in])])
 
 AC_SCOREP_PACKAGE_AND_LIBRARY_VERSION([../])
 
