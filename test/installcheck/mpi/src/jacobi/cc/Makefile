@@ -40,7 +40,7 @@ OBJECTS = \
 	$(OBJDIR)/jacobi.o \
 	$(OBJDIR)/main.o
 
-LIBS += -lm
+LIBS_INTERNAL = -lm
 
 all:
 
