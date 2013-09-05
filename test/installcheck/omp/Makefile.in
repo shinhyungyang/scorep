@@ -33,10 +33,11 @@
 
 ## file       test/installcheck/omp/src/Makefile.in
 
-CC  = @CC@
-CXX = @CXX@
-F77 = @F77@
-FC  = @FC@
+CC   = @CC@
+CXX  = @CXX@
+F77  = @F77@
+FC   = @FC@
+LIBS =
 
 # -Ox does not work for all compilers. Use AM_CONDITIONAL here?
 CFLAGS   = -O3 @OPENMP_CFLAGS@
