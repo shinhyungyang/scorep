@@ -554,7 +554,7 @@ SCOREP_Instrumenter_CmdLine::parse_command( const std::string& current,
     }
     else if ( current == "-l" )
     {
-        if ( next == "mpi" )
+        if ( ( next == "mpi" ) || ( next == "mpich.rts" ) )
         {
             m_lmpi_set      = true;
             m_current_flags = &m_flags_after_lmpi;
@@ -651,6 +651,18 @@ SCOREP_Instrumenter_CmdLine::parse_command( const std::string& current,
         }
         else if ( current[ 1 ] == 'l' )
         {
+            if ( ( current == "-lmpi" ) || ( current == "-lmpich.rts" ) )
+            {
+                m_lmpi_set      = true;
+                m_current_flags = &m_flags_after_lmpi;
+                /* is_mpi_application can only be disabled, if --nompi was specified.
+                   In this case do not enable mpi wrappers.
+                 */
+                if ( m_is_mpi_application != disabled )
+                {
+                    m_is_mpi_application = enabled;
+                }
+            }
             m_libraries += " " + current;
         }
     }
