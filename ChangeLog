@@ -7,6 +7,9 @@
   all known directories and library names.
 - Improve --with-custom-compilers, customization files are now
   recognized also in the build directory (see INSTALL).
+- On SGI MPT systems, or more genarally on systems that don't use
+  compiler wrappers for building MPI programs, improve the automatic
+  detection of the MPI programming paradigm during instrumentation.
 
 ------------------- Released version 1.2 -----------------------------
 
