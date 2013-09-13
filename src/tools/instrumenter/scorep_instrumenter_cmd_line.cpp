@@ -3,21 +3,33 @@
  *
  * Copyright (c) 2009-2013,
  *    RWTH Aachen University, Germany
+ *
+ * Copyright (c) 2009-2013,
  *    Gesellschaft fuer numerische Simulation mbH Braunschweig, Germany
+ *
+ * Copyright (c) 2009-2013,
  *    Technische Universitaet Dresden, Germany
+ *
+ * Copyright (c) 2009-2013,
  *    University of Oregon, Eugene, USA
+ *
+ * Copyright (c) 2009-2013,
  *    Forschungszentrum Juelich GmbH, Germany
+ *
+ * Copyright (c) 2009-2013,
  *    German Research School for Simulation Sciences GmbH, Juelich/Aachen, Germany
+ *
+ * Copyright (c) 2009-2013,
  *    Technische Universitaet Muenchen, Germany
  *
- * See the COPYING file in the package base directory for details.
+ * This software may be modified and distributed under the terms of
+ * a BSD-style license.  See the COPYING file in the package base
+ * directory for details.
  *
  */
 
 /**
- * @status     alpha
  * @file       SCOREP_Instrumenter_CommandLine.cpp
- * @maintainer Daniel Lorenz <d.lorenz@fz-juelich.de>
  */
 
 #include <config.h>
@@ -286,6 +298,12 @@ SCOREP_Instrumenter_CmdLine::getNoAsNeeded( void )
 }
 #endif
 
+SCOREP_Instrumenter_InstallData*
+SCOREP_Instrumenter_CmdLine::getInstallData()
+{
+    return &m_install_data;
+}
+
 /* ****************************************************************************
    private methods
 ******************************************************************************/
@@ -369,8 +387,14 @@ SCOREP_Instrumenter_CmdLine::parse_parameter( const std::string& arg )
     /* Check for application type settings */
     else if ( arg == "--mpi" )
     {
+#if HAVE_BACKEND( MPI_SUPPORT )
         m_is_mpi_application = enabled;
         return scorep_parse_mode_param;
+#else
+        std::cerr << "ERROR: This Score-P installation does not support MPI."
+                  << std::endl;
+        exit( EXIT_FAILURE );
+#endif
     }
     else if ( arg == "--nompi" )
     {
@@ -529,7 +553,11 @@ SCOREP_Instrumenter_CmdLine::parse_command( const std::string& current,
          */
         if ( m_is_mpi_application != disabled )
         {
+#if HAVE_BACKEND( MPI_SUPPORT )
             m_is_mpi_application = enabled;
+#else
+            std::cerr << "ERROR: This installation does not support MPI." << std::endl;
+#endif
         }
         m_libraries += " " + current;
     }
@@ -605,6 +633,13 @@ SCOREP_Instrumenter_CmdLine::parse_command( const std::string& current,
     }
     else if (  m_install_data.isArgForShared( current ) )
     {
+#ifndef SCOREP_SHARED_BUILD
+        std::cerr << "[Score-P] It is not possible to build instrumented shared "
+                  << "libraries with a statically build Score-P. "
+                  << "You need an Score-P installation that has "
+                  << "shared libraries." << std::endl;
+        exit( EXIT_FAILURE );
+#endif
         m_target_is_shared_lib = true;
     }
     else if ( m_install_data.isArgForOpenmp( current ) )
@@ -660,7 +695,12 @@ SCOREP_Instrumenter_CmdLine::parse_command( const std::string& current,
                  */
                 if ( m_is_mpi_application != disabled )
                 {
+#if HAVE_BACKEND( MPI_SUPPORT )
                     m_is_mpi_application = enabled;
+#else
+                    std::cerr << "ERROR: This installation does not support MPI."
+                              << std::endl;
+#endif
                 }
             }
             m_libraries += " " + current;
@@ -726,7 +766,12 @@ SCOREP_Instrumenter_CmdLine::check_parameter( void )
     {
         if ( m_compiler_name.substr( 0, 2 ) == "mp" )
         {
+#if HAVE_BACKEND( MPI_SUPPORT )
             m_is_mpi_application = enabled;
+#else
+            std::cerr << "ERROR: This installation does not support MPI."
+                      << std::endl;
+#endif
         }
         else
         {

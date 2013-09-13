@@ -30,6 +30,9 @@ dnl
 AC_PREREQ([2.68])
 AC_INIT([Score-P], m4_esyscmd([../vendor/common/build-config/generate-package-version.sh ../build-config/VERSION]), [support@score-p.org], [scorep])
 
+AFS_PACKAGE_INIT([frontend])
+AFS_SUMMARY_INIT
+
 AC_SUBST([LIBRARY_INTERFACE_VERSION], m4_esyscmd([../vendor/common/build-config/generate-library-version.sh ../build-config/VERSION]))
 
 AC_CONFIG_AUX_DIR([../build-config])
@@ -68,9 +71,6 @@ AC_SCOREP_SVN_CONTROLLED
 AM_INIT_AUTOMAKE([foreign color-tests 1.11.1 -Wall tar-pax])
 AM_SILENT_RULES([yes])
 
-AFS_PACKAGE_INIT([frontend])
-AFS_SUMMARY_INIT
-
 AM_CONDITIONAL([BUILD_TESTS], [true])
 AM_CONDITIONAL([CROSS_BUILD], [true])
 AC_SCOREP_PLATFORM_SETTINGS
@@ -92,7 +92,7 @@ LT_INIT([disable-shared])
 AC_SUBST([LIBTOOL_DEPS])
 
 AC_SCOREP_BUILD_MODE
-AC_SCOREP_PACKAGE_AND_LIBRARY_VERSION([../])
+AC_SCOREP_PACKAGE_AND_LIBRARY_VERSION
 
 AC_CONFIG_FILES([Makefile], [[
 sed -e 's/_0 = @echo "  \(YACC\|GEN\|LEX\)/&  /; t; s/_0 = @echo "  /&FE/' \

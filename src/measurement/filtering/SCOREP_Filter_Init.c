@@ -30,6 +30,8 @@
 #include <UTILS_Error.h>
 #include <UTILS_Debug.h>
 
+#include <stdlib.h>
+
 /* **************************************************************************************
    Variable and type definitions
 ****************************************************************************************/
@@ -64,9 +66,8 @@ SCOREP_Filter_Initialize( void )
     if ( err != SCOREP_SUCCESS )
     {
         UTILS_ERROR( err,
-                     "Error while parsing filter file.\n"
-                     "Disable filtering." );
-        return;
+                     "Error while parsing filter file. Abort." );
+        exit( EXIT_FAILURE );
     }
 }
 

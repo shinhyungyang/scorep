@@ -30,6 +30,9 @@ dnl
 AC_PREREQ([2.68])
 AC_INIT([Score-P], m4_esyscmd([../vendor/common/build-config/generate-package-version.sh ../build-config/VERSION]), [support@score-p.org], [scorep])
 
+AFS_PACKAGE_INIT([backend])
+AFS_SUMMARY_INIT
+
 AC_SUBST([LIBRARY_INTERFACE_VERSION], m4_esyscmd([../vendor/common/build-config/generate-library-version.sh ../build-config/VERSION]))
 
 AC_CONFIG_AUX_DIR([../build-config])
@@ -64,9 +67,6 @@ AC_SCOREP_SVN_CONTROLLED
 
 AM_INIT_AUTOMAKE([foreign color-tests 1.11.1 -Wall tar-pax])
 AM_SILENT_RULES([yes])
-
-AFS_PACKAGE_INIT([backend])
-AFS_SUMMARY_INIT
 
 AM_CONDITIONAL([BUILD_TESTS], [test "x${ac_scorep_cross_compiling}" = "xno"])
 AM_CONDITIONAL([CROSS_BUILD], [test "x${ac_scorep_cross_compiling}" = "xyes"])
@@ -268,10 +268,10 @@ AC_SCOREP_POSIX_FUNCTIONS
 
 # assuming that mpi configure already ran
 AC_SCOREP_COND_HAVE([MPI_SUPPORT],
-                    [test -f ../build-mpi/mpi_supported],
+                    [test -f ../build-mpi/Makefile],
                     [Defined if MPI support is available.])
 
-AC_SCOREP_PACKAGE_AND_LIBRARY_VERSION([../])
+AC_SCOREP_PACKAGE_AND_LIBRARY_VERSION
 
 dnl Predicate to use HARDCODE_LIBDIR_FLAG_* only if linker needs it. 
 AS_IF([test "x${hardcode_into_libs}" = "xyes"], 

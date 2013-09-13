@@ -30,6 +30,9 @@ dnl
 AC_PREREQ([2.68])
 AC_INIT([Score-P], m4_esyscmd([../vendor/common/build-config/generate-package-version.sh ../build-config/VERSION]), [support@score-p.org], [scorep])
 
+AFS_PACKAGE_INIT([MPI backend])
+AFS_SUMMARY_INIT
+
 AC_SUBST([LIBRARY_INTERFACE_VERSION], m4_esyscmd([../vendor/common/build-config/generate-library-version.sh ../build-config/VERSION]))
 
 AC_CONFIG_AUX_DIR([../build-config])
@@ -53,6 +56,8 @@ cross_compiling=${ac_scorep_cross_compiling}
     # to "yes", we allow configure to succeed. Wrap all macros that might
     # execute a program in a cross_compiling=yes block, e.g. AC_SCOREP_CHECK_SIZEOF
 #fi
+# suppress warnings about 'using cross tools not prefixed with host triplet'
+ac_tool_warned=yes
 
 ac_scorep_backend=yes
 AS_IF([test "x${ac_scorep_cross_compiling}" = "xyes"],
@@ -85,16 +90,15 @@ AC_SCOREP_SVN_CONTROLLED
 AM_INIT_AUTOMAKE([foreign color-tests 1.11.1 -Wall tar-pax])
 AM_SILENT_RULES([yes])
 
-AFS_PACKAGE_INIT([MPI backend])
-AFS_SUMMARY_INIT
-
 AM_CONDITIONAL([BUILD_TESTS], [test "x${ac_scorep_cross_compiling}" = "xno"])
 AM_CONDITIONAL([CROSS_BUILD], [test "x${ac_scorep_cross_compiling}" = "xyes"])
 AC_SCOREP_PLATFORM_SETTINGS
 AC_SCOREP_PLATFORM_AND_MACHINE_NAMES
 
 AC_LANG_PUSH([C])
-AC_SCOREP_MPI_WORKING([scorep_mpi_c_supported="yes"],[scorep_mpi_c_supported="no"])
+AC_SCOREP_MPI_WORKING(
+    [scorep_mpi_c_supported="yes"],
+    [AC_MSG_FAILURE([MPI C compiler does not work. If you intended to build Score-P without support for the MPI programming model, please reconfigure using --without-mpi.])])
 AC_SCOREP_CHECK_SIZEOF([void *])
 AC_LANG_POP([C])
 cross_compiling=${ac_scorep_cross_compiling}
@@ -129,7 +133,7 @@ AS_IF([test "x$scorep_mpi_f90_supported" = "xyes"], [
 ])
 
 AS_IF([test "x$scorep_mpi_c_supported$scorep_mpi_cxx_supported$scorep_mpi_f77_supported$scorep_mpi_f90_supported" != "xnononono"], [
-    AFS_SUMMARY([Library used for MPI], [$MPILIBS])
+    AFS_SUMMARY([Library used for MPI], [$MPI_LIBS])
 ])
 
 
@@ -272,7 +276,7 @@ AC_SCOREP_COMPILER_INSTRUMENTATION
 AC_SCOREP_ONLINE_ACCESS
 
 AC_SCOREP_MPI_PROFILING_HEADERS
-AC_SCOREP_PACKAGE_AND_LIBRARY_VERSION([../])
+AC_SCOREP_PACKAGE_AND_LIBRARY_VERSION
 
 AC_CONFIG_FILES([Makefile], [
 sed -e 's/_0 = @echo "  \(YACC\|GEN\|LEX\)/&   /; t; s/_0 = @echo "  /&MPI/' \
