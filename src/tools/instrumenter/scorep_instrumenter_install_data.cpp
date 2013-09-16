@@ -253,10 +253,11 @@ SCOREP_Instrumenter_InstallData::isArgForOpenmp( const std::string& arg )
             end = arg.find( ':', start + 1 );
             if ( arg.substr( start + 1, end - start - 1 ) == "omp" )
             {
-                m_selector->select( this, false );
+                return true;
             }
         }
     }
+    return false;
 }
 
 bool
