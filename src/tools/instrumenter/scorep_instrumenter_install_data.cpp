@@ -244,7 +244,19 @@ SCOREP_Instrumenter_InstallData::isPreprocessFlag( std::string arg )
 bool
 SCOREP_Instrumenter_InstallData::isArgForOpenmp( const std::string& arg )
 {
-    return arg.substr( 0, m_openmp_cflags.length() ) == m_openmp_cflags;
+    if ( ( arg.length() > 6 ) &&
+         ( arg.substr( 0, 6 ) == "-qsmp=" ) )
+    {
+        size_t end;
+        for ( size_t start = 5; start != std::string::npos; start = end )
+        {
+            end = arg.find( ':', start + 1 );
+            if ( arg.substr( start + 1, end - start - 1 ) == "omp" )
+            {
+                m_selector->select( this, false );
+            }
+        }
+    }
 }
 
 bool
