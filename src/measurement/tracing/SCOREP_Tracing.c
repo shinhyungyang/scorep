@@ -345,7 +345,7 @@ SCOREP_Tracing_Initialize( void )
                                       SCOREP_INVALID_SOURCE_FILE,
                                       SCOREP_INVALID_LINE_NO,
                                       SCOREP_INVALID_LINE_NO,
-                                      SCOREP_PARADIGM_MEASUREMENT,
+                                      SCOREP_ADAPTER_MEASUREMENT,
                                       SCOREP_REGION_ARTIFICIAL );
 }
 
