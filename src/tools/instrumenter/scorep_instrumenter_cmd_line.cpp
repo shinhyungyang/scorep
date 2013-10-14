@@ -769,7 +769,7 @@ SCOREP_Instrumenter_CmdLine::check_parameter( void )
        compiler name */
     if ( m_is_mpi_application == detect )
     {
-        if ( m_compiler_name.substr( 0, 2 ) == "mp" )
+        if ( remove_path( m_compiler_name ).substr( 0, 2 ) == "mp" )
         {
 #if HAVE_BACKEND( MPI_SUPPORT )
             m_is_mpi_application = enabled;

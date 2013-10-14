@@ -11,6 +11,8 @@
   at the same time.
 - Fix error message when scorep-config is called without arguments in
   a non-mpi installation.
+- Fixed broken MPI detection in the instrumenter if the MPI compiler
+  wrapper is specified with the full path.
 
 ------------------- Released version 1.2.1 ---------------------------
 
