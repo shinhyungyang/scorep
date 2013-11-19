@@ -23,7 +23,7 @@
  */
 
 #include <config.h>
-#include <stdio.h>
+#include <UTILS_Debug.h>
 
 #include "SCOREP_Types.h"
 
@@ -34,7 +34,7 @@ SCOREP_OA_PhaseBegin
     const SCOREP_RegionHandle handle
 )
 {
-    printf( "Dummy %s\n", __func__ );
+    UTILS_DEBUG_RAW_PRINTF( SCOREP_DEBUG_OA,  "Dummy %s\n", __func__ );
 }
 
 void
@@ -43,17 +43,17 @@ SCOREP_OA_PhaseEnd
     const SCOREP_RegionHandle handle
 )
 {
-    printf( "Dummy %s\n", __func__ );
+    UTILS_DEBUG_RAW_PRINTF( SCOREP_DEBUG_OA,  "Dummy %s\n", __func__ );
 }
 
 void
 SCOREP_OA_Register()
 {
-    printf( "Dummy %s\n", __func__ );
+    UTILS_DEBUG_RAW_PRINTF( SCOREP_DEBUG_OA,  "Dummy %s\n", __func__ );
 }
 
 void
 SCOREP_OA_Finalize()
 {
-    printf( "Dummy %s\n", __func__ );
+    UTILS_DEBUG_RAW_PRINTF( SCOREP_DEBUG_OA,  "Dummy %s\n", __func__ );
 }
