@@ -137,6 +137,12 @@ various Score-P components.
   - If an application uses MPI inter-communicators, Score-P
     measurement will hang during the creation of the communicator.
 
+  - The IBM Platform MPI (not mpixlc!) compiler wrapper (the formerly
+    HP-MPI) does not append its libraries at the very end of the
+    original link command. Thus, instrumenting applications with
+    Score-P fails at link time due to unresolved symbols in the
+    Score-P libraries.
+
 --------------------------------------------------------------------------------
 
 * OpenMP support
