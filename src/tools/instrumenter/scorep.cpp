@@ -82,12 +82,8 @@ print_help( void )
               << "                  program.\n"
               << "  --noopenmp      Disables OpenMP support.\n"
 #if defined( SCOREP_SHARED_BUILD ) && defined ( SCOREP_STATIC_BUILD )
-#if HAVE_LINK_FLAG_BSTATIC
-    << "  --static        Enforce static linking of the Score-P libraries.\n"
-#endif
-#if HAVE_LINK_FLAG_BDYNAMIC
-    << "  --dynamic       Enforce dynamic linking of the Score-P libraries.\n"
-#endif
+              << "  --static        Enforce static linking of the Score-P libraries.\n"
+              << "  --dynamic       Enforce dynamic linking of the Score-P libraries.\n"
 #endif
 #if defined( SCOREP_SHARED_BUILD )
     << "  --no-as-needed  Adds a GNU ld linker flag to fix undefined references\n"

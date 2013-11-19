@@ -16,6 +16,9 @@
   guidelines of some Linux distributions.
 - Fixed broken MPI detection in the instrumenter if the MPI compiler
   wrapper is specified with the full path.
+- If Score-P is build with static and dynamic libraries, the selection of
+  using static or dynamic libraries was improved. Using -Bstatic
+  or -Bshared had some side effects and was sometimes unreliable.
 - Suppress failed assertion messages when initialzing compiler instrumentation
   with intel compilers without libbfd. The measurement completes even
   if these messages exist.
