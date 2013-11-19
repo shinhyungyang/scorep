@@ -3,23 +3,36 @@
 ## 
 ## This file is part of the Score-P software (http://www.score-p.org)
 ##
-## Copyright (c) 2009-2011, 
-##    RWTH Aachen University, Germany
-##    Gesellschaft fuer numerische Simulation mbH Braunschweig, Germany
-##    Technische Universitaet Dresden, Germany
-##    University of Oregon, Eugene, USA
-##    Forschungszentrum Juelich GmbH, Germany
-##    German Research School for Simulation Sciences GmbH, Juelich/Aachen, Germany
-##    Technische Universitaet Muenchen, Germany
+## Copyright (c) 2009-2011,
+## RWTH Aachen University, Germany
 ##
-## See the COPYING file in the package base directory for details.
+## Copyright (c) 2009-2011,
+## Gesellschaft fuer numerische Simulation mbH Braunschweig, Germany
+##
+## Copyright (c) 2009-2011,
+## Technische Universitaet Dresden, Germany
+##
+## Copyright (c) 2009-2011,
+## University of Oregon, Eugene, USA
+##
+## Copyright (c) 2009-2013,
+## Forschungszentrum Juelich GmbH, Germany
+##
+## Copyright (c) 2009-2011,
+## German Research School for Simulation Sciences GmbH, Juelich/Aachen, Germany
+##
+## Copyright (c) 2009-2011,
+## Technische Universitaet Muenchen, Germany
+##
+## This software may be modified and distributed under the terms of
+## a BSD-style license.  See the COPYING file in the package base
+## directory for details.
 ##
 
 ## file       Makefile.inc.am
-## author     Christian Roessel <c.roessel@fz-juelich.de>
-## maintainer Christian Roessel <c.roessel@fz-juelich.de>
 
-nobase_include_HEADERS +=                      \
+scorepincludedir = $(includedir)/scorep
+scorepinclude_HEADERS =                        \
     $(PUBLIC_INC_SRC)SCOREP_MetricPlugins.h    \
     $(PUBLIC_INC_SRC)SCOREP_MetricTypes.h      \
     $(PUBLIC_INC_SRC)SCOREP_PublicTypes.h      \
@@ -27,15 +40,9 @@ nobase_include_HEADERS +=                      \
     $(PUBLIC_INC_SRC)SCOREP_User_Functions.h   \
     $(PUBLIC_INC_SRC)SCOREP_User_Types.h       \
     $(PUBLIC_INC_SRC)SCOREP_User_Variables.h   \
-    $(PUBLIC_INC_SRC)SCOREP_Tau.h
+    $(PUBLIC_INC_SRC)SCOREP_Tau.h              \
+    ../include/scorep/SCOREP_User.inc
 
-if SCOREP_COMPILER_PGI
-nobase_include_HEADERS += $(PUBLIC_INC_SRC)SCOREP_User_Pgi.inc
-INSTALL_DATA_HOOK_TARGETS += rename_fortran_user_adapter_include
-rename_fortran_user_adapter_include:
-	mv $(DESTDIR)$(includedir)/scorep/SCOREP_User_Pgi.inc $(DESTDIR)$(includedir)/scorep/SCOREP_User.inc
-else
-nobase_include_HEADERS += $(PUBLIC_INC_SRC)SCOREP_User.inc
-endif
-
-
+EXTRA_DIST += \
+    $(SRC_ROOT)include/scorep/SCOREP_User_Pgi.inc.in \
+    $(SRC_ROOT)include/scorep/SCOREP_User.inc.in
