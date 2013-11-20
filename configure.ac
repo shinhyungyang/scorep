@@ -92,6 +92,11 @@ th-custom-compilers and provide settings and platform to <AC_PACKAGE_BUGREPORT> 
 ])
                 ])
             AC_SCOREP_WITH_MPI_COMPILER_SUITE
+           ],
+           [afs_compiler_mpi_save=${ac_scorep_compilers_mpi}
+            AC_SCOREP_WITH_MPI_COMPILER_SUITE
+            AS_IF([test "x${scorep_mpi_user_disabled}" = xno],
+                [ac_scorep_compilers_mpi=${afs_compiler_mpi_save}])
            ])
        # determine arguments for subdir configures                                                  
        args="`${AWK} -f ${srcdir}/vendor/common/build-config/process_arguments.awk \
