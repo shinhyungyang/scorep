@@ -2,15 +2,29 @@
  * This file is part of the Score-P software (http://www.score-p.org)
  *
  * Copyright (c) 2009-2013,
- *    RWTH Aachen University, Germany
- *    Gesellschaft fuer numerische Simulation mbH Braunschweig, Germany
- *    Technische Universitaet Dresden, Germany
- *    University of Oregon, Eugene, USA
- *    Forschungszentrum Juelich GmbH, Germany
- *    German Research School for Simulation Sciences GmbH, Juelich/Aachen, Germany
- *    Technische Universitaet Muenchen, Germany
+ * RWTH Aachen University, Germany
  *
- * See the COPYING file in the package base directory for details.
+ * Copyright (c) 2009-2013,
+ * Gesellschaft fuer numerische Simulation mbH Braunschweig, Germany
+ *
+ * Copyright (c) 2009-2013,
+ * Technische Universitaet Dresden, Germany
+ *
+ * Copyright (c) 2009-2013,
+ * University of Oregon, Eugene, USA
+ *
+ * Copyright (c) 2009-2013,
+ * Forschungszentrum Juelich GmbH, Germany
+ *
+ * Copyright (c) 2009-2014,
+ * German Research School for Simulation Sciences GmbH, Juelich/Aachen, Germany
+ *
+ * Copyright (c) 2009-2013,
+ * Technische Universitaet Muenchen, Germany
+ *
+ * This software may be modified and distributed under the terms of
+ * a BSD-style license.  See the COPYING file in the package base
+ * directory for details.
  *
  */
 
@@ -95,7 +109,15 @@ SCOREP_RegionHandle scorep_record_off_region = SCOREP_INVALID_REGION;
  * Controlled by the SCOREP_EnableRecording() and SCOREP_DisableRecording()
  * functions.
  */
-bool scorep_recording_enabled = true;
+static bool scorep_recording_enabled = true;
+
+/** @brief Specifies whether recoding is enabled by default */
+static bool scorep_enable_recording_by_default = true;
+
+/** @brief Specifies whether it is allowed to modify the default
+ *  recording mode. After initialization, it must not be changed.
+ */
+static bool scorep_default_recoding_mode_changes_allowed = true;
 
 /* *INDENT-OFF* */
 /** atexit handler for finalization */
@@ -213,6 +235,12 @@ SCOREP_InitMeasurement( void )
     if ( !SCOREP_Status_IsMpp() )
     {
         SCOREP_SynchronizeClocks();
+    }
+
+    scorep_default_recoding_mode_changes_allowed = false;
+    if ( !scorep_enable_recording_by_default )
+    {
+        SCOREP_DisableRecording();
     }
 
     SCOREP_TIME_STOP_TIMING( SCOREP_InitMeasurement );
@@ -356,6 +384,16 @@ SCOREP_FinalizeMppMeasurement( void )
     SCOREP_Status_OnMppFinalize();
 }
 
+/**
+ * Sets whether recording is enabled or disabled by default at measurement start.
+ * Has only effect, when set during initialization.
+ */
+void
+SCOREP_SetDefaultRecodingMode( bool enabled )
+{
+    UTILS_ASSERT( scorep_default_recoding_mode_changes_allowed );
+    scorep_enable_recording_by_default = enabled;
+}
 
 /**
  * Enable event recording for this process.
@@ -469,7 +507,6 @@ scorep_finalize( void )
 
     SCOREP_TIME_STOP_TIMING( MeasurementDuration );
     SCOREP_TIME_START_TIMING( scorep_finalize );
-
     SCOREP_TIME( scorep_trigger_exit_callbacks, ( ) );
 
     // MPICH1 creates some extra processes that are not properly SCOREP
@@ -478,6 +515,11 @@ scorep_finalize( void )
     if ( SCOREP_Status_IsMpp() && !SCOREP_Status_IsMppInitialized() )
     {
         return;
+    }
+
+    if ( !scorep_enable_recording_by_default )
+    {
+        SCOREP_EnableRecording();
     }
 
     SCOREP_TIME( SCOREP_SynchronizeClocks, ( ) );
