@@ -134,11 +134,6 @@ SCOREP_CreateDefinitionMappings( SCOREP_DefinitionManager* definitionManager )
     ALLOC_MAPPINGS( definitionManager, type );
     SCOREP_LIST_OF_DEFS_WITH_MAPPINGS
     #undef DEF_WITH_MAPPING
-
-    ALLOC_MAPPINGS(& scorep_local_definition_manager,
-                   interim_communicator );
-
-    ALLOC_MAPPINGS( &scorep_local_definition_manager, interim_rma_window );
 }
 
 
