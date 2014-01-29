@@ -32,10 +32,11 @@ scorep-score profile.cubex
 The output of the command may look like this:
 
 @verbatim
-Estimated aggregate size of event trace (total_tbc):       24224 bytes
-Estimated requirements for largest trace buffer (max_tbc): 6381 bytes
-(hint: When tracing set SCOREP_TOTAL_MEMORY > max_tbc to avoid intermediate flushes
- or reduce requirements using file listing names of USR regions to be filtered.)
+Estimated aggregate size of event trace (total_tbc):     24224 bytes
+Estimated requirements for largest trace buffer (max_tbc):6381 bytes
+(hint: When tracing set SCOREP_TOTAL_MEMORY > max_tbc to avoid
+ intermediate flushes or reduce requirements using file listing
+ names of USR regions to be filtered.)
 
 flt type         max_tbc         time      % region
      ALL            6381         4.24  100.0 ALL
@@ -71,8 +72,8 @@ The following groups exist:
  <li> OMP: This group contains all regions that represent an OpenMP construct </li>
  <li> MPI: This group contains all MPI functions </li>
  <li> COM: This group contains all functions, implemented by the user that appear on 
-           a call path to an MPI function or an OpenMP construct </li>
- <li> USR: This group contains all user functions that do not appear on a call path to
+           a call-path to an MPI function or an OpenMP construct </li>
+ <li> USR: This group contains all user functions that do not appear on a call-path to
            an OpenMP construct or MPI function. </li>
 </ul>
 
@@ -110,9 +111,9 @@ For defining a filter, it is recommended to exclude short frequently called
 functions from measurement, because they require a lot of
 buffer space (represented by a high value under @verb{max_tbc}) but incur a high
 measurement overhead. Furthermore, for communication analysis, functions 
-that appear on a call path to MPI functions and OpenMP constructs (regions
+that appear on a call-path to MPI functions and OpenMP constructs (regions
 of type @verb{COM}) are usually of more interest than user functions of type @verb{USR}
-which do not appear on call path to communications. MPI functions and OpenMP
+which do not appear on call-path to communications. MPI functions and OpenMP
 constructs can not be filtered. Thus, it is usually a good approach to exclude
 regions of type @verb{USR} starting at the top of the list until you reduced the trace
 to your needs. Section @secref{filtering} describes the format of a filter 
@@ -129,10 +130,11 @@ scorep-score profile.cubex -f myfilter
 An example output is:
 
 @verbatim
-Estimated aggregate size of event trace (total_tbc):       6406 bytes
-Estimated requirements for largest trace buffer (max_tbc): 1879 bytes
-(hint: When tracing set SCOREP_TOTAL_MEMORY > max_tbc to avoid intermediate flushes
- or reduce requirements using file listing names of USR regions to be filtered.)
+Estimated aggregate size of event trace(total_tbc):      6406 bytes
+Estimated requirements for largest trace buffer(max_tbc):1879 bytes
+(hint: When tracing set SCOREP_TOTAL_MEMORY > max_tbc to avoid
+ intermediate flushes  or reduce requirements using file listing
+ names of USR regions to be filtered.)
 
 flt type         max_tbc         time      % region
  -   ALL            1999         1.07  100.0 ALL

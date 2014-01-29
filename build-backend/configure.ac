@@ -65,6 +65,8 @@ AC_SCOREP_CHECK_COMPILER_VAR_SET([FC])
 
 adl_RECURSIVE_EVAL([${includedir}], [INCLUDEDIR])
 AC_SUBST([INCLUDEDIR])
+adl_RECURSIVE_EVAL([${bindir}], [BINDIR])
+AC_SUBST([BINDIR])
 
 AC_SCOREP_SVN_CONTROLLED
 
@@ -114,7 +116,7 @@ AS_IF([test -n "${scorep_opari2_bindir}"],
        ${scorep_opari2_bindir}/opari2-config --fix-form > /dev/null 2>&1
        AS_IF([test $? -ne 0], [opari_fix_and_free_form_options=0])
        AM_CONDITIONAL([HAVE_SCOREP_EXTERNAL_OPARI2], [true])],
-      [AC_SUBST([OPARI2_BINDIR],            ["${prefix}/bin"])
+      [AC_SUBST([OPARI2_BINDIR],            ["${BINDIR}"])
        AC_SUBST([OPARI2_MAKE_CHECK_BINDIR], ["../vendor/opari2/build-frontend"])
        AC_SUBST([OPARI2_CPPFLAGS],          ['-I$(srcdir)/../vendor/opari2/include'])
        AC_SUBST([HAVE_EXTERNAL_OPARI2],     [0])
