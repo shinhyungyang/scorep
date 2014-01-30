@@ -58,6 +58,8 @@ libscorep_cube_writer_la_SOURCES =                                      \
     $(SRC_ROOT)src/measurement/cube_writer/cubew_location.h             \
     $(SRC_ROOT)src/measurement/cube_writer/cubew_location_group.c       \
     $(SRC_ROOT)src/measurement/cube_writer/cubew_location_group.h       \
+    $(SRC_ROOT)src/measurement/cube_writer/cubew_meta_data_writer.c     \
+    $(SRC_ROOT)src/measurement/cube_writer/cubew_meta_data_writer.h     \
     $(SRC_ROOT)src/measurement/cube_writer/cubew_metric.c               \
     $(SRC_ROOT)src/measurement/cube_writer/cubew_metric.h               \
     $(SRC_ROOT)src/measurement/cube_writer/cubew_region.c               \
