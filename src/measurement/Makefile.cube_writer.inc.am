@@ -74,7 +74,8 @@ libscorep_cube_writer_la_SOURCES =                                      \
     $(SRC_ROOT)src/measurement/cube_writer/cubew_vector.h
 libscorep_cube_writer_la_CPPFLAGS = \
     $(AM_CPPFLAGS) \
-    -U_FORTIFY_SOURCE
+    -U_FORTIFY_SOURCE \
+    -DCUBE_AS_SVN_EXTERNAL
 
 endif # HAVE_SCOREP_EXTERNAL_CUBE_WRITER
 
