@@ -156,7 +156,7 @@ SCOREP_Instrumenter_CmdLine::noCompileLink( void )
 bool
 SCOREP_Instrumenter_CmdLine::isNvccCompiler( void )
 {
-    return m_compiler_name == "nvcc";
+    return remove_path( m_compiler_name ).substr( 0, 2 ) == "nv";
 }
 
 std::string
