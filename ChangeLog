@@ -16,6 +16,9 @@
 - Don't remove source files during make distclean in an in-place
   build.
 - Fix failing detection of nvcc in case it was called with a path.
+- The measurement configuration (stored in the file `scorep.cfg') is
+  now also preserved in the experiment directory in case of an failed
+  measurement.
 
 ------------------- Released version 1.2.2 ---------------------------
 
