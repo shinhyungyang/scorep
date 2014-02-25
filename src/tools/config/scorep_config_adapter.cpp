@@ -193,7 +193,8 @@ SCOREP_Config_Adapter::addCFlags( std::string& cflags,
 }
 
 void
-SCOREP_Config_Adapter::addLdFlags( std::string& ldflags )
+SCOREP_Config_Adapter::addLdFlags( std::string& ldflags,
+                                   bool         nvcc )
 {
 }
 
@@ -219,16 +220,24 @@ SCOREP_Config_CompilerAdapter::addCFlags( std::string& cflags,
 {
     if ( m_is_enabled )
     {
-        cflags += "-g " SCOREP_CFLAGS " ";
+        cflags += SCOREP_CFLAGS " ";
     }
 }
 
 void
-SCOREP_Config_CompilerAdapter::addLdFlags( std::string& ldflags )
+SCOREP_Config_CompilerAdapter::addLdFlags( std::string& ldflags,
+                                           bool         nvcc )
 {
     if ( m_is_enabled )
     {
-        ldflags += " " SCOREP_LDFLAGS;
+        if ( nvcc )
+        {
+            ldflags += " " SCOREP_LDFLAGS;
+        }
+        else
+        {
+            ldflags += " " SCOREP_CFLAGS " " SCOREP_LDFLAGS;
+        }
     }
 }
 

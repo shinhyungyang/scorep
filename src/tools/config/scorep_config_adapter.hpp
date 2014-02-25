@@ -111,9 +111,11 @@ public:
      * Overwrite this function if you want to do adapter specific modifications
      * to the linker flags.
      * @param ldflgas  the linker flags to which you may modify or add new flags.
+     * @param nvcc     True if compiler is nvcc.
      */
     virtual void
-    addLdFlags( std::string& ldflags );
+    addLdFlags( std::string& ldflags,
+                bool         nvcc );
 
     /**
      * Overwrite this function if you want to do adapter specific modifications
@@ -184,7 +186,8 @@ public:
                bool         fortran,
                bool         nvcc );
     virtual void
-    addLdFlags( std::string& ldflags );
+    addLdFlags( std::string& ldflags,
+                bool         nvcc );
 };
 
 /* **************************************************************************************

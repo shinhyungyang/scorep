@@ -367,7 +367,7 @@ main( int    argc,
             for ( adapter = scorep_adapters.begin();
                   adapter != scorep_adapters.end(); adapter++ )
             {
-                ( *adapter )->addLdFlags( str );
+                ( *adapter )->addLdFlags( str, nvcc );
             }
 
             if ( nvcc )
