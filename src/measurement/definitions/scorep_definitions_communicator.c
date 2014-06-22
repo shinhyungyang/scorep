@@ -13,7 +13,7 @@
  * Copyright (c) 2009-2013,
  * University of Oregon, Eugene, USA
  *
- * Copyright (c) 2009-2013,
+ * Copyright (c) 2009-2014,
  * Forschungszentrum Juelich GmbH, Germany
  *
  * Copyright (c) 2009-2013,
@@ -133,8 +133,8 @@ SCOREP_Definitions_NewInterimCommunicator( SCOREP_InterimCommunicatorHandle pare
     scorep_definitions_equal_payloads_fn equal_payloads_fn = NULL;
     if ( manager_entry )
     {
-        init_payload_fn   = ( scorep_definitions_init_payload_fn )va_arg( va, void ( * )( void ) );
-        equal_payloads_fn = ( scorep_definitions_equal_payloads_fn )va_arg( va, void ( * )( void ) );
+        init_payload_fn   = va_arg( va, scorep_definitions_init_payload_fn );
+        equal_payloads_fn = va_arg( va, scorep_definitions_equal_payloads_fn );
     }
     else
     {
