@@ -182,17 +182,15 @@ AS_IF([test "x${scorep_mpi_user_disabled}" != "xyes"],
     ])
 
 AS_CASE([${ac_scorep_platform}], [crayx* | linux], [scorep_shmem_platform=yes])
-AS_IF([test "x${afs_custom_compilers_given}" = xyes ||
-       test "x${scorep_shmem_platform}" = xyes],
-    [AFS_AM_CONDITIONAL([HAVE_SCOREP_SHMEM], [test "x${scorep_shmem_user_disabled}" != "xyes"], [false])
-     AS_IF([test "x${scorep_shmem_user_disabled}" != "xyes"],
-         [AC_CONFIG_SUBDIR_CUSTOM([build-shmem], [${args} ac_scorep_platform=${ac_scorep_platform} ac_scorep_cross_compiling=${ac_scorep_cross_compiling} afs_scorep_platform_name='${afs_scorep_platform_name_sq}' afs_scorep_default_machine_name='${afs_scorep_default_machine_name_sq}' ${scorep_otf2_config_arg}])
-         ],
-         [AFS_SUMMARY([SHMEM support], [no])
-          AC_CONFIG_FILES([src/scorep_config_tool_shmem.h:src/tools/config/scorep_config_tool_without_shmem.h.in])
-         ])
-      ])
-
+AS_IF([(test "x${afs_custom_compilers_given}"  = xyes ||
+        test "x${scorep_shmem_platform}"       = xyes) &&
+        test "x${scorep_shmem_user_disabled}" != xyes],
+    [AFS_AM_CONDITIONAL([HAVE_SCOREP_SHMEM], [test 1 -eq 1], [false])
+     AC_CONFIG_SUBDIR_CUSTOM([build-shmem], [${args} ac_scorep_platform=${ac_scorep_platform} ac_scorep_cross_compiling=${ac_scorep_cross_compiling} afs_scorep_platform_name='${afs_scorep_platform_name_sq}' afs_scorep_default_machine_name='${afs_scorep_default_machine_name_sq}' ${scorep_otf2_config_arg}])
+    ],
+    [AFS_SUMMARY([SHMEM support], [no])
+     AC_CONFIG_FILES([src/scorep_config_tool_shmem.h:src/tools/config/scorep_config_tool_without_shmem.h.in])
+    ])
 
 AC_CONFIG_SUBDIR_CUSTOM([build-backend], [${args} ac_scorep_platform=${ac_scorep_platform} ac_scorep_cross_compiling=${ac_scorep_cross_compiling} afs_scorep_platform_name='${afs_scorep_platform_name_sq}' afs_scorep_default_machine_name='${afs_scorep_default_machine_name_sq}' ${scorep_otf2_config_arg} ${scorep_opari2_config_arg} ${scorep_cube_config_arg} ${scorep_have_score_build}])
 
