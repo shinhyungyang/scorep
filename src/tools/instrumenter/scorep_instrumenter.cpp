@@ -60,6 +60,7 @@
 #include "scorep_instrumenter_mutex.hpp"
 #include <scorep_config_tool_backend.h>
 #include <scorep_config_tool_mpi.h>
+#include <scorep_config_tool_shmem.h>
 
 void
 print_help();

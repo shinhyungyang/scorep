@@ -336,7 +336,8 @@ scorep_mpi_setup_world( void )
         SCOREP_Definitions_NewInterimCommunicator( SCOREP_INVALID_INTERIM_COMMUNICATOR,
                                                    SCOREP_PARADIGM_MPI,
                                                    sizeof( *comm_payload ),
-                                                   ( void** )&comm_payload );
+                                                   ( void** )&comm_payload,
+                                                   NULL );
     comm_payload->is_self_like     = scorep_mpi_world.size == 1;
     comm_payload->local_rank       = scorep_mpi_my_global_rank;
     comm_payload->global_root_rank = 0;
@@ -535,7 +536,8 @@ scorep_mpi_comm_create( MPI_Comm comm, MPI_Comm parent_comm )
     handle =  SCOREP_Definitions_NewInterimCommunicator( parent_handle,
                                                          SCOREP_PARADIGM_MPI,
                                                          sizeof( *comm_payload ),
-                                                         ( void** )&comm_payload );
+                                                         ( void** )&comm_payload,
+                                                         NULL );
     comm_payload->is_self_like     = size == 1;
     comm_payload->local_rank       = local_rank;
     comm_payload->global_root_rank = root;

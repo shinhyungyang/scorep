@@ -2361,7 +2361,7 @@ scorep_cupti_callbacks_init()
                         SCOREP_INVALID_INTERIM_COMMUNICATOR,
                         SCOREP_PARADIGM_CUDA,
                         0,
-                        NULL );
+                        NULL, NULL );
 
                 scorep_cuda_interim_window_handle =
                     SCOREP_Definitions_NewInterimRmaWindow(

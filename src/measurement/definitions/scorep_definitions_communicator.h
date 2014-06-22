@@ -110,9 +110,9 @@ SCOREP_Definitions_NewInterimCommunicatorInLocation(
     SCOREP_Location*                     location,
     SCOREP_InterimCommunicatorHandle     parentComm,
     SCOREP_ParadigmType                  paradigmType,
-    scorep_definitions_init_payload_fn   init_payload_fn,
-    scorep_definitions_equal_payloads_fn equal_payloads_fn,
-    scorep_definitions_manager_entry*    manager_entry,
+    scorep_definitions_init_payload_fn   initPayloadFn,
+    scorep_definitions_equal_payloads_fn equalPayloadsFn,
+    scorep_definitions_manager_entry*    managerEntry,
     size_t                               sizeOfPayload,
     void**                               payloadOut,
     ... );

@@ -123,6 +123,13 @@ bool
 is_mpi_library( const std::string& library_name );
 
 /**
+   Checks whether the library name is an shmem library.
+   @param library_name  The name of the library.
+ */
+bool
+is_shmem_library( const std::string& library_name );
+
+/**
    Simpifies a path.
    @param path The path that is simplified.
    @returns the simplified path.

@@ -160,7 +160,7 @@ AC_SCOREP_RUNTIME_MANAGEMENT_TIMINGS
 AC_SCOREP_BACKEND_TEST_RUNS
 AC_SCOREP_FORTRAN_SUPPORT_ALLOCATABLE
 SCOREP_METRICS_CHECK
-AC_SCOREP_METRIC_PLUGINS
+SCOREP_DLFCN
 AC_SCOREP_LINK_FLAGS_CHECK
 
 scorep_otf2_config=
@@ -287,6 +287,14 @@ AC_SEARCH_LIBS([ceil], [m])
 AC_SCOREP_COND_HAVE([MPI_SUPPORT],
                     [test -f ../build-mpi/Makefile],
                     [Defined if MPI support is available.])
+
+# assuming that shmem configure already ran
+AC_SCOREP_COND_HAVE([SHMEM_SUPPORT],
+                    [test -f ../build-shmem/Makefile],
+                    [Defined if SHMEM support is available.])
+AC_SCOREP_COND_HAVE([SHMEM_PROFILING_INTERFACE],
+                    [test -f ../build-shmem/scorep_have_pshmem_support.txt],
+                    [Defined if SHMEM Profiling Interface support is available.])
 
 AC_SCOREP_PACKAGE_AND_LIBRARY_VERSION
 

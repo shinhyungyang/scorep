@@ -327,6 +327,14 @@ is_mpi_library( const std::string& library_name )
 }
 
 bool
+is_shmem_library( const std::string& library_name )
+{
+    /* Check for libopenshmem or libsma (SGI MPT) */
+    return library_name.substr( 0, 9 ) == "openshmem" ||
+           library_name.substr( 0, 3 ) == "sma";
+}
+
+bool
 exists_file( const std::string& filename )
 {
     std::ifstream ifile( filename.c_str() );
