@@ -79,7 +79,11 @@
     will cause an instrumentetd application to abort: pthread_exit,
     pthread_cancel. The usage of pthread_detach will cause the pogram
     to fail if the detached thread is still running after the end of
-    main.
+    main. Pthread support is currently not available on systems that
+    use linkers other than the GNU linker, e.g., AIX systems. Pthread
+    support is currently not available when compiling with Fujitsu
+    compilers. The compiler switch -Xg (GNU compatibility mode) might
+    help, but is untested.
 
                         Score-P v1.2 OPEN ISSUES
                         ========================

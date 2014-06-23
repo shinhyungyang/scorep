@@ -194,12 +194,16 @@ instrumenter_configuration_files = ../installcheck/instrumenter_checks/configura
 $(instrumenter_configuration_files): ../installcheck/instrumenter_checks/instrumenter-configurations.sh
 	@../installcheck/instrumenter_checks/instrumenter-configurations.sh
 
+if HAVE_PTHREAD
 if HAVE_GNU_LINKER
 instrumenter-checks-pthread:
 	$(MAKE) -C ../installcheck/instrumenter_checks/create_wait/pthread
 else !HAVE_GNU_LINKER
 instrumenter-checks-pthread:
 endif !HAVE_GNU_LINKER
+else !HAVE_PTHREAD
+instrumenter-checks-pthread:
+endif !HAVE_PTHREAD
 
 clean-local-instrumenter-checks:
 	@rm -f $(instrumenter_configuration_files)

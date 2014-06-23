@@ -60,4 +60,3 @@ include ../test/memory/Makefile.inc.am
 include ../test/vector/Makefile.inc.am
 include ../test/hashtab/Makefile.inc.am
 include ../test/rewind/Makefile.inc.am
-include ../test/thread/create_wait/Makefile.inc.am
