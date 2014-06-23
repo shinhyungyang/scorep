@@ -6,6 +6,9 @@
 ## Copyright (c) 2014,
 ## Technische Universitaet Dresden, Germany
 ##
+## Copyright (c) 2014,
+## Forschungszentrum Juelich GmbH, Germany
+##
 ## This software may be modified and distributed under the terms of
 ## a BSD-style license. See the COPYING file in the package base
 ## directory for details.
@@ -19,4 +22,6 @@ AC_REQUIRE([AFS_GNU_LINKER])
 
 dnl Don't check for prerequisite of library wrapping on the frontend.
 AS_IF([test "x$ac_scorep_backend" = xno], [AC_MSG_ERROR([cannot check for library wrapping support on frontend.])])
+
+AFS_SUMMARY([GNU ld library wrapping], [${afs_have_gnu_linker}])
 ])

@@ -31,8 +31,7 @@
 
                         Score-P new OPEN ISSUES
                         ========================
-                                                           Status: May 2014
-
+                                                           Status: June 2014
 * CUDA support
 
   - CUDA device activities get lost for CUDA 5.5 (CUPTI 4). The last activity
@@ -74,6 +73,13 @@
   - The online access interface is currently not available in SHMEM
     applications.
 
+* Pthread support
+
+  - Following Pthread management functions are not supported yet and
+    will cause an instrumentetd application to abort: pthread_exit,
+    pthread_cancel. The usage of pthread_detach will cause the pogram
+    to fail if the detached thread is still running after the end of
+    main.
 
                         Score-P v1.2 OPEN ISSUES
                         ========================

@@ -13,7 +13,7 @@
  * Copyright (c) 2009-2013,
  * University of Oregon, Eugene, USA
  *
- * Copyright (c) 2009-2013,
+ * Copyright (c) 2009-2014,
  * Forschungszentrum Juelich GmbH, Germany
  *
  * Copyright (c) 2009-2013,
@@ -34,7 +34,8 @@
  */
 
 #include <config.h>
-#include <scorep_thread_fork_join_generic.h>
+#include <scorep_thread_generic.h>
+#include <scorep_thread_model_specific.h>
 #include <scorep_thread_fork_join_model_specific.h>
 
 #include <SCOREP_Timing.h>
@@ -85,9 +86,6 @@ SCOREP_PRAGMA_OMP( threadprivate( POMP_TPD_MANGLED ) )
 
 typedef struct scorep_thread_private_data scorep_thread_private_data;
 
-static scorep_thread_private_data* initial_tpd;
-static SCOREP_Location*            initial_location;
-
 /* *INDENT-OFF* */
 static void set_tpd_to( scorep_thread_private_data* newTpd );
 /* *INDENT-ON* */
@@ -125,12 +123,11 @@ scorep_thread_on_initialize( scorep_thread_private_data* initialTpd )
     UTILS_BUG_ON( omp_in_parallel(), "" );
     UTILS_BUG_ON( initialTpd == 0, "" );
     UTILS_BUG_ON( scorep_thread_get_model_data( initialTpd ) == 0, "" );
-    UTILS_BUG_ON( initial_tpd != 0, "" );
-    UTILS_BUG_ON( initial_location != 0, "" );
+
+    scorep_thread_create_first_fork_locations_mutex();
 
     set_tpd_to( initialTpd );
-    initial_tpd      = initialTpd;
-    initial_location = scorep_thread_get_location( initialTpd );
+    UTILS_BUG_ON( TPD == 0, "" );
     /* From here on it is save to call SCOREP_Location_GetCurrentCPULocation(). */
 }
 
@@ -153,8 +150,7 @@ scorep_thread_on_finalize( scorep_thread_private_data* tpd )
 {
     scorep_thread_private_data_omp_tpd* model_data = scorep_thread_get_model_data( tpd );
     UTILS_BUG_ON( model_data->parent_reuse_count != 0, "" );
-    initial_tpd      = 0;
-    initial_location = 0;
+    scorep_thread_destroy_first_fork_locations_mutex();
 }
 
 
@@ -328,12 +324,12 @@ scorep_thread_create_location_name( char*                       locationName,
         return;
     }
     /* Nesting */
-    else if ( parent_location == initial_location )
+    else if ( parent_location == scorep_thread_get_location( scorep_thread_get_initial_tpd() ) )
     {
         /* Children of master */
         length = 12;
         strncpy( locationName, "OMP thread 0", length + 1 );
-        while ( tpd && tpd != initial_tpd )
+        while ( tpd && !scorep_thread_is_initial_thread( tpd ) )
         {
             length += 2;
             UTILS_ASSERT( length < locationNameMaxLength );
@@ -368,9 +364,9 @@ scorep_thread_get_private_data()
 
 
 void
-scorep_thread_on_end( scorep_thread_private_data*  currentTpd,
-                      scorep_thread_private_data** parentTpd,
-                      SCOREP_ParadigmType          paradigm )
+scorep_thread_on_team_end( scorep_thread_private_data*  currentTpd,
+                           scorep_thread_private_data** parentTpd,
+                           SCOREP_ParadigmType          paradigm )
 {
     UTILS_BUG_ON( currentTpd != TPD, "" );
     UTILS_BUG_ON( paradigm != SCOREP_PARADIGM_OPENMP, "" );

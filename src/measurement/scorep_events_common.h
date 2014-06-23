@@ -28,6 +28,7 @@
 #include <SCOREP_Timing.h>
 #include "scorep_status.h"
 #include <SCOREP_RuntimeManagement.h>
+#include <SCOREP_Location.h>
 
 
 static inline uint64_t

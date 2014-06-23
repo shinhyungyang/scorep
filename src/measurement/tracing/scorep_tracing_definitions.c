@@ -578,6 +578,11 @@ scorep_write_group_definitions( void*                     writerHandle,
                 paradigm    = OTF2_PARADIGM_SHMEM;
                 group_flags = OTF2_GROUP_FLAG_GLOBAL_MEMBERS;
                 break;
+
+            case SCOREP_GROUP_PTHREAD_LOCATIONS:
+            case SCOREP_GROUP_PTHREAD_THREAD_TEAM:
+                paradigm = OTF2_PARADIGM_PTHREAD;
+                break;
         }
 
         OTF2_ErrorCode status = defGroup(

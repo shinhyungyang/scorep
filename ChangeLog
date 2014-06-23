@@ -92,6 +92,17 @@
   use of 'chdir' operation.
 - Add support for instrumenting programs which use SHMEM library calls for
   one-sided communication.
+- Basic support for Pthread instrumentation. Supported Pthread
+  routines are pthread_create, pthread_join, pthread_mutex_init,
+  pthread_mutex_destroy, pthread_mutex_lock, pthread_mutex_trylock,
+  pthread_mutex_unlock, pthread_cond_init, pthread_cond_destroy,
+  pthread_cond_signal, pthread_cond_broadcast, pthread_cond_wait, and
+  pthread_cond_timedwait. Following thread management functions are
+  currently not supported and will abort the program: pthread_exit and
+  pthread_cancel. The usage of pthread_detach will cause the pogram to
+  fail if the detached thread is still running after the end of
+  main. These limitations will be addressed in an upcoming version of
+  Score-P.
 
 ------------------- Released version 1.2.3 ---------------------------
 

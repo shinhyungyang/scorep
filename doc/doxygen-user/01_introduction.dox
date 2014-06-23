@@ -81,6 +81,7 @@ process to be analyzed and the number of cores to be used.
 <dt>Thread-parallel paradigms:</dt>
 <dd><ul>
   <li>@emph{OpenMP}</li>
+  <li>@emph{Pthreads}</li>
 </ul></dd>
 <dt>Accelerator-based paradigms:</dt>
 <dd><ul>
@@ -241,7 +242,7 @@ In order to allow the user to perform such an optimization of his code
 (typically written in Fortran, C, or C++ and implemented
 in a serial way or using a parallelization via an multi-process, thread-parallel,
 accelerator-based paradigm, or a combination thereof), the @scorep system
-provides a number of components that interact with each other and with external
+provides a number of components that interacts with each other and with external
 tools. A graphical overview of this structure is given in Fig. @figref{score-p-overview}.
 We shall now briefly introduce the elements of this structure; more
 details will be given in the later chapters of this document.
@@ -258,7 +259,7 @@ instructions and utilizes appropriate and configurable methods of
 instrumentation. These are currently:
 <ul>
  <li> compiler instrumentation, </li>
- <li> MPI and SHMEM library interposition, </li>
+ <li> MPI, SHMEM, and Pthread library interposition/wrapping, </li>
  <li> source code instrumentation via the TAU instrumenter, </li>
  <li> OpenMP source code instrumentation using Opari2. </li>
  <li> binary instrumentation using Cobi

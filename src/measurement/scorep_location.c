@@ -13,7 +13,7 @@
  * Copyright (c) 2009-2013,
  * University of Oregon, Eugene, USA
  *
- * Copyright (c) 2009-2013,
+ * Copyright (c) 2009-2014,
  * Forschungszentrum Juelich GmbH, Germany
  *
  * Copyright (c) 2009-2013,
@@ -46,7 +46,7 @@
 #include <SCOREP_Mutex.h>
 #include "scorep_subsystem.h"
 #include "scorep_status.h"
-#include <SCOREP_ThreadForkJoin_Mgmt.h>
+#include <SCOREP_Thread_Mgmt.h>
 #include <SCOREP_Definitions.h>
 #include <definitions/SCOREP_Definitions.h>
 
@@ -332,6 +332,16 @@ SCOREP_Location_GetGlobalId( SCOREP_Location* locationData )
     uint64_t rank              = SCOREP_Status_GetRank();
 
     return ( local_location_id << 32 ) | rank;
+}
+
+
+uint64_t
+SCOREP_Location_GetGlobalIdFromLocalId( uint64_t localLocationId )
+{
+    UTILS_BUG_ON( !SCOREP_Status_IsMppInitialized(),
+                  "Should only be called after the MPP was initialized." );
+
+    return ( localLocationId << 32 ) | SCOREP_Status_GetRank();
 }
 
 

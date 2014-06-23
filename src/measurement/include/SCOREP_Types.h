@@ -13,7 +13,7 @@
  * Copyright (c) 2009-2013,
  * University of Oregon, Eugene, USA
  *
- * Copyright (c) 2009-2013,
+ * Copyright (c) 2009-2014,
  * Forschungszentrum Juelich GmbH, Germany
  *
  * Copyright (c) 2009-2013,
@@ -251,6 +251,7 @@ typedef uint32_t SCOREP_LineNo;
     SCOREP_PARADIGM( THREAD_FORK_JOIN,   "thread-fork-join",   OPENMP,             SCOREP_ALL_BITS( 3 ) )    \
     SCOREP_PARADIGM( OPENMP,             "openmp",             OPENMP,             SCOREP_SUB_BITS( 3, 1 ) ) \
     SCOREP_PARADIGM( THREAD_CREATE_WAIT, "thread-create-wait", OPENMP,             SCOREP_ALL_BITS( 4 ) )    \
+    SCOREP_PARADIGM( PTHREAD,            "pthread",            PTHREAD,            SCOREP_SUB_BITS( 4, 1 ) ) \
     SCOREP_PARADIGM( ACCELERATOR,        "accelerator",        CUDA,               SCOREP_ALL_BITS( 5 ) )    \
     SCOREP_PARADIGM( CUDA,               "cuda",               CUDA,               SCOREP_SUB_BITS( 5, 1 ) ) \
     SCOREP_PARADIGM( MEASUREMENT,        "measurement",        MEASUREMENT_SYSTEM, SCOREP_ALL_BITS( 6 ) )
@@ -335,24 +336,27 @@ typedef enum SCOREP_LocationGroupType
  */
 typedef enum SCOREP_GroupType
 {
-    SCOREP_GROUP_UNKNOWN            = 0,
-    SCOREP_GROUP_LOCATIONS          = 1,
-    SCOREP_GROUP_REGIONS            = 2,
-    SCOREP_GROUP_METRIC             = 3,
+    SCOREP_GROUP_UNKNOWN             = 0,
+    SCOREP_GROUP_LOCATIONS           = 1,
+    SCOREP_GROUP_REGIONS             = 2,
+    SCOREP_GROUP_METRIC              = 3,
 
-    SCOREP_GROUP_MPI_LOCATIONS      = 4,
-    SCOREP_GROUP_MPI_GROUP          = 5,
-    SCOREP_GROUP_MPI_SELF           = 6,
+    SCOREP_GROUP_MPI_LOCATIONS       = 4,
+    SCOREP_GROUP_MPI_GROUP           = 5,
+    SCOREP_GROUP_MPI_SELF            = 6,
 
-    SCOREP_GROUP_OPENMP_LOCATIONS   = 7,
-    SCOREP_GROUP_OPENMP_THREAD_TEAM = 8,
+    SCOREP_GROUP_OPENMP_LOCATIONS    = 7,
+    SCOREP_GROUP_OPENMP_THREAD_TEAM  = 8,
 
-    SCOREP_GROUP_CUDA_LOCATIONS     = 9,
-    SCOREP_GROUP_CUDA_GROUP         = 10,
+    SCOREP_GROUP_CUDA_LOCATIONS      = 9,
+    SCOREP_GROUP_CUDA_GROUP          = 10,
 
-    SCOREP_GROUP_SHMEM_LOCATIONS    = 11,
-    SCOREP_GROUP_SHMEM_GROUP        = 12,
-    SCOREP_GROUP_SHMEM_SELF         = 13,
+    SCOREP_GROUP_SHMEM_LOCATIONS     = 11,
+    SCOREP_GROUP_SHMEM_GROUP         = 12,
+    SCOREP_GROUP_SHMEM_SELF          = 13,
+
+    SCOREP_GROUP_PTHREAD_LOCATIONS   = 14,
+    SCOREP_GROUP_PTHREAD_THREAD_TEAM = 15,
 
     SCOREP_INVALID_GROUP_TYPE /**< For internal use only. */
 } SCOREP_GroupType;

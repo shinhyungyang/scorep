@@ -328,6 +328,7 @@ AC_CONFIG_FILES([../installcheck/instrumenter_checks/Makefile.common_rules:../te
                  ../installcheck/instrumenter_checks/Makefile.instrument_configurations:../test/instrumenter_checks/Makefile.instrument_configurations.in
                  ../installcheck/instrumenter_checks/serial/Makefile:../test/instrumenter_checks/serial/Makefile.in
                  ../installcheck/instrumenter_checks/omp/Makefile:../test/instrumenter_checks/omp/Makefile.in
+                 ../installcheck/instrumenter_checks/create_wait/pthread/Makefile:../test/instrumenter_checks/create_wait/pthread/Makefile.in
                  ../src/scorep_config_tool_backend.h:../src/tools/config/scorep_config_tool_backend.h.in])
 AC_CONFIG_FILES([../test/adapters/cuda/run_cuda_test.sh], \
                 [chmod +x ../test/adapters/cuda/run_cuda_test.sh])

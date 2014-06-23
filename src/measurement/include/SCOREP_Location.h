@@ -115,6 +115,9 @@ uint64_t
 SCOREP_Location_GetGlobalId( SCOREP_Location* locationData );
 
 uint64_t
+SCOREP_Location_GetGlobalIdFromLocalId( uint64_t localLocationId );
+
+uint64_t
 SCOREP_Location_GetLastTimestamp( SCOREP_Location* locationData );
 
 void

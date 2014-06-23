@@ -275,6 +275,15 @@ SCOREP_Profile_ThreadFork( SCOREP_Location* threadData,
 void
 SCOREP_Profile_ThreadJoin( SCOREP_Location* locationData );
 
+
+void
+SCOREP_Profile_ThreadCreate( SCOREP_Location* threadData,
+                             uint32_t         createSequenceCount );
+
+void
+SCOREP_Profile_ThreadWait( SCOREP_Location* threadData,
+                           uint32_t         createSequenceCount );
+
 /**
  * Triggered on thread creation, i.e. when a thread is encountered the first
  * time. Note that several thread can share the same location data.

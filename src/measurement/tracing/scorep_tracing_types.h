@@ -112,6 +112,9 @@ scorep_tracing_group_type_to_otf2( SCOREP_GroupType scorepType )
         case_return( SHMEM_GROUP,        COMM_GROUP );
         case_return( SHMEM_SELF,         COMM_SELF );
 
+        // Pthread
+        case_return( PTHREAD_LOCATIONS,   COMM_LOCATIONS );
+        case_return( PTHREAD_THREAD_TEAM, COMM_GROUP );
 
 #undef case_return
         default:

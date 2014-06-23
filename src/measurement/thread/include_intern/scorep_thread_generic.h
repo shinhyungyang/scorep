@@ -1,10 +1,10 @@
-#ifndef SCOREP_THREAD_FORK_JOIN_GENERIC_H_
-#define SCOREP_THREAD_FORK_JOIN_GENERIC_H_
+#ifndef SCOREP_THREAD_GENERIC_H_
+#define SCOREP_THREAD_GENERIC_H_
 
 /*
  * This file is part of the Score-P software (http://www.score-p.org)
  *
- * Copyright (c) 2013,
+ * Copyright (c) 2013-2014,
  * Forschungszentrum Juelich GmbH, Germany
  *
  * This software may be modified and distributed under the terms of
@@ -19,8 +19,33 @@
  */
 
 
+#include <SCOREP_DefinitionHandles.h>
+
 #include <stdbool.h>
 #include <stdint.h>
+
+
+/**
+ * Symbolic constant denoting that the fork sequence count
+ * is not in a valid state.
+ */
+#define SCOREP_THREAD_INVALID_SEQUENCE_COUNT UINT32_MAX
+
+
+/**
+ *
+ *
+ */
+void
+scorep_thread_create_sequence_count_mutex( void );
+
+
+/**
+ *
+ *
+ */
+void
+scorep_thread_destroy_sequence_count_mutex( void );
 
 
 /**
@@ -63,6 +88,16 @@ scorep_thread_is_initial_thread( struct scorep_thread_private_data* tpd );
 
 
 /**
+ *
+ *
+ *
+ * @return
+ */
+struct scorep_thread_private_data*
+scorep_thread_get_initial_tpd( void );
+
+
+/**
  * Get the parent SCOREP_Thread_PrivateData object of @a tpd. Returns
  * 0 for the initial thread.
  */
@@ -86,4 +121,48 @@ scorep_thread_set_location( struct scorep_thread_private_data* tpd,
                             struct SCOREP_Location*            location );
 
 
-#endif /* SCOREP_THREAD_FORK_JOIN_GENERIC_H_ */
+/**
+ *
+ *
+ * @param tpd
+ *
+ * @return
+ */
+uint32_t
+scorep_thread_get_tmp_sequence_count( struct scorep_thread_private_data* tpd );
+
+
+/**
+ *
+ *
+ * @param tpd
+ * @param sequenceCount
+ */
+void
+scorep_thread_set_tmp_sequence_count( struct scorep_thread_private_data* tpd,
+                                      uint32_t                           sequenceCount );
+
+
+/**
+ *
+ *
+ * @param tpd
+ *
+ * @return
+ */
+SCOREP_InterimCommunicatorHandle
+scorep_thread_get_team( struct scorep_thread_private_data* tpd );
+
+
+/**
+ *
+ *
+ * @param tpd
+ * @param team
+ */
+void
+scorep_thread_set_team( struct scorep_thread_private_data* tpd,
+                        SCOREP_InterimCommunicatorHandle   team );
+
+
+#endif /* SCOREP_THREAD_GENERIC_H_ */

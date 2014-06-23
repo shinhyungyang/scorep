@@ -822,3 +822,27 @@ SCOREP_Profile_ThreadJoin( SCOREP_Location* locationData )
         SCOREP_Location_GetProfileData( locationData );
     scorep_profile_remove_fork_node( location );
 }
+
+
+void
+SCOREP_Profile_ThreadCreate( SCOREP_Location* threadData,
+                             uint32_t         createSequenceCount )
+{
+    /* Variant 1: Link current node (which is root of this location) to creator
+     * node like in fork-join threading. */
+    //SCOREP_Profile_ThreadFork( threadData, 1, createSequenceCount );
+
+    /* Variant 2: Consider new thread as asynchronous, do not link current node
+     * to creator node, i.e. do nothing */
+}
+
+
+void
+SCOREP_Profile_ThreadWait( SCOREP_Location* threadData,
+                           uint32_t         createSequenceCount )
+{
+    /* Variant 1: see SCOREP_Profile_ThreadCreate() */
+    //SCOREP_Profile_ThreadJoin( threadData );
+
+    /* Variant 2: do nothing, see SCOREP_Profile_ThreadCreate() */
+}
