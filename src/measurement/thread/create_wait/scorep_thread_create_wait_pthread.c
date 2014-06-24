@@ -44,11 +44,15 @@ typedef struct private_data_pthread private_data_pthread;
 struct private_data_pthread
 {
     /* We don't need any members in this implementation. */
-#ifdef _CRAYC
+#if defined( _CRAYC )
     /* The cray compiler requires structs to be nonempty (and it is
      * right about that). Fool it be defining an zero sized array as
      * member. */
     char nothing[ 0 ];
+#endif
+#if defined( __SUNPRO_C )
+    /* The above does not work for studio. */
+    char nothing[ 1 ];
 #endif
 };
 
