@@ -38,7 +38,6 @@ endif HAVE_OPENMP_SUPPORT
 ##Pthread locks
 # mutex lock
 if HAVE_PTHREAD_MUTEX
-if HAVE_GNU_LINKER
 
 lib_LTLIBRARIES += libscorep_mutex_pthread.la
 libscorep_mutex_pthread_la_SOURCES = \
@@ -54,6 +53,8 @@ libscorep_mutex_pthread_la_LIBADD = \
 libscorep_mutex_pthread_la_LDFLAGS = \
     $(library_api_version_ldflags) \
     $(PTHREAD_LIBS)
+
+if HAVE_GNU_LINKER
 
 lib_LTLIBRARIES += libscorep_mutex_pthread_wrap.la
 libscorep_mutex_pthread_wrap_la_SOURCES = \
