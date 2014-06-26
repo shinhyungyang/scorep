@@ -120,7 +120,41 @@ INIT_SHMEM_WITH_ARGUMENT( start_pes )
 
 /* *INDENT-OFF* */
 
-#define INIT_THREAD_SHMEM( FUNCNAME )                                       \
+#define INIT_THREAD_SHMEM_ONE_ARG( FUNCNAME )                               \
+    int                                                                     \
+    SCOREP_LIBWRAP_FUNC_NAME( FUNCNAME ) ( int required )                   \
+    {                                                                       \
+        int ret;                                                            \
+                                                                            \
+        if ( !SCOREP_IsInitialized() )                                      \
+        {                                                                   \
+            /* Initialize the measurement system */                         \
+            SCOREP_InitMeasurement();                                       \
+                                                                            \
+            /* Enter global SHMEM region */                                 \
+            SCOREP_EnterRegion( scorep_shmem_region__SHMEM );               \
+                                                                            \
+            /* Remember that SCOREP_PARALLEL__SHMEM was entered */          \
+            scorep_shmem_parallel_entered = true;                           \
+        }                                                                   \
+        SCOREP_SHMEM_EVENT_GEN_OFF();                                       \
+                                                                            \
+        SCOREP_EnterRegion( scorep_shmem_region__ ## FUNCNAME );            \
+                                                                            \
+        ret = SCOREP_LIBWRAP_FUNC_CALL( lw, FUNCNAME,                       \
+                                        ( required ) );                     \
+                                                                            \
+        init();                                                             \
+                                                                            \
+        /* Enable SHMEM event generation */                                 \
+        SCOREP_SHMEM_EVENT_GEN_ON();                                        \
+                                                                            \
+        SCOREP_ExitRegion( scorep_shmem_region__ ## FUNCNAME );             \
+                                                                            \
+        return ret;                                                         \
+    }
+
+#define INIT_THREAD_SHMEM_TWO_ARGS( FUNCNAME )                              \
     void                                                                    \
     SCOREP_LIBWRAP_FUNC_NAME( FUNCNAME ) ( int   required,                  \
                                            int * provided )                 \
@@ -151,6 +185,12 @@ INIT_SHMEM_WITH_ARGUMENT( start_pes )
     }
 
 /* *INDENT-ON* */
+
+#if HAVE( SHMEM_INIT_THREAD_CRAY_ONE_ARG_VARIANT )
+INIT_THREAD_SHMEM_ONE_ARG( shmem_init_thread )
+#elif HAVE( SHMEM_INIT_THREAD_CRAY_TWO_ARGS_VARIANT )
+INIT_THREAD_SHMEM_TWO_ARGS( shmem_init_thread )
+#endif
 
 #if SHMEM_HAVE_DECL( SHMEM_INIT_THREAD )
 INIT_THREAD_SHMEM( shmem_init_thread )

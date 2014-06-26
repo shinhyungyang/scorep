@@ -579,6 +579,16 @@ AC_DEFUN([_SCOREP_SHMEM_CHECK_COMPLIANCE],
 AC_DEFUN([_SCOREP_SHMEM_COMPLIANCE], [
     AC_LANG_PUSH([C])
 
+    dnl Cray MPT < 6.3 does have int as return type and only one argument
+    _AFS_CHECK_VARIANTS_REC([@%:@include <shmem.h>],
+        [int], [return 0],
+        [shmem_init_thread], [CRAY_ONE_ARG], [(int required)])
+
+    dnl Cray MPT >= 6.3 does have void as return type and two arguments
+    _AFS_CHECK_VARIANTS_REC([@%:@include <shmem.h>],
+        [void], [return],
+        [shmem_init_thread], [CRAY_TWO_ARGS], [(int required, int* provided)])
+
     _SCOREP_SHMEM_CHECK_COMPLIANCE(
         [void], [return],
         [shmem_finalize], [(void)])

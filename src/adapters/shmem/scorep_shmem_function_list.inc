@@ -2,7 +2,7 @@
 #error Macro 'SCOREP_SHMEM_PROCESS_FUNC' was not defined
 #endif
 
-/* 
+/*
  * Initialization routines
  */
 #if SHMEM_HAVE_DECL( START_PES )
@@ -11,11 +11,13 @@ SCOREP_SHMEM_PROCESS_FUNC( void,        start_pes, ( int ) )
 #if SHMEM_HAVE_DECL( SHMEM_INIT )
 SCOREP_SHMEM_PROCESS_FUNC( void,        shmem_init, ( void ) )
 #endif
-#if SHMEM_HAVE_DECL( SHMEM_INIT_THREAD )
+#if HAVE( SHMEM_INIT_THREAD_CRAY_ONE_ARG_VARIANT )
+SCOREP_SHMEM_PROCESS_FUNC( int,         shmem_init_thread, ( int ) )
+#elif HAVE( SHMEM_INIT_THREAD_CRAY_TWO_ARGS_VARIANT )
 SCOREP_SHMEM_PROCESS_FUNC( void,        shmem_init_thread, ( int, int* ) )
 #endif
 
-/* 
+/*
  * Query routines
  */
 #if SHMEM_HAVE_DECL( MY_PE )
@@ -59,7 +61,7 @@ SCOREP_SHMEM_PROCESS_FUNC( void,         shmem_set_cache_line_inv, ( void* ) )
 SCOREP_SHMEM_PROCESS_FUNC( void,         shmem_udcflush_line, ( void* ) )
 #endif
 
-/* 
+/*
  * Accessability routines
  */
 #if SHMEM_HAVE_DECL( SHMEM_PE_ACCESSIBLE )
@@ -69,7 +71,7 @@ SCOREP_SHMEM_PROCESS_FUNC( int,         shmem_pe_accessible, ( int pe ) )
 SCOREP_SHMEM_PROCESS_FUNC( int,         shmem_addr_accessible, ( void* , int ) )
 #endif
 
-/* 
+/*
  * Symmetric heap routines
  */
 #if SHMEM_HAVE_DECL( SHMALLOC )
@@ -85,7 +87,7 @@ SCOREP_SHMEM_PROCESS_FUNC( void*,       shrealloc, ( void* , size_t ) )
 SCOREP_SHMEM_PROCESS_FUNC( void,        shfree, ( void* ptr ) )
 #endif
 
-/* 
+/*
  * Symmetric heap routines (Fortran)
  */
 #if SHMEM_HAVE_DECL( SHPALLOC )
@@ -98,14 +100,14 @@ SCOREP_SHMEM_PROCESS_FUNC( void*,       shpdeallc, ( void**, long*, int* ) )
 SCOREP_SHMEM_PROCESS_FUNC( void*,       shpclmove, ( int*, int*, long*, int* ) )
 #endif
 
-/* 
+/*
  * Remote pointer operations
  */
 #if SHMEM_HAVE_DECL( SHMEM_PTR )
 SCOREP_SHMEM_PROCESS_FUNC( void*,       shmem_ptr, ( void* , int ) )
 #endif
 
-/* 
+/*
  * Elemental put routines
  */
 #if SHMEM_HAVE_DECL( SHMEM_CHAR_P )
@@ -133,7 +135,7 @@ SCOREP_SHMEM_PROCESS_FUNC( void,        shmem_longlong_p, ( long long* , long lo
 SCOREP_SHMEM_PROCESS_FUNC( void,        shmem_longdouble_p, ( long double* , long double , int ) )
 #endif
 
-/* 
+/*
  * Block data put routines
  */
 #if SHMEM_HAVE_DECL( SHMEM_CHAR_PUT )
@@ -176,7 +178,7 @@ SCOREP_SHMEM_PROCESS_FUNC( void,        shmem_put128, ( void* , const void* , si
 SCOREP_SHMEM_PROCESS_FUNC( void,        shmem_putmem, ( void* , const void* , size_t , int ) )
 #endif
 
-/* 
+/*
  * Strided put routines
  */
 #if SHMEM_HAVE_DECL( SHMEM_SHORT_IPUT )
@@ -213,7 +215,7 @@ SCOREP_SHMEM_PROCESS_FUNC( void,        shmem_iput64, ( void* , const void* , pt
 SCOREP_SHMEM_PROCESS_FUNC( void,        shmem_iput128, ( void* , const void* , ptrdiff_t , ptrdiff_t , size_t , int ) )
 #endif
 
-/* 
+/*
  * Elemental get routines
  */
 #if SHMEM_HAVE_DECL( SHMEM_CHAR_G )
@@ -241,7 +243,7 @@ SCOREP_SHMEM_PROCESS_FUNC( long long,   shmem_longlong_g, SCOREP_SHMEM_LONGLONG_
 SCOREP_SHMEM_PROCESS_FUNC( long double, shmem_longdouble_g, SCOREP_SHMEM_LONGDOUBLE_G_PROTO_ARGS )
 #endif
 
-/* 
+/*
  * Block data get routines
  */
 #if SHMEM_HAVE_DECL( SHMEM_CHAR_GET )
@@ -284,7 +286,7 @@ SCOREP_SHMEM_PROCESS_FUNC( void,        shmem_get128, ( void* , const void* , si
 SCOREP_SHMEM_PROCESS_FUNC( void,        shmem_getmem, ( void* , const void* , size_t , int ) )
 #endif
 
-/* 
+/*
  * Strided get routines
  */
 #if SHMEM_HAVE_DECL( SHMEM_SHORT_IGET )
@@ -321,7 +323,7 @@ SCOREP_SHMEM_PROCESS_FUNC( void,        shmem_iget64, ( void* , const void* , pt
 SCOREP_SHMEM_PROCESS_FUNC( void,        shmem_iget128, ( void* , const void* , ptrdiff_t , ptrdiff_t , size_t , int ) )
 #endif
 
-/* 
+/*
  * Atomic operations
  */
 /* Atomic swap */
@@ -417,7 +419,7 @@ SCOREP_SHMEM_PROCESS_FUNC( void,        shmem_long_inc, ( long* , int ) )
 SCOREP_SHMEM_PROCESS_FUNC( void,        shmem_longlong_inc, ( long long* , int ) )
 #endif
 
-/* 
+/*
  * Lock functions
  */
 #if SHMEM_HAVE_DECL( SHMEM_SET_LOCK )
@@ -430,7 +432,7 @@ SCOREP_SHMEM_PROCESS_FUNC( void,        shmem_clear_lock, ( long* ) )
 SCOREP_SHMEM_PROCESS_FUNC( int,         shmem_test_lock, ( long* ) )
 #endif
 
-/* 
+/*
  * P2P sync routines
  */
 #if SHMEM_HAVE_DECL( SHMEM_SHORT_WAIT )
@@ -465,7 +467,7 @@ SCOREP_SHMEM_PROCESS_FUNC( void,        shmem_longlong_wait_until, ( long long* 
 SCOREP_SHMEM_PROCESS_FUNC( void,        shmem_wait_until, ( long* , int , long ) )
 #endif
 
-/* 
+/*
  * Barrier sync routines
  */
 #if SHMEM_HAVE_DECL( SHMEM_BARRIER )
@@ -481,7 +483,7 @@ SCOREP_SHMEM_PROCESS_FUNC( void,        shmem_fence, ( void ) )
 SCOREP_SHMEM_PROCESS_FUNC( void,        shmem_quiet, ( void ) )
 #endif
 
-/* 
+/*
  * Collective routines
  */
 #if SHMEM_HAVE_DECL( SHMEM_BROADCAST32 )
@@ -503,7 +505,7 @@ SCOREP_SHMEM_PROCESS_FUNC( void,        shmem_fcollect32, ( void* , const void* 
 SCOREP_SHMEM_PROCESS_FUNC( void,        shmem_fcollect64, ( void* , const void* , size_t , int , int , int , long* ) )
 #endif
 
-/* 
+/*
  * Reduction routines
  */
 #if SHMEM_HAVE_DECL( SHMEM_SHORT_AND_TO_ALL )
