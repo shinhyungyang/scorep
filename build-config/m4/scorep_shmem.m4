@@ -576,7 +576,7 @@ dnl ----------------------------------------------------------------------------
 AC_DEFUN([_SCOREP_SHMEM_CHECK_COMPLIANCE],
          [AFS_CHECK_COMPLIANCE([@%:@include <shmem.h>], $@)])
 
-AC_DEFUN([SCOREP_SHMEM_COMPLIANCE], [
+AC_DEFUN([_SCOREP_SHMEM_COMPLIANCE], [
     AC_LANG_PUSH([C])
 
     _SCOREP_SHMEM_CHECK_COMPLIANCE(
