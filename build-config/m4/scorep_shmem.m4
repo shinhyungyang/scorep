@@ -117,7 +117,7 @@ dnl ----------------------------------------------------------------------------
 
 ## Check whether the SHMEM implementation supports the profiling interface
 
-AC_DEFUN([SCOREP_SHMEM_PROFILING_INTERFACE], [
+AC_DEFUN([_SCOREP_SHMEM_PROFILING_INTERFACE], [
 
 dnl Do not check for prerequisite of SHMEM profiling interface on the frontend.
 AS_IF([test "x$ac_scorep_backend" = xno], [AC_MSG_ERROR([cannot check for SHMEM profiling interface on frontend.])])
@@ -170,14 +170,6 @@ AC_LANG_POP([C])
 # generating output
 AS_IF([test "x${scorep_shmem_has_pshmem_functions}" = "xyes"],
       [touch scorep_have_pshmem_support.txt])
-
-AC_SCOREP_COND_HAVE([SHMEM_PROFILING_INTERFACE],
-                    [test "x${scorep_shmem_has_pshmem_functions}" = "xyes"],
-                    [Defined if SHMEM implementation provides a profiling interface.])
-
-AC_SCOREP_COND_HAVE([SHMEM_PROFILING_HEADER],
-                    [test "x${scorep_shmem_has_pshmem_header}" = "xyes"],
-                    [Defined if SHMEM implementation provides a profiling header file.])
 ])
 
 dnl ----------------------------------------------------------------------------
@@ -500,7 +492,7 @@ dnl ----------------------------------------------------------------------------
 AC_DEFUN([_SCOREP_SHMEM_CHECK_INTERCEPTION], [
 
 dnl check if we assume having the profiling interface
-SCOREP_SHMEM_PROFILING_INTERFACE
+_SCOREP_SHMEM_PROFILING_INTERFACE
 
 dnl check also if library wrapping is possible
 SCOREP_LIBRARY_WRAPPING
@@ -552,17 +544,27 @@ AS_IF([test "x$scorep_shmem_openmpi_version" != "x"],
 
 dnl than check for an interception method
 shmem_interception_summary="no"
+scorep_shmem_has_pshmem_functions="no"
+scorep_shmem_has_pshmem_header="no"
 AS_IF([test "x${scorep_shmem_supported}" = "xno"],
       [AC_MSG_WARN([No suitable SHMEM compilers found. Score-P SHMEM support disabled.])],
       [_SCOREP_SHMEM_CHECK_INTERCEPTION
-      SCOREP_SHMEM_COMPLIANCE
-      AS_IF([test "x${scorep_shmem_has_pshmem_functions}" = "xyes"],
-            [shmem_interception_summary="yes, using SHMEM profiling interface"],
-            [test "x${afs_have_gnu_linker}" = "xyes"],
-            [shmem_interception_summary="yes, using library wrapping"])
+       _SCOREP_SHMEM_COMPLIANCE
+       AS_IF([test "x${scorep_shmem_has_pshmem_functions}" = "xyes"],
+             [shmem_interception_summary="yes, using SHMEM profiling interface"],
+             [test "x${afs_have_gnu_linker}" = "xyes"],
+             [shmem_interception_summary="yes, using library wrapping"])
 ])
 
 AFS_SUMMARY([intercepting SHMEM calls], [${shmem_interception_summary}])
+
+AC_SCOREP_COND_HAVE([SHMEM_PROFILING_INTERFACE],
+                    [test "x${scorep_shmem_has_pshmem_functions}" = "xyes"],
+                    [Defined if SHMEM implementation provides a profiling interface.])
+
+AC_SCOREP_COND_HAVE([SHMEM_PROFILING_HEADER],
+                    [test "x${scorep_shmem_has_pshmem_header}" = "xyes"],
+                    [Defined if SHMEM implementation provides a profiling header file.])
 
 AM_CONDITIONAL([HAVE_SHMEM_SUPPORT], [test "x${scorep_shmem_supported}" = "xyes" && test "x${shmem_interception_summary}" != "xno"])
 AM_CONDITIONAL([HAVE_SHMEMFC],       [test "x${scorep_shmem_f90_supported}" = "xyes" && test "x${shmem_interception_summary}" != "xno"])
