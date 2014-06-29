@@ -515,6 +515,7 @@ AS_IF([test "x${scorep_shmem_has_pshmem_functions}" = "xyes"],
 dnl ----------------------------------------------------------------------------
 
 AC_DEFUN([SCOREP_SHMEM], [
+AC_REQUIRE([_SCOREP_PDT_SHMEM_INSTRUMENTATION])
 
 dnl First check for a SHMEM compiler
 AS_IF([test "x${scorep_shmem_c_supported}" = "xyes" &&
@@ -879,4 +880,43 @@ AC_DEFUN([_SCOREP_SHMEM_COMPLIANCE], [
         [CONST],                      [(double complex *target, const double complex *source, size_t nreduce, int PE_start, int logPE_stride, int PE_size, double complex *pWrk, long *pSync)])
 
     AC_LANG_POP([C])
+])
+
+
+dnl ----------------------------------------------------------------------------
+
+
+AC_DEFUN([_SCOREP_SHMEM_INCLUDE], [
+AC_REQUIRE([AC_PROG_GREP])
+scorep_have_shmem_include="no"
+AC_LANG_PUSH([C])
+AC_PREPROC_IFELSE([AC_LANG_PROGRAM([[#include <shmem.h>]], [])],
+                  [GREP_OPTIONS= ${GREP} '/shmem.h"' conftest.i > conftest_shmem_includes
+                   AS_IF([test $? -eq 0],
+                         [scorep_shmem_include=`cat conftest_shmem_includes | GREP_OPTIONS= ${GREP} '/shmem.h"' | \
+                          head -1 | sed -e 's#^.* "##' -e 's#/shmem.h".*##'`
+                          scorep_have_shmem_include="yes"],
+                         [])
+                   rm -f conftest_shmem_includes],
+                  [])
+AC_LANG_POP([C])
+
+AS_IF([test "x${scorep_have_shmem_include}" = "xyes"],
+      [AC_SUBST([SCOREP_SHMEM_INCLUDE], [${scorep_shmem_include}])],
+      [])
+])
+
+
+dnl ----------------------------------------------------------------------------
+
+
+AC_DEFUN([_SCOREP_PDT_SHMEM_INSTRUMENTATION], [
+AC_REQUIRE([_SCOREP_SHMEM_INCLUDE])
+
+AS_IF([test "x${scorep_have_shmem_include}" = "xyes"],
+      [AC_SUBST([SCOREP_HAVE_PDT_SHMEM_INSTRUMENTATION], [1])
+       AFS_SUMMARY([PDT SHMEM instrumentation], [yes])],
+      [AC_SUBST([SCOREP_HAVE_PDT_SHMEM_INSTRUMENTATION], [0])
+       AC_MSG_WARN([cannot determine shmem.h include path. PDT SHMEM instrumentation will be disabled.])
+       AFS_SUMMARY([PDT SHMEM instrumentation], [no, shmem.h include path could not be determined.])])
 ])
