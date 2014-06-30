@@ -61,13 +61,8 @@ endif !CROSS_BUILD
 ## Here all libscorep_*.la are build
 LIB_DIR_SCOREP = ../build-backend/
 
-##clean-local: clean-local-instrumenter-checks
-##	rm -f scorep_shmem_omp_tests  scorep_shmem_tests lex.yy.c scanner.h yacc.c yacc.h y.tab.h
-
-##distclean-local:
-##	rm -rf ../test/jacobi/SHMEM
-##	rm -rf ../test/jacobi/hybrid
-
+clean-local: clean-local-instrumenter-checks
+	rm -f lex.yy.c scanner.h yacc.c yacc.h y.tab.h
 
 INSTALLCHECK_SUBDIRS  =
 if HAVE_SHMEM_SUPPORT
