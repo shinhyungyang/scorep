@@ -180,7 +180,9 @@ AS_IF([test "x${scorep_mpi_user_disabled}" != "xyes"],
     ])
 
 AM_CONDITIONAL([HAVE_SCOREP_SHMEM], [test "x${scorep_shmem_user_disabled}" != "xyes"])
-AS_IF([test "x${scorep_shmem_user_disabled}" != "xyes"],
+AS_IF([test "x${scorep_shmem_user_disabled}" != "xyes" && \
+       ( test "x${ac_scorep_platform}" = "xlinux" || \
+         test -f vendor/common/buid-config/platforms/platform-shmem-${ac_scorep_platform})],
     [AC_CONFIG_SUBDIR_CUSTOM([build-shmem], [${args} ac_scorep_platform=${ac_scorep_platform} ac_scorep_cross_compiling=${ac_scorep_cross_compiling} afs_scorep_platform_name='${afs_scorep_platform_name_sq}' afs_scorep_default_machine_name='${afs_scorep_default_machine_name_sq}' ${scorep_otf2_config_arg}])
     ],
     [AFS_SUMMARY([SHMEM support], [no])
