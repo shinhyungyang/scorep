@@ -53,63 +53,107 @@
 dnl ----------------------------------------------------------------------------
 
 AC_DEFUN([SCOREP_SHMEM_WORKING], [
-if test x = x"$SHMEMLIBS"; then
-	AC_LANG_CASE([C], [AC_CHECK_FUNC(start_pes, [SHMEMLIBS=" "])],
-		[C++], [AC_CHECK_FUNC(start_pes, [SHMEMLIBS=" "])],
-		[Fortran 77], [AC_MSG_CHECKING([for START_PES])
-			AC_LINK_IFELSE([AC_LANG_PROGRAM([],[      call START_PES(42)])],[SHMEMLIBS=" "
-				AC_MSG_RESULT(yes)], [AC_MSG_RESULT(no)])],
-		[Fortran], [AC_MSG_CHECKING([for START_PES])
-			AC_LINK_IFELSE([AC_LANG_PROGRAM([],[      call START_PES(42)])],[SHMEMLIBS=" "
-				AC_MSG_RESULT(yes)], [AC_MSG_RESULT(no)])])
-fi
-AC_LANG_CASE([Fortran 77], [
-	if test x = x"$SHMEMLIBS"; then
-		AC_CHECK_LIB($SHMEM_LIB_NAME, START_PES, [SHMEMLIBS=" "])
-	fi
+AS_IF([test x = x"$SHMEMLIBS"], [
+    AC_LANG_CASE(
+    [C],
+       [AC_CHECK_FUNC([start_pes], [SHMEMLIBS=" "])],
+    [C++],
+       [AC_CHECK_FUNC([start_pes], [SHMEMLIBS=" "])],
+    [Fortran 77], [
+       AC_MSG_CHECKING([for START_PES])
+       AC_LINK_IFELSE([AC_LANG_PROGRAM([], [dnl
+      call START_PES(42)
+])], [
+            SHMEMLIBS=" "
+            AC_MSG_RESULT([yes])
+        ], [
+            AC_MSG_RESULT([no])
+        ])
+    ],
+    [Fortran], [
+        AC_MSG_CHECKING([for START_PES])
+        AC_LINK_IFELSE([AC_LANG_PROGRAM([], [dnl
+      call START_PES(42)
+])], [
+            SHMEMLIBS=" "
+            AC_MSG_RESULT([yes])
+        ], [
+            AC_MSG_RESULT([no])
+        ])
+    ])
+])
+AC_LANG_CASE(
+[Fortran 77], [
+    AS_IF([test x = x"$SHMEMLIBS"], [
+        AC_CHECK_LIB($SHMEM_LIB_NAME, [START_PES], [SHMEMLIBS=" "])
+    ])
 ],
 [Fortran], [
-	if test x = x"$SHMEMLIBS"; then
-		AC_CHECK_LIB($SHMEM_LIB_NAME, START_PES, [SHMEMLIBS=" "])
-	fi
+    AS_IF([test x = x"$SHMEMLIBS"], [
+        AC_CHECK_LIB($SHMEM_LIB_NAME, [START_PES], [SHMEMLIBS=" "])
+    ])
 ])
-if test x = x"$SHMEMLIBS"; then
-	AC_CHECK_LIB($SHMEM_LIB_NAME, start_pes, [SHMEMLIBS=" "])
-fi
+AS_IF([test x = x"$SHMEMLIBS"], [
+    AC_CHECK_LIB($SHMEM_LIB_NAME, [start_pes], [SHMEMLIBS=" "])
+])
 
 dnl We have to use AC_COMPILE_IFELSE([AC_LANG_PROGRAM([[]], [[]])],[],[]) and not AC_CHECK_HEADER because the
 dnl latter uses $CPP, not $CC (which may be oshcc).
-AC_LANG_CASE([C], [if test x != x"$SHMEMLIBS"; then
-	AC_MSG_CHECKING([for shmem.h])
-	AC_COMPILE_IFELSE([AC_LANG_PROGRAM([[#include <shmem.h>]], [[]])],[AC_MSG_RESULT(yes)],[SHMEMLIBS=""
-		AC_MSG_RESULT(no)])
-fi],
-[C++], [if test x != x"$SHMEMLIBS"; then
-	AC_MSG_CHECKING([for shmem.h])
-	AC_COMPILE_IFELSE([AC_LANG_PROGRAM([[#include <shmem.h>]], [[]])],[AC_MSG_RESULT(yes)],[SHMEMLIBS=""
-		AC_MSG_RESULT(no)])
-fi],
-[Fortran 77], [if test x != x"$SHMEMLIBS"; then
-	AC_MSG_CHECKING([for shmem.fh])
-	AC_COMPILE_IFELSE([AC_LANG_PROGRAM([],[      include 'shmem.fh'])],[AC_MSG_RESULT(yes)], [SHMEMLIBS=""
-		AC_MSG_RESULT(no)])
-fi],
-[Fortran], [if test x != x"$SHMEMLIBS"; then
-	AC_MSG_CHECKING([for shmem.fh])
-	AC_COMPILE_IFELSE([AC_LANG_PROGRAM([],[      include 'shmem.fh'])],[AC_MSG_RESULT(yes)], [SHMEMLIBS=""
-		AC_MSG_RESULT(no)])
-fi])
+AC_LANG_CASE(
+[C], [
+    AS_IF([test x != x"$SHMEMLIBS"], [
+        AC_MSG_CHECKING([for shmem.h])
+        AC_COMPILE_IFELSE([AC_LANG_PROGRAM([[#include <shmem.h>]], [[]])], [
+            AC_MSG_RESULT([yes])
+        ], [
+            SHMEMLIBS=""
+            AC_MSG_RESULT([no])
+        ])
+    ])
+],
+[C++], [
+    AS_IF([test x != x"$SHMEMLIBS"], [
+        AC_MSG_CHECKING([for shmem.h])
+        AC_COMPILE_IFELSE([AC_LANG_PROGRAM([[#include <shmem.h>]], [[]])], [
+            AC_MSG_RESULT([yes])
+        ], [
+            SHMEMLIBS=""
+            AC_MSG_RESULT([no])
+        ])
+    ])
+],
+[Fortran 77], [
+    AS_IF([test x != x"$SHMEMLIBS"], [
+        AC_MSG_CHECKING([for shmem.fh])
+        AC_COMPILE_IFELSE([AC_LANG_PROGRAM([],[      include 'shmem.fh'])], [
+            AC_MSG_RESULT([yes])
+        ], [
+            SHMEMLIBS=""
+            AC_MSG_RESULT([no])
+        ])
+    ])
+],
+[Fortran], [
+    AS_IF([test x != x"$SHMEMLIBS"], [
+        AC_MSG_CHECKING([for shmem.fh])
+        AC_COMPILE_IFELSE([AC_LANG_PROGRAM([],[      include 'shmem.fh'])], [
+            AC_MSG_RESULT([yes])
+        ], [
+            SHMEMLIBS=""
+            AC_MSG_RESULT([no])
+        ])
+    ])
+])
 
-AC_SUBST(SHMEMLIBS)
+AC_SUBST([SHMEMLIBS])
 
 # Finally, execute ACTION-IF-FOUND/ACTION-IF-NOT-FOUND:
-if test x = x"$SHMEMLIBS"; then
-        $2
+AS_IF([test x = x"$SHMEMLIBS"], [
+    $2
+], [
+    ifelse([$1], , [AC_DEFINE([HAVE_SHMEM], [1], [Define if you have the SHMEM library.])], [$1])
         :
-else
-        ifelse([$1],,[AC_DEFINE(HAVE_SHMEM,1,[Define if you have the SHMEM library.])],[$1])
-        :
-fi
+])
 ])
 
 

@@ -153,25 +153,6 @@ dnl ----------------------------------------------------------------------------
 AC_DEFUN([AC_SCOREP_MPI_COMPLIANCE], [
     AC_LANG_PUSH(C)
 
-    AC_MSG_CHECKING([whether MPI_Add_error_string is standard compliant])
-    AC_COMPILE_IFELSE([
-        AC_LANG_SOURCE([
-            #include<mpi.h>
-            #if MPI_VERSION >= 3
-            #define SCOREP_MPI_CONST_DECL const
-            #else
-            #define SCOREP_MPI_CONST_DECL
-            #endif
-            int MPI_Add_error_string(int i, SCOREP_MPI_CONST_DECL char *c)
-            {
-                return 0;
-            }
-            ])],
-        [AC_MSG_RESULT(yes);
-         AC_DEFINE(HAVE_MPI_ADD_ERROR_STRING_COMPLIANT, 1, [MPI_Add_error_string is standard compliant])],
-        [AC_MSG_RESULT(no)]
-    ) # AC_COMPILE_IF_ELSE
-
     AC_MSG_CHECKING([whether MPI_Info_delete is standard compliant])
     AC_COMPILE_IFELSE([
         AC_LANG_SOURCE([
@@ -327,18 +308,23 @@ AC_DEFUN([AC_SCOREP_MPI_COMPLIANCE], [
 
     _SCOREP_MPI_CHECK_COMPLIANCE(
     [int], [return 0],
-    [MPI_Address], [( const void* location, MPI_Aint* address )],
-    [MPI-1],       [( void* location, MPI_Aint* address )])
+    [MPI_Address], [( void* location, MPI_Aint* address )],
+    [CONST],       [( const void* location, MPI_Aint* address )])
 
     _SCOREP_MPI_CHECK_COMPLIANCE(
     [int], [return 0],
-    [MPI_Type_hindexed], [( int count, const int* array_of_blocklengths, const MPI_Aint* array_of_displacements, MPI_Datatype oldtype, MPI_Datatype* newtype )],
-    [MPI-1],             [( int count, int* array_of_blocklengths, MPI_Aint* array_of_displacements, MPI_Datatype oldtype, MPI_Datatype* newtype )])
+    [MPI_Type_hindexed], [( int count, int* array_of_blocklengths, MPI_Aint* array_of_displacements, MPI_Datatype oldtype, MPI_Datatype* newtype )],
+    [CONST],             [( int count, const int* array_of_blocklengths, const MPI_Aint* array_of_displacements, MPI_Datatype oldtype, MPI_Datatype* newtype )])
 
     _SCOREP_MPI_CHECK_COMPLIANCE(
     [int], [return 0],
-    [MPI_Type_struct], [( int count, const int* array_of_blocklengths, const MPI_Aint* array_of_displacements, const MPI_Datatype* array_of_types, MPI_Datatype* newtype )],
-    [MPI-1],           [( int count, int* array_of_blocklengths, MPI_Aint* array_of_displacements, MPI_Datatype* array_of_types, MPI_Datatype* newtype )])
+    [MPI_Type_struct], [( int count, int* array_of_blocklengths, MPI_Aint* array_of_displacements, MPI_Datatype* array_of_types, MPI_Datatype* newtype )],
+    [CONST],           [( int count, const int* array_of_blocklengths, const MPI_Aint* array_of_displacements, const MPI_Datatype* array_of_types, MPI_Datatype* newtype )])
+
+    _SCOREP_MPI_CHECK_COMPLIANCE(
+    [int], [return 0],
+    [MPI_Add_error_string], [(int errorcode, char *string)],
+    [CONST],                [(int errorcode, const char *string)])
 
     AC_LANG_POP(C)
 ]) # AC_DEFUN(AC_SCOREP_MPI_COMPLIANCE)
