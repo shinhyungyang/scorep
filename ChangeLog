@@ -40,7 +40,7 @@
   which are location specific meta data presented as key/value pair.
 - Added selection for mutex locking, allowing to use the parameter
   --mutex=<locking> to switch between known locking mechanisms within
-  the measurement system (omp,pthread,pthread:spinlock).
+  the measurement system (omp,pthread,pthread:spinlock,pthread:wrap).
 - When using the Intel compiler, we inspected the symbol table of the
   executable and evaluated the filtering on all functions in the
   executable. Thus, compiler instrumented functions from shared
@@ -99,7 +99,7 @@
   pthread_cond_signal, pthread_cond_broadcast, pthread_cond_wait, and
   pthread_cond_timedwait. Following thread management functions are
   currently not supported and will abort the program: pthread_exit and
-  pthread_cancel. The usage of pthread_detach will cause the pogram to
+  pthread_cancel. The usage of pthread_detach will cause the program to
   fail if the detached thread is still running after the end of
   main. These limitations will be addressed in an upcoming version of
   Score-P.
