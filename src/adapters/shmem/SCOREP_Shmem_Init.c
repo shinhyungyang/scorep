@@ -192,12 +192,36 @@ INIT_THREAD_SHMEM_ONE_ARG( shmem_init_thread )
 INIT_THREAD_SHMEM_TWO_ARGS( shmem_init_thread )
 #endif
 
-#if SHMEM_HAVE_DECL( SHMEM_INIT_THREAD )
-INIT_THREAD_SHMEM( shmem_init_thread )
-#endif
-
 
 #define FINALIZE_SHMEM( FUNCNAME, RETVAL )                                \
+    void                                                                  \
+    SCOREP_LIBWRAP_FUNC_NAME( FUNCNAME ) ( void )                         \
+    {                                                                     \
+        UTILS_DEBUG_ENTRY();                                              \
+                                                                          \
+        const int event_gen_active = SCOREP_SHMEM_IS_EVENT_GEN_ON;        \
+                                                                          \
+        if ( event_gen_active )                                           \
+        {                                                                 \
+            SCOREP_SHMEM_EVENT_GEN_OFF();                                 \
+            SCOREP_EnterRegion( scorep_shmem_region__ ## FUNCNAME );      \
+        }                                                                 \
+                                                                          \
+        SCOREP_RegisterExitHandler();                                     \
+                                                                          \
+        if ( event_gen_active )                                           \
+        {                                                                 \
+            /* Exit shmem_finalize region */                              \
+            SCOREP_ExitRegion( scorep_shmem_region__ ## FUNCNAME );       \
+                                                                          \
+            SCOREP_SHMEM_EVENT_GEN_ON();                                  \
+        }                                                                 \
+                                                                          \
+        return;                                                           \
+    }
+
+#define FINALIZE_SHMEM_WITH_RETURN_CODE( FUNCNAME, RETVAL )               \
+    int                                                                   \
     SCOREP_LIBWRAP_FUNC_NAME( FUNCNAME ) ( void )                         \
     {                                                                     \
         UTILS_DEBUG_ENTRY();                                              \
@@ -233,13 +257,11 @@ INIT_THREAD_SHMEM( shmem_init_thread )
  */
 #if HAVE( SHMEM_FINALIZE_COMPLIANT ) || !HAVE( DECL_SHMEM_FINALIZE )
 
-void
-FINALIZE_SHMEM( shmem_finalize, )
+FINALIZE_SHMEM( shmem_finalize )
 
 #elif HAVE( SHMEM_FINALIZE_OPENMPI_VARIANT )
 
 /* The return value is equal to OSHMEM_SUCCESS. */
-int
-FINALIZE_SHMEM( shmem_finalize, 0 )
+FINALIZE_SHMEM_WITH_RETURN_CODE( shmem_finalize, 0 )
 
 #endif
