@@ -193,7 +193,7 @@ INIT_THREAD_SHMEM_TWO_ARGS( shmem_init_thread )
 #endif
 
 
-#define FINALIZE_SHMEM( FUNCNAME, RETVAL )                                \
+#define FINALIZE_SHMEM( FUNCNAME )                                        \
     void                                                                  \
     SCOREP_LIBWRAP_FUNC_NAME( FUNCNAME ) ( void )                         \
     {                                                                     \
@@ -216,8 +216,6 @@ INIT_THREAD_SHMEM_TWO_ARGS( shmem_init_thread )
                                                                           \
             SCOREP_SHMEM_EVENT_GEN_ON();                                  \
         }                                                                 \
-                                                                          \
-        return;                                                           \
     }
 
 #define FINALIZE_SHMEM_WITH_RETURN_CODE( FUNCNAME, RETVAL )               \
