@@ -1,4 +1,4 @@
-dnl 
+dnl
 dnl This file is part of the Score-P software (http://www.score-p.org)
 dnl
 dnl Copyright (c) 2013-2014,
@@ -145,7 +145,7 @@ SCOREP_SHMEM_WORKING([scorep_shmem_f90_supported="yes"],[scorep_shmem_f90_suppor
 AC_LANG_POP([Fortran])
 AFS_SUMMARY([SHMEM support for F90], [$scorep_shmem_f90_supported])
 AS_IF([test "x$scorep_shmem_f90_supported" = "xyes"], [
-    AFS_SUMMARY([F90 compiler used for SHMEM], [$F90])
+    AFS_SUMMARY([F90 compiler used for SHMEM], [$FC])
 ])
 
 AS_IF([test "x$scorep_shmem_c_supported$scorep_shmem_cxx_supported$scorep_shmem_f77_supported$scorep_shmem_f90_supported" != "xnononono"], [
@@ -173,13 +173,13 @@ AC_SCOREP_CHECK_SIZEOF([void *])
 AC_SCOREP_CHECK_SIZEOF([double])
 if (( ac_cv_sizeof_void_p > ac_cv_sizeof_double )); then
     AC_DEFINE_UNQUOTED(
-        [SCOREP_ALLOCATOR_ALIGNMENT], 
-        [$ac_cv_sizeof_void_p], 
+        [SCOREP_ALLOCATOR_ALIGNMENT],
+        [$ac_cv_sizeof_void_p],
         [First guess, use the maximum of size(void*) and sizeof(double) as alignment for SCOREP_Allocator.])
 else
     AC_DEFINE_UNQUOTED(
-        [SCOREP_ALLOCATOR_ALIGNMENT], 
-        [$ac_cv_sizeof_double], 
+        [SCOREP_ALLOCATOR_ALIGNMENT],
+        [$ac_cv_sizeof_double],
         [First guess, use the maximum of size(void*) and sizeof(double) as alignment for SCOREP_Allocator.])
 fi
 
@@ -250,5 +250,12 @@ AM_COND_IF([HAVE_SHMEM_PROFILING_INTERFACE],
                             [printf '\x2dwrap %s\n' $scorep_shmem_wrap_symbols >../share/shmem.wrap],
                             [scorep_shmem_wrap_symbols='$scorep_shmem_wrap_symbols'])])
 
+AS_IF([test "x${enable_shared}" = xno],
+    [AS_CASE([${ac_scorep_platform}],
+         [crayx*], [AC_CONFIG_COMMANDS([libtool-cray-fix],
+                        [sed -e '1,/prefer_static_libs=/ s/prefer_static_libs=.*$/prefer_static_libs=yes/' \
+                         libtool > libtool.fix && mv libtool.fix libtool])
+                   ])
+    ])
 
 AC_OUTPUT
