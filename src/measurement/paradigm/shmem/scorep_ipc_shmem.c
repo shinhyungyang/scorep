@@ -94,6 +94,10 @@ static long*   bcast_psync;
 static long*   collect_psync;
 static long*   reduce_psync;
 static double* pwork;
+static size_t  current_pwork_size;
+static void*
+get_pwork( size_t size,
+           int    count );
 
 /*
  * IPC API functions
@@ -186,7 +190,8 @@ SCOREP_Ipc_Init( void )
         reduce_psync[ i ] = _SHMEM_SYNC_VALUE;
     }
 
-    pwork = CALL_SHMEM( shmalloc ) ( _SHMEM_REDUCE_MIN_WRKDATA_SIZE * sizeof( double ) );
+    current_pwork_size = _SHMEM_REDUCE_MIN_WRKDATA_SIZE * sizeof( double );
+    pwork              = CALL_SHMEM( shmalloc ) ( current_pwork_size );
     UTILS_ASSERT( pwork );
 
     CALL_SHMEM( shmem_barrier_all ) ();
@@ -873,9 +878,6 @@ SCOREP_IpcGroup_Reduce( SCOREP_Ipc_Group*    group,
          datatype == SCOREP_IPC_UNSIGNED_CHAR )
     {
         int nreduce = CEIL( count, 2 );
-        UTILS_BUG_ON( _SHMEM_REDUCE_MIN_WRKDATA_SIZE < ( ( nreduce / 2 ) + 1 ),
-                      "pwork array too small: %d < %d",
-                      _SHMEM_REDUCE_MIN_WRKDATA_SIZE, ( ( nreduce / 2 ) + 1 ) );
         switch ( operation )
         {
             case SCOREP_IPC_BAND:
@@ -883,7 +885,7 @@ SCOREP_IpcGroup_Reduce( SCOREP_Ipc_Group*    group,
                                                        symmetric_buffer_a,
                                                        nreduce,
                                                        start, stride, size,
-                                                       ( short* )pwork,
+                                                       get_pwork( sizeof( short ), nreduce ),
                                                        reduce_psync );
                 break;
             case SCOREP_IPC_BOR:
@@ -891,7 +893,7 @@ SCOREP_IpcGroup_Reduce( SCOREP_Ipc_Group*    group,
                                                       symmetric_buffer_a,
                                                       nreduce,
                                                       start, stride, size,
-                                                      ( short* )pwork,
+                                                      get_pwork( sizeof( short ), nreduce ),
                                                       reduce_psync );
                 break;
             case SCOREP_IPC_MIN:
@@ -899,7 +901,7 @@ SCOREP_IpcGroup_Reduce( SCOREP_Ipc_Group*    group,
                                                        symmetric_buffer_a,
                                                        nreduce,
                                                        start, stride, size,
-                                                       ( short* )pwork,
+                                                       get_pwork( sizeof( short ), nreduce ),
                                                        reduce_psync );
                 break;
             case SCOREP_IPC_MAX:
@@ -907,7 +909,7 @@ SCOREP_IpcGroup_Reduce( SCOREP_Ipc_Group*    group,
                                                        symmetric_buffer_a,
                                                        nreduce,
                                                        start, stride, size,
-                                                       ( short* )pwork,
+                                                       get_pwork( sizeof( short ), nreduce ),
                                                        reduce_psync );
                 break;
             case SCOREP_IPC_SUM:
@@ -915,7 +917,7 @@ SCOREP_IpcGroup_Reduce( SCOREP_Ipc_Group*    group,
                                                        symmetric_buffer_a,
                                                        nreduce,
                                                        start, stride, size,
-                                                       ( short* )pwork,
+                                                       get_pwork( sizeof( short ), nreduce ),
                                                        reduce_psync );
                 break;
             default:
@@ -927,9 +929,6 @@ SCOREP_IpcGroup_Reduce( SCOREP_Ipc_Group*    group,
               datatype == SCOREP_IPC_INT32_T ||
               datatype == SCOREP_IPC_UINT32_T )
     {
-        UTILS_BUG_ON( _SHMEM_REDUCE_MIN_WRKDATA_SIZE < ( ( count / 2 ) + 1 ),
-                      "pwork array too small: %d < %d",
-                      _SHMEM_REDUCE_MIN_WRKDATA_SIZE, ( ( count / 2 ) + 1 ) );
         switch ( operation )
         {
             case SCOREP_IPC_BAND:
@@ -937,7 +936,7 @@ SCOREP_IpcGroup_Reduce( SCOREP_Ipc_Group*    group,
                                                      symmetric_buffer_a,
                                                      count,
                                                      start, stride, size,
-                                                     ( int* )pwork,
+                                                     get_pwork( sizeof( int ), count ),
                                                      reduce_psync );
                 break;
             case SCOREP_IPC_BOR:
@@ -945,7 +944,7 @@ SCOREP_IpcGroup_Reduce( SCOREP_Ipc_Group*    group,
                                                     symmetric_buffer_a,
                                                     count,
                                                     start, stride, size,
-                                                    ( int* )pwork,
+                                                    get_pwork( sizeof( int ), count ),
                                                     reduce_psync );
                 break;
             case SCOREP_IPC_MIN:
@@ -953,7 +952,7 @@ SCOREP_IpcGroup_Reduce( SCOREP_Ipc_Group*    group,
                                                      symmetric_buffer_a,
                                                      count,
                                                      start, stride, size,
-                                                     ( int* )pwork,
+                                                     get_pwork( sizeof( int ), count ),
                                                      reduce_psync );
                 break;
             case SCOREP_IPC_MAX:
@@ -961,7 +960,7 @@ SCOREP_IpcGroup_Reduce( SCOREP_Ipc_Group*    group,
                                                      symmetric_buffer_a,
                                                      count,
                                                      start, stride, size,
-                                                     ( int* )pwork,
+                                                     get_pwork( sizeof( int ), count ),
                                                      reduce_psync );
                 break;
             case SCOREP_IPC_SUM:
@@ -969,7 +968,7 @@ SCOREP_IpcGroup_Reduce( SCOREP_Ipc_Group*    group,
                                                      symmetric_buffer_a,
                                                      count,
                                                      start, stride, size,
-                                                     ( int* )pwork,
+                                                     get_pwork( sizeof( int ), count ),
                                                      reduce_psync );
                 break;
             default:
@@ -1082,9 +1081,6 @@ SCOREP_IpcGroup_Allreduce( SCOREP_Ipc_Group*    group,
          datatype == SCOREP_IPC_UNSIGNED_CHAR )
     {
         int nreduce = CEIL( count, 2 );
-        UTILS_BUG_ON( _SHMEM_REDUCE_MIN_WRKDATA_SIZE < ( ( nreduce / 2 ) + 1 ),
-                      "pwork array too small: %d < %d",
-                      _SHMEM_REDUCE_MIN_WRKDATA_SIZE, ( ( nreduce / 2 ) + 1 ) );
         switch ( operation )
         {
             case SCOREP_IPC_BAND:
@@ -1092,7 +1088,7 @@ SCOREP_IpcGroup_Allreduce( SCOREP_Ipc_Group*    group,
                                                        symmetric_buffer_a,
                                                        nreduce,
                                                        start, stride, size,
-                                                       ( short* )pwork,
+                                                       get_pwork( sizeof( short ), nreduce ),
                                                        reduce_psync );
                 break;
             case SCOREP_IPC_BOR:
@@ -1100,7 +1096,7 @@ SCOREP_IpcGroup_Allreduce( SCOREP_Ipc_Group*    group,
                                                       symmetric_buffer_a,
                                                       nreduce,
                                                       start, stride, size,
-                                                      ( short* )pwork,
+                                                      get_pwork( sizeof( short ), nreduce ),
                                                       reduce_psync );
                 break;
             case SCOREP_IPC_MIN:
@@ -1108,7 +1104,7 @@ SCOREP_IpcGroup_Allreduce( SCOREP_Ipc_Group*    group,
                                                        symmetric_buffer_a,
                                                        nreduce,
                                                        start, stride, size,
-                                                       ( short* )pwork,
+                                                       get_pwork( sizeof( short ), nreduce ),
                                                        reduce_psync );
                 break;
             case SCOREP_IPC_MAX:
@@ -1116,7 +1112,7 @@ SCOREP_IpcGroup_Allreduce( SCOREP_Ipc_Group*    group,
                                                        symmetric_buffer_a,
                                                        nreduce,
                                                        start, stride, size,
-                                                       ( short* )pwork,
+                                                       get_pwork( sizeof( short ), nreduce ),
                                                        reduce_psync );
                 break;
             case SCOREP_IPC_SUM:
@@ -1124,7 +1120,7 @@ SCOREP_IpcGroup_Allreduce( SCOREP_Ipc_Group*    group,
                                                        symmetric_buffer_a,
                                                        nreduce,
                                                        start, stride, size,
-                                                       ( short* )pwork,
+                                                       get_pwork( sizeof( short ), nreduce ),
                                                        reduce_psync );
                 break;
             default:
@@ -1136,9 +1132,6 @@ SCOREP_IpcGroup_Allreduce( SCOREP_Ipc_Group*    group,
               datatype == SCOREP_IPC_INT32_T ||
               datatype == SCOREP_IPC_UINT32_T )
     {
-        UTILS_BUG_ON( _SHMEM_REDUCE_MIN_WRKDATA_SIZE < ( ( count / 2 ) + 1 ),
-                      "pwork array too small: %d < %d",
-                      _SHMEM_REDUCE_MIN_WRKDATA_SIZE, ( ( count / 2 ) + 1 ) );
         switch ( operation )
         {
             case SCOREP_IPC_BAND:
@@ -1146,7 +1139,7 @@ SCOREP_IpcGroup_Allreduce( SCOREP_Ipc_Group*    group,
                                                      symmetric_buffer_a,
                                                      count,
                                                      start, stride, size,
-                                                     ( int* )pwork,
+                                                     get_pwork( sizeof( int ), count ),
                                                      reduce_psync );
                 break;
             case SCOREP_IPC_BOR:
@@ -1154,7 +1147,7 @@ SCOREP_IpcGroup_Allreduce( SCOREP_Ipc_Group*    group,
                                                     symmetric_buffer_a,
                                                     count,
                                                     start, stride, size,
-                                                    ( int* )pwork,
+                                                    get_pwork( sizeof( int ), count ),
                                                     reduce_psync );
                 break;
             case SCOREP_IPC_MIN:
@@ -1162,7 +1155,7 @@ SCOREP_IpcGroup_Allreduce( SCOREP_Ipc_Group*    group,
                                                      symmetric_buffer_a,
                                                      count,
                                                      start, stride, size,
-                                                     ( int* )pwork,
+                                                     get_pwork( sizeof( int ), count ),
                                                      reduce_psync );
                 break;
             case SCOREP_IPC_MAX:
@@ -1170,7 +1163,7 @@ SCOREP_IpcGroup_Allreduce( SCOREP_Ipc_Group*    group,
                                                      symmetric_buffer_a,
                                                      count,
                                                      start, stride, size,
-                                                     ( int* )pwork,
+                                                     get_pwork( sizeof( int ), count ),
                                                      reduce_psync );
                 break;
             case SCOREP_IPC_SUM:
@@ -1178,7 +1171,7 @@ SCOREP_IpcGroup_Allreduce( SCOREP_Ipc_Group*    group,
                                                      symmetric_buffer_a,
                                                      count,
                                                      start, stride, size,
-                                                     ( int* )pwork,
+                                                     get_pwork( sizeof( int ), count ),
                                                      reduce_psync );
                 break;
             default:
@@ -1189,9 +1182,6 @@ SCOREP_IpcGroup_Allreduce( SCOREP_Ipc_Group*    group,
               datatype == SCOREP_IPC_UINT64_T ||
               datatype == SCOREP_IPC_DOUBLE )
     {
-        UTILS_BUG_ON( _SHMEM_REDUCE_MIN_WRKDATA_SIZE < ( ( count / 2 ) + 1 ),
-                      "pwork array too small: %d < %d",
-                      _SHMEM_REDUCE_MIN_WRKDATA_SIZE, ( ( count / 2 ) + 1 ) );
         switch ( operation )
         {
             case SCOREP_IPC_BAND:
@@ -1387,4 +1377,20 @@ SCOREP_IpcGroup_Scatterv( SCOREP_Ipc_Group*   group,
     CALL_SHMEM( shmem_barrier ) ( start, stride, size, barrier_psync );
 
     return 0;
+}
+
+void*
+get_pwork( size_t size,
+           int    count )
+{
+    size_t nreduce_size = ( ( count / 2 ) + 1 ) * size;
+    if ( nreduce_size < current_pwork_size )
+    {
+        pwork = CALL_SHMEM( shrealloc ) ( pwork, nreduce_size );
+        UTILS_BUG_ON( !pwork, "Cannot allocate symmetric work array of size %zu",
+                      nreduce_size );
+        current_pwork_size = nreduce_size;
+    }
+
+    return pwork;
 }
