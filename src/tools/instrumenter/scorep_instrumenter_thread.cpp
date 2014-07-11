@@ -195,6 +195,16 @@ SCOREP_Instrumenter_Pthread::checkCommand( const std::string& current,
     {
         m_selector->select( this, false );
     }
+    else if ( ( current == "-l" ) &&
+              ( is_pthread_library( next ) ) )
+    {
+        m_selector->select( this, false );
+    }
+    else if ( ( current.substr( 0, 2 ) == "-l" ) &&
+              ( is_pthread_library( current.substr( 2 ) ) ) )
+    {
+        m_selector->select( this, false );
+    }
     return false;
 }
 
