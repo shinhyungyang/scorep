@@ -97,6 +97,7 @@ subsystem_init( void )
         SCOREP_INVALID_INTERIM_COMMUNICATOR,
         scorep_thread_get_paradigm(),
         0,
+        NULL,
         NULL );
     struct scorep_thread_private_data* tpd = scorep_thread_get_private_data();
     scorep_thread_set_team( tpd, thread_team );
