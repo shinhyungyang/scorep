@@ -405,6 +405,25 @@ SCOREP_Score_Estimator::SCOREP_Score_Estimator( SCOREP_Score_Profile* profile,
     SCOREP_SCORE_EVENT_THREAD_TASK_SWITCH;
     SCOREP_Score_Event::RegisterEvent( new SCOREP_Score_PrefixMatchEvent( "ThreadTaskSwitch",
                                                                           region_list ) );
+    region_list.clear();
+    SCOREP_SCORE_EVENT_THREAD_CREATE_WAIT_CREATE;
+    SCOREP_Score_Event::RegisterEvent( new SCOREP_Score_PrefixMatchEvent( "ThreadCreate",
+                                                                          region_list ) );
+
+    region_list.clear();
+    SCOREP_SCORE_EVENT_THREAD_CREATE_WAIT_BEGIN;
+    SCOREP_Score_Event::RegisterEvent( new SCOREP_Score_PrefixMatchEvent( "ThreadBegin",
+                                                                          region_list ) );
+
+    region_list.clear();
+    SCOREP_SCORE_EVENT_THREAD_CREATE_WAIT_WAIT;
+    SCOREP_Score_Event::RegisterEvent( new SCOREP_Score_PrefixMatchEvent( "ThreadWait",
+                                                                          region_list ) );
+
+    region_list.clear();
+    SCOREP_SCORE_EVENT_THREAD_CREATE_WAIT_END;
+    SCOREP_Score_Event::RegisterEvent( new SCOREP_Score_PrefixMatchEvent( "ThreadEnd",
+                                                                          region_list ) );
 #undef SCOREP_SCORE_EVENT
 
     calculate_event_sizes();

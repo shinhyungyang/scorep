@@ -268,6 +268,10 @@ SCOREP_Score_Profile::get_definition_type( uint64_t region )
     {
         return SCOREP_SCORE_TYPE_OMP;
     }
+    if ( name.substr( 0, 8 ) == "pthread_" )
+    {
+        return SCOREP_SCORE_TYPE_PTHREAD;
+    }
     else
     {
         return SCOREP_SCORE_TYPE_USR;
