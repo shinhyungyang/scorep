@@ -62,6 +62,20 @@ __wrap_pthread_create( pthread_t*            thread,
 {
     UTILS_DEBUG_ENTRY();
 
+    if ( attr )
+    {
+        int detach_state;
+        int result = pthread_attr_getdetachstate( attr, &detach_state );
+
+        if ( detach_state == PTHREAD_CREATE_DETACHED )
+        {
+            UTILS_WARN_ONCE( "The current thread is in detached state. "
+                             "The usage of pthread_detach is considered dangerous in the "
+                             "context of Score-P. If the detached thread is still running "
+                             "at the end of main, the measurement will fail." );
+        }
+    }
+
     if ( !scorep_pthread_initialized )
     {
         if ( scorep_pthread_finalized )
