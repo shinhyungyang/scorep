@@ -275,16 +275,6 @@ SCOREP_Definitions_NewGroupFrom32( SCOREP_GroupType type,
  *                      for this communicator.
  * @param[out] payload  Will be set to the memory location of the payload.
  *
- * @param ...           If the first parameter after payload is not NULL,
- *                      it must be of type scorep_definitions_manager_entry*
- *                      and will be used to insert the new definition. After
- *                      that there needs to be two arguments of type
- *                      scorep_definitions_init_payload_fn and
- *                      scorep_definitions_equal_payloads_fn respectivly,
- *                      which are used to initialize and compare the payload
- *                      when searching for duplicates in the hash table
- *                      of the scorep_definitions_manager_entry*.
- *
  * @return A process unique communicator handle to be used in calls to other
  * SCOREP_Definitions_NewMPI* functions.
  *
@@ -293,8 +283,7 @@ SCOREP_InterimCommunicatorHandle
 SCOREP_Definitions_NewInterimCommunicator( SCOREP_InterimCommunicatorHandle parentComm,
                                            SCOREP_ParadigmType              paradigmType,
                                            size_t                           sizeOfPayload,
-                                           void**                           payload,
-                                           ... );
+                                           void**                           payload );
 
 
 /**

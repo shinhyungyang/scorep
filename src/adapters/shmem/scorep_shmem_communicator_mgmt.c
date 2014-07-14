@@ -285,15 +285,18 @@ define_comm( int                                    start,
              int                                    size,
              scorep_shmem_comm_definition_payload** payload )
 {
-    return SCOREP_Definitions_NewInterimCommunicator(
+    return SCOREP_Definitions_NewInterimCommunicatorCustom(
+               NULL,
+               &scorep_shmem_pe_groups,
+               init_payload_fn,
+               equal_payloads_fn,
                SCOREP_INVALID_INTERIM_COMMUNICATOR,
                SCOREP_PARADIGM_SHMEM,
                sizeof( **payload ),
                ( void** )payload,
-               &scorep_shmem_pe_groups,
-               init_payload_fn,
-               equal_payloads_fn,
-               start, stride, size );
+               start,
+               stride,
+               size );
 }
 
 /**

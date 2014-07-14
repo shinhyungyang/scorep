@@ -123,13 +123,13 @@ scorep_thread_get_team_handle( SCOREP_Location*                 location,
 
     struct scorep_thread_team_comm_payload* new_payload;
     SCOREP_InterimCommunicatorHandle        new_handle =
-        SCOREP_Definitions_NewInterimCommunicatorInLocation(
+        SCOREP_Definitions_NewInterimCommunicatorCustom(
             location,
-            parentThreadTeam,
-            scorep_thread_get_paradigm(),
+            &data->thread_team,
             init_payload_fn,
             equal_payloads_fn,
-            &data->thread_team,
+            parentThreadTeam,
+            scorep_thread_get_paradigm(),
             sizeof( *new_payload ),
             ( void** )&new_payload,
             numThreads,

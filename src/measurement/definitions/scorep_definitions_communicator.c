@@ -119,48 +119,19 @@ SCOREP_InterimCommunicatorHandle
 SCOREP_Definitions_NewInterimCommunicator( SCOREP_InterimCommunicatorHandle parentComm,
                                            SCOREP_ParadigmType              paradigmType,
                                            size_t                           sizeOfPayload,
-                                           void**                           payload,
-                                           ... )
+                                           void**                           payload )
 {
-    SCOREP_InterimCommunicatorHandle new_handle = SCOREP_INVALID_INTERIM_COMMUNICATOR;
-
     UTILS_DEBUG_ENTRY();
 
-    va_list va;
-    va_start( va, payload );
-    scorep_definitions_manager_entry*    manager_entry     = va_arg( va, void* );
-    scorep_definitions_init_payload_fn   init_payload_fn   = NULL;
-    scorep_definitions_equal_payloads_fn equal_payloads_fn = NULL;
-    if ( manager_entry )
-    {
-        init_payload_fn   = va_arg( va, scorep_definitions_init_payload_fn );
-        equal_payloads_fn = va_arg( va, scorep_definitions_equal_payloads_fn );
-    }
-    else
-    {
-        manager_entry = &scorep_local_definition_manager.interim_communicator;
-        UTILS_BUG_ON( manager_entry->hash_table,
-                      "interim communicator definitions shouldn't have a hash table" );
-    }
-
-    SCOREP_Definitions_Lock();
-
-    new_handle = define_interim_communicator(
-        SCOREP_Memory_GetLocalDefinitionPageManager(),
-        manager_entry,
-        init_payload_fn,
-        equal_payloads_fn,
-        sizeOfPayload,
-        payload,
-        parentComm,
-        paradigmType,
-        va );
-
-    SCOREP_Definitions_Unlock();
-
-    va_end( va );
-
-    return new_handle;
+    return SCOREP_Definitions_NewInterimCommunicatorCustom(
+               NULL,
+               &scorep_local_definition_manager.interim_communicator,
+               NULL,
+               NULL,
+               parentComm,
+               paradigmType,
+               sizeOfPayload,
+               payload );
 }
 
 
@@ -204,13 +175,13 @@ SCOREP_InterimCommunicatorHandle_GetParent( SCOREP_InterimCommunicatorHandle com
 
 
 SCOREP_InterimCommunicatorHandle
-SCOREP_Definitions_NewInterimCommunicatorInLocation(
+SCOREP_Definitions_NewInterimCommunicatorCustom(
     SCOREP_Location*                     location,
-    SCOREP_InterimCommunicatorHandle     parentComm,
-    SCOREP_ParadigmType                  paradigmType,
+    scorep_definitions_manager_entry*    managerEntry,
     scorep_definitions_init_payload_fn   initPayloadFn,
     scorep_definitions_equal_payloads_fn equalPayloadsFn,
-    scorep_definitions_manager_entry*    managerEntry,
+    SCOREP_InterimCommunicatorHandle     parentComm,
+    SCOREP_ParadigmType                  paradigmType,
     size_t                               sizeOfPayload,
     void**                               payload,
     ... )
@@ -218,11 +189,29 @@ SCOREP_Definitions_NewInterimCommunicatorInLocation(
     va_list va;
     va_start( va, payload );
 
+    SCOREP_Allocator_PageManager* page_manager;
+    if ( !location )
+    {
+        /* No location given, we need to do the locking and using
+           the common definition memory pool. */
+        SCOREP_Definitions_Lock();
+        page_manager = SCOREP_Memory_GetLocalDefinitionPageManager();
+    }
+    else
+    {
+        /*
+         * Use the memory pool from the given location.
+         * The caller needs to be care of the locking, if the
+         * manager entry is shared.
+         */
+        page_manager = SCOREP_Location_GetMemoryPageManager(
+            location,
+            SCOREP_MEMORY_TYPE_DEFINITIONS );
+    }
+
     SCOREP_InterimCommunicatorHandle new_handle =
         define_interim_communicator(
-            SCOREP_Location_GetMemoryPageManager(
-                location,
-                SCOREP_MEMORY_TYPE_DEFINITIONS ),
+            page_manager,
             managerEntry,
             initPayloadFn,
             equalPayloadsFn,
@@ -231,6 +220,11 @@ SCOREP_Definitions_NewInterimCommunicatorInLocation(
             parentComm,
             paradigmType,
             va );
+
+    if ( !location )
+    {
+        SCOREP_Definitions_Unlock();
+    }
 
     va_end( va );
 
@@ -283,7 +277,7 @@ define_interim_communicator( SCOREP_Allocator_PageManager*        pageManager,
     void* payload = ( char* )new_definition + payload_offset;
     if ( payloadOut )
     {
-        /* indicates that the definition already existsed */
+        /* indicates that the definition already existed */
         *payloadOut = NULL;
     }
 
