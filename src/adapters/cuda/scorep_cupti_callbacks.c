@@ -40,6 +40,7 @@
 #include "SCOREP_Definitions.h"
 #include "SCOREP_Events.h"
 #include "SCOREP_Types.h"
+#include "SCOREP_Filter.h"
 
 #include <UTILS_Error.h>
 #include <UTILS_Debug.h>
@@ -679,128 +680,6 @@ scorep_cupti_callbacks_runtime_api( CUpti_CallbackId          callbackId,
     /* time stamp for all the following potential events */
     time = SCOREP_GetClockTicks();
 
-    /*********** write enter and exit records for CUDA runtime API **************/
-    if ( cbInfo->callbackSite == CUPTI_API_ENTER )
-    {
-        SCOREP_Location_EnterRegion( location, time, region_handle );
-    }
-    else if ( cbInfo->callbackSite == CUPTI_API_EXIT )
-    {
-        SCOREP_Location_ExitRegion( location, time, region_handle );
-    }
-
-    /*
-     ************** Semantic function instrumentation *********************
-     */
-
-    /* Memory allocation and deallocation tracing */
-    if ( scorep_cuda_record_gpumemusage && !record_driver_api )
-    {
-        switch ( callbackId )
-        {
-            /********************** CUDA memory allocation ******************************/
-            case CUPTI_RUNTIME_TRACE_CBID_cudaMalloc_v3020:
-            {
-                if ( cbInfo->callbackSite == CUPTI_API_EXIT )
-                {
-                    cudaMalloc_v3020_params* params =
-                        ( cudaMalloc_v3020_params* )cbInfo->functionParams;
-
-                    handle_cuda_malloc( cbInfo->context,
-                                        ( uint64_t )*( params->devPtr ),
-                                        params->size );
-                }
-
-                return;
-            }
-
-            case CUPTI_RUNTIME_TRACE_CBID_cudaMallocPitch_v3020:
-            {
-                if ( cbInfo->callbackSite == CUPTI_API_EXIT )
-                {
-                    cudaMallocPitch_v3020_params* params =
-                        ( cudaMallocPitch_v3020_params* )cbInfo->functionParams;
-
-                    handle_cuda_malloc( cbInfo->context,
-                                        ( uint64_t )*( params->devPtr ),
-                                        params->height * ( *( params->pitch ) ) );
-                }
-
-                return;
-            }
-
-            case CUPTI_RUNTIME_TRACE_CBID_cudaMallocArray_v3020:
-            {
-                if ( cbInfo->callbackSite == CUPTI_API_EXIT )
-                {
-                    cudaMallocArray_v3020_params* params =
-                        ( cudaMallocArray_v3020_params* )cbInfo->functionParams;
-
-                    handle_cuda_malloc( cbInfo->context,
-                                        ( uint64_t )*( params->array ),
-                                        params->height * params->width );
-                }
-
-                return;
-            }
-
-            case CUPTI_RUNTIME_TRACE_CBID_cudaMalloc3D_v3020:
-            {
-                if ( cbInfo->callbackSite == CUPTI_API_EXIT )
-                {
-                    cudaMalloc3D_v3020_params* params =
-                        ( cudaMalloc3D_v3020_params* )cbInfo->functionParams;
-
-                    handle_cuda_malloc( cbInfo->context,
-                                        ( uint64_t )params->pitchedDevPtr->ptr,
-                                        params->pitchedDevPtr->pitch * params->extent.height * params->extent.depth );
-                }
-
-                return;
-            }
-
-            case CUPTI_RUNTIME_TRACE_CBID_cudaMalloc3DArray_v3020:
-            {
-                if ( cbInfo->callbackSite == CUPTI_API_EXIT )
-                {
-                    cudaMalloc3DArray_v3020_params* params =
-                        ( cudaMalloc3DArray_v3020_params* )cbInfo->functionParams;
-
-                    handle_cuda_malloc( cbInfo->context,
-                                        ( uint64_t )*( params->array ),
-                                        params->extent.width * params->extent.height * params->extent.depth );
-                }
-
-                return;
-            }
-
-            case CUPTI_RUNTIME_TRACE_CBID_cudaFree_v3020:
-            {
-                if ( cbInfo->callbackSite == CUPTI_API_ENTER )
-                {
-                    handle_cuda_free( cbInfo->context,
-                                      ( uint64_t )( ( cudaFree_v3020_params* )cbInfo->functionParams )->devPtr );
-                }
-
-                return;
-            }
-
-            case CUPTI_RUNTIME_TRACE_CBID_cudaFreeArray_v3020:
-            {
-                if ( cbInfo->callbackSite == CUPTI_API_ENTER )
-                {
-                    handle_cuda_free( cbInfo->context,
-                                      ( uint64_t )( ( cudaFreeArray_v3020_params* )cbInfo->functionParams )->array );
-                }
-
-                return;
-            }
-
-            default:
-                break;
-        }
-    }
-
     if ( scorep_cuda_record_memcpy && !record_driver_api )
     {
         if (
@@ -948,6 +827,134 @@ scorep_cupti_callbacks_runtime_api( CUpti_CallbackId          callbackId,
         }     /* synchronization recording enabled */
     }         /* if(scorep_gpu_trace_memcpy) */
     /****************************************************************************/
+
+    /* all synchronous memory copies have been handled here and will not reach
+       this point */
+
+    /*********** write enter and exit records for CUDA runtime API **************/
+    if ( !SCOREP_Filter_MatchFunction( cbInfo->functionName, NULL ) )
+    {
+        if ( cbInfo->callbackSite == CUPTI_API_ENTER )
+        {
+            SCOREP_Location_EnterRegion( location, time, region_handle );
+        }
+        else if ( cbInfo->callbackSite == CUPTI_API_EXIT )
+        {
+            SCOREP_Location_ExitRegion( location, time, region_handle );
+        }
+    }
+
+    /*
+     ************** Semantic function instrumentation *********************
+     */
+
+    /* Memory allocation and deallocation tracing */
+    if ( scorep_cuda_record_gpumemusage && !record_driver_api )
+    {
+        switch ( callbackId )
+        {
+            /********************** CUDA memory allocation ******************************/
+            case CUPTI_RUNTIME_TRACE_CBID_cudaMalloc_v3020:
+            {
+                if ( cbInfo->callbackSite == CUPTI_API_EXIT )
+                {
+                    cudaMalloc_v3020_params* params =
+                        ( cudaMalloc_v3020_params* )cbInfo->functionParams;
+
+                    handle_cuda_malloc( cbInfo->context,
+                                        ( uint64_t )*( params->devPtr ),
+                                        params->size );
+                }
+
+                return;
+            }
+
+            case CUPTI_RUNTIME_TRACE_CBID_cudaMallocPitch_v3020:
+            {
+                if ( cbInfo->callbackSite == CUPTI_API_EXIT )
+                {
+                    cudaMallocPitch_v3020_params* params =
+                        ( cudaMallocPitch_v3020_params* )cbInfo->functionParams;
+
+                    handle_cuda_malloc( cbInfo->context,
+                                        ( uint64_t )*( params->devPtr ),
+                                        params->height * ( *( params->pitch ) ) );
+                }
+
+                return;
+            }
+
+            case CUPTI_RUNTIME_TRACE_CBID_cudaMallocArray_v3020:
+            {
+                if ( cbInfo->callbackSite == CUPTI_API_EXIT )
+                {
+                    cudaMallocArray_v3020_params* params =
+                        ( cudaMallocArray_v3020_params* )cbInfo->functionParams;
+
+                    handle_cuda_malloc( cbInfo->context,
+                                        ( uint64_t )*( params->array ),
+                                        params->height * params->width );
+                }
+
+                return;
+            }
+
+            case CUPTI_RUNTIME_TRACE_CBID_cudaMalloc3D_v3020:
+            {
+                if ( cbInfo->callbackSite == CUPTI_API_EXIT )
+                {
+                    cudaMalloc3D_v3020_params* params =
+                        ( cudaMalloc3D_v3020_params* )cbInfo->functionParams;
+
+                    handle_cuda_malloc( cbInfo->context,
+                                        ( uint64_t )params->pitchedDevPtr->ptr,
+                                        params->pitchedDevPtr->pitch * params->extent.height * params->extent.depth );
+                }
+
+                return;
+            }
+
+            case CUPTI_RUNTIME_TRACE_CBID_cudaMalloc3DArray_v3020:
+            {
+                if ( cbInfo->callbackSite == CUPTI_API_EXIT )
+                {
+                    cudaMalloc3DArray_v3020_params* params =
+                        ( cudaMalloc3DArray_v3020_params* )cbInfo->functionParams;
+
+                    handle_cuda_malloc( cbInfo->context,
+                                        ( uint64_t )*( params->array ),
+                                        params->extent.width * params->extent.height * params->extent.depth );
+                }
+
+                return;
+            }
+
+            case CUPTI_RUNTIME_TRACE_CBID_cudaFree_v3020:
+            {
+                if ( cbInfo->callbackSite == CUPTI_API_ENTER )
+                {
+                    handle_cuda_free( cbInfo->context,
+                                      ( uint64_t )( ( cudaFree_v3020_params* )cbInfo->functionParams )->devPtr );
+                }
+
+                return;
+            }
+
+            case CUPTI_RUNTIME_TRACE_CBID_cudaFreeArray_v3020:
+            {
+                if ( cbInfo->callbackSite == CUPTI_API_ENTER )
+                {
+                    handle_cuda_free( cbInfo->context,
+                                      ( uint64_t )( ( cudaFreeArray_v3020_params* )cbInfo->functionParams )->array );
+                }
+
+                return;
+            }
+
+            default:
+                break;
+        }
+    }
 }
 
 /*
@@ -988,6 +995,27 @@ scorep_cupti_callbacks_driver_api( CUpti_CallbackId          callbackId,
         }
     }
 
+    /* Generate Score-P region handle for the API functions (if enabled) */
+    if ( record_driver_api )
+    {
+        region_handle_stored =
+            cuda_api_function_get( CUPTI_CB_DOMAIN_DRIVER_API, callbackId );
+        if ( region_handle_stored != SCOREP_INVALID_REGION )
+        {
+            region_handle = region_handle_stored;
+        }
+        else
+        {
+            region_handle = SCOREP_Definitions_NewRegion( cbInfo->functionName, NULL, cuda_driver_file_handle,
+                                                          0, 0, SCOREP_PARADIGM_CUDA, SCOREP_REGION_WRAPPER );
+
+            cuda_api_function_put( CUPTI_CB_DOMAIN_DRIVER_API, callbackId, region_handle );
+        }
+
+        time = SCOREP_GetClockTicks();
+    }
+
+    /* handle memory copies with full sync option */
     if ( scorep_cuda_record_memcpy )
     {
         if (
@@ -1184,183 +1212,170 @@ scorep_cupti_callbacks_driver_api( CUpti_CallbackId          callbackId,
 
     if ( record_driver_api )
     {
-        /* get the Score-P region handle for the API function */
-        region_handle_stored =
-            cuda_api_function_get( CUPTI_CB_DOMAIN_DRIVER_API, callbackId );
-        if ( region_handle_stored != SCOREP_INVALID_REGION )
+        /********** write enter and exit records for CUDA driver API **********/
+        if ( !SCOREP_Filter_MatchFunction( cbInfo->functionName, NULL ) )
         {
-            region_handle = region_handle_stored;
-        }
-        else
-        {
-            region_handle = SCOREP_Definitions_NewRegion( cbInfo->functionName, NULL, cuda_driver_file_handle,
-                                                          0, 0, SCOREP_PARADIGM_CUDA, SCOREP_REGION_WRAPPER );
-
-            cuda_api_function_put( CUPTI_CB_DOMAIN_DRIVER_API, callbackId, region_handle );
-        }
-
-        time = SCOREP_GetClockTicks();
-        /*********** write enter and exit records for CUDA runtime API **************/
-        if ( cbInfo->callbackSite == CUPTI_API_ENTER )
-        {
-            /* handle callbacks which might have to write reference attributes separately */
-            switch ( callbackId )
+            if ( cbInfo->callbackSite == CUPTI_API_ENTER )
             {
-                case CUPTI_DRIVER_TRACE_CBID_cuLaunchKernel:
+                /* handle callbacks which might have to write reference attributes separately */
+                switch ( callbackId )
                 {
-                    cuLaunchKernel_params* params =
-                        ( cuLaunchKernel_params* )cbInfo->functionParams;
+                    case CUPTI_DRIVER_TRACE_CBID_cuLaunchKernel:
+                    {
+                        cuLaunchKernel_params* params =
+                            ( cuLaunchKernel_params* )cbInfo->functionParams;
 
-                    enter_with_refs( location, &time, region_handle,
-                                     cbInfo->context, params->hStream,
-                                     NULL, CUDA_SUCCESS, SCOREP_CUPTI_KEY_STREAM );
-                    break;
+                        enter_with_refs( location, &time, region_handle,
+                                         cbInfo->context, params->hStream,
+                                         NULL, CUDA_SUCCESS, SCOREP_CUPTI_KEY_STREAM );
+                        break;
+                    }
+
+                    case CUPTI_DRIVER_TRACE_CBID_cuLaunchGrid:
+                    {
+                        enter_with_refs( location, &time, region_handle,
+                                         cbInfo->context, NULL, NULL,
+                                         CUDA_SUCCESS, SCOREP_CUPTI_KEY_STREAM );
+                        break;
+                    }
+
+                    case CUPTI_DRIVER_TRACE_CBID_cuLaunchGridAsync:
+                    {
+                        cuLaunchGridAsync_params* params =
+                            ( cuLaunchGridAsync_params* )cbInfo->functionParams;
+
+                        enter_with_refs( location, &time, region_handle,
+                                         cbInfo->context, params->hStream,
+                                         NULL, CUDA_SUCCESS, SCOREP_CUPTI_KEY_STREAM );
+                        break;
+                    }
+
+                    case CUPTI_DRIVER_TRACE_CBID_cuLaunch:
+                    {
+                        enter_with_refs( location, &time, region_handle,
+                                         cbInfo->context, NULL, NULL,
+                                         CUDA_SUCCESS, SCOREP_CUPTI_KEY_STREAM );
+                        break;
+                    }
+
+                    default:
+                        SCOREP_Location_EnterRegion( location, time, region_handle );
                 }
-
-                case CUPTI_DRIVER_TRACE_CBID_cuLaunchGrid:
-                {
-                    enter_with_refs( location, &time, region_handle,
-                                     cbInfo->context, NULL, NULL,
-                                     CUDA_SUCCESS, SCOREP_CUPTI_KEY_STREAM );
-                    break;
-                }
-
-                case CUPTI_DRIVER_TRACE_CBID_cuLaunchGridAsync:
-                {
-                    cuLaunchGridAsync_params* params =
-                        ( cuLaunchGridAsync_params* )cbInfo->functionParams;
-
-                    enter_with_refs( location, &time, region_handle,
-                                     cbInfo->context, params->hStream,
-                                     NULL, CUDA_SUCCESS, SCOREP_CUPTI_KEY_STREAM );
-                    break;
-                }
-
-                case CUPTI_DRIVER_TRACE_CBID_cuLaunch:
-                {
-                    enter_with_refs( location, &time, region_handle,
-                                     cbInfo->context, NULL, NULL,
-                                     CUDA_SUCCESS, SCOREP_CUPTI_KEY_STREAM );
-                    break;
-                }
-
-                default:
-                    SCOREP_Location_EnterRegion( location, time, region_handle );
             }
-        }
-        else if ( cbInfo->callbackSite == CUPTI_API_EXIT )
-        {
-            /* handle callbacks which might have to write reference attributes separately */
-            switch ( callbackId )
+            else if ( cbInfo->callbackSite == CUPTI_API_EXIT )
             {
-                case CUPTI_DRIVER_TRACE_CBID_cuStreamSynchronize:
+                /* handle callbacks which might have to write reference attributes separately */
+                switch ( callbackId )
                 {
-                    cuStreamSynchronize_params* params =
-                        ( cuStreamSynchronize_params* )cbInfo->functionParams;
-                    exit_with_refs( location, &time, region_handle, cbInfo->context,
-                                    params->hStream, NULL, CUDA_SUCCESS, SCOREP_CUPTI_KEY_STREAM );
-                    break;
+                    case CUPTI_DRIVER_TRACE_CBID_cuStreamSynchronize:
+                    {
+                        cuStreamSynchronize_params* params =
+                            ( cuStreamSynchronize_params* )cbInfo->functionParams;
+                        exit_with_refs( location, &time, region_handle, cbInfo->context,
+                                        params->hStream, NULL, CUDA_SUCCESS, SCOREP_CUPTI_KEY_STREAM );
+                        break;
+                    }
+
+                    case CUPTI_DRIVER_TRACE_CBID_cuMemcpyAsync:
+                    {
+                        cuMemcpyAsync_params* params =
+                            ( cuMemcpyAsync_params* )cbInfo->functionParams;
+
+                        exit_with_refs( location, &time, region_handle, cbInfo->context,
+                                        params->hStream, NULL, CUDA_SUCCESS, SCOREP_CUPTI_KEY_STREAM );
+                        break;
+                    }
+
+                    case CUPTI_DRIVER_TRACE_CBID_cuMemcpy2DAsync:
+                    {
+                        cuMemcpy2DAsync_params* params =
+                            ( cuMemcpy2DAsync_params* )cbInfo->functionParams;
+
+                        exit_with_refs( location, &time, region_handle, cbInfo->context,
+                                        params->hStream, NULL, CUDA_SUCCESS, SCOREP_CUPTI_KEY_STREAM );
+                        break;
+                    }
+
+                    case CUPTI_DRIVER_TRACE_CBID_cuMemcpy2DAsync_v2:
+                    {
+                        cuMemcpy2DAsync_v2_params* params =
+                            ( cuMemcpy2DAsync_v2_params* )cbInfo->functionParams;
+
+                        exit_with_refs( location, &time, region_handle, cbInfo->context,
+                                        params->hStream, NULL, CUDA_SUCCESS, SCOREP_CUPTI_KEY_STREAM );
+                        break;
+                    }
+
+                    case CUPTI_DRIVER_TRACE_CBID_cuMemcpy3DAsync:
+                    {
+                        cuMemcpy3DAsync_params* params =
+                            ( cuMemcpy3DAsync_params* )cbInfo->functionParams;
+
+                        exit_with_refs( location, &time, region_handle, cbInfo->context,
+                                        params->hStream, NULL, CUDA_SUCCESS, SCOREP_CUPTI_KEY_STREAM );
+                        break;
+                    }
+
+                    case CUPTI_DRIVER_TRACE_CBID_cuMemcpy3DAsync_v2:
+                    {
+                        cuMemcpy3DAsync_v2_params* params =
+                            ( cuMemcpy3DAsync_v2_params* )cbInfo->functionParams;
+
+                        exit_with_refs( location, &time, region_handle, cbInfo->context,
+                                        params->hStream, NULL, CUDA_SUCCESS, SCOREP_CUPTI_KEY_STREAM );
+                        break;
+                    }
+
+                    case CUPTI_DRIVER_TRACE_CBID_cuEventRecord:
+                    {
+                        cuEventRecord_params* params =
+                            ( cuEventRecord_params* )cbInfo->functionParams;
+
+                        CUresult funcResult = *( ( CUresult* )( cbInfo->functionReturnValue ) );
+                        exit_with_refs( location, &time, region_handle, cbInfo->context,
+                                        params->hStream, params->hEvent, funcResult,
+                                        SCOREP_CUPTI_KEY_CURESULT | SCOREP_CUPTI_KEY_EVENT | SCOREP_CUPTI_KEY_STREAM );
+                        break;
+                    }
+
+                    case CUPTI_DRIVER_TRACE_CBID_cuEventSynchronize:
+                    {
+                        cuEventSynchronize_params* params =
+                            ( cuEventSynchronize_params* )cbInfo->functionParams;
+
+                        CUresult funcResult = *( ( CUresult* )( cbInfo->functionReturnValue ) );
+                        exit_with_refs( location, &time, region_handle, cbInfo->context,
+                                        NULL, params->hEvent, funcResult,
+                                        SCOREP_CUPTI_KEY_CURESULT | SCOREP_CUPTI_KEY_EVENT );
+                        break;
+                    }
+
+                    case CUPTI_DRIVER_TRACE_CBID_cuEventQuery:
+                    {
+                        cuEventQuery_params* params =
+                            ( cuEventQuery_params* )cbInfo->functionParams;
+
+                        CUresult funcResult = *( ( CUresult* )( cbInfo->functionReturnValue ) );
+                        exit_with_refs( location, &time, region_handle, cbInfo->context,
+                                        NULL, params->hEvent, funcResult,
+                                        SCOREP_CUPTI_KEY_CURESULT | SCOREP_CUPTI_KEY_EVENT );
+                        break;
+                    }
+
+                    case CUPTI_DRIVER_TRACE_CBID_cuStreamWaitEvent:
+                    {
+                        cuStreamWaitEvent_params* params =
+                            ( cuStreamWaitEvent_params* )cbInfo->functionParams;
+
+                        CUresult funcResult = *( ( CUresult* )( cbInfo->functionReturnValue ) );
+                        exit_with_refs( location, &time, region_handle, cbInfo->context,
+                                        params->hStream, params->hEvent, funcResult,
+                                        SCOREP_CUPTI_KEY_CURESULT | SCOREP_CUPTI_KEY_EVENT | SCOREP_CUPTI_KEY_STREAM );
+                        break;
+                    }
+                    default:
+                        SCOREP_Location_ExitRegion( location, time, region_handle );
                 }
-
-                case CUPTI_DRIVER_TRACE_CBID_cuMemcpyAsync:
-                {
-                    cuMemcpyAsync_params* params =
-                        ( cuMemcpyAsync_params* )cbInfo->functionParams;
-
-                    exit_with_refs( location, &time, region_handle, cbInfo->context,
-                                    params->hStream, NULL, CUDA_SUCCESS, SCOREP_CUPTI_KEY_STREAM );
-                    break;
-                }
-
-                case CUPTI_DRIVER_TRACE_CBID_cuMemcpy2DAsync:
-                {
-                    cuMemcpy2DAsync_params* params =
-                        ( cuMemcpy2DAsync_params* )cbInfo->functionParams;
-
-                    exit_with_refs( location, &time, region_handle, cbInfo->context,
-                                    params->hStream, NULL, CUDA_SUCCESS, SCOREP_CUPTI_KEY_STREAM );
-                    break;
-                }
-
-                case CUPTI_DRIVER_TRACE_CBID_cuMemcpy2DAsync_v2:
-                {
-                    cuMemcpy2DAsync_v2_params* params =
-                        ( cuMemcpy2DAsync_v2_params* )cbInfo->functionParams;
-
-                    exit_with_refs( location, &time, region_handle, cbInfo->context,
-                                    params->hStream, NULL, CUDA_SUCCESS, SCOREP_CUPTI_KEY_STREAM );
-                    break;
-                }
-
-                case CUPTI_DRIVER_TRACE_CBID_cuMemcpy3DAsync:
-                {
-                    cuMemcpy3DAsync_params* params =
-                        ( cuMemcpy3DAsync_params* )cbInfo->functionParams;
-
-                    exit_with_refs( location, &time, region_handle, cbInfo->context,
-                                    params->hStream, NULL, CUDA_SUCCESS, SCOREP_CUPTI_KEY_STREAM );
-                    break;
-                }
-
-                case CUPTI_DRIVER_TRACE_CBID_cuMemcpy3DAsync_v2:
-                {
-                    cuMemcpy3DAsync_v2_params* params =
-                        ( cuMemcpy3DAsync_v2_params* )cbInfo->functionParams;
-
-                    exit_with_refs( location, &time, region_handle, cbInfo->context,
-                                    params->hStream, NULL, CUDA_SUCCESS, SCOREP_CUPTI_KEY_STREAM );
-                    break;
-                }
-
-                case CUPTI_DRIVER_TRACE_CBID_cuEventRecord:
-                {
-                    cuEventRecord_params* params =
-                        ( cuEventRecord_params* )cbInfo->functionParams;
-
-                    CUresult funcResult = *( ( CUresult* )( cbInfo->functionReturnValue ) );
-                    exit_with_refs( location, &time, region_handle, cbInfo->context,
-                                    params->hStream, params->hEvent, funcResult,
-                                    SCOREP_CUPTI_KEY_CURESULT | SCOREP_CUPTI_KEY_EVENT | SCOREP_CUPTI_KEY_STREAM );
-                    break;
-                }
-
-                case CUPTI_DRIVER_TRACE_CBID_cuEventSynchronize:
-                {
-                    cuEventSynchronize_params* params =
-                        ( cuEventSynchronize_params* )cbInfo->functionParams;
-
-                    CUresult funcResult = *( ( CUresult* )( cbInfo->functionReturnValue ) );
-                    exit_with_refs( location, &time, region_handle, cbInfo->context,
-                                    NULL, params->hEvent, funcResult,
-                                    SCOREP_CUPTI_KEY_CURESULT | SCOREP_CUPTI_KEY_EVENT );
-                    break;
-                }
-
-                case CUPTI_DRIVER_TRACE_CBID_cuEventQuery:
-                {
-                    cuEventQuery_params* params =
-                        ( cuEventQuery_params* )cbInfo->functionParams;
-
-                    CUresult funcResult = *( ( CUresult* )( cbInfo->functionReturnValue ) );
-                    exit_with_refs( location, &time, region_handle, cbInfo->context,
-                                    NULL, params->hEvent, funcResult,
-                                    SCOREP_CUPTI_KEY_CURESULT | SCOREP_CUPTI_KEY_EVENT );
-                    break;
-                }
-
-                case CUPTI_DRIVER_TRACE_CBID_cuStreamWaitEvent:
-                {
-                    cuStreamWaitEvent_params* params =
-                        ( cuStreamWaitEvent_params* )cbInfo->functionParams;
-
-                    CUresult funcResult = *( ( CUresult* )( cbInfo->functionReturnValue ) );
-                    exit_with_refs( location, &time, region_handle, cbInfo->context,
-                                    params->hStream, params->hEvent, funcResult,
-                                    SCOREP_CUPTI_KEY_CURESULT | SCOREP_CUPTI_KEY_EVENT | SCOREP_CUPTI_KEY_STREAM );
-                    break;
-                }
-                default:
-                    SCOREP_Location_ExitRegion( location, time, region_handle );
             }
         }
     }
@@ -1601,10 +1616,18 @@ scorep_cupti_callbacks_sync( CUpti_CallbackId             cbid,
                             "[CUPTI Callbacks] Synchronize called for CUDA context %d",
                             syncData->context );
 
-        SCOREP_CUPTI_LOCK();
-        scorep_cupti_activity_context_flush(
-            scorep_cupti_context_get( syncData->context ) );
-        SCOREP_CUPTI_UNLOCK();
+        if ( scorep_cuda_record_kernels || scorep_cuda_record_memcpy )
+        {
+            scorep_cupti_context* context =
+                scorep_cupti_context_get( syncData->context );
+
+            if ( !scorep_cupti_activity_is_buffer_empty( context ) )
+            {
+                SCOREP_CUPTI_LOCK();
+                scorep_cupti_activity_context_flush( context );
+                SCOREP_CUPTI_UNLOCK();
+            }
+        }
     }
 }
 
@@ -1693,10 +1716,13 @@ scorep_cupti_callbacks_resource( CUpti_CallbackId          callbackId,
 #else
                 /* TODO: NVIDIA bug??? */
                 /* cuCtxSynchronize() runs into a lock here, therefore just flush */
+#if ( defined( CUDA_VERSION ) && ( CUDA_VERSION == 5000 ) )
+                /* cuptiActivityFlushAll runs into a lock here for CUDA 6.0+ */
                 SCOREP_CUPTI_LOCK();
                 scorep_cupti_activity_context_flush(
                     scorep_cupti_context_get( resourceData->context ) );
                 SCOREP_CUPTI_UNLOCK();
+#endif
 #endif
                 {
                     /* get the stream id from stream type */
@@ -2143,9 +2169,10 @@ handle_cuda_memcpy( const CUpti_CallbackData* cbInfo,
                                     stream->location_id, bytes, 42 );
         }
 
-        if ( region != SCOREP_INVALID_REGION )
+        if ( ( region != SCOREP_INVALID_REGION ) &&
+             ( !SCOREP_Filter_MatchFunction( cbInfo->functionName, NULL ) ) )
         {
-            SCOREP_Location_EnterRegion( stream_location, time, region );
+            SCOREP_Location_EnterRegion( host_location, time, region );
         }
     }
 
@@ -2180,7 +2207,7 @@ handle_cuda_memcpy( const CUpti_CallbackData* cbInfo,
 
         if ( region != SCOREP_INVALID_REGION )
         {
-            SCOREP_Location_ExitRegion( stream_location, time, region );
+            SCOREP_Location_ExitRegion( host_location, time, region );
         }
 
         /* pure idle time */
@@ -2207,7 +2234,10 @@ handle_cuda_memcpy( const CUpti_CallbackData* cbInfo,
             }
         }
 
-        SCOREP_CUPTI_CALL( cuptiActivityEnable( CUPTI_ACTIVITY_KIND_MEMCPY ) );
+        if ( scorep_cupti_activity_state & SCOREP_CUPTI_ACTIVITY_STATE_MEMCPY )
+        {
+            SCOREP_CUPTI_CALL( cuptiActivityEnable( CUPTI_ACTIVITY_KIND_MEMCPY ) );
+        }
     }
 }
 
