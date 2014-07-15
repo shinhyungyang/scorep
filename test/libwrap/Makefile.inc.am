@@ -34,7 +34,7 @@ common_libwrap_cppflags = $(AM_CPPFLAGS) \
                           -I$(INC_DIR_COMMON_HASH)
 
 common_libwrap_ldflags = $(serial_ldflags) \
-                         -Wl,-wrap=foo
+                         -Wl,-wrap,foo
 
 common_wrapper_sources = $(SRC_ROOT)test/libwrap/wrapper.c
 

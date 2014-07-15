@@ -25,6 +25,15 @@ following kinds of events:
   </li>
 
   <li>
+    <b>@shmem library calls</b>:<br>
+    Instrumentation is accomplished using the @shmem profiling interface
+    or the GNU linker for library wrapping. To enable it, the application program
+    has to be linked against the @scorep @shmem (or hybrid) measurement library
+    plus @shmem-specific libraries. Note that the @scorep libraries must be linked
+    <i>before</i> the @shmem library to ensure interposition will be effective.
+  </li>
+
+  <li>
     <b>@openmp directives @& API calls</b>:<br>
     The @scorep measurement system uses the @opari2 tool for instrumentation
     of @openmp constructs. See the @opari2 documentation on how to instrument
@@ -88,9 +97,9 @@ linker flags and libraries, or include paths:
 @endverbatim
 
 The @verb--mpp=<paradigm> switch selects which message passing paradigm is used.
-Currently, @scorep supports applications using MPI and applications without any
-message passing paradigm. It is not possible to specify two message passing systems
-for the same application.
+Currently, @scorep supports applications using MPI ( @verb--mpp=mpi ) or SHMEM
+( @verb--mpp=shmem ) and applications without any message passing paradigm.
+It is not possible to specify two message passing systems for the same application.
 The @verb--thread=<paradigm> switch selects which threading system is used in
 Score-P. You may use OpenMP ( @verb--thread=omp ), no threading system
 ( @verb--thread=none ) or POSIX threading system ( @verb--thread=pthread ). It is not possible to specify two threading systems
