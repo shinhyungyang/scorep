@@ -53,6 +53,8 @@ func_producer( void* input )
         pthread_mutex_unlock( &mutex );
     }
     //pthread_exit( NULL );
+
+    return NULL;
 }
 
 void*
@@ -77,6 +79,8 @@ func_consumer( void* input )
         pthread_mutex_unlock( &mutex );
     }
     //pthread_exit( NULL );
+
+    return NULL;
 }
 
 int
@@ -96,5 +100,6 @@ main( int argc, const char* argv[] )
     pthread_mutex_destroy( &mutex );
     pthread_cond_destroy( &cond_producer );
     pthread_cond_destroy( &cond_consumer );
+
     return 0;
 }

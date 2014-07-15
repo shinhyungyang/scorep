@@ -205,6 +205,10 @@ SCOREP_Instrumenter_Pthread::checkCommand( const std::string& current,
     {
         m_selector->select( this, false );
     }
+    else if ( current == "-D_REENTRANT" )
+    {
+        m_selector->select( this, false );
+    }
     return false;
 }
 

@@ -337,7 +337,9 @@ is_shmem_library( const std::string& library_name )
 bool
 is_pthread_library( const std::string& library_name )
 {
-    return library_name.substr( 0, 7 ) == "pthread";
+    return library_name.substr( 0, 7 ) == "pthread" ||
+           library_name.substr( 0, 8 ) == "pthreads" ||
+           library_name.substr( 0, 6 ) == "thread";
 }
 
 bool

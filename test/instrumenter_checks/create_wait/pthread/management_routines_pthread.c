@@ -22,6 +22,7 @@ void*
 test_exit( void* arg )
 {
     pthread_exit( arg );
+    return NULL;
 }
 
 
@@ -35,7 +36,8 @@ test_cancel( void* arg )
         pthread_testcancel();
         sleep( 1 );
     }
-    ;
+
+    return NULL;
 }
 
 
@@ -43,6 +45,7 @@ void*
 test_detach( void* arg )
 {
     sleep( 2 );
+    return NULL;
 }
 
 
@@ -113,4 +116,6 @@ main( int argc, char* argv[] )
     printf( "Test PASSED\n" );
 
     //pthread_exit( NULL );
+
+    return 0;
 }

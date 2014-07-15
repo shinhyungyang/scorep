@@ -62,7 +62,7 @@ pthread_once_t tpd_key_once = PTHREAD_ONCE_INIT;
 
 
 struct SCOREP_Location*
-SCOREP_Location_GetCurrentCPULocation()
+SCOREP_Location_GetCurrentCPULocation( void )
 {
     UTILS_DEBUG_ENTRY();
     scorep_thread_private_data* tpd = scorep_thread_get_private_data();
@@ -75,7 +75,7 @@ SCOREP_Location_GetCurrentCPULocation()
 
 
 scorep_thread_private_data*
-scorep_thread_get_private_data()
+scorep_thread_get_private_data( void )
 {
     UTILS_DEBUG_ENTRY();
     return pthread_getspecific( tpd_key );
@@ -116,7 +116,7 @@ scorep_thread_on_finalize( scorep_thread_private_data* tpd )
 
 
 size_t
-scorep_thread_get_sizeof_model_data()
+scorep_thread_get_sizeof_model_data( void )
 {
     UTILS_DEBUG_ENTRY();
     return sizeof( private_data_pthread );

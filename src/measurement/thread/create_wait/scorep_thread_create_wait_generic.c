@@ -218,7 +218,7 @@ SCOREP_ThreadCreateWait_Create( SCOREP_ParadigmType                 paradigm,
                                 uint32_t*                           sequenceCount )
 {
     UTILS_DEBUG_ENTRY();
-    UTILS_BUG_ON( paradigm & SCOREP_PARADIGM_THREAD_CREATE_WAIT == 0,
+    UTILS_BUG_ON( ( paradigm & SCOREP_PARADIGM_THREAD_CREATE_WAIT ) == 0,
                   "Provided paradigm not in group SCOREP_PARADIGM_THREAD_CREATE_WAIT " );
     /* We are in the creator thread. */
 
@@ -258,7 +258,7 @@ SCOREP_ThreadCreateWait_Wait( SCOREP_ParadigmType paradigm,
                               uint32_t            sequenceCount )
 {
     UTILS_DEBUG_ENTRY();
-    UTILS_BUG_ON( paradigm & SCOREP_PARADIGM_THREAD_CREATE_WAIT == 0,
+    UTILS_BUG_ON( ( paradigm & SCOREP_PARADIGM_THREAD_CREATE_WAIT ) == 0,
                   "Provided paradigm not in group SCOREP_PARADIGM_THREAD_CREATE_WAIT " );
 
     struct scorep_thread_private_data* tpd       = scorep_thread_get_private_data();

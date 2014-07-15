@@ -64,6 +64,8 @@ test_mutex( void* input )
     // unlock the thread
     status = pthread_mutex_unlock( &LOCK );
     check_status( "pthread_mutex_unlock()", status );
+
+    return NULL;
 }
 
 void*
@@ -88,6 +90,8 @@ test_cond( void* input )
 
     status = pthread_mutex_unlock( &LOCK );
     check_status( "pthread_mutex_lock()\n", status );
+
+    return NULL;
 }
 
 void*
@@ -122,8 +126,8 @@ test_cond_timedwait( void* input )
         printf( "Thread %ld is awoken!\n", tid );
         CONDITION = 0;
     }
-    status = pthread_mutex_unlock( &LOCK );
-    check_status( "pthread_mutex_lock()\n", status );
+
+    return NULL;
 }
 
 int

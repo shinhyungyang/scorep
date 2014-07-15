@@ -337,18 +337,45 @@ __wrap_pthread_mutex_init( pthread_mutex_t*           pthreadMutex,
         SCOREP_InitMeasurement();
     }
 
-    SCOREP_EnterRegion( scorep_pthread_regions[ PTHREAD_MUTEX_INIT ] );
-
-    int result = __real_pthread_mutex_init( pthreadMutex, pthreadAttr );
-
-    scorep_pthread_mutex* scorep_mutex = scorep_pthread_mutex_hash_get( pthreadMutex );
-    if ( !scorep_mutex )
+    // check if the mutex is process shared one
+    int result;
+    int process_shared;
+    if ( pthreadAttr )
     {
-        scorep_mutex = scorep_pthread_mutex_hash_put( pthreadMutex );
-        UTILS_BUG_ON( scorep_mutex == 0 );
-    }
+        result = pthread_mutexattr_getpshared( pthreadAttr, &process_shared );
 
-    SCOREP_ExitRegion( scorep_pthread_regions[ PTHREAD_MUTEX_INIT ] );
+        if ( process_shared == PTHREAD_PROCESS_SHARED )
+        {
+            UTILS_WARN_ONCE( "The current mutex is a process shared mutex "
+                             "which is currently not supported. "
+                             "No trace event will be recorded." );
+
+            scorep_pthread_mutex* scorep_mutex = scorep_pthread_mutex_hash_get( pthreadMutex );
+            if ( !scorep_mutex )
+            {
+                scorep_mutex                 = scorep_pthread_mutex_hash_put( pthreadMutex );
+                scorep_mutex->process_shared = true;
+                UTILS_BUG_ON( scorep_mutex == 0 );
+            }
+
+            result = __real_pthread_mutex_init( pthreadMutex, pthreadAttr );
+        }
+    }
+    else
+    {
+        SCOREP_EnterRegion( scorep_pthread_regions[ PTHREAD_MUTEX_INIT ] );
+
+        result = __real_pthread_mutex_init( pthreadMutex, pthreadAttr );
+
+        scorep_pthread_mutex* scorep_mutex = scorep_pthread_mutex_hash_get( pthreadMutex );
+        if ( !scorep_mutex )
+        {
+            scorep_mutex = scorep_pthread_mutex_hash_put( pthreadMutex );
+            UTILS_BUG_ON( scorep_mutex == 0 );
+        }
+
+        SCOREP_ExitRegion( scorep_pthread_regions[ PTHREAD_MUTEX_INIT ] );
+    }
 
     UTILS_DEBUG_EXIT();
     return result;
@@ -365,13 +392,28 @@ __wrap_pthread_mutex_destroy( pthread_mutex_t* pthreadMutex )
         return __real_pthread_mutex_destroy( pthreadMutex );
     }
 
-    SCOREP_EnterRegion( scorep_pthread_regions[ PTHREAD_MUTEX_DESTROY ] );
+    int                   result;
+    scorep_pthread_mutex* scorep_mutex = scorep_pthread_mutex_hash_get( pthreadMutex );
+    if ( scorep_mutex->process_shared == true )
+    {
+        scorep_pthread_mutex_hash_remove( pthreadMutex );
 
-    scorep_pthread_mutex_hash_remove( pthreadMutex );
+        UTILS_WARN_ONCE( "The current mutex is a process shared mutex "
+                         "which is currently not supported. "
+                         "No trace event will be recorded." );
 
-    int result = __real_pthread_mutex_destroy( pthreadMutex );
+        result = __real_pthread_mutex_destroy( pthreadMutex );
+    }
+    else
+    {
+        SCOREP_EnterRegion( scorep_pthread_regions[ PTHREAD_MUTEX_DESTROY ] );
 
-    SCOREP_ExitRegion( scorep_pthread_regions[ PTHREAD_MUTEX_DESTROY ] );
+        scorep_pthread_mutex_hash_remove( pthreadMutex );
+
+        result = __real_pthread_mutex_destroy( pthreadMutex );
+
+        SCOREP_ExitRegion( scorep_pthread_regions[ PTHREAD_MUTEX_DESTROY ] );
+    }
 
     UTILS_DEBUG_EXIT();
     return result;
@@ -388,7 +430,7 @@ __wrap_pthread_mutex_lock( pthread_mutex_t* pthreadMutex )
         return __real_pthread_mutex_lock( pthreadMutex );
     }
 
-    SCOREP_EnterRegion( scorep_pthread_regions[ PTHREAD_MUTEX_LOCK ] );
+    int                   result;
     scorep_pthread_mutex* scorep_mutex = scorep_pthread_mutex_hash_get( pthreadMutex );
     if ( !scorep_mutex  )
     {
@@ -397,14 +439,28 @@ __wrap_pthread_mutex_lock( pthread_mutex_t* pthreadMutex )
         UTILS_BUG_ON( scorep_mutex == 0 );
     }
 
-    int result = __real_pthread_mutex_lock( pthreadMutex );
+    if ( scorep_mutex->process_shared == true )
+    {
+        UTILS_WARN_ONCE( "The current mutex is a process shared mutex "
+                         "which is currently not supported. "
+                         "No trace event will be recorded." );
 
-    /* Inside the lock, save to increase acquisition_order. */
-    SCOREP_ThreadAcquireLock( SCOREP_PARADIGM_PTHREAD,
-                              scorep_mutex->id,
-                              scorep_mutex->acquisition_order++ );
+        result = __real_pthread_mutex_lock( pthreadMutex );
+    }
+    else
+    {
+        SCOREP_EnterRegion( scorep_pthread_regions[ PTHREAD_MUTEX_LOCK ] );
 
-    SCOREP_ExitRegion( scorep_pthread_regions[ PTHREAD_MUTEX_LOCK ] );
+        result = __real_pthread_mutex_lock( pthreadMutex );
+
+        /* Inside the lock, save to increase acquisition_order. */
+        SCOREP_ThreadAcquireLock( SCOREP_PARADIGM_PTHREAD,
+                                  scorep_mutex->id,
+                                  scorep_mutex->acquisition_order++ );
+
+        SCOREP_ExitRegion( scorep_pthread_regions[ PTHREAD_MUTEX_LOCK ] );
+    }
+
     UTILS_DEBUG_EXIT();
     return result;
 }
@@ -420,16 +476,30 @@ __wrap_pthread_mutex_unlock( pthread_mutex_t* pthreadMutex )
         return __real_pthread_mutex_unlock( pthreadMutex );
     }
 
-    SCOREP_EnterRegion( scorep_pthread_regions[ PTHREAD_MUTEX_UNLOCK ] );
+    int                   result;
     scorep_pthread_mutex* scorep_mutex = scorep_pthread_mutex_hash_get( pthreadMutex );
-    UTILS_BUG_ON( scorep_mutex == 0 );
 
-    SCOREP_ThreadReleaseLock( SCOREP_PARADIGM_PTHREAD,
-                              scorep_mutex->id,
-                              scorep_mutex->acquisition_order );
+    if ( scorep_mutex->process_shared == true )
+    {
+        UTILS_WARN_ONCE( "The current mutex is a process shared mutex "
+                         "which is currently not supported. "
+                         "No trace event will be recorded." );
 
-    int result = __real_pthread_mutex_unlock( pthreadMutex );
-    SCOREP_ExitRegion( scorep_pthread_regions[ PTHREAD_MUTEX_UNLOCK ] );
+        result = __real_pthread_mutex_unlock( pthreadMutex );
+    }
+    else
+    {
+        SCOREP_EnterRegion( scorep_pthread_regions[ PTHREAD_MUTEX_UNLOCK ] );
+        scorep_pthread_mutex* scorep_mutex = scorep_pthread_mutex_hash_get( pthreadMutex );
+        UTILS_BUG_ON( scorep_mutex == 0 );
+
+        SCOREP_ThreadReleaseLock( SCOREP_PARADIGM_PTHREAD,
+                                  scorep_mutex->id,
+                                  scorep_mutex->acquisition_order );
+
+        result = __real_pthread_mutex_unlock( pthreadMutex );
+        SCOREP_ExitRegion( scorep_pthread_regions[ PTHREAD_MUTEX_UNLOCK ] );
+    }
 
     UTILS_DEBUG_EXIT();
     return result;
@@ -446,26 +516,41 @@ __wrap_pthread_mutex_trylock( pthread_mutex_t* pthreadMutex )
         return __real_pthread_mutex_trylock( pthreadMutex );
     }
 
-    SCOREP_EnterRegion( scorep_pthread_regions[ PTHREAD_MUTEX_TRYLOCK ] );
+    int                   result;
+    scorep_pthread_mutex* scorep_mutex = scorep_pthread_mutex_hash_get( pthreadMutex );
 
-    int result = __real_pthread_mutex_trylock( pthreadMutex );
-    if ( result != EBUSY )
+    if ( scorep_mutex->process_shared == true )
     {
-        scorep_pthread_mutex* scorep_mutex = scorep_pthread_mutex_hash_get( pthreadMutex );
-        if ( !scorep_mutex  )
+        UTILS_WARN_ONCE( "The current mutex is a process shared mutex "
+                         "which is currently not supported. "
+                         "No trace event will be recorded." );
+
+        result = __real_pthread_mutex_trylock( pthreadMutex );
+    }
+    else
+    {
+        SCOREP_EnterRegion( scorep_pthread_regions[ PTHREAD_MUTEX_TRYLOCK ] );
+
+        result = __real_pthread_mutex_trylock( pthreadMutex );
+        if ( result != EBUSY )
         {
-            /* Mutex initialized statically via PTHREAD_MUTEX_INITIALIZER and friends. */
-            scorep_mutex = scorep_pthread_mutex_hash_put( pthreadMutex );
-            UTILS_BUG_ON( scorep_mutex == 0 );
+            scorep_pthread_mutex* scorep_mutex = scorep_pthread_mutex_hash_get( pthreadMutex );
+            if ( !scorep_mutex  )
+            {
+                /* Mutex initialized statically via PTHREAD_MUTEX_INITIALIZER and friends. */
+                scorep_mutex = scorep_pthread_mutex_hash_put( pthreadMutex );
+                UTILS_BUG_ON( scorep_mutex == 0 );
+            }
+
+            /* Inside the lock, save to increase acquisition_order. */
+            SCOREP_ThreadAcquireLock( SCOREP_PARADIGM_PTHREAD,
+                                      scorep_mutex->id,
+                                      scorep_mutex->acquisition_order++ );
         }
 
-        /* Inside the lock, save to increase acquisition_order. */
-        SCOREP_ThreadAcquireLock( SCOREP_PARADIGM_PTHREAD,
-                                  scorep_mutex->id,
-                                  scorep_mutex->acquisition_order++ );
+        SCOREP_ExitRegion( scorep_pthread_regions[ PTHREAD_MUTEX_TRYLOCK ] );
     }
 
-    SCOREP_ExitRegion( scorep_pthread_regions[ PTHREAD_MUTEX_TRYLOCK ] );
     UTILS_DEBUG_EXIT();
     return result;
 }
@@ -548,26 +633,41 @@ __wrap_pthread_cond_wait( pthread_cond_t* cond, pthread_mutex_t* pthreadMutex )
         return __real_pthread_cond_wait( cond, pthreadMutex );
     }
 
-    SCOREP_EnterRegion( scorep_pthread_regions[ PTHREAD_COND_WAIT ] );
-
-    // do we want to see enter/exit for implicit pthread_mutex_unlock here?
-
+    int                   result;
     scorep_pthread_mutex* scorep_mutex = scorep_pthread_mutex_hash_get( pthreadMutex );
-    UTILS_BUG_ON( scorep_mutex == 0 );
-    SCOREP_ThreadReleaseLock( SCOREP_PARADIGM_PTHREAD,
-                              scorep_mutex->id,
-                              scorep_mutex->acquisition_order );
 
-    // Will unlock mutex, wait for cond, then lock mutex again.
-    int result = __real_pthread_cond_wait( cond, pthreadMutex );
+    if ( scorep_mutex->process_shared == true )
+    {
+        UTILS_WARN_ONCE( "The current mutex is a process shared mutex "
+                         "which is currently not supported. "
+                         "No trace event will be recorded." );
 
-    SCOREP_ThreadAcquireLock( SCOREP_PARADIGM_PTHREAD,
-                              scorep_mutex->id,
-                              scorep_mutex->acquisition_order++ );
+        result = __real_pthread_cond_wait( cond, pthreadMutex );
+    }
+    else
+    {
+        SCOREP_EnterRegion( scorep_pthread_regions[ PTHREAD_COND_WAIT ] );
 
-    // do we want to see enter/exit for implicit pthread_mutex_lock here?
+        // do we want to see enter/exit for implicit pthread_mutex_unlock here?
 
-    SCOREP_ExitRegion( scorep_pthread_regions[ PTHREAD_COND_WAIT ] );
+        scorep_pthread_mutex* scorep_mutex = scorep_pthread_mutex_hash_get( pthreadMutex );
+        UTILS_BUG_ON( scorep_mutex == 0 );
+
+        SCOREP_ThreadReleaseLock( SCOREP_PARADIGM_PTHREAD,
+                                  scorep_mutex->id,
+                                  scorep_mutex->acquisition_order );
+
+        // Will unlock mutex, wait for cond, then lock mutex again.
+        result = __real_pthread_cond_wait( cond, pthreadMutex );
+
+        SCOREP_ThreadAcquireLock( SCOREP_PARADIGM_PTHREAD,
+                                  scorep_mutex->id,
+                                  scorep_mutex->acquisition_order++ );
+
+        // do we want to see enter/exit for implicit pthread_mutex_lock here?
+
+        SCOREP_ExitRegion( scorep_pthread_regions[ PTHREAD_COND_WAIT ] );
+    }
 
     UTILS_DEBUG_EXIT();
     return result;
@@ -586,26 +686,41 @@ __wrap_pthread_cond_timedwait( pthread_cond_t*        cond,
         return __real_pthread_cond_timedwait( cond, pthreadMutex, time );
     }
 
-    SCOREP_EnterRegion( scorep_pthread_regions[ PTHREAD_COND_TIMEDWAIT ] );
-
-    // do we want to see enter/exit for implicit pthread_mutex_unlock here?
-
+    int                   result;
     scorep_pthread_mutex* scorep_mutex = scorep_pthread_mutex_hash_get( pthreadMutex );
-    UTILS_BUG_ON( scorep_mutex == 0 );
-    SCOREP_ThreadReleaseLock( SCOREP_PARADIGM_PTHREAD,
-                              scorep_mutex->id,
-                              scorep_mutex->acquisition_order );
 
-    // Will unlock mutex, wait for cond until timeout, then lock mutex again.
-    int result = __real_pthread_cond_timedwait( cond, pthreadMutex, time );
+    if ( scorep_mutex->process_shared == true )
+    {
+        UTILS_WARN_ONCE( "The current mutex is a process shared mutex "
+                         "which is currently not supported. "
+                         "No trace event will be recorded." );
 
-    SCOREP_ThreadAcquireLock( SCOREP_PARADIGM_PTHREAD,
-                              scorep_mutex->id,
-                              scorep_mutex->acquisition_order++ );
+        result = __real_pthread_cond_timedwait( cond, pthreadMutex, time );
+    }
+    else
+    {
+        SCOREP_EnterRegion( scorep_pthread_regions[ PTHREAD_COND_TIMEDWAIT ] );
 
-    // do we want to see enter/exit for implicit pthread_mutex_lock here?
+        // do we want to see enter/exit for implicit pthread_mutex_unlock here?
 
-    SCOREP_ExitRegion( scorep_pthread_regions[ PTHREAD_COND_TIMEDWAIT ] );
+        scorep_pthread_mutex* scorep_mutex = scorep_pthread_mutex_hash_get( pthreadMutex );
+        UTILS_BUG_ON( scorep_mutex == 0 );
+
+        SCOREP_ThreadReleaseLock( SCOREP_PARADIGM_PTHREAD,
+                                  scorep_mutex->id,
+                                  scorep_mutex->acquisition_order );
+
+        // Will unlock mutex, wait for cond until timeout, then lock mutex again.
+        result = __real_pthread_cond_timedwait( cond, pthreadMutex, time );
+
+        SCOREP_ThreadAcquireLock( SCOREP_PARADIGM_PTHREAD,
+                                  scorep_mutex->id,
+                                  scorep_mutex->acquisition_order++ );
+
+        // do we want to see enter/exit for implicit pthread_mutex_lock here?
+
+        SCOREP_ExitRegion( scorep_pthread_regions[ PTHREAD_COND_TIMEDWAIT ] );
+    }
 
     UTILS_DEBUG_EXIT();
     return result;

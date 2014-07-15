@@ -75,6 +75,7 @@ scorep_pthread_mutex_hash_put( pthread_mutex_t* pthreadMutex )
         new_mutex->key               = get_key( pthreadMutex );
         new_mutex->id                = mutex_id++;
         new_mutex->acquisition_order = 0;
+        new_mutex->process_shared    = false;
 
         /* insert at front */
         uint32_t bucket = get_bucket( pthreadMutex );
