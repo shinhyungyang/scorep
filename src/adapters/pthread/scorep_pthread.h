@@ -22,36 +22,36 @@
 #include <scorep/SCOREP_PublicTypes.h>
 #include <stdbool.h>
 
-#define PTHREAD_REGIONS                                         \
-    PTHREAD_REGION( CREATE,         "create",         WRAPPER ) \
-    PTHREAD_REGION( JOIN,           "join",           WRAPPER ) \
-    PTHREAD_REGION( EXIT,           "exit",           WRAPPER ) \
-    PTHREAD_REGION( CANCEL,         "cancel",         WRAPPER ) \
-    PTHREAD_REGION( DETACH,         "detach",         WRAPPER ) \
-    PTHREAD_REGION( MUTEX_INIT,     "mutex_init",     WRAPPER ) \
-    PTHREAD_REGION( MUTEX_DESTROY,  "mutex_destroy",  WRAPPER ) \
-    PTHREAD_REGION( MUTEX_LOCK,     "mutex_lock",     WRAPPER ) \
-    PTHREAD_REGION( MUTEX_UNLOCK,   "mutex_unlock",   WRAPPER ) \
-    PTHREAD_REGION( MUTEX_TRYLOCK,  "mutex_trylock",  WRAPPER ) \
-    PTHREAD_REGION( COND_INIT,      "cond_init",      WRAPPER ) \
-    PTHREAD_REGION( COND_SIGNAL,    "cond_signal",    WRAPPER ) \
-    PTHREAD_REGION( COND_BROADCAST, "cond_broadcast", WRAPPER ) \
-    PTHREAD_REGION( COND_WAIT,      "cond_wait",      WRAPPER ) \
-    PTHREAD_REGION( COND_TIMEDWAIT, "cond_timedwait", WRAPPER ) \
-    PTHREAD_REGION( COND_DESTROY,   "cond_destroy",   WRAPPER )
+#define SCOREP_PTHREAD_REGIONS                                         \
+    SCOREP_PTHREAD_REGION( CREATE,         "create",         WRAPPER ) \
+    SCOREP_PTHREAD_REGION( JOIN,           "join",           WRAPPER ) \
+    SCOREP_PTHREAD_REGION( EXIT,           "exit",           WRAPPER ) \
+    SCOREP_PTHREAD_REGION( CANCEL,         "cancel",         WRAPPER ) \
+    SCOREP_PTHREAD_REGION( DETACH,         "detach",         WRAPPER ) \
+    SCOREP_PTHREAD_REGION( MUTEX_INIT,     "mutex_init",     WRAPPER ) \
+    SCOREP_PTHREAD_REGION( MUTEX_DESTROY,  "mutex_destroy",  WRAPPER ) \
+    SCOREP_PTHREAD_REGION( MUTEX_LOCK,     "mutex_lock",     WRAPPER ) \
+    SCOREP_PTHREAD_REGION( MUTEX_UNLOCK,   "mutex_unlock",   WRAPPER ) \
+    SCOREP_PTHREAD_REGION( MUTEX_TRYLOCK,  "mutex_trylock",  WRAPPER ) \
+    SCOREP_PTHREAD_REGION( COND_INIT,      "cond_init",      WRAPPER ) \
+    SCOREP_PTHREAD_REGION( COND_SIGNAL,    "cond_signal",    WRAPPER ) \
+    SCOREP_PTHREAD_REGION( COND_BROADCAST, "cond_broadcast", WRAPPER ) \
+    SCOREP_PTHREAD_REGION( COND_WAIT,      "cond_wait",      WRAPPER ) \
+    SCOREP_PTHREAD_REGION( COND_TIMEDWAIT, "cond_timedwait", WRAPPER ) \
+    SCOREP_PTHREAD_REGION( COND_DESTROY,   "cond_destroy",   WRAPPER )
 
 
 
 typedef enum scorep_pthread_region_types
 {
-#define PTHREAD_REGION( NAME, name, TYPE ) PTHREAD_ ## NAME,
+#define SCOREP_PTHREAD_REGION( NAME, name, TYPE ) SCOREP_PTHREAD_ ## NAME,
 
-    PTHREAD_REGIONS
+    SCOREP_PTHREAD_REGIONS
 
-        PTHREAD_START_ROUTINE,
-        REGION_SENTINEL /**< For internal use only. */
+        SCOREP_PTHREAD_START_ROUTINE,
+        REGION_SENTINEL /* For internal use only. */
 
-#undef PTHREAD_REGION
+#undef SCOREP_PTHREAD_REGION
 } scorep_pthread_region_types;
 
 

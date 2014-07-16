@@ -143,7 +143,7 @@ subsystem_pre_unify( void )
     /* In every process, create one local group of all local pthread locations */
     SCOREP_GroupHandle group_handle = SCOREP_Definitions_NewGroup(
         SCOREP_GROUP_PTHREAD_THREAD_TEAM,
-        "PTHREAD threads",
+        "SCOREP_GROUP_PTHREAD",
         n_locations,
         location_ids );
 

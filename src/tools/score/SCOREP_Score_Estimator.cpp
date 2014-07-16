@@ -580,9 +580,10 @@ SCOREP_Score_Estimator::printGroups( void )
     }
 
     /* Estimate definition size by profile size and add a minimum of 4 MB. */
+    /* Add additional 2M per location. */
     memory_req = m_profile->getFileSize() /
                  ( m_profile->getNumberOfProcesses() * m_profile->getNumberOfMetrics() );
-    memory_req = ( max_buf + memory_req + 4 * 1024 * 1024 );
+    memory_req = ( max_buf + memory_req + 4 * 1024 * 1024 + 2 * 1024 * 1024 *  m_profile->getNumberOfLocations() );
 
     cout << endl;
     cout << "Estimated aggregate size of event trace:                   "
@@ -598,7 +599,7 @@ SCOREP_Score_Estimator::printGroups( void )
 
     quicksort( m_groups, SCOREP_SCORE_TYPE_NUM );
 
-    // The first group is "ALL", whose widths are maximal
+    // The group "PTHREAD" is maximal
     m_groups[ 0 ]->updateWidths( m_widths );
     cout << "flt"
          << " " << setw( m_widths.m_type ) << "type"

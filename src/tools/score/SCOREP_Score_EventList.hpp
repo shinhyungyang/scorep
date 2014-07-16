@@ -13,7 +13,7 @@
  * Copyright (c) 2009-2013,
  * University of Oregon, Eugene, USA
  *
- * Copyright (c) 2009-2013,
+ * Copyright (c) 2009-2014,
  * Forschungszentrum Juelich GmbH, Germany
  *
  * Copyright (c) 2009-2013,
@@ -322,13 +322,11 @@
 #define SCOREP_SCORE_EVENT_THREAD_TASK_SWITCH \
     SCOREP_SCORE_EVENT( "!$omp task" )
 
-// In case of "pthread_mutex_trylock"
-// it is unknown how many times locks were locked
-// but amount of unlocks is reliable
 #define SCOREP_SCORE_EVENT_THREAD_ACQUIRELOCK \
     SCOREP_SCORE_EVENT( "omp_set_lock" ) \
     SCOREP_SCORE_EVENT( "omp_set_nest_lock" ) \
-    SCOREP_SCORE_EVENT( "pthread_mutex_unlock" ) \
+    SCOREP_SCORE_EVENT( "pthread_mutex_lock" ) \
+    SCOREP_SCORE_EVENT( "pthread_mutex_trylock" ) \
     SCOREP_SCORE_EVENT( "pthread_cond_wait" ) \
     SCOREP_SCORE_EVENT( "pthread_cond_timedwait" )
 

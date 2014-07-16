@@ -82,8 +82,8 @@ register_pthread_regions( void )
 {
     SCOREP_SourceFileHandle file = SCOREP_Definitions_NewSourceFile( "PTHREAD" );
 
-#define PTHREAD_REGION( NAME, name, TYPE ) \
-    scorep_pthread_regions[ PTHREAD_ ## NAME ] = \
+#define SCOREP_PTHREAD_REGION( NAME, name, TYPE ) \
+    scorep_pthread_regions[ SCOREP_PTHREAD_ ## NAME ] = \
         SCOREP_Definitions_NewRegion( "pthread_" name, \
                                       NULL, \
                                       file, \
@@ -92,12 +92,12 @@ register_pthread_regions( void )
                                       SCOREP_PARADIGM_PTHREAD, \
                                       SCOREP_REGION_ ## TYPE );
 
-    PTHREAD_REGIONS
+    SCOREP_PTHREAD_REGIONS
 
-#undef PTHREAD_REGION
+#undef SCOREP_PTHREAD_REGION
 
-    scorep_pthread_regions[ PTHREAD_START_ROUTINE ] =
-        SCOREP_Definitions_NewRegion( "Pthreads",
+    scorep_pthread_regions[ SCOREP_PTHREAD_START_ROUTINE ] =
+        SCOREP_Definitions_NewRegion( "PTHREAD_START_ROUTINE",
                                       NULL,
                                       file,
                                       SCOREP_INVALID_LINE_NO,
