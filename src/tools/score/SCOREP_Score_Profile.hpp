@@ -129,7 +129,7 @@ public:
      * Returns the number of locations.
      */
     uint64_t
-    getNumberOfLocations( void );
+    getMaxNumberOfLocationsPerProcess( void );
 
     /**
      * Returns the number of metric definitions.

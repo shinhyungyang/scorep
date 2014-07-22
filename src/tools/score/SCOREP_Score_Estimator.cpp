@@ -567,7 +567,7 @@ SCOREP_Score_Estimator::printGroups( void )
     uint64_t max_buf;
     uint64_t total_buf;
     uint64_t memory_req;
-
+    uint64_t value = 2 * 1024 * 1024;
     if ( m_has_filter )
     {
         max_buf   = m_filtered[ SCOREP_SCORE_TYPE_ALL ]->getMaxTraceBufferSize();
@@ -580,10 +580,11 @@ SCOREP_Score_Estimator::printGroups( void )
     }
 
     /* Estimate definition size by profile size and add a minimum of 4 MB. */
-    /* Add additional 2M per location. */
     memory_req = m_profile->getFileSize() /
                  ( m_profile->getNumberOfProcesses() * m_profile->getNumberOfMetrics() );
-    memory_req = ( max_buf + memory_req + 4 * 1024 * 1024 + 2 * 1024 * 1024 *  m_profile->getNumberOfLocations() );
+    memory_req = max_buf + memory_req;
+    memory_req = value > memory_req ? value : memory_req;
+    memory_req = memory_req + value*  m_profile->getMaxNumberOfLocationsPerProcess();
 
     cout << endl;
     cout << "Estimated aggregate size of event trace:                   "

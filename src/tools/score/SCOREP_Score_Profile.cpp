@@ -222,9 +222,17 @@ SCOREP_Score_Profile::getNumberOfMetrics()
 }
 
 uint64_t
-SCOREP_Score_Profile::getNumberOfLocations()
+SCOREP_Score_Profile::getMaxNumberOfLocationsPerProcess()
 {
-    return m_cube->get_locationv().size();
+    vector<LocationGroup*> loc_group =    m_cube->get_procv();
+    uint64_t               max       = 0;
+    uint64_t               val;
+    for ( uint64_t i = 0; i < loc_group.size(); i++ )
+    {
+        val = loc_group[ i ]->num_children();
+        max = val > max ? val : max;
+    }
+    return max;
 }
 
 void
