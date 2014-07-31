@@ -92,6 +92,8 @@
   The previous "-g" flag disabled all optimizations.
 - Fix creation of experiment directory, if the monitored application make
   use of 'chdir' operation.
+- The scorep instrumenter tool moved compiler selection flags for the
+  MPI compiler wrapper to a different location in the command line. Fixed.
 - Add support for instrumenting programs which use SHMEM library calls for
   one-sided communication.
 - Basic support for Pthread instrumentation. Supported Pthread
