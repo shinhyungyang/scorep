@@ -491,6 +491,13 @@ SCOREP_Instrumenter_CmdLine::parse_command( const std::string& current,
     /* Detect input files */
     if ( ( current[ 0 ] != '-' ) && is_library( current ) )
     {
+        std::string lib = remove_path( current );
+        if ( ( lib.length() >= 4 ) &&
+             ( is_mpi_library( lib.substr( 3 ) ) ) )
+        {
+            m_lmpi_set      = true;
+            m_current_flags = &m_flags_after_lmpi;
+        }
         add_library( current );
     }
     else if ( ( current[ 0 ] != '-' ) &&
@@ -498,13 +505,6 @@ SCOREP_Instrumenter_CmdLine::parse_command( const std::string& current,
     {
         add_input_file( current );
         return scorep_parse_mode_command;
-    }
-
-    else if ( ( current.length() >= 2 ) && ( is_mpi_library( current.substr( 2 ) ) ) )
-    {
-        m_lmpi_set      = true;
-        m_current_flags = &m_flags_after_lmpi;
-        add_library( current );
     }
     else if ( current == "-c" )
     {
@@ -534,8 +534,20 @@ SCOREP_Instrumenter_CmdLine::parse_command( const std::string& current,
             m_lmpi_set      = true;
             m_current_flags = &m_flags_after_lmpi;
         }
+        else if ( next == "c" )
+        {
+            m_flags_after_lmpi += " -lc";
+            add_library( "-lc" );
+            return scorep_parse_mode_option_part;
+        }
         add_library( "-l" + next );
         ret_val = scorep_parse_mode_option_part;
+    }
+    else if ( current == "-lc" )
+    {
+        m_flags_after_lmpi += " -lc";
+        add_library( "-lc" );
+        return scorep_parse_mode_command;
     }
     else if ( current == "-L" )
     {

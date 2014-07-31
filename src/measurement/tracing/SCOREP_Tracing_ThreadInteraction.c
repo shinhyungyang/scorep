@@ -127,17 +127,8 @@ SCOREP_Tracing_OnLocationCreation( SCOREP_Location* locationData,
 
     SCOREP_TracingData* tracing_data = SCOREP_Location_GetTracingData( locationData );
 
-    SCOREP_Tracing_LockArchive();
-    {
-        /* SCOREP_Tracing_GetEventWriter() aborts on error */
-        tracing_data->otf_writer = SCOREP_Tracing_GetEventWriter();
-    }
-    SCOREP_Tracing_UnlockArchive();
-
-    if ( SCOREP_Status_IsMppInitialized() )
-    {
-        SCOREP_Tracing_AssignLocationId( locationData );
-    }
+    /* SCOREP_Tracing_GetEventWriter() aborts on error */
+    tracing_data->otf_writer = SCOREP_Tracing_GetEventWriter();
 }
 
 
@@ -153,10 +144,14 @@ SCOREP_Tracing_AssignLocationId( SCOREP_Location* threadLocationData )
     SCOREP_TracingData* tracing_data = SCOREP_Location_GetTracingData( threadLocationData );
     uint64_t            location_id  = SCOREP_Location_GetGlobalId( threadLocationData );
 
+    SCOREP_Tracing_LockArchive();
+
     OTF2_ErrorCode error = OTF2_EvtWriter_SetLocationID( tracing_data->otf_writer,
                                                          location_id );
     if ( OTF2_SUCCESS != error )
     {
         _Exit( EXIT_FAILURE );
     }
+
+    SCOREP_Tracing_UnlockArchive();
 }

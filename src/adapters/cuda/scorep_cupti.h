@@ -78,14 +78,14 @@
         }                                                               \
     }
 
-/*#if defined( HAVE_DEMANGLE )
+#if defined( HAVE_DEMANGLE )
    #include <demangle.h>
    #define SCOREP_DEMANGLE_CUDA_KERNEL( mangled ) \
     cplus_demangle( mangled, 0 )
- #else*/
+#else
 #define SCOREP_DEMANGLE_CUDA_KERNEL( mangled ) \
     ( char* )mangled
-/*#endif*/
+#endif
 
 /* the default size for the CUDA kernel name hash table */
 #define SCOREP_CUDA_KERNEL_HASHTABLE_SIZE 1024
@@ -310,6 +310,16 @@ scorep_cupti_context_create( CUcontext cudaContext,
  */
 scorep_cupti_context*
 scorep_cupti_context_get( CUcontext cudaContext );
+
+/*
+ * Get a Score-P CUPTI context by CUDA context ID
+ *
+ * @param contextId the CUDA context ID
+ *
+ * @return Score-P CUPTI context
+ */
+scorep_cupti_context*
+scorep_cupti_context_get_by_id( uint32_t contextId );
 
 /*
  * Get or if not available create a Score-P CUPTI context by CUDA context.

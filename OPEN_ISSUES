@@ -85,6 +85,14 @@
     compilers. The compiler switch -Xg (GNU compatibility mode) might
     help, but is untested.
 
+* Compiler instrumentation
+
+  - The Intel compiler provides the function name and the source code location
+    in one string separated by a colon. Thus, if the path name of the source
+    code file or the function name contains colons, Score-P might split
+    the source file name and the function name improperly.
+
+
                         Score-P v1.2 OPEN ISSUES
                         ========================
                                                            Status: Feb 2014
