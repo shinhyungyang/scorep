@@ -1,0 +1,62 @@
+## -*- mode: makefile -*-
+
+##
+## This file is part of the Score-P software (http://www.score-p.org)
+##
+## Copyright (c) 2009-2011,
+## RWTH Aachen University, Germany
+##
+## Copyright (c) 2009-2011,
+## Gesellschaft fuer numerische Simulation mbH Braunschweig, Germany
+##
+## Copyright (c) 2009-2011,
+## Technische Universitaet Dresden, Germany
+##
+## Copyright (c) 2009-2011,
+## University of Oregon, Eugene, USA
+##
+## Copyright (c) 2009-2011, 2013-2014,
+## Forschungszentrum Juelich GmbH, Germany
+##
+## Copyright (c) 2009-2011, 2014,
+## German Research School for Simulation Sciences GmbH, Juelich/Aachen, Germany
+##
+## Copyright (c) 2009-2011,
+## Technische Universitaet Muenchen, Germany
+##
+## This software may be modified and distributed under the terms of
+## a BSD-style license.  See the COPYING file in the package base
+## directory for details.
+##
+
+## file       Makefile.inc.am
+
+check_PROGRAMS += profile_depth_limit_test
+
+profile_depth_limit_test_SOURCES = $(SRC_ROOT)test/profiling/profile_depth_limit_test.c
+profile_depth_limit_test_CPPFLAGS = $(AM_CPPFLAGS) @SCOREP_COMPILER_INSTRUMENTATION_CPPFLAGS@
+profile_depth_limit_test_LDADD    = $(serial_libadd)
+profile_depth_limit_test_LDFLAGS  = $(serial_ldflags) @SCOREP_COMPILER_INSTRUMENTATION_LDFLAGS@
+
+EXTRA_DIST          += $(SRC_ROOT)test/profiling/run_profile_depth_limit_test.sh
+if !SCOREP_COMPILER_SUN
+TESTS_SERIAL += $(srcdir)/../test/profiling/run_profile_depth_limit_test.sh
+endif
+
+check_PROGRAMS += clustering_test
+clustering_test_SOURCES = $(SRC_ROOT)test/profiling/clustering_test.c
+clustering_test_CPPFLAGS = $(AM_CPPFLAGS) \
+    -I$(PUBLIC_INC_DIR)                   \
+    -DSCOREP_USER_ENABLE
+clustering_test_LDADD    = $(serial_libadd)
+clustering_test_LDFLAGS  = $(serial_ldflags)
+
+TESTS_SERIAL += ./clustering_test
+
+TESTS_SERIAL += $(SRC_ROOT)test/profiling/run_tuple_format_serial_test.sh
+EXTRA_DIST += $(SRC_ROOT)test/profiling/run_tuple_format_serial_test.sh
+
+if HAVE_OPENMP_SUPPORT
+TESTS_OMP += $(SRC_ROOT)test/profiling/run_tuple_format_omp_test.sh
+EXTRA_DIST += $(SRC_ROOT)test/profiling/run_tuple_format_omp_test.sh
+endif

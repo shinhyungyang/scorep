@@ -1,0 +1,57 @@
+## -*- mode: makefile -*-
+
+##
+## This file is part of the Score-P software (http://www.score-p.org)
+##
+## Copyright (c) 2009-2012,
+##    RWTH Aachen University, Germany
+##
+## Copyright (c) 2009-2012,
+##    Gesellschaft fuer numerische Simulation mbH Braunschweig, Germany
+##
+## Copyright (c) 2009-2012,
+##    Technische Universitaet Dresden, Germany
+##
+## Copyright (c) 2009-2012,
+##    University of Oregon, Eugene, USA
+##
+## Copyright (c) 2009-2013,
+##    Forschungszentrum Juelich GmbH, Germany
+##
+## Copyright (c) 2009-2012,
+##    German Research School for Simulation Sciences GmbH, Juelich/Aachen, Germany
+##
+## Copyright (c) 2009-2012,
+##    Technische Universitaet Muenchen, Germany
+##
+## This software may be modified and distributed under the terms of
+## a BSD-style license.  See the COPYING file in the package base
+## directory for details.
+##
+
+## file  build-includes/common.am
+##       Intended to be included by the components
+##       build-(front|back)end/Makefile.am. Defines "common" entities
+##       that all build-* Makefiles rely on.
+
+
+include ../vendor/common/build-config/common.am
+
+## Convenience variable for referencing public headers that will be
+## installed. Use e.g. with the primary nobase_include_HEADERS
+PUBLIC_INC_SRC = $(SRC_ROOT)include/scorep/
+
+## Include flags for the headers of the utils component.
+UTILS_CPPFLAGS = \
+    -I../src/utils/include \
+    -I$(INC_ROOT)src/utils/include \
+    -I$(INC_DIR_COMMON_UTILS)
+
+INC_DIR_OPARI2 = $(INC_ROOT)vendor/opari2/include
+INC_DIR_MUTEX = $(INC_ROOT)src/measurement/mutex/include
+
+##  Where to find the valgrind headers.
+INC_DIR_VENDOR_VALGRIND = $(INC_ROOT)vendor/valgrind/include
+
+# When $(YACC) is invoced, also create a header file.
+AM_YFLAGS = -d

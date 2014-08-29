@@ -1,0 +1,34 @@
+/**
+ * @file
+ * @ingroup    MPI_Wrapper
+ *
+ * @brief C interface wrappers for miscelaneous and handler conversion
+ *        functions
+ */
+
+#include <config.h>
+#include "SCOREP_Mpi.h"
+#include <SCOREP_Events.h>
+
+/**
+ * @name C wrappers
+ * @{
+ */
+
+#pragma wrapgen single MPI_Address skel/SCOREP_Mpi_StdWithProto.w
+
+#pragma wrapgen multiple restrict(gmisc+!n_c2f+!n_f2c+!n_Info+!nMPI_Address) skel/SCOREP_Mpi_Std.w
+
+#pragma wrapgen multiple restrict(gmisc+n_Info+!nMPI_Info_delete+!nMPI_Info_get+!nMPI_Info_get_valuelen+!nMPI_Info_set+!nMPI_Address) skel/SCOREP_Mpi_Std.w
+
+#pragma wrapgen single MPI_Info_delete skel/SCOREP_Mpi_StdCompl.w
+
+#pragma wrapgen single MPI_Info_get skel/SCOREP_Mpi_StdCompl.w
+
+#pragma wrapgen single MPI_Info_get_valuelen skel/SCOREP_Mpi_StdCompl.w
+
+#pragma wrapgen single MPI_Info_set skel/SCOREP_Mpi_StdCompl.w
+
+/**
+ * @}
+ */

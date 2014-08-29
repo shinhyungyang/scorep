@@ -1,0 +1,31 @@
+## -*- mode: makefile -*-
+
+bin_PROGRAMS += scorep-backend-info
+
+scorep_backend_info_SOURCES = \
+    $(SRC_ROOT)src/tools/backend-info/scorep_backend_info.cpp
+
+scorep_backend_info_CPPFLAGS = \
+    $(AM_CPPFLAGS) \
+    -I$(PUBLIC_INC_DIR) \
+    -I$(INC_ROOT)src/measurement/include \
+    -I$(INC_ROOT)src/measurement \
+    -I$(INC_ROOT)src/services/include \
+    $(UTILS_CPPFLAGS)
+
+scorep_backend_info_LDADD = \
+    libscorep_platform.la \
+    @TIMER_LIB@ \
+    libscorep_confvars.la \
+    libscorep_hashtab.la \
+    libutils.la
+
+## Blue Gene P
+if SCOREP_TIMER_BGP_GET_TIMEBASE
+scorep_backend_info_LDFLAGS = -L$(TIMER_LIBDIR)
+endif SCOREP_TIMER_BGP_GET_TIMEBASE
+
+## Cray systems
+if HAVE_PMI
+scorep_backend_info_LDFLAGS = $(PMI_LDFLAGS) $(PMI_LIBS)
+endif HAVE_PMI

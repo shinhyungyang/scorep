@@ -1,0 +1,187 @@
+/** @page score Usage of scorep-score
+@seclabel{score}
+
+scorep-score is a tool that allows to estimate the size of an OTF2 trace
+from a CUBE4 profile. Furthermore, the effects of
+filters are estimated. The main goal is to define appropriate filters for
+a tracing run from a profile.
+
+The general work-flow for performance analysis with @scorep is:
+<ol>
+  <li> Instrument an application (see Section @secref{instrumentation}).</li>
+  <li> Perform a measurement run and record a profile (see Section @secref{measurement}).
+       The profile already
+       gives an overview what may happen inside the application. </li>
+  <li> Use scorep-score to define an appropriate filter for an application
+       Otherwise the trace file may become too large. This step is explained
+       in this Chapter.</li>
+  <li> Perform a measurement run with tracing enabled and the filter
+       applied (see Section @secref{tracing} and Section @secref{filtering}). </li>
+  <li> Perform in-depth analysis on the trace data.</li>
+</ol>
+
+@section score_basic_usage Basic usage
+
+To invoke @verb{scorep-score} you must provide the filename of a CUBE4 profile as
+argument. Thus, the basic command looks like this:
+
+@verbatim
+scorep-score profile.cubex
+@endverbatim
+
+The output of the command may look like this (taking an MPI/OpenMP hybrid
+application as an example):
+
+@verbatim
+Estimated aggregate size of event trace:                   20MB
+Estimated requirements for largest trace buffer (max_buf): 20MB
+Estimated memory requirements (SCOREP_TOTAL_MEMORY):       24MB
+(hint: When tracing set SCOREP_TOTAL_MEMORY=24MB to avoid intermediate flushes
+ or reduce requirements using USR regions filters.)
+
+flt type      max_buf[B]        visits      time[s]  time[%]  time/visit[us]  region
+     ALL      19,377,048       786,577        27.48    100.0           34.93  ALL
+     USR      16,039,680       668,320         0.36      1.3            0.53  USR
+     OMP       3,328,344       117,881        26.92     98.0          228.37  OMP
+     COM           9,024           376         0.20      0.7          532.17  COM
+@endverbatim
+
+The first line of the output gives an estimation of the total size of the trace,
+aggregated over all processes. This information is useful for estimating the space
+required on disk. In the given example, the estimated total size of the event
+trace is 20MB.
+
+The second line prints an estimation of the memory space required
+by a single process for the trace. The memory space that @scorep reserves on each process
+at application start must be large enough to hold the process' trace in memory
+in order to avoid flushes during runtime, because flushes heavily disturb
+measurements. In addition to the trace, Score-P requires some additinal memory to
+maintain internal data structures. Thus, it provides also an estimation for the
+total amount of required memory on each process. The memory size per process that 
+@scorep reserves is set via the environment variable @confvar{SCOREP_TOTAL_MEMORY}. 
+In the given example the per process memory should be larger than 24MB.
+
+Beginning with the 6th line, @verb{scorep-score} prints a table that show
+how the trace memory requirements and the runtime is distributed among certain function
+groups. The column @verb{max_tbc} shows how much trace buffer is needed
+on a single process. The column @verb{time(s)} shows how much execution time was spend
+in regions of that group in seconds, the column @verb{%} shows the fraction of the overall
+runtime that was used by this group, and the column @verb{time/visit(us)} shows the
+average time per visit in microseconds.
+
+The following groups exist:
+<ul>
+ <li> ALL:   Includes all functions of the application </li>
+ <li> OMP:   This group contains all regions that represent an OpenMP construct </li>
+ <li> MPI:   This group contains all MPI functions </li>
+ <li> SHMEM: This group contains all SHMEM functions </li>
+ <li> COM:   This group contains all functions, implemented by the user that appear on
+             a call-path to an OpenMP construct, or MPI/SHMEM function.</li>
+ <li> USR:   This group contains all user functions that do not appear on a call-path to
+             an OpenMP construct, or MPI/SHMEM function. </li>
+</ul>
+
+@section score_region_output Additional per-region information
+
+For a more detailed output, which shows the data for every region, you can use the
+@verb{-r} option. The command could look like this.
+
+@verbatim
+scorep-score profile.cubex -r
+@endverbatim
+
+This command adds information about the used buffer sizes and execution time of every
+region to the table. The additional lines of the output may look like this:
+
+@verbatim
+flt type      max_buf[B]        visits      time[s]  time[%]  time/visit[us]  region
+
+     COM              24             4         0.00      0.0           67.78  Init
+     COM              24             4         0.00      0.0           81.20  main
+     USR              24             4         0.12      2.0        30931.14  InitializeMatrix
+     COM              24             4         0.05      0.8        12604.78  CheckError
+     USR              24             4         0.00      0.0           23.76  PrintResults
+     COM              24             4         0.01      0.2         3441.83  Finish
+     COM              24             4         0.48      7.7       120338.17  Jacobi
+@endverbatim
+
+The region name is displayed in the column named @verb{region}.
+The column @verb{type} shows to which group this region belongs.
+In the example above the function main belongs to group @verb{COM}
+required 24 bytes per process and used 0 s execution time. The
+regions are sorted by their buffer requirements.
+
+@section scorep_filter Defining and testing a filter
+@seclabel{scorep_filter}
+For defining a filter, it is recommended to exclude short frequently called
+functions from measurement, because they require a lot of
+buffer space (represented by a high value under @verb{max_tbc}) but incur a high
+measurement overhead. Furthermore, for communication analysis, functions
+that appear on a call-path to MPI functions and OpenMP constructs (regions
+of type @verb{COM}) are usually of more interest than user functions of type @verb{USR}
+which do not appear on call-path to communications. MPI functions and OpenMP
+constructs cannot be filtered. Thus, it is usually a good approach to exclude
+regions of type @verb{USR} starting at the top of the list until you reduced the trace
+to your needs. Section @secref{filtering} describes the format of a filter
+specification file.
+
+If you have a filter file, you can test the effect of your filter on the trace file.
+Therefor, you need to pass a @verb{-f} followed by the file name of your filter. E.g.
+if your filter file name is @verb{myfilter}, the command looks like this:
+
+@verbatim
+scorep-score profile.cubex -f myfilter
+@endverbatim
+
+An example output is:
+
+@verbatim
+Estimated aggregate size of event trace:                   7kB
+Estimated requirements for largest trace buffer (max_buf): 1806 bytes
+Estimated memory requirements (SCOREP_TOTAL_MEMORY):       5MB
+(hint: When tracing set SCOREP_TOTAL_MEMORY=5MB to avoid intermediate flushes
+ or reduce requirements using USR regions filters.)
+
+flt type      max_buf[B]        visits      time[s]  time[%]  time/visit[us]  region
+ -   ALL           2,093           172         5.17    100.0        30066.64  ALL
+ -   MPI           1,805           124         4.20     81.3        33910.31  MPI
+ -   COM             240            40         0.84     16.3        21092.44  COM
+ -   USR              48             8         0.12      2.4        15360.71  USR
+
+ *   ALL           1,805           124         4.20     81.3        33910.31  ALL-FLT
+ -   MPI           1,805           124         4.20     81.3        33910.31  MPI-FLT
+ +   FLT             288            48         0.97     18.7        20137.15  FLT
+@endverbatim
+
+Now, the output estimates the total trace size an the required memory per process,
+if you would apply the provided filter for the measurement run which records the
+trace. A new group @verb{FLT} appears, which contains all regions that
+are filtered. Under @verb{max_tbc} the group @verb{FLT} displays how the memory
+requirements per process are reduced. Furthermore, the groups that end
+on @verb{-FLT}, like @verb{ALL-FLT} contain only the unfiltered regions of the
+original group. E.g. @verb{USR-FLT} contains all regions of group @verb{USR} that
+are not filtered.
+
+Furthermore, the column @verb{flt} is no longer empty but contain a symbol that
+indicates how this group is affected by the filter. A '@verb{-}'
+means 'not filtered', a '@verb{+}' means 'filtered' and a '@verb{*}' appears in front
+of groups that potentially can be affected by the filter.
+
+You may combine the @verb{-f} option with a @verb{-r} option. In this case, for each
+function a '@verb{+}' or '@verb{-}' indicates whether the function is filtered.
+
+@section score_metrics Calculating the effects of recording hardware counters
+
+Recording additional metrics, e.g. hardware counters may significantly increase
+the trace size, because for many events additional metric values
+are stored. In order to estimate the effects of these metrics, you may add
+a @verb{-c} followed by the number of metrics you want to record. E.g.
+
+@verbatim
+scorep-score profile.cubex -c 3
+@endverbatim
+
+would mean that @verb{scorep-score} estimates the disk and memory requirements
+for the case that you record 3 additional metrics.
+
+*/

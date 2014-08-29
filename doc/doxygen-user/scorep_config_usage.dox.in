@@ -1,0 +1,70 @@
+
+Usage:
+scorep-config <command> [<options>]
+  Commands:
+   --cflags    prints additional compiler flags for a C compiler. They already
+               contain the include flags.
+   --cxxflags  prints additional compiler flags for a C++ compiler. They already
+               contain the include flags.
+   --fflags    prints additional compiler flags for a Fortran compiler. They already
+               contain the include flags.
+   --cppflags  prints the include flags. They are already contained in the
+               output of the --cflags, --cxxflags, and --fflags commands
+   --ldflags   prints the library path flags for the linker
+   --libs      prints the required linker flags
+   --cc        prints the C compiler name
+   --cxx       prints the C++ compiler name
+   --fc        prints the Fortran compiler name
+   --mpicc     prints the MPI C compiler name
+   --mpicxx    prints the MPI C++ compiler name
+   --mpifc     prints the MPI Fortran compiler name
+   --cobi-deps prints the dependency library part for the Cobi adapter file
+   --help      prints this usage information
+   --version   prints the version number of the Score-P package
+   --scorep-revision prints the revision number of the Score-P package
+   --common-revision prints the revision number of the common package
+   --remap-specfile  prints the path to the remapper specification file
+  Options:
+   --nvcc      Convert flags to be suitable for the nvcc compiler.
+   --static    Use only static Score-P libraries if possible.
+   --dynamic   Use only dynamic Score-P libraries if possible.
+   --online-access|--noonline-access
+            Specifies whether online access (needed by Periscope) is enabled.
+            On default it is enabled.
+   --compiler|--nocompiler
+            Specifies whether compiler instrumentation is used.
+            On default compiler instrumentation is enabled.
+   --user|--nouser
+            Specifies whether user instrumentation is used.
+            On default user instrumentation is disabled.
+   --pomp|--nopomp
+            Specifies whether pomp instrumentation is used.
+            On default pomp instrumentation is disabled.
+   --cuda|--nocuda
+            Specifies whether cuda instrumentation is used.
+            On default cuda instrumentation is enabled.
+   --preprocess|--nopreprocess
+            Specifies whether preprocess instrumentation is used.
+            On default preprocess instrumentation is disabled.
+   --thread=<threading system>[:<variant>]
+            Available threading systems are:
+         none	This is the default.
+         omp:pomp_tpd
+         omp:ancestry
+         pthread
+            If no variant is specified the first matching
+            threading system is used.
+   --mutex=<locking system>[:<variant>]
+            Available locking systems are:
+         none
+         omp
+         pthread
+         pthread:spinlock
+         pthread:wrap
+            If no variant is specified the default for the respective
+            threading system is used.
+   --mpp=<multi-process paradigm>
+            Available multi-process paradigms are:
+         mpi	This is the default.
+         shmem
+         none

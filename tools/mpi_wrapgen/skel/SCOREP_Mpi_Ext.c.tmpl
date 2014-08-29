@@ -1,0 +1,60 @@
+/**
+ * @file
+ * @ingroup    MPI_Wrapper
+ *
+ * @brief C interface wrappers for external interface functions
+ */
+
+#include <config.h>
+#include "SCOREP_Mpi.h"
+#include <UTILS_Error.h>
+#include <SCOREP_Events.h>
+#include <SCOREP_RuntimeManagement.h>
+
+/**
+ * @name C wrappers
+ * @{
+ */
+
+#if HAVE(DECL_PMPI_ABORT)
+/**
+ * Measurement wrapper for MPI_Abort
+ * @note Manually adapted wrapper
+ * @note C interface
+ * @note Introduced with MPI 1.0
+ * @ingroup ext
+ */
+int MPI_Abort(MPI_Comm comm,
+              int      errorcode)
+{
+  int return_val;
+
+  UTILS_WARNING("Explicit MPI_Abort call abandoning the SCOREP measurement.");
+  SCOREP_SetAbortFlag();
+
+  if (SCOREP_MPI_IS_EVENT_GEN_ON_FOR(SCOREP_MPI_ENABLED_EXT))
+  {
+    SCOREP_MPI_EVENT_GEN_OFF();
+    SCOREP_EnterRegion(scorep_mpi_regid[SCOREP__MPI_ABORT]);
+
+    return_val = PMPI_Abort(comm, errorcode);
+
+    SCOREP_ExitRegion(scorep_mpi_regid[SCOREP__MPI_ABORT]);
+    SCOREP_MPI_EVENT_GEN_ON();
+  }
+  else
+  {
+    return_val = PMPI_Abort(comm, errorcode);
+  }
+
+  return return_val;
+}
+#endif
+
+#pragma wrapgen single MPI_Grequest_complete skel/SCOREP_Mpi_StdCompl.w
+
+#pragma wrapgen multiple restrict(gext+tint+!nMPI_Abort+!nMPI_Grequest_complete) skel/SCOREP_Mpi_Std.w
+
+/**
+ * @}
+ */

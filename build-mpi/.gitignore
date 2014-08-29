@@ -1,0 +1,14 @@
+/configure
+/Makefile.in
+/autom4te.cache
+/aclocal.m4
+/libtool
+/config.log
+/config.status
+/config.summary
+/.deps
+/Makefile
+/run_otf2_speed_test.sh
+/scorep_oa_parser.c
+/scorep_oa_scanner.c
+/scorep_oa_scanner.h
