@@ -58,6 +58,7 @@
 #include "scorep_instrumenter_user.hpp"
 #include "scorep_instrumenter_utils.hpp"
 #include "scorep_instrumenter_mutex.hpp"
+#include "scorep_instrumenter_pthread.hpp"
 #include <scorep_config_tool_backend.h>
 #include <scorep_config_tool_mpi.h>
 #include <scorep_config_tool_shmem.h>
@@ -81,6 +82,7 @@ SCOREP_Instrumenter::SCOREP_Instrumenter( SCOREP_Instrumenter_InstallData& insta
     m_preprocess_adapter = new SCOREP_Instrumenter_PreprocessAdapter();
     m_pdt_adapter        = new SCOREP_Instrumenter_PdtAdapter();
     m_user_adapter       = new SCOREP_Instrumenter_UserAdapter();
+    m_pthread_adapter    = new SCOREP_Instrumenter_PthreadAdapter();
     new SCOREP_Instrumenter_OnlineAccess();
 
     /* pre-compile adapter order */
@@ -88,6 +90,7 @@ SCOREP_Instrumenter::SCOREP_Instrumenter( SCOREP_Instrumenter_InstallData& insta
     m_precompile_adapters.push_back( m_preprocess_adapter );
     m_precompile_adapters.push_back( m_opari_adapter );
     m_precompile_adapters.push_back( m_pdt_adapter );
+    m_precompile_adapters.push_back( m_pthread_adapter );
 
     /* pre-link adapter order */
     m_prelink_adapters.push_back( m_opari_adapter );
