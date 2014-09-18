@@ -193,7 +193,6 @@ SCOREP_Instrumenter_Pthread::SCOREP_Instrumenter_Pthread(
     m_pthread_cflag( SCOREP_BACKEND_PTHREAD_CFLAGS ),
     m_pthread_lib( SCOREP_BACKEND_PTHREAD_LIBS )
 {
-    m_requires.push_back( SCOREP_INSTRUMENTER_ADAPTER_PTHREAD );
     m_conflicts.push_back( SCOREP_INSTRUMENTER_ADAPTER_OPARI );
 #if !SCOREP_BACKEND_HAVE_PTHREAD
     unsupported();
