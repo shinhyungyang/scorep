@@ -22,6 +22,9 @@
  * Copyright (c) 2009-2012,
  * Technische Universitaet Muenchen, Germany
  *
+ * Copyright (c) 2015,
+ * Technische Universitaet Darmstadt, Germany
+ *
  * This software may be modified and distributed under the terms of
  * a BSD-style license. See the COPYING file in the package base
  * directory for details.
@@ -81,7 +84,12 @@ scorep_profile_process_collapse( void )
                                                                    SCOREP_PARADIGM_USER,
                                                                    SCOREP_REGION_UNKNOWN );
 
-    scorep_profile_for_all( scorep_profile.first_root_node,
-                            &substitute_collapse,
-                            NULL );
+    for ( scorep_profile_node* current = scorep_profile.first_root_node;
+          current != NULL;
+          current = current->next_sibling )
+    {
+        scorep_profile_for_all( current,
+                                &substitute_collapse,
+                                NULL );
+    }
 }
