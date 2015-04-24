@@ -20,8 +20,8 @@ Bugfixes:
   installation does not provide a `gmp.h` header.
 - Fixed missing DESTDIR support for installing `scorep-config` delegate on
   Xeon Phi.
-
-- BG/Q: use optimized MPI rank to SION file mapping (one file per I/O node)
+- Calls to functions, instrumented by the GCC plug-in, after the finalization
+  of the measurement, aborted the application. Fixed.
 
 ------------------- Released version 1.4 -----------------------------
 
