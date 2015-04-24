@@ -13,6 +13,7 @@ Bugfixes:
   location and lead to errors if a collapse node appeared on anther location.
   Fixed.
 - Fixed detection of building a shared library on Cray in the instrumenter.
+- Fixed errorneous calculation and presentation of task migration metrics.
 
 - BG/Q: use optimized MPI rank to SION file mapping (one file per I/O node)
 
