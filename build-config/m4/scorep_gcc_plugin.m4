@@ -25,17 +25,41 @@ AC_CHECK_HEADERS([gcc-plugin.h],
     [AC_CHECK_HEADERS([tree.h],
         [scorep_gcc_have_plugin_headers=yes],
         [scorep_gcc_have_plugin_headers=no],
-        [#include <gcc-plugin.h>])],
-    [scorep_gcc_have_plugin_headers=no])
+        [[
+#undef PACKAGE_NAME
+#undef PACKAGE_TARNAME
+#undef PACKAGE_VERSION
+#undef PACKAGE_STRING
+#undef PACKAGE_BUGREPORT
+#undef PACKAGE_URL
+#include <gcc-plugin.h>
+]])],
+    [scorep_gcc_have_plugin_headers=no],
+    [[
+/* no default includes */
+#undef PACKAGE_NAME
+#undef PACKAGE_TARNAME
+#undef PACKAGE_VERSION
+#undef PACKAGE_STRING
+#undef PACKAGE_BUGREPORT
+#undef PACKAGE_URL
+]])
+
+AC_MSG_CHECKING([for GCC $1 plug-in headers])
+AC_MSG_RESULT([${scorep_gcc_have_plugin_headers}])
 
 scorep_gcc_have_working_plugin=no
 AS_IF([test "x${scorep_gcc_have_plugin_headers}" = "xyes"], [
 
-    [save_]_AC_LANG_PREFIX[FLAGS]=[$]_AC_LANG_PREFIX[FLAGS]
-    _AC_LANG_PREFIX[FLAGS]="[$]_AC_LANG_PREFIX[FLAGS] -shared"
-
     # minimalistic GCC plug-in
-cat >conftest.$ac_ext <<\_EOF
+cat confdefs.h - >conftest.$ac_ext <<\_EOF
+/* end confdefs.h.  */
+#undef PACKAGE_NAME
+#undef PACKAGE_TARNAME
+#undef PACKAGE_VERSION
+#undef PACKAGE_STRING
+#undef PACKAGE_BUGREPORT
+#undef PACKAGE_URL
 #include "gcc-plugin.h"
 #include "tree.h"
 
@@ -58,31 +82,48 @@ _EOF
 
     # build plug-in with libtool to get an shared object
     # -rpath is needed, else libool will only build an convenient library
-    AS_IF([$SHELL ./libtool --mode=compile --tag=_AC_CC \
-        [$]_AC_CC $CPPFLAGS [$]_AC_LANG_PREFIX[FLAGS] \
-        -c -o conftest.lo conftest.$ac_ext >&AS_MESSAGE_LOG_FD &&
-    $SHELL ./libtool --mode=link --tag=_AC_CC \
-        [$]_AC_CC [$]_AC_LANG_PREFIX[FLAGS] -module $LDFLAGS \
-        -rpath $PWD/lib \
-        -o confmodule.la conftest.lo >&AS_MESSAGE_LOG_FD &&
-    $MKDIR_P lib &&
-    $SHELL ./libtool --mode=install \
-        $INSTALL confmodule.la $PWD/lib/confmodule.la >&AS_MESSAGE_LOG_FD &&
-    $SHELL ./libtool --mode=clean \
-        $RM conftest.lo confmodule.la >&AS_MESSAGE_LOG_FD], [
+    AC_MSG_CHECKING([to build a $1 plug-in])
+    plugin_compile='$SHELL ./libtool --mode=compile --tag=_AC_CC [$]_AC_CC $CPPFLAGS [$]_AC_LANG_PREFIX[FLAGS] -c -o conftest.lo conftest.$ac_ext >&AS_MESSAGE_LOG_FD'
+    plugin_link='$SHELL ./libtool --mode=link --tag=_AC_CC [$]_AC_CC [$]_AC_LANG_PREFIX[FLAGS] -module $LDFLAGS -rpath $PWD/lib -o confmodule.la conftest.lo >&AS_MESSAGE_LOG_FD'
+    plugin_mkdir='$MKDIR_P lib >&AS_MESSAGE_LOG_FD'
+    plugin_install='$SHELL ./libtool --mode=install $INSTALL confmodule.la $PWD/lib/confmodule.la >&AS_MESSAGE_LOG_FD'
+    plugin_clean='$SHELL ./libtool --mode=clean $RM conftest.lo confmodule.la >&AS_MESSAGE_LOG_FD'
+    AS_IF([_AC_DO_VAR([plugin_compile]) &&
+        _AC_DO_VAR([plugin_link]) &&
+        _AC_DO_VAR([plugin_mkdir]) &&
+        _AC_DO_VAR([plugin_install]) &&
+        _AC_DO_VAR([plugin_clean])],
+    [
+        AC_MSG_RESULT([yes])
 
         # now try to use this plug-in in an compile test
+        [save_]_AC_LANG_PREFIX[FLAGS]=[$]_AC_LANG_PREFIX[FLAGS]
         _AC_LANG_PREFIX[FLAGS]="[$save_]_AC_LANG_PREFIX[FLAGS] -fplugin=$PWD/lib/confmodule.so"
+        AC_MSG_CHECKING([to load a $1 plug-in])
         AC_COMPILE_IFELSE([AC_LANG_PROGRAM([], [])],
-            [scorep_gcc_have_working_plugin=yes],
-            [scorep_gcc_plugin_support_reason="no, failed to load plug-in"])
+            [scorep_gcc_have_working_plugin=yes
+            AC_MSG_RESULT([yes])
+            ],
+            [scorep_gcc_plugin_support_reason="no, failed to load plug-in"
+            AC_MSG_RESULT([no])
+            ])
+        _AC_LANG_PREFIX[FLAGS]=[$save_]_AC_LANG_PREFIX[FLAGS]
 
-        $SHELL ./libtool --mode=uninstall \
-            $RM $PWD/lib/confmodule.la >&AS_MESSAGE_LOG_FD
-        rmdir lib >&AS_MESSAGE_LOG_FD 2>&1
+        plugin_uninstall='$SHELL ./libtool --mode=uninstall $RM $PWD/lib/confmodule.la >&AS_MESSAGE_LOG_FD'
+        _AC_DO_VAR([plugin_uninstall])
+        plugin_rmdir='rmdir lib >&AS_MESSAGE_LOG_FD'
+        _AC_DO_VAR([plugin_rmdir])
+    ], [
+        AC_MSG_RESULT([no])
     ])
 
-    _AC_LANG_PREFIX[FLAGS]=[$save_]_AC_LANG_PREFIX[FLAGS]
+    AS_UNSET([plugin_compile])
+    AS_UNSET([plugin_link])
+    AS_UNSET([plugin_mkdir])
+    AS_UNSET([plugin_install])
+    AS_UNSET([plugin_clean])
+    AS_UNSET([plugin_uninstall])
+    AS_UNSET([plugin_rmdir])
 
     $RM conftest.$ac_ext
 ], [
@@ -91,15 +132,23 @@ _EOF
 
 CPPFLAGS=$save_CPPFLAGS
 
+AS_UNSET([save_CPPFLAGS])
+
 AC_LANG_POP($1)
 
+AC_MSG_CHECKING([for working GCC $1 plug-in support])
 AS_IF([test "x${scorep_gcc_have_working_plugin}" = "xyes"],
-    [scorep_gcc_plugin_support_reason="yes, using the $1 compiler and -I${scorep_gcc_plugin_cppflags}"
+    [AC_MSG_RESULT([yes])
+    scorep_gcc_plugin_support_reason="yes, using the $1 compiler and -I${scorep_gcc_plugin_cppflags}"
     $2
     :],
     [AS_UNSET([scorep_gcc_plugin_cppflags])
+    AC_MSG_RESULT([no])
     $3
     :])
+
+AS_UNSET([scorep_gcc_have_plugin_headers])
+AS_UNSET([scorep_gcc_have_working_plugin])
 ])
 
 # SCOREP_GCC_VERSION
@@ -131,21 +180,38 @@ rm -f gcc_plugin_supported
 
 AS_IF([test ${scorep_gcc_version} -lt 4005],
     [scorep_gcc_plugin_support_reason="no, GCC ${GCC_VERSION} is too old, no plug-in support"],
-    [_SCOREP_GCC_PLUGIN_CHECK([C],
-        [AC_SUBST([GCC_PLUGIN_CPPFLAGS], ["-I${scorep_gcc_plugin_cppflags} -I$srcdir/../src/adapters/compiler/gcc-plugin/fake-gmp"])
-         AFS_AM_CONDITIONAL([GCC_COMPILED_WITH_CXX], [false], [false])
+    [test ${scorep_gcc_version} -lt 4007],
+    [# GCC 4.5 and 4.6 are always built with the C compiler
+    _SCOREP_GCC_PLUGIN_CHECK([C],
+        [AFS_AM_CONDITIONAL([GCC_COMPILED_WITH_CXX], [false], [false])
+         touch gcc_plugin_supported])],
+    [test ${scorep_gcc_version} -eq 4007],
+    [# GCC 4.7 can either be build with the C or the C++ compiler
+    _SCOREP_GCC_PLUGIN_CHECK([C],
+        [AFS_AM_CONDITIONAL([GCC_COMPILED_WITH_CXX], [false], [false])
          touch gcc_plugin_supported],
         [AS_UNSET([ac_cv_header_gcc_plugin_h])
          AS_UNSET([ac_cv_header_tree_h])
          _SCOREP_GCC_PLUGIN_CHECK([C++],
-            [AC_SUBST([GCC_PLUGIN_CPPFLAGS], ["-I${scorep_gcc_plugin_cppflags} -I$srcdir/../src/adapters/compiler/gcc-plugin/fake-gmp"])
-             AFS_AM_CONDITIONAL([GCC_COMPILED_WITH_CXX], [true], [false])
-             touch gcc_plugin_supported])])])
+            [AFS_AM_CONDITIONAL([GCC_COMPILED_WITH_CXX], [true], [false])
+             touch gcc_plugin_supported])])],
+    [# GCC 4.8 and onwards are compiled with the C++ compiler
+    _SCOREP_GCC_PLUGIN_CHECK([C++],
+        [AFS_AM_CONDITIONAL([GCC_COMPILED_WITH_CXX], [true], [false])
+         touch gcc_plugin_supported])])
 
-AFS_AM_CONDITIONAL([GCC_VERSION_GE_49], [test ${scorep_gcc_version} -ge 4009], [false])
-AM_COND_IF([GCC_VERSION_GE_49],
-    [AC_SUBST([GCC_PLUGIN_CXXFLAGS], ["-fno-rtti"])])
+AFS_AM_CONDITIONAL([HAVE_GCC_PLUGIN_SUPPORT], [test -f gcc_plugin_supported], [false])
 
 AFS_SUMMARY([GCC plug-in support], [${scorep_gcc_plugin_support_reason}])
-AFS_AM_CONDITIONAL([HAVE_GCC_PLUGIN_SUPPORT], [test -f gcc_plugin_supported], [false])
+AM_COND_IF([HAVE_GCC_PLUGIN_SUPPORT],
+    [AFS_AM_CONDITIONAL([GCC_VERSION_GE_49], [test ${scorep_gcc_version} -ge 4009], [false])
+    AM_COND_IF([GCC_VERSION_GE_49],
+        [AC_SUBST([SCOREP_GCC_PLUGIN_CXXFLAGS], ["-fno-rtti"])])
+    AC_SUBST([SCOREP_GCC_PLUGIN_CPPFLAGS], ["-I${scorep_gcc_plugin_cppflags} -I$srcdir/../src/adapters/compiler/gcc-plugin/fake-gmp"])
+    AM_COND_IF([GCC_COMPILED_WITH_CXX],
+        [AFS_SUMMARY([Compiler used], [$CXX])],
+        [AFS_SUMMARY([Compiler used], [$CC])])])
+
+AS_UNSET([scorep_gcc_plugin_cppflags])
+AS_UNSET([scorep_gcc_plugin_support_reason])
 ])
