@@ -20,6 +20,11 @@ Bugfixes:
   installation does not provide a `gmp.h` header.
 - Fixed missing DESTDIR support for installing `scorep-config` delegate on
   Xeon Phi.
+- Instrumented C/Fortran OpenMP programs on Fujitsu systems showed
+  race conditions. Furthermore, C++ applications failed at
+  initialization time. This was due to a bug in the Fujitsu compiler
+  and OpenMP runtime. Fujitsu provided a workaround that fixed this
+  issues.
 - Calls to functions, instrumented by the GCC plug-in, after the finalization
   of the measurement, aborted the application. Fixed.
 - In shared Score-P builds using recent Intel MPI a 'MPIR_Thread: TLS
