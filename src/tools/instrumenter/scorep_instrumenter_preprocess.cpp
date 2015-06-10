@@ -70,6 +70,11 @@ SCOREP_Instrumenter_PreprocessAdapter::precompile( SCOREP_Instrumenter&         
         language = "cxx";
     }
 
+    // Remove problematic arguments from command line
+#if SCOREP_BACKEND_COMPILER_CRAY
+    cmdLine.removeUserArg( "-eZ" );
+#endif
+
     // Prepare file for preprocessing
     if ( !is_fortran_file( source_file ) )
     {
@@ -139,6 +144,10 @@ SCOREP_Instrumenter_PreprocessAdapter::precompile( SCOREP_Instrumenter&         
     {
         command += " " +  SCOREP_Instrumenter_InstallData::getFortranPreprocessingFlags( input_file,
                                                                                          output_file );
+    }
+    else if ( is_cuda_file( source_file ) )
+    {
+        command += " -E > " + output_file;
     }
 
     instrumenter.executeCommand( command );

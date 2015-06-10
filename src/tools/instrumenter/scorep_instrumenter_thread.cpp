@@ -52,7 +52,9 @@
 static bool
 check_command_for_openmp_option( std::string current, std::string openmpCflag )
 {
-    if ( current == openmpCflag )
+    if ( current == openmpCflag ||
+         ( current.length() > openmpCflag.length() &&
+           current.substr( 0, openmpCflag.length() + 1 ) == openmpCflag + "=" ) )
     {
         return true;
     }
