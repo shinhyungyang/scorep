@@ -250,6 +250,11 @@ instrumentation, respectively.  The default set of instrumented MPI
 library functions is specified when @scorep is installed.  All OpenMP
 parallel constructs and API calls are instrumented by default.
 
+@note To fine-tune instrumentation of OpenMP regions, use the
+      <tt>--opari=<parameter-list></tt> option. For available parameters please
+      refer to the OPARI2 manual.
+
+By default, automatic instrumentation of user-level source routines by
 By default, automatic instrumentation of user-level source routines by
 the compiler is enabled (equivalent to specifying <tt>--compiler</tt>).
 The compiler instrumentation can be disabled with <tt>--nocompiler</tt> when desired,
