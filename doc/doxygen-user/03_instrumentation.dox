@@ -255,7 +255,6 @@ parallel constructs and API calls are instrumented by default.
       refer to the OPARI2 manual.
 
 By default, automatic instrumentation of user-level source routines by
-By default, automatic instrumentation of user-level source routines by
 the compiler is enabled (equivalent to specifying <tt>--compiler</tt>).
 The compiler instrumentation can be disabled with <tt>--nocompiler</tt> when desired,
 such as when
