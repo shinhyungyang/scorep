@@ -36,11 +36,7 @@
 #define SCOREP_DEBUG_MODULE_NAME OPARI2
 #include <UTILS_Debug.h>
 
-SCOREP_Opari2_Openmp_Region* scorep_opari2_openmp_regions;
-
-/** Lock to protect on-the-fly assignments.*/
-SCOREP_Mutex scorep_opari2_openmp_assign_lock;
-
+SCOREP_Opari2_Openmp_Region* scorep_opari2_openmp_regions = NULL;
 
 /* ***************************************************************************
 *                                                        OPARI2 lock regions *
@@ -133,6 +129,8 @@ static void
 opari2_openmp_subsystem_finalize( void )
 {
     UTILS_DEBUG_ENTRY();
+
+    scorep_opari2_openmp_lock_finalize();
 
     free( scorep_opari2_openmp_regions );
     SCOREP_MutexDestroy( &scorep_opari2_openmp_assign_lock );

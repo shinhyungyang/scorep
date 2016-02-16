@@ -7,7 +7,7 @@
  * Copyright (c) 2009-2013,
  * Gesellschaft fuer numerische Simulation mbH Braunschweig, Germany
  *
- * Copyright (c) 2009-2014,
+ * Copyright (c) 2009-2014, 2016,
  * Technische Universitaet Dresden, Germany
  *
  * Copyright (c) 2009-2013,
@@ -28,16 +28,15 @@
  *
  */
 
+#ifndef SCOREP_INSTRUMENTER_COMMAND_LINE_HPP
+#define SCOREP_INSTRUMENTER_COMMAND_LINE_HPP
+
 /**
  * @file
  *
  * @brief      Declares a class for parsing and evaluating a the command line
  *             and makes the results accessible.
  */
-
-#ifndef SCOREP_INSTRUMENTER_COMMAND_LINE_H_
-#define SCOREP_INSTRUMENTER_COMMAND_LINE_H_
-
 
 #include <string>
 #include <vector>
@@ -185,7 +184,8 @@ public:
        Returns the list of full file names for all libraries specified via -l flags.
      */
     std::string
-    getLibraryFiles( void );
+    getLibraryFiles( bool allow_dynamic = true,
+                     bool allow_static = true );
 
     const std::vector<std::string>&
     getInstrumentFilterFiles( void ) const;
@@ -468,4 +468,4 @@ private:
 #endif
 };
 
-#endif
+#endif // SCOREP_INSTRUMENTER_COMMAND_LINE_HPP

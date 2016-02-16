@@ -1,13 +1,10 @@
-#ifndef SCOREP_THREAD_MGMT_H_
-#define SCOREP_THREAD_MGMT_H_
-
 /*
  * This file is part of the Score-P software (http://www.score-p.org)
  *
  * Copyright (c) 2013-2014,
  * Forschungszentrum Juelich GmbH, Germany
  *
- * Copyright (c) 2014,
+ * Copyright (c) 2014, 2016,
  * Technische Universitaet Dresden, Germany
  *
  * This software may be modified and distributed under the terms of
@@ -16,6 +13,8 @@
  *
  */
 
+#ifndef SCOREP_THREAD_MGMT_H
+#define SCOREP_THREAD_MGMT_H
 
 /**
  * @file
@@ -23,6 +22,9 @@
 
 
 #include <stdbool.h>
+
+
+struct SCOREP_Location;
 
 
 /**
@@ -42,7 +44,8 @@ SCOREP_Thread_Initialize( void );
  * Will call OnNewLocation and OnActivation now.
  */
 void
-SCOREP_Thread_ActivateMaster( void );
+SCOREP_Thread_ActivateLocation( struct SCOREP_Location* location,
+                                struct SCOREP_Location* parent );
 
 
 /**
@@ -61,4 +64,4 @@ bool
 SCOREP_Thread_InParallel( void );
 
 
-#endif /* SCOREP_THREAD_MGMT_H_ */
+#endif /* SCOREP_THREAD_MGMT_H */

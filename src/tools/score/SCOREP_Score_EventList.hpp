@@ -28,14 +28,14 @@
  *
  */
 
+#ifndef SCOREP_SCORE_EVENTLIST_HPP
+#define SCOREP_SCORE_EVENTLIST_HPP
+
 /**
  * @file
  *
  * @brief      Defines name lists for determine which events are created by which region.
  */
-
-#ifndef SCOREP_SCORE_EVENTLIST_H
-#define SCOREP_SCORE_EVENTLIST_H
 
 #define SCOREP_SCORE_EVENT_MPI_SEND \
     SCOREP_SCORE_EVENT( "MPI_Bsend" ) \
@@ -351,4 +351,4 @@
 #define SCOREP_SCORE_EVENT_THREAD_CREATE_WAIT_END \
     SCOREP_SCORE_EVENT( "pthread_create" )
 
-#endif
+#endif // SCOREP_SCORE_EVENTLIST_HPP

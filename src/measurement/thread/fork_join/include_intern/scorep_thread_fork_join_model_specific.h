@@ -1,6 +1,3 @@
-#ifndef SCOREP_THREAD_FORK_JOIN_MODEL_SPECIFIC_H_
-#define SCOREP_THREAD_FORK_JOIN_MODEL_SPECIFIC_H_
-
 /*
  * This file is part of the Score-P software (http://www.score-p.org)
  *
@@ -16,6 +13,8 @@
  *
  */
 
+#ifndef SCOREP_THREAD_FORK_JOIN_MODEL_SPECIFIC_H
+#define SCOREP_THREAD_FORK_JOIN_MODEL_SPECIFIC_H
 
 /**
  * @file
@@ -183,4 +182,4 @@ scorep_thread_create_location_name( char*                              locationN
 /**@}*/
 
 
-#endif /* SCOREP_THREAD_FORK_JOIN_MODEL_SPECIFIC_H_ */
+#endif /* SCOREP_THREAD_FORK_JOIN_MODEL_SPECIFIC_H */

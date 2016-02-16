@@ -7,7 +7,7 @@
  * Copyright (c) 2009-2013,
  * Gesellschaft fuer numerische Simulation mbH Braunschweig, Germany
  *
- * Copyright (c) 2009-2015,
+ * Copyright (c) 2009-2016,
  * Technische Universitaet Dresden, Germany
  *
  * Copyright (c) 2009-2013,
@@ -34,8 +34,8 @@
  * @brief      Class to steer the instrumentation of the user code.
  */
 
-#ifndef SCOREP_INSTRUMENTER_H_
-#define SCOREP_INSTRUMENTER_H_
+#ifndef SCOREP_INSTRUMENTER_HPP
+#define SCOREP_INSTRUMENTER_HPP
 
 #include "scorep_instrumenter_cmd_line.hpp"
 
@@ -54,6 +54,7 @@ class SCOREP_Instrumenter_PdtAdapter;
 class SCOREP_Instrumenter_UserAdapter;
 class SCOREP_Instrumenter_PthreadAdapter;
 class SCOREP_Instrumenter_OpenCLAdapter;
+class SCOREP_Instrumenter_MemoryAdapter;
 
 class SCOREP_Instrumenter_Thread;
 class SCOREP_Instrumenter_Mpp;
@@ -117,6 +118,12 @@ public:
 
     std::string
     getConfigBaseCall( void );
+
+    SCOREP_Instrumenter_CmdLine&
+    getCommandLine( void )
+    {
+        return m_command_line;
+    };
 
     /* ***************************************************** Private methods */
 private:
@@ -237,6 +244,7 @@ private:
     SCOREP_Instrumenter_UserAdapter*       m_user_adapter;
     SCOREP_Instrumenter_PthreadAdapter*    m_pthread_adapter;
     SCOREP_Instrumenter_OpenCLAdapter*     m_opencl_adapter;
+    SCOREP_Instrumenter_MemoryAdapter*     m_memory_adapter;
 
     SCOREP_Instrumenter_Thread* m_thread;
     SCOREP_Instrumenter_Mpp*    m_mpp;
@@ -247,4 +255,4 @@ private:
     std::deque<SCOREP_Instrumenter_Adapter*> m_prelink_adapters;
     std::deque<SCOREP_Instrumenter_Adapter*> m_postlink_adapters;
 };
-#endif /*SCOREP_INSTRUMENTER_H_*/
+#endif // SCOREP_INSTRUMENTER_HPP

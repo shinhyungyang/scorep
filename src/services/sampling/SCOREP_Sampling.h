@@ -10,14 +10,13 @@
  *
  */
 
+#ifndef SCOREP_SAMPLING_H
+#define SCOREP_SAMPLING_H
+
 /**
  * @file
  *
  */
-
-
-#ifndef SCOREP_SAMPLING_H_
-#define SCOREP_SAMPLING_H_
 
 #include <signal.h>
 #include <stdbool.h>
@@ -191,4 +190,4 @@ scorep_finalize_interrupt_sources( SCOREP_Sampling_LocationData*                
                                    scorep_sampling_interrupt_generator_definition* definitions,
                                    size_t                                          numDefinitions );
 
-#endif /* SCOREP_SAMPLING_H_ */
+#endif /* SCOREP_SAMPLING_H */

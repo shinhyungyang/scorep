@@ -28,15 +28,15 @@
  *
  */
 
+#ifndef SCOREP_SCORE_PROFILE_HPP
+#define SCOREP_SCORE_PROFILE_HPP
+
 /**
  * @file
  *
  * @brief      Defines a class which represents a flat profile in the
  *             scorep-score tool.
  */
-
-#ifndef SCOREP_SCORE_PROFILE_H
-#define SCOREP_SCORE_PROFILE_H
 
 #include <string>
 #include <Cube.h>
@@ -269,4 +269,4 @@ private:
 };
 
 
-#endif // SCOREP_SCORE_PROFILE_H
+#endif // SCOREP_SCORE_PROFILE_HPP

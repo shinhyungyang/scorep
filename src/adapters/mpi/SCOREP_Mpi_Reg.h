@@ -55,8 +55,8 @@
  * unter a fixed index for every region.
  */
 
-#ifndef _SCOREP_MPIWRAP_REG_H
-#define _SCOREP_MPIWRAP_REG_H
+#ifndef SCOREP_MPIWRAP_REG_H
+#define SCOREP_MPIWRAP_REG_H
 
 #include <SCOREP_Definitions.h>
 
@@ -956,6 +956,6 @@ extern SCOREP_RegionHandle scorep_mpi_regions[ SCOREP_MPI_NUM_REGIONS ];
  * Register MPI functions and initialize data structures
  */
 void
-scorep_mpi_register_regions();
+scorep_mpi_register_regions( void );
 
-#endif
+#endif /* SCOREP_MPIWRAP_REG_H */

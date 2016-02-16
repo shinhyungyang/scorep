@@ -7,7 +7,7 @@
  * Copyright (c) 2009-2013,
  * Gesellschaft fuer numerische Simulation mbH Braunschweig, Germany
  *
- * Copyright (c) 2009-2015,
+ * Copyright (c) 2009-2016,
  * Technische Universitaet Dresden, Germany
  *
  * Copyright (c) 2009-2013,
@@ -63,10 +63,6 @@
 #include <SCOREP_Timer_Ticks.h>
 #include <SCOREP_Timer_Utils.h>
 #include <SCOREP_Events.h>
-#include <SCOREP_Profile.h>
-#include <SCOREP_Profile_MpiEvents.h>
-#include <tracing/SCOREP_Tracing.h>
-#include <tracing/SCOREP_Tracing_Events.h>
 #include <SCOREP_Filter_Init.h>
 #include <scorep_unify.h>
 #include <SCOREP_OA_RuntimeManagement.h>
@@ -164,8 +160,6 @@ SCOREP_InitMeasurement( void )
 {
     SCOREP_IN_MEASUREMENT_INCREMENT();
 
-    UTILS_DEBUG_ENTRY();
-
     SCOREP_InitErrorCallback();
 
     if ( SCOREP_IN_SIGNAL_CONTEXT() )
@@ -183,6 +177,8 @@ SCOREP_InitMeasurement( void )
     // calls e.g. during the subsystem initialization.
     scorep_initialized = true;
     scorep_initialization_sanity_checks();
+
+    UTILS_DEBUG_ENTRY();
 
     /* == Initialize the configuration variables and read them from the environment == */
 
@@ -321,7 +317,7 @@ SCOREP_InitMeasurement( void )
      * @dependsOn Metric
      * @dependsOn Epoch
      */
-    SCOREP_TIME( SCOREP_Thread_ActivateMaster, ( ) );
+    SCOREP_TIME( SCOREP_Location_ActivateInitLocations, ( ) );
 
     SCOREP_TIME_STOP_TIMING( SCOREP_InitMeasurement );
     SCOREP_TIME_START_TIMING( MeasurementDuration );

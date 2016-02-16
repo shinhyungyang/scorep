@@ -30,41 +30,38 @@
 
                 // MPI-specific masks
                 global(mpi);
+                global(mpi_mgmt_startup);
+                global(mpi_mgmt_comm);
+                global(mpi_mgmt_file);
+                global(mpi_mgmt_win);
                 global(mpi_sync_collective);
-                global(mpi_rma_sync_active);
-                global(mpi_rma_sync_passive);
-                global(mpi_point2point);
-                global(mpi_collective);
-                global(mpi_rma_communication);
-                global(mpi_io);
-                global(mpi_io_individual);
+                global(mpi_sync_rma_active);
+                global(mpi_sync_rma_passive);
+                global(mpi_comm_p2p);
+                global(mpi_comm_collective);
+                global(mpi_comm_rma);
+                global(mpi_file_individual);
+                global(mpi_file_collective);
+                global(mpi_file_iops);
                 global(mpi_file_irops);
                 global(mpi_file_iwops);
-                global(mpi_io_collective);
+                global(mpi_file_cops);
                 global(mpi_file_crops);
                 global(mpi_file_cwops);
-                global(mpi_init_exit);
-                global(syncs_fence);
-                global(syncs_gats_access);
-                global(syncs_gats_exposure);
-                global(syncs_locks);
-                global(comms_rma_puts);
-                global(comms_rma_gets);
 
                 // OpenMP-specific masks
+                global(omp_sync_ebarrier);
+                global(omp_sync_ibarrier);
+                global(omp_sync_critical);
+                global(omp_sync_lock_api);
+                global(omp_sync_ordered);
+                global(omp_sync_taskwait);
                 global(omp_flush);
-                global(omp_management);
-                global(omp_ebarrier);
-                global(omp_ibarrier);
-                global(omp_taskwait);
-                global(omp_critical);
-                global(omp_lock_api);
-                global(omp_ordered);
 
                 // Pthread-specific masks
-                global(pthread_management);
-                global(pthread_mutex_api);
-                global(pthread_cond_api);
+                global(pthread_mgmt);
+                global(pthread_sync_mutex);
+                global(pthread_sync_condition);
 
                 // OpenCL-specific masks
                 global(opencl);
@@ -91,7 +88,7 @@
                 ${includesOpenMP}  = 0;
                 ${includesPthread} = 0;
                 ${includesOpenCL}  = 0;
-                ${includesCUDA}  = 0;
+                ${includesCUDA}    = 0;
 
 
                 //--- Callpath categorization -------------------------------
@@ -113,15 +110,44 @@
                     //--- MPI-specific categorization ---
                     if ( ${paradigm} eq "mpi" )
                     {
-
                         ${includesMPI} = 1;
-                        
-                        // Without compiler instrumentation artificial PARALLEL region
-                        // created with MPI paradigm which should be
-                        // filtered out from MPI 
-                        if ( not ( ${name} =~ /^PARALLEL/ ) )
+
+                        // Without compiler instrumentation, an artificial PARALLEL region with
+                        // paradigm MPI is created by the adapter.  As it covers the application
+                        // execution time between MPI_Init and MPI_Finalize, it is classified as
+                        // Execution rather than MPI.
+                        if ( not ( ${name} eq "PARALLEL" ) )
                         {
-                            ${mpi}[${i}]   = 1;
+                            ${mpi}[${i}] = 1;
+                        };
+
+                        if ( ${name} =~ /^MPI_(Init(_thread|ialized){0,1}|Finalize(d){0,1})$/ )
+                        {
+                            ${mpi_mgmt_startup}[${i}] = 1;
+                        };
+
+                        if ( ${name} =~ /^MPI_(Cart_(coords|create|get|map|rank|shift|sub)|Cartdim_get|Comm_(accept|compare|connect|create(_group|_keyval){0,1}|delete_attr|disconnect|dup(_with_info){0,1}|free(_keyval){0,1}|get_(attr|info|name|parent)|group|idup|join|rank|remote_(group|size)|set_(attr|info|name)|size|spawn(_multiple){0,1}|split(_type){0,1}|test_inter)|Dims_create|Dist_graph_(create(_adjacent){0,1}|neighbors(_count){0,1})|Graph_(create|get|map|neighbors(_count){0,1})|Graphdims_get|Intercomm_(create|merge)|Topo_test|(Close|Open)_port|(Lookup|Publish|Unpublish)_name)$/ )
+                        {
+                            ${mpi_mgmt_comm}[${i}] = 1;
+                        };
+
+                        if ( ${name} =~ /^MPI_File_(close|delete|get_(amode|atomicity|byte_offset|group|info|position(_shared){0,1}|size|type_extent|view)|open|preallocate|seek(_shared){0,1}|set_(atomicity|info|size|view)|sync)$/ )
+                        {
+                            ${mpi_mgmt_file}[${i}] = 1;
+
+                            if ( ${name} =~ /(delete|get|seek)/ )
+                            {
+                                ${mpi_file_iops}[${i}] = 1;
+                            }
+                            else
+                            {
+                                ${mpi_file_cops}[${i}] = 1;
+                            };
+                        };
+
+                        if ( ${name} =~ /^MPI_Win_(allocate(_shared){0,1}|attach|create(_dynamic|_keyval){0,1}|delete_attr|detach|free(_keyval){0,1}|get_(attr|group|info|name)|set_(attr|info|name)|shared_query)$/ )
+                        {
+                            ${mpi_mgmt_win}[${i}] = 1;
                         };
 
                         if ( ${role} eq "barrier" )
@@ -129,172 +155,126 @@
                             ${mpi_sync_collective}[${i}] = 1;
                         };
 
-                        if ( ${name} =~ /^MPI_Win_(post|wait|start|complete|fence)$/ )
+                        if ( ${name} =~ /^MPI_Win_(complete|fence|post|start|test|wait)$/ )
                         {
-                            ${mpi_rma_sync_active}[${i}] = 1;
-
-                            if ( ${name} eq "MPI_Win_fence" )
-                            {
-                                ${syncs_fence}[${i}] = 1;
-                            };
-
-                            if ( ${name} eq "MPI_Win_start" )
-                            {
-                                ${syncs_gats_access}[${i}] = 1;
-                            };
-
-                            if ( ${name} eq "MPI_Win_post" )
-                            {
-                                ${syncs_gats_exposure}[${i}] = 1;
-                            };
+                            ${mpi_sync_rma_active}[${i}] = 1;
                         };
 
-                        if ( ${name} =~ /^MPI_Win_(lock|unlock)$/ )
+                        if ( ${name} =~ /^MPI_Win_((flush(_local){0,1}|lock|unlock)(_all){0,1}|sync)$/ )
                         {
-                            ${mpi_rma_sync_passive}[${i}] = 1;
-
-                            if ( ${name} eq "MPI_Win_lock" )
-                            {
-                                ${syncs_locks}[${i}] = 1;
-                            };
+                            ${mpi_sync_rma_passive}[${i}] = 1;
                         };
 
+                        // *FIXME:* Correctly classify test/wait calls
                         if (
                             ( ${role} eq "point2point" )
                             or
-                            ( ${name} =~ /^MPI_.*(buffer|cancel|get_count|request)/ )
+                            ( ${name} =~ /^MPI_(Test|Wait)(all|any|some){0,1}$/ )
                            )
                         {
-                            ${mpi_point2point}[${i}] = 1;
+                            ${mpi_comm_p2p}[${i}] = 1;
                         };
 
                         if ( ${role} =~ /^(one2all|all2one|all2all|other collective)$/ )
                         {
-                            ${mpi_collective}[${i}] = 1;
+                            ${mpi_comm_collective}[${i}] = 1;
                         };
 
-                        if ( ${name} =~ /^MPI_(Put|Get|Accumulate)$/ )
+                        if ( ${role} =~ /^(rma|atomic)$/ )
                         {
-                            ${mpi_rma_communication}[${i}] = 1;
+                            ${mpi_comm_rma}[${i}] = 1;
+                        };
 
-                            if ( ${name} eq "MPI_Get" )
+                        if ( ${name} =~ /^MPI_File_i{0,1}(read|write)(_at|_shared){0,1}$/ )
+                        {
+                            ${mpi_file_individual}[${i}] = 1;
+                            ${mpi_file_iops}[${i}]       = 1;
+
+                            if ( ${name} =~ /read/ )
                             {
-                                ${comms_rma_gets}[${i}] = 1;
+                                ${mpi_file_irops}[${i}] = 1;
                             }
                             else
                             {
-                                ${comms_rma_puts}[${i}] = 1;
+                                ${mpi_file_iwops}[${i}] = 1;
                             };
                         };
 
-                        if ( ${name} =~ /^MPI_File/ )
+                        if ( ${name} =~ /^MPI_File_((iread|iwrite)_(all|at_all)|(read|write)_(all|at_all|ordered)(_begin|_end){0,1})$/ )
                         {
-                            ${mpi_io}[${i}] = 1;
+                            ${mpi_file_collective}[${i}] = 1;
+                            ${mpi_file_cops}[${i}]       = 1;
 
-                            if (
-                                not ( ${name} =~ /^MPI_File_set_err/ )
-                                and
-                                (
-                                    ( ${name} =~ /^MPI_File_(open|close|preallocate|seek_shared|sync)$/ )
-                                    or
-                                    ( ${name} =~ /^MPI_File.*_(all|ordered|set)/ )
-                                )
-                               )
+                            if ( ${name} =~ /read/ )
                             {
-                                ${mpi_io_collective}[${i}] = 1;
-
-                                if ( ${name} =~ /^MPI_File_read.*_(all|ordered)$/ )
-                                {
-                                    ${mpi_file_crops}[${i}] = 1;
-                                };
-
-                                if ( ${name} =~ /^MPI_File_write.*_(all|ordered)$/ )
-                                {
-                                    ${mpi_file_cwops}[${i}] = 1;
-                                };
+                                ${mpi_file_crops}[${i}] = 1;
                             }
                             else
                             {
-                                ${mpi_io_individual}[${i}] = 1;
-
-                                if ( ${name} =~ /^MPI_File.*read(_at|_shared)?$/ )
-                                {
-                                    ${mpi_file_irops}[${i}] = 1;
-                                };
-
-                                if ( ${name} =~ /^MPI_File.*write(_at|_shared)?$/ )
-                                {
-                                    ${mpi_file_iwops}[${i}] = 1;
-                                };
+                                ${mpi_file_cwops}[${i}] = 1;
                             };
-                        };
-
-                        if ( ${name} =~ /^MPI_(Init|Init_thread|Finalize)$/ )
-                        {
-                            ${mpi_init_exit}[${i}] = 1;
                         };
                     }
+
+                    //--- OpenMP-specific categorization ---
                     elseif ( ${paradigm} eq "openmp" )
                     {
                         ${includesOpenMP} = 1;
+
+                        if ( ${role} eq "barrier" )
+                        {
+                            ${omp_sync_ebarrier}[${i}] = 1;
+                        };
+
+                        if ( ${role} eq "implicit barrier" )
+                        {
+                            ${omp_sync_ibarrier}[${i}] = 1;
+                        };
+
+                        if ( ${role} =~ /^(atomic|critical)$/ )
+                        {
+                            ${omp_sync_critical}[${i}] = 1;
+                        };
+
+                        if ( ${name} =~ /^omp_(destroy|init|set|test|unset)(_nest){0,1}_lock$/ )
+                        {
+                            ${omp_sync_lock_api}[${i}] = 1;
+                        };
+
+                        if ( ${role} eq "ordered" )
+                        {
+                            ${omp_sync_ordered}[${i}] = 1;
+                        };
+
+                        if ( ${role} eq "taskwait" )
+                        {
+                            ${omp_sync_taskwait}[${i}] = 1;
+                        };
 
                         if ( ${role} eq "flush" )
                         {
                             ${omp_flush}[${i}] = 1;
                         };
-
-                        if ( ${role} eq "parallel" )
-                        {
-                            ${omp_management}[${i}] = 1;
-                        };
-
-                        if ( ${role} eq "barrier" )
-                        {
-                            ${omp_ebarrier}[${i}] = 1;
-                        };
-
-                        if ( ${role} eq "implicit barrier" )
-                        {
-                            ${omp_ibarrier}[${i}] = 1;
-                        };
-
-                        if ( ${role} eq "task wait" )
-                        {
-                            ${omp_taskwait}[${i}] = 1;
-                        };
-
-                        if ( ( ${role} eq "atomic" ) or ( ${role} eq "critical" ) )
-                        {
-                            ${omp_critical}[${i}] = 1;
-                        };
-
-                        if ( ${name} =~ /^omp_(destroy|init|set|test|unset)(_nest){0,1}_lock$/ )
-                        {
-                            ${omp_lock_api}[${i}] = 1;
-                        };
-
-                        if ( ${role} eq "ordered" )
-                        {
-                            ${omp_ordered}[${i}] = 1;
-                        };
                     }
+
+                    //--- Pthread-specific categorization ---
                     elseif ( ${paradigm} eq "pthread" )
                     {
                         ${includesPthread} = 1;
 
-                        if ( ${name} =~ /^pthread_(create|join|exit|abort|cancel|detach)$/ )
+                        if ( ${name} =~ /^pthread_(cancel|create|detach|exit|join)$/ )
                         {
-                            ${pthread_management}[${i}] = 1;
+                            ${pthread_mgmt}[${i}] = 1;
                         };
 
-                        if ( ${name} =~ /^pthread_mutex_*/ )
+                        if ( ${name} =~ /^pthread_mutex_(destroy|init|lock|trylock|unlock)$/ )
                         {
-                            ${pthread_mutex_api}[${i}] = 1;
+                            ${pthread_sync_mutex}[${i}] = 1;
                         };
 
-                        if ( ${name} =~ /^pthread_cond_*/ )
+                        if ( ${name} =~ /^pthread_cond_(broadcast|destroy|init|signal|timedwait|wait)$/ )
                         {
-                            ${pthread_cond_api}[${i}] = 1;
+                            ${pthread_sync_condition}[${i}] = 1;
                         };
                     }
                     elseif ( ${paradigm} eq "opencl" )
@@ -338,7 +318,7 @@
 
                         if ( ${name} eq "BUFFER FLUSH" )
                         {
-                            ${opencl}[${i}] = 0;
+                            ${opencl}[${i}]    = 0;
                             ${execution}[${i}] = 0;
                             ${overhead}[${i}]  = 1;
                         };
@@ -415,23 +395,18 @@
 
                         if ( ${name} eq "BUFFER FLUSH" )
                         {
-                            ${cuda}[${i}] = 0;
+                            ${cuda}[${i}]      = 0;
                             ${execution}[${i}] = 0;
                             ${overhead}[${i}]  = 1;
                         };
                     }
-                    elseif (
-                        ( ${paradigm} eq "measurement" )
-                        or
-                        ( ${name} eq "BUFFER FLUSH" )
-                        or 
-                        ( ${name} eq "MEASUREMENT OFF" )
-                        or
-                        ( ( ${paradigm} eq "thread-fork-join" ) and ( ${name} eq "TASKS" ) )
-                       )
+                    elseif ( ${paradigm} eq "measurement" )
                     {
-                        ${execution}[${i}] = 0;
-                        ${overhead}[${i}]  = 1;
+                        if ( ${name} eq "TRACE BUFFER FLUSH" )
+                        {
+                            ${execution}[${i}] = 0;
+                            ${overhead}[${i}]  = 1;
+                        };
                     };
 
                     ${i} = ${i} + 1;
@@ -443,10 +418,12 @@
                 if ( ${includesMPI} == 0 )
                 {
                     cube::metric::set::mpi("value", "VOID");
+                    cube::metric::set::mpi_file_ops("value", "VOID");
                 };
                 if ( ${includesOpenMP} == 0 )
                 {
                     cube::metric::set::omp_time("value", "VOID");
+                    cube::metric::set::omp_idle_threads("value", "VOID");
                 };
                 if ( ${includesPthread} == 0 )
                 {
@@ -468,10 +445,10 @@
             </cubeplinit>
             <metric type="POSTDERIVED">
                 <disp_name>Computation</disp_name>
-                <uniq_name>comp</uniq_name>
+                <uniq_name>computation</uniq_name>
                 <dtype>FLOAT</dtype>
                 <uom>sec</uom>
-                <url>@mirror@scorep_metrics-@PACKAGE_VERSION@.html#comp</url>
+                <url>@mirror@scorep_metrics-@PACKAGE_VERSION@.html#computation</url>
                 <descr>Time spent on computation</descr>
                 <cubepl>
                     metric::execution() - metric::mpi() - metric::omp_time() - metric::pthread_time() - metric::opencl_time() - metric::cuda_time()
@@ -482,7 +459,7 @@
                     <dtype>FLOAT</dtype>
                     <uom>sec</uom>
                     <url>@mirror@scorep_metrics-@PACKAGE_VERSION@.html#opencl_kernel_executions</url>
-                    <descr>Time spend in execution of OpenCL kernels</descr>
+                    <descr>Time spent executing OpenCL kernels</descr>
                     <cubepl>
                         ${opencl_kernel_executions}[${calculation::callpath::id}] * ( metric::time(e) - metric::omp_idle_threads(e) )
                     </cubepl>
@@ -493,7 +470,7 @@
                     <dtype>FLOAT</dtype>
                     <uom>sec</uom>
                     <url>@mirror@scorep_metrics-@PACKAGE_VERSION@.html#cuda_kernel_executions</url>
-                    <descr>Time spend in execution of CUDA kernels</descr>
+                    <descr>Time spent executing CUDA kernels</descr>
                     <cubepl>
                         ${cuda_kernel_executions}[${calculation::callpath::id}] * ( metric::time(e) - metric::omp_idle_threads(e) )
                     </cubepl>
@@ -510,6 +487,61 @@
                     ${mpi}[${calculation::callpath::id}] * ( metric::time(e) - metric::omp_idle_threads(e) )
                 </cubepl>
                 <metric type="POSTDERIVED">
+                    <disp_name>Management</disp_name>
+                    <uniq_name>mpi_management</uniq_name>
+                    <dtype>FLOAT</dtype>
+                    <uom>sec</uom>
+                    <url>@mirror@scorep_metrics-@PACKAGE_VERSION@.html#mpi_management</url>
+                    <descr>Time spent in MPI management operations</descr>
+                    <cubepl>
+                        metric::mpi_init_exit() + metric::mpi_mgmt_comm() + metric::mpi_mgmt_file() + metric::mpi_mgmt_win()
+                    </cubepl>
+                    <metric type="PREDERIVED_EXCLUSIVE">
+                        <disp_name>Init/Finalize</disp_name>
+                        <uniq_name>mpi_init_exit</uniq_name>
+                        <dtype>FLOAT</dtype>
+                        <uom>sec</uom>
+                        <url>@mirror@scorep_metrics-@PACKAGE_VERSION@.html#mpi_init_exit</url>
+                        <descr>Time spent in MPI initialization/finalization calls</descr>
+                        <cubepl>
+                            ${mpi_mgmt_startup}[${calculation::callpath::id}] * ( metric::time(e) - metric::omp_idle_threads(e) )
+                        </cubepl>
+                    </metric>
+                    <metric type="PREDERIVED_EXCLUSIVE">
+                        <disp_name>Communicator</disp_name>
+                        <uniq_name>mpi_mgmt_comm</uniq_name>
+                        <dtype>FLOAT</dtype>
+                        <uom>sec</uom>
+                        <url>@mirror@scorep_metrics-@PACKAGE_VERSION@.html#mpi_mgmt_comm</url>
+                        <descr>Time spent in MPI communicator management calls</descr>
+                        <cubepl>
+                            ${mpi_mgmt_comm}[${calculation::callpath::id}] * ( metric::time(e) - metric::omp_idle_threads(e) )
+                        </cubepl>
+                    </metric>
+                    <metric type="PREDERIVED_EXCLUSIVE">
+                        <disp_name>File</disp_name>
+                        <uniq_name>mpi_mgmt_file</uniq_name>
+                        <dtype>FLOAT</dtype>
+                        <uom>sec</uom>
+                        <url>@mirror@scorep_metrics-@PACKAGE_VERSION@.html#mpi_mgmt_file</url>
+                        <descr>Time spent in MPI file management calls</descr>
+                        <cubepl>
+                            ${mpi_mgmt_file}[${calculation::callpath::id}] * ( metric::time(e) - metric::omp_idle_threads(e) )
+                        </cubepl>
+                    </metric>
+                    <metric type="PREDERIVED_EXCLUSIVE">
+                        <disp_name>Window</disp_name>
+                        <uniq_name>mpi_mgmt_win</uniq_name>
+                        <dtype>FLOAT</dtype>
+                        <uom>sec</uom>
+                        <url>@mirror@scorep_metrics-@PACKAGE_VERSION@.html#mpi_mgmt_win</url>
+                        <descr>Time spent in MPI window management calls</descr>
+                        <cubepl>
+                            ${mpi_mgmt_win}[${calculation::callpath::id}] * ( metric::time(e) - metric::omp_idle_threads(e) )
+                        </cubepl>
+                    </metric>
+                </metric>
+                <metric type="POSTDERIVED">
                     <disp_name>Synchronization</disp_name>
                     <uniq_name>mpi_synchronization</uniq_name>
                     <dtype>FLOAT</dtype>
@@ -525,18 +557,18 @@
                         <dtype>FLOAT</dtype>
                         <uom>sec</uom>
                         <url>@mirror@scorep_metrics-@PACKAGE_VERSION@.html#mpi_sync_collective</url>
-                        <descr>Time spent on MPI barriers</descr>
+                        <descr>Time spent in MPI barriers</descr>
                         <cubepl>
                             ${mpi_sync_collective}[${calculation::callpath::id}] * ( metric::time(e) - metric::omp_idle_threads(e) )
                         </cubepl>
                     </metric>
                     <metric type="POSTDERIVED">
-                        <disp_name>Remote Memory Access</disp_name>
+                        <disp_name>One-sided</disp_name>
                         <uniq_name>mpi_rma_synchronization</uniq_name>
                         <dtype>FLOAT</dtype>
                         <uom>sec</uom>
                         <url>@mirror@scorep_metrics-@PACKAGE_VERSION@.html#mpi_rma_synchronization</url>
-                        <descr>Time spent in MPI RMA synchronization calls</descr>
+                        <descr>Time spent in MPI one-sided synchronization calls</descr>
                         <cubepl>
                             metric::mpi_rma_sync_active() + metric::mpi_rma_sync_passive()
                         </cubepl>
@@ -546,9 +578,9 @@
                             <dtype>FLOAT</dtype>
                             <uom>sec</uom>
                             <url>@mirror@scorep_metrics-@PACKAGE_VERSION@.html#mpi_rma_sync_active</url>
-                            <descr>Time spent in MPI RMA active target synchronization calls</descr>
+                            <descr>Time spent in MPI one-sided active target synchronization calls</descr>
                             <cubepl>
-                                ${mpi_rma_sync_active}[${calculation::callpath::id}] * ( metric::time(e) - metric::omp_idle_threads(e) )
+                                ${mpi_sync_rma_active}[${calculation::callpath::id}] * ( metric::time(e) - metric::omp_idle_threads(e) )
                             </cubepl>
                         </metric>
                         <metric type="PREDERIVED_EXCLUSIVE">
@@ -557,9 +589,9 @@
                             <dtype>FLOAT</dtype>
                             <uom>sec</uom>
                             <url>@mirror@scorep_metrics-@PACKAGE_VERSION@.html#mpi_rma_sync_passive</url>
-                            <descr>Time spent in MPI RMA passive target synchronization calls</descr>
+                            <descr>Time spent in MPI one-sided passive target synchronization calls</descr>
                             <cubepl>
-                                ${mpi_rma_sync_passive}[${calculation::callpath::id}] * ( metric::time(e) - metric::omp_idle_threads(e) )
+                                ${mpi_sync_rma_passive}[${calculation::callpath::id}] * ( metric::time(e) - metric::omp_idle_threads(e) )
                             </cubepl>
                         </metric>
                     </metric>
@@ -580,9 +612,9 @@
                         <dtype>FLOAT</dtype>
                         <uom>sec</uom>
                         <url>@mirror@scorep_metrics-@PACKAGE_VERSION@.html#mpi_point2point</url>
-                        <descr>MPI point-to-point communication</descr>
+                        <descr>Time spent in MPI point-to-point communication</descr>
                         <cubepl>
-                            ${mpi_point2point}[${calculation::callpath::id}] * ( metric::time(e) - metric::omp_idle_threads(e) )
+                            ${mpi_comm_p2p}[${calculation::callpath::id}] * ( metric::time(e) - metric::omp_idle_threads(e) )
                         </cubepl>
                     </metric>
                     <metric type="PREDERIVED_EXCLUSIVE">
@@ -591,24 +623,24 @@
                         <dtype>FLOAT</dtype>
                         <uom>sec</uom>
                         <url>@mirror@scorep_metrics-@PACKAGE_VERSION@.html#mpi_collective</url>
-                        <descr>MPI collective communication</descr>
+                        <descr>Time spent in MPI collective communication</descr>
                         <cubepl>
-                            ${mpi_collective}[${calculation::callpath::id}] * ( metric::time(e) - metric::omp_idle_threads(e) )
+                            ${mpi_comm_collective}[${calculation::callpath::id}] * ( metric::time(e) - metric::omp_idle_threads(e) )
                         </cubepl>
                     </metric>
                     <metric type="PREDERIVED_EXCLUSIVE">
-                        <disp_name>Remote Memory Access</disp_name>
+                        <disp_name>One-sided</disp_name>
                         <uniq_name>mpi_rma_communication</uniq_name>
                         <dtype>FLOAT</dtype>
                         <uom>sec</uom>
                         <url>@mirror@scorep_metrics-@PACKAGE_VERSION@.html#mpi_rma_communication</url>
-                        <descr>MPI remote memory access communication</descr>
+                        <descr>Tiome spent in MPI one-sided communication</descr>
                         <cubepl>
-                            ${mpi_rma_communication}[${calculation::callpath::id}] * ( metric::time(e) - metric::omp_idle_threads(e) )
+                            ${mpi_comm_rma}[${calculation::callpath::id}] * ( metric::time(e) - metric::omp_idle_threads(e) )
                         </cubepl>
                     </metric>
                 </metric>
-                <metric type="PREDERIVED_EXCLUSIVE">
+                <metric type="POSTDERIVED">
                     <disp_name>File I/O</disp_name>
                     <uniq_name>mpi_io</uniq_name>
                     <dtype>FLOAT</dtype>
@@ -616,8 +648,19 @@
                     <url>@mirror@scorep_metrics-@PACKAGE_VERSION@.html#mpi_io</url>
                     <descr>Time spent in MPI file I/O calls</descr>
                     <cubepl>
-                        ${mpi_io}[${calculation::callpath::id}] * ( metric::time(e) - metric::omp_idle_threads(e) )
+                        metric::mpi_io_individual() + metric::mpi_io_collective()
                     </cubepl>
+                    <metric type="PREDERIVED_EXCLUSIVE">
+                        <disp_name>Individual</disp_name>
+                        <uniq_name>mpi_io_individual</uniq_name>
+                        <dtype>FLOAT</dtype>
+                        <uom>sec</uom>
+                        <url>@mirror@scorep_metrics-@PACKAGE_VERSION@.html#mpi_io_individual</url>
+                        <descr>Time spent in individual MPI file I/O calls</descr>
+                        <cubepl>
+                            ${mpi_file_individual}[${calculation::callpath::id}] * ( metric::time(e) - metric::omp_idle_threads(e) )
+                        </cubepl>
+                    </metric>
                     <metric type="PREDERIVED_EXCLUSIVE">
                         <disp_name>Collective</disp_name>
                         <uniq_name>mpi_io_collective</uniq_name>
@@ -626,54 +669,21 @@
                         <url>@mirror@scorep_metrics-@PACKAGE_VERSION@.html#mpi_io_collective</url>
                         <descr>Time spent in collective MPI file I/O calls</descr>
                         <cubepl>
-                            ${mpi_io_collective}[${calculation::callpath::id}] * ( metric::time(e) - metric::omp_idle_threads(e) )
+                            ${mpi_file_collective}[${calculation::callpath::id}] * ( metric::time(e) - metric::omp_idle_threads(e) )
                         </cubepl>
                     </metric>
                 </metric>
-                <metric type="PREDERIVED_EXCLUSIVE">
-                    <disp_name>Init/Exit</disp_name>
-                    <uniq_name>mpi_init_exit</uniq_name>
-                    <dtype>FLOAT</dtype>
-                    <uom>sec</uom>
-                    <url>@mirror@scorep_metrics-@PACKAGE_VERSION@.html#mpi_init_exit</url>
-                    <descr>Time spent in MPI initialization calls</descr>
-                    <cubepl>
-                        ${mpi_init_exit}[${calculation::callpath::id}] * ( metric::time(e) - metric::omp_idle_threads(e) )
-                    </cubepl>
-                </metric>
             </metric>
             <metric type="POSTDERIVED">
-                <disp_name>OMP</disp_name>
+                <disp_name>OpenMP</disp_name>
                 <uniq_name>omp_time</uniq_name>
                 <dtype>FLOAT</dtype>
                 <uom>sec</uom>
                 <url>@mirror@scorep_metrics-@PACKAGE_VERSION@.html#omp_time</url>
                 <descr>Time spent in the OpenMP run-time system and API</descr>
                 <cubepl>
-                    metric::omp_flush() + metric::omp_management() + metric::omp_synchronization()
+                    metric::omp_synchronization() + metric::omp_flush()
                 </cubepl>
-                <metric type="PREDERIVED_EXCLUSIVE">
-                    <disp_name>Flush</disp_name>
-                    <uniq_name>omp_flush</uniq_name>
-                    <dtype>FLOAT</dtype>
-                    <uom>sec</uom>
-                    <url>@mirror@scorep_metrics-@PACKAGE_VERSION@.html#omp_flush</url>
-                    <descr>Time spent in the OpenMP flush directives</descr>
-                    <cubepl>
-                        ${omp_flush}[${calculation::callpath::id}] * ( metric::time(e) - metric::omp_idle_threads(e) )
-                    </cubepl>
-                </metric>
-                <metric type="PREDERIVED_EXCLUSIVE">
-                    <disp_name>Management</disp_name>
-                    <uniq_name>omp_management</uniq_name>
-                    <dtype>FLOAT</dtype>
-                    <uom>sec</uom>
-                    <url>@mirror@scorep_metrics-@PACKAGE_VERSION@.html#omp_management</url>
-                    <descr>Time needed to start up and shut down team of threads</descr>
-                    <cubepl>
-                        ${omp_management}[${calculation::callpath::id}] * ( metric::time(e) - metric::omp_idle_threads(e) )
-                    </cubepl>
-                </metric>
                 <metric type="POSTDERIVED">
                     <disp_name>Synchronization</disp_name>
                     <uniq_name>omp_synchronization</uniq_name>
@@ -682,7 +692,7 @@
                     <url>@mirror@scorep_metrics-@PACKAGE_VERSION@.html#omp_synchronization</url>
                     <descr>Time spent on OpenMP synchronization</descr>
                     <cubepl>
-                        metric::omp_barrier() + metric::omp_critical() + metric::omp_lock_api() + metric::omp_ordered()
+                        metric::omp_barrier() + metric::omp_critical() + metric::omp_lock_api() + metric::omp_ordered() + metric::omp_taskwait()
                     </cubepl>
                     <metric type="POSTDERIVED">
                         <disp_name>Barrier</disp_name>
@@ -690,7 +700,7 @@
                         <dtype>FLOAT</dtype>
                         <uom>sec</uom>
                         <url>@mirror@scorep_metrics-@PACKAGE_VERSION@.html#omp_barrier</url>
-                        <descr>OpenMP barrier synchronization</descr>
+                        <descr>Time spent in OpenMP barrier synchronization</descr>
                         <cubepl>
                             metric::omp_ebarrier() + metric::omp_ibarrier()
                         </cubepl>
@@ -700,9 +710,9 @@
                             <dtype>FLOAT</dtype>
                             <uom>sec</uom>
                             <url>@mirror@scorep_metrics-@PACKAGE_VERSION@.html#omp_ebarrier</url>
-                            <descr>Time spent in explicit OpenMP barriers</descr>
+                            <descr>Time spent in explicit OpenMP barrier synchronization</descr>
                             <cubepl>
-                                ${omp_ebarrier}[${calculation::callpath::id}] * ( metric::time(e) - metric::omp_idle_threads(e) )
+                                ${omp_sync_ebarrier}[${calculation::callpath::id}] * ( metric::time(e) - metric::omp_idle_threads(e) )
                             </cubepl>
                         </metric>
                         <metric type="PREDERIVED_EXCLUSIVE">
@@ -711,22 +721,11 @@
                             <dtype>FLOAT</dtype>
                             <uom>sec</uom>
                             <url>@mirror@scorep_metrics-@PACKAGE_VERSION@.html#omp_ibarrier</url>
-                            <descr>Time spent in implicit OpenMP barriers</descr>
+                            <descr>Time spent in implicit OpenMP barrier synchronization</descr>
                             <cubepl>
-                                ${omp_ibarrier}[${calculation::callpath::id}] * ( metric::time(e) - metric::omp_idle_threads(e) )
+                                ${omp_sync_ibarrier}[${calculation::callpath::id}] * ( metric::time(e) - metric::omp_idle_threads(e) )
                             </cubepl>
                         </metric>
-                    </metric>
-                    <metric type="PREDERIVED_EXCLUSIVE">
-                        <disp_name>Task Wait</disp_name>
-                        <uniq_name>omp_taskwait</uniq_name>
-                        <dtype>FLOAT</dtype>
-                        <uom>sec</uom>
-                        <url>@mirror@scorep_metrics-@PACKAGE_MAJOR@.@PACKAGE_MINOR@.html#omp_taskwait</url>
-                        <descr>Time spent waiting for child tasks to finish</descr>
-                        <cubepl>
-                            ${omp_taskwait}[${calculation::callpath::id}] * ( metric::time(e) - metric::omp_idle_threads(e) )
-                        </cubepl>
                     </metric>
                     <metric type="PREDERIVED_EXCLUSIVE">
                         <disp_name>Critical</disp_name>
@@ -734,9 +733,9 @@
                         <dtype>FLOAT</dtype>
                         <uom>sec</uom>
                         <url>@mirror@scorep_metrics-@PACKAGE_VERSION@.html#omp_critical</url>
-                        <descr>Time spent in front of a critical section</descr>
+                        <descr>Time spent waiting at OpenMP critical sections</descr>
                         <cubepl>
-                            ${omp_critical}[${calculation::callpath::id}] * ( metric::time(e) - metric::omp_idle_threads(e) )
+                            ${omp_sync_critical}[${calculation::callpath::id}] * ( metric::time(e) - metric::omp_idle_threads(e) )
                         </cubepl>
                     </metric>
                     <metric type="PREDERIVED_EXCLUSIVE">
@@ -745,9 +744,9 @@
                         <dtype>FLOAT</dtype>
                         <uom>sec</uom>
                         <url>@mirror@scorep_metrics-@PACKAGE_VERSION@.html#omp_lock_api</url>
-                        <descr>Time spent in OpenMP API calls dealing with locks</descr>
+                        <descr>Time spent in OpenMP lock API calls</descr>
                         <cubepl>
-                            ${omp_lock_api}[${calculation::callpath::id}] * ( metric::time(e) - metric::omp_idle_threads(e) )
+                            ${omp_sync_lock_api}[${calculation::callpath::id}] * ( metric::time(e) - metric::omp_idle_threads(e) )
                         </cubepl>
                     </metric>
                     <metric type="PREDERIVED_EXCLUSIVE">
@@ -756,20 +755,42 @@
                         <dtype>FLOAT</dtype>
                         <uom>sec</uom>
                         <url>@mirror@scorep_metrics-@PACKAGE_VERSION@.html#omp_ordered</url>
-                        <descr>Time spent in front of an ordered region</descr>
+                        <descr>Time spent waiting at OpenMP ordered regions</descr>
                         <cubepl>
-                            ${omp_ordered}[${calculation::callpath::id}] * ( metric::time(e) - metric::omp_idle_threads(e) )
+                            ${omp_sync_ordered}[${calculation::callpath::id}] * ( metric::time(e) - metric::omp_idle_threads(e) )
+                        </cubepl>
+                    </metric>
+                    <metric type="PREDERIVED_EXCLUSIVE">
+                        <disp_name>Task Wait</disp_name>
+                        <uniq_name>omp_taskwait</uniq_name>
+                        <dtype>FLOAT</dtype>
+                        <uom>sec</uom>
+                        <url>@mirror@scorep_metrics-@PACKAGE_MAJOR@.@PACKAGE_MINOR@.html#omp_taskwait</url>
+                        <descr>Time spent waiting in OpenMP taskwait directives</descr>
+                        <cubepl>
+                            ${omp_sync_taskwait}[${calculation::callpath::id}] * ( metric::time(e) - metric::omp_idle_threads(e) )
                         </cubepl>
                     </metric>
                 </metric>
+                <metric type="PREDERIVED_EXCLUSIVE">
+                    <disp_name>Flush</disp_name>
+                    <uniq_name>omp_flush</uniq_name>
+                    <dtype>FLOAT</dtype>
+                    <uom>sec</uom>
+                    <url>@mirror@scorep_metrics-@PACKAGE_VERSION@.html#omp_flush</url>
+                    <descr>Time spent in OpenMP flush directives</descr>
+                    <cubepl>
+                        ${omp_flush}[${calculation::callpath::id}] * ( metric::time(e) - metric::omp_idle_threads(e) )
+                    </cubepl>
+                </metric>
             </metric>
             <metric type="POSTDERIVED">
-                <disp_name>Pthread</disp_name>
+                <disp_name>POSIX threads</disp_name>
                 <uniq_name>pthread_time</uniq_name>
                 <dtype>FLOAT</dtype>
                 <uom>sec</uom>
                 <url>@mirror@scorep_metrics-@PACKAGE_VERSION@.html#pthread_time</url>
-                <descr>Time spent in the Pthread run-time system and API</descr>
+                <descr>Time spent in the POSIX threads API</descr>
                 <cubepl>
                     metric::pthread_management() + metric::pthread_synchronization()
                 </cubepl>
@@ -779,9 +800,9 @@
                     <dtype>FLOAT</dtype>
                     <uom>sec</uom>
                     <url>@mirror@scorep_metrics-@PACKAGE_VERSION@.html#pthread_management</url>
-                    <descr>Time needed to start up and shut down POSIX threads</descr>
+                    <descr>Time spent in POSIX threads management</descr>
                     <cubepl>
-                        ${pthread_management}[${calculation::callpath::id}] * ( metric::time(e) - metric::omp_idle_threads(e) )
+                        ${pthread_mgmt}[${calculation::callpath::id}] * ( metric::time(e) - metric::omp_idle_threads(e) )
                     </cubepl>
                 </metric>
                 <metric type="POSTDERIVED">
@@ -792,28 +813,28 @@
                     <url>@mirror@scorep_metrics-@PACKAGE_VERSION@.html#pthread_synchronization</url>
                     <descr>Time spent on Pthread synchronization</descr>
                     <cubepl>
-                        metric::pthread_mutex_api() + metric::pthread_cond_api()
+                        metric::pthread_lock_api() + metric::pthread_conditional()
                     </cubepl>
                     <metric type="PREDERIVED_EXCLUSIVE">
                         <disp_name>Mutex</disp_name>
-                        <uniq_name>pthread_mutex_api</uniq_name>
+                        <uniq_name>pthread_lock_api</uniq_name>
                         <dtype>FLOAT</dtype>
                         <uom>sec</uom>
-                        <url>@mirror@scorep_metrics-@PACKAGE_VERSION@.html#pthread_mutex_api</url>
-                        <descr>Time spent in Pthread API calls dealing with mutexes</descr>
+                        <url>@mirror@scorep_metrics-@PACKAGE_VERSION@.html#pthread_lock_api</url>
+                        <descr>Time spent in POSIX threads mutex API calls</descr>
                         <cubepl>
-                            ${pthread_mutex_api}[${calculation::callpath::id}] * ( metric::time(e) - metric::omp_idle_threads(e) )
+                            ${pthread_sync_mutex}[${calculation::callpath::id}] * ( metric::time(e) - metric::omp_idle_threads(e) )
                         </cubepl>
                     </metric>
                     <metric type="PREDERIVED_EXCLUSIVE">
-                        <disp_name>Conditional</disp_name>
-                        <uniq_name>pthread_cond_api</uniq_name>
+                        <disp_name>Condition</disp_name>
+                        <uniq_name>pthread_conditional</uniq_name>
                         <dtype>FLOAT</dtype>
                         <uom>sec</uom>
-                        <url>@mirror@scorep_metrics-@PACKAGE_VERSION@.html#pthread_cond_api</url>
-                        <descr>Time spent in Pthread API calls dealing with conditional operations</descr>
+                        <url>@mirror@scorep_metrics-@PACKAGE_VERSION@.html#pthread_conditional</url>
+                        <descr>Time spent in POSIX threads condition API calls</descr>
                         <cubepl>
-                            ${pthread_cond_api}[${calculation::callpath::id}] * ( metric::time(e) - metric::omp_idle_threads(e) )
+                            ${pthread_sync_condition}[${calculation::callpath::id}] * ( metric::time(e) - metric::omp_idle_threads(e) )
                         </cubepl>
                     </metric>
                 </metric>
@@ -969,127 +990,6 @@
         <descr>Number of visits</descr>
     </metric>
     <metric type="POSTDERIVED">
-        <disp_name>Synchronizations</disp_name>
-        <uniq_name>syncs</uniq_name>
-        <dtype>INTEGER</dtype>
-        <uom>occ</uom>
-        <url>@mirror@scorep_metrics-@PACKAGE_VERSION@.html#syncs</url>
-        <descr>Number of synchronization operations</descr>
-        <cubepl>
-            metric::syncs_rma()
-        </cubepl>
-        <metric type="POSTDERIVED">
-            <disp_name>Remote Memory Access</disp_name>
-            <uniq_name>syncs_rma</uniq_name>
-            <dtype>INTEGER</dtype>
-            <uom>occ</uom>
-            <url>@mirror@scorep_metrics-@PACKAGE_VERSION@.html#syncs_rma</url>
-            <descr>Number of Remote Memory Access synchronizations</descr>
-            <cubepl>
-                metric::syncs_fence() + metric::syncs_gats()  + metric::syncs_locks()
-            </cubepl>
-            <metric type="PREDERIVED_EXCLUSIVE">
-                <disp_name>Fences</disp_name>
-                <uniq_name>syncs_fence</uniq_name>
-                <dtype>INTEGER</dtype>
-                <uom>occ</uom>
-                <url>@mirror@scorep_metrics-@PACKAGE_VERSION@.html#syncs_fence</url>
-                <descr>Number of fence synchronizations</descr>
-                <cubepl>
-                    ${syncs_fence}[${calculation::callpath::id}] * metric::visits(e)
-                </cubepl>
-            </metric>
-            <metric type="POSTDERIVED">
-                <disp_name>GATS Epochs</disp_name>
-                <uniq_name>syncs_gats</uniq_name>
-                <dtype>INTEGER</dtype>
-                <uom>occ</uom>
-                <url>@mirror@scorep_metrics-@PACKAGE_VERSION@.html#syncs_gats</url>
-                <descr>Number of GATS epochs</descr>
-                <cubepl>
-                    metric::syncs_gats_access() + metric::syncs_gats_exposure()
-                </cubepl>
-                <metric type="PREDERIVED_EXCLUSIVE">
-                    <disp_name>Access Epochs</disp_name>
-                    <uniq_name>syncs_gats_access</uniq_name>
-                    <dtype>INTEGER</dtype>
-                    <uom>occ</uom>
-                    <url>@mirror@scorep_metrics-@PACKAGE_VERSION@.html#syncs_gats_access</url>
-                    <descr>Number of access epochs</descr>
-                    <cubepl>
-                        ${syncs_gats_access}[${calculation::callpath::id}] * metric::visits(e)
-                    </cubepl>
-                </metric>
-                <metric type="PREDERIVED_EXCLUSIVE">
-                    <disp_name>Exposure Epochs</disp_name>
-                    <uniq_name>syncs_gats_exposure</uniq_name>
-                    <dtype>INTEGER</dtype>
-                    <uom>occ</uom>
-                    <url>@mirror@scorep_metrics-@PACKAGE_VERSION@.html#syncs_gats_exposure</url>
-                    <descr>Number of exposure epochs</descr>
-                    <cubepl>
-                        ${syncs_gats_exposure}[${calculation::callpath::id}] * metric::visits(e)
-                    </cubepl>
-                </metric>
-            </metric>
-            <metric type="PREDERIVED_EXCLUSIVE">
-                <disp_name>Lock Epochs</disp_name>
-                <uniq_name>syncs_locks</uniq_name>
-                <dtype>INTEGER</dtype>
-                <uom>occ</uom>
-                <url>@mirror@scorep_metrics-@PACKAGE_VERSION@.html#syncs_locks</url>
-                <descr>Number of lock epochs</descr>
-                <cubepl>
-                    ${syncs_locks}[${calculation::callpath::id}] * metric::visits(e)
-                </cubepl>
-            </metric>
-        </metric>
-    </metric>
-    <metric type="POSTDERIVED">
-        <disp_name>Communications</disp_name>
-        <uniq_name>comms</uniq_name>
-        <dtype>INTEGER</dtype>
-        <uom>occ</uom>
-        <url>@mirror@scorep_metrics-@PACKAGE_VERSION@.html#comms</url>
-        <descr>Number of communication operations</descr>
-        <cubepl>
-            metric::comms_rma()
-        </cubepl>
-        <metric type="POSTDERIVED">
-            <disp_name>Remote Memory Access</disp_name>
-            <uniq_name>comms_rma</uniq_name>
-            <dtype>INTEGER</dtype>
-            <uom>occ</uom>
-            <url>@mirror@scorep_metrics-@PACKAGE_VERSION@.html#comms_rma</url>
-            <descr>Number of remote memory access operations</descr>
-            <cubepl>
-                metric::comms_rma_gets() + metric::comms_rma_puts()
-            </cubepl>
-            <metric type="PREDERIVED_EXCLUSIVE">
-                <disp_name>Puts</disp_name>
-                <uniq_name>comms_rma_puts</uniq_name>
-                <dtype>INTEGER</dtype>
-                <uom>occ</uom>
-                <url>@mirror@scorep_metrics-@PACKAGE_VERSION@.html#comms_rma_puts</url>
-                <descr>Number of RMA put and accumulate operations</descr>
-                <cubepl>
-                    ${comms_rma_puts}[${calculation::callpath::id}] * metric::visits(e)
-                </cubepl>
-            </metric>
-            <metric type="PREDERIVED_EXCLUSIVE">
-                <disp_name>Gets</disp_name>
-                <uniq_name>comms_rma_gets</uniq_name>
-                <dtype>INTEGER</dtype>
-                <uom>occ</uom>
-                <url>@mirror@scorep_metrics-@PACKAGE_VERSION@.html#comms_rma_gets</url>
-                <descr>Number of RMA get operations</descr>
-                <cubepl>
-                    ${comms_rma_gets}[${calculation::callpath::id}] * metric::visits(e)
-                </cubepl>
-            </metric>
-        </metric>
-    </metric>
-    <metric type="POSTDERIVED">
         <disp_name>Bytes transferred</disp_name>
         <uniq_name>bytes</uniq_name>
         <dtype>INTEGER</dtype>
@@ -1195,7 +1095,7 @@
             </metric>
         </metric>
     </metric>
-    <metric type="PREDERIVED_EXCLUSIVE">
+    <metric type="POSTDERIVED">
         <disp_name>MPI file operations</disp_name>
         <uniq_name>mpi_file_ops</uniq_name>
         <dtype>INTEGER</dtype>
@@ -1203,7 +1103,7 @@
         <url>@mirror@scorep_metrics-@PACKAGE_VERSION@.html#mpi_file_ops</url>
         <descr>Number of MPI file operations</descr>
         <cubepl>
-            ${mpi_io}[${calculation::callpath::id}] * metric::visits(e)
+            metric::mpi_file_iops() + metric::mpi_file_cops()
         </cubepl>
         <metric type="PREDERIVED_EXCLUSIVE">
             <disp_name>Individual</disp_name>
@@ -1213,7 +1113,7 @@
             <url>@mirror@scorep_metrics-@PACKAGE_VERSION@.html#mpi_file_iops</url>
             <descr>Number of individual MPI file operations</descr>
             <cubepl>
-                ${mpi_io_individual}[${calculation::callpath::id}] * metric::visits(e)
+                ${mpi_file_iops}[${calculation::callpath::id}] * metric::visits(e)
             </cubepl>
             <metric type="PREDERIVED_EXCLUSIVE">
                 <disp_name>Reads</disp_name>
@@ -1246,7 +1146,7 @@
             <url>@mirror@scorep_metrics-@PACKAGE_VERSION@.html#mpi_file_cops</url>
             <descr>Number of collective MPI file operations</descr>
             <cubepl>
-                ${mpi_io_collective}[${calculation::callpath::id}] * metric::visits(e)
+                ${mpi_file_cops}[${calculation::callpath::id}] * metric::visits(e)
             </cubepl>
             <metric type="PREDERIVED_EXCLUSIVE">
                 <disp_name>Reads</disp_name>

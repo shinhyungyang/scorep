@@ -7,7 +7,7 @@
  * Copyright (c) 2009-2013,
  * Gesellschaft fuer numerische Simulation mbH Braunschweig, Germany
  *
- * Copyright (c) 2009-2014,
+ * Copyright (c) 2009-2014, 2016,
  * Technische Universitaet Dresden, Germany
  *
  * Copyright (c) 2009-2013,
@@ -42,8 +42,6 @@
 #include <stdbool.h>
 #include <SCOREP_Location.h>
 #include <SCOREP_Memory.h>
-#include <SCOREP_Profile.h>
-#include <tracing/SCOREP_Tracing_ThreadInteraction.h>
 
 void
 SCOREP_Location_Initialize( void );
@@ -61,6 +59,10 @@ SCOREP_Location_Finalize( void );
 
 SCOREP_Location*
 SCOREP_Location_CreateCPULocation( const char* name );
+
+/* Called from InitMeasurement to initialize all locations created at init time. */
+void
+SCOREP_Location_ActivateInitLocations( void );
 
 /**
  * Returns the current number of locations.

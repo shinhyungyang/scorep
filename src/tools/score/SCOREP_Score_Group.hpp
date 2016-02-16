@@ -28,15 +28,15 @@
  *
  */
 
+#ifndef SCOREP_SCORE_GROUP_HPP
+#define SCOREP_SCORE_GROUP_HPP
+
 /**
  * @file
  *
  * @brief      Defines a class which represents a group in the
  *             scorep-score tool.
  */
-
-#ifndef SCOREP_SCORE_GROUP_H
-#define SCOREP_SCORE_GROUP_H
 
 #include "SCOREP_Score_Types.hpp"
 #include <string>
@@ -225,4 +225,4 @@ private:
     SCOREP_Score_FilterState m_filter;
 };
 
-#endif
+#endif // SCOREP_SCORE_GROUP_HPP

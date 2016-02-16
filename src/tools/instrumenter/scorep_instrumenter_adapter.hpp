@@ -4,7 +4,7 @@
  * Copyright (c) 2013,
  * Forschungszentrum Juelich GmbH, Germany
  *
- * Copyright (c) 2014-2015,
+ * Copyright (c) 2014-2016,
  * Technische Universitaet Dresden, Germany
  *
  * This software may be modified and distributed under the terms of
@@ -46,6 +46,7 @@ typedef enum
     SCOREP_INSTRUMENTER_ADAPTER_USER,
     SCOREP_INSTRUMENTER_ADAPTER_PTHREAD,
     SCOREP_INSTRUMENTER_ADAPTER_OPENCL,
+    SCOREP_INSTRUMENTER_ADAPTER_MEMORY,
 
     /* Should stay last element in enum */
     SCOREP_INSTRUMENTER_ADAPTER_NUM
@@ -65,7 +66,7 @@ class SCOREP_Instrumenter_CmdLine;
  * Type to list available adapters.
  */
 typedef std::map<SCOREP_Instrumenter_AdapterId, SCOREP_Instrumenter_Adapter*>
-SCOREP_Instrumenter_AdapterList;
+    SCOREP_Instrumenter_AdapterList;
 
 /* **************************************************************************************
  * class SCOREP_Instrumenter_Adapter
@@ -268,6 +269,14 @@ public:
     virtual void
     checkCompilerName( const std::string& compiler );
 
+    /**
+     * Called before the link step in all paradigms to perform object file based
+     * checks.
+     * @param instrumenter  Pointer to the instrumenter instance.
+     */
+    virtual void
+    checkObjects( SCOREP_Instrumenter& instrumenter );
+
 protected:
     /**
      * If the instrumentation approach represented by this adapter is not
@@ -437,6 +446,13 @@ public:
     checkAllCompilerName( const std::string& compiler );
 
     /**
+     * Let all paradigms check the object files.
+     * @param instrumenter The instrumenter instance.
+     */
+    static void
+    checkAllObjects( SCOREP_Instrumenter& instrumenter );
+
+    /**
      * Returns the adapter, specified by the @a id. This function may not
      * work during the adapter construction.
      * @param id The identifier of the adapter you want to get.
@@ -500,4 +516,4 @@ private:
     static SCOREP_Instrumenter_AdapterList m_adapter_list;
 };
 
-#endif
+#endif // SCOREP_INSTRUMENTER_ADAPTER_HPP

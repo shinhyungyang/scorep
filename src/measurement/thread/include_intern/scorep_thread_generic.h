@@ -1,6 +1,3 @@
-#ifndef SCOREP_THREAD_GENERIC_H_
-#define SCOREP_THREAD_GENERIC_H_
-
 /*
  * This file is part of the Score-P software (http://www.score-p.org)
  *
@@ -16,6 +13,8 @@
  *
  */
 
+#ifndef SCOREP_THREAD_GENERIC_H
+#define SCOREP_THREAD_GENERIC_H
 
 /**
  * @file
@@ -158,4 +157,4 @@ scorep_thread_set_team( struct scorep_thread_private_data* tpd,
                         SCOREP_InterimCommunicatorHandle   team );
 
 
-#endif /* SCOREP_THREAD_GENERIC_H_ */
+#endif /* SCOREP_THREAD_GENERIC_H */

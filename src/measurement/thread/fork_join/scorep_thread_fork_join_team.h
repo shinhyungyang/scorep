@@ -1,5 +1,5 @@
 /*
- * This file is part of the SCOREP project (http://www.scorep.de)
+ * This file is part of the Score-P software (http://www.score-p.org)
  *
  * Copyright (c) 2009-2013,
  * RWTH Aachen University, Germany
@@ -45,7 +45,7 @@
 
 struct SCOREP_Location;
 
-size_t scorep_thread_fork_join_subsystem_id;
+extern size_t scorep_thread_fork_join_subsystem_id;
 
 struct scorep_thread_team_data
 {

@@ -58,6 +58,8 @@
 #include <string.h>
 #include <strings.h>
 
+/* We do wrap deprecated functions here, but we don't want warnings */
+#define OMPI_WANT_MPI_INTERFACE_WARNING 0
 #include "SCOREP_Mpi.h"
 
 /* Placeholder for MPI functions which are not communicative */
@@ -98,7 +100,7 @@ scorep_mpi_register_regions( void )
                                           SCOREP_INVALID_LINE_NO,
                                           SCOREP_INVALID_LINE_NO,
                                           SCOREP_PARADIGM_MPI,
-                                          SCOREP_REGION_NONE );
+                                          SCOREP_REGION_ATOMIC );
     }
 #endif
 #if HAVE( DECL_PMPI_ADD_ERROR_CLASS ) && !defined( SCOREP_MPI_NO_EXTRA ) && !defined( SCOREP_MPI_NO_ERR ) && !defined( MPI_Add_error_class )
@@ -189,7 +191,7 @@ scorep_mpi_register_regions( void )
                                           SCOREP_INVALID_LINE_NO,
                                           SCOREP_INVALID_LINE_NO,
                                           SCOREP_PARADIGM_MPI,
-                                          SCOREP_REGION_NONE );
+                                          SCOREP_REGION_ALLOCATE );
     }
 #endif
 #if HAVE( DECL_PMPI_ALLREDUCE ) && !defined( SCOREP_MPI_NO_COLL ) && !defined( MPI_Allreduce )
@@ -982,7 +984,7 @@ scorep_mpi_register_regions( void )
                                           SCOREP_INVALID_LINE_NO,
                                           SCOREP_INVALID_LINE_NO,
                                           SCOREP_PARADIGM_MPI,
-                                          SCOREP_REGION_NONE );
+                                          SCOREP_REGION_ATOMIC );
     }
 #endif
 #if HAVE( DECL_PMPI_DIMS_CREATE ) && !defined( SCOREP_MPI_NO_EXTRA ) && !defined( SCOREP_MPI_NO_TOPO ) && !defined( MPI_Dims_create )
@@ -1151,7 +1153,7 @@ scorep_mpi_register_regions( void )
                                           SCOREP_INVALID_LINE_NO,
                                           SCOREP_INVALID_LINE_NO,
                                           SCOREP_PARADIGM_MPI,
-                                          SCOREP_REGION_NONE );
+                                          SCOREP_REGION_ATOMIC );
     }
 #endif
 #if HAVE( DECL_PMPI_FILE_C2F ) && !defined( SCOREP_MPI_NO_IO ) && !defined( SCOREP_MPI_NO_EXTRA ) && !defined( SCOREP_MPI_NO_MISC ) && !defined( MPI_File_c2f )
@@ -1983,7 +1985,7 @@ scorep_mpi_register_regions( void )
                                           SCOREP_INVALID_LINE_NO,
                                           SCOREP_INVALID_LINE_NO,
                                           SCOREP_PARADIGM_MPI,
-                                          SCOREP_REGION_NONE );
+                                          SCOREP_REGION_DEALLOCATE );
     }
 #endif
 #if HAVE( DECL_PMPI_GATHER ) && !defined( SCOREP_MPI_NO_COLL ) && !defined( MPI_Gather )
@@ -2022,7 +2024,7 @@ scorep_mpi_register_regions( void )
                                           SCOREP_INVALID_LINE_NO,
                                           SCOREP_INVALID_LINE_NO,
                                           SCOREP_PARADIGM_MPI,
-                                          SCOREP_REGION_NONE );
+                                          SCOREP_REGION_RMA );
     }
 #endif
 #if HAVE( DECL_PMPI_GET_ACCUMULATE ) && !defined( SCOREP_MPI_NO_RMA ) && !defined( MPI_Get_accumulate )
@@ -2035,7 +2037,7 @@ scorep_mpi_register_regions( void )
                                           SCOREP_INVALID_LINE_NO,
                                           SCOREP_INVALID_LINE_NO,
                                           SCOREP_PARADIGM_MPI,
-                                          SCOREP_REGION_NONE );
+                                          SCOREP_REGION_ATOMIC );
     }
 #endif
 #if HAVE( DECL_PMPI_GET_ADDRESS ) && !defined( SCOREP_MPI_NO_EXTRA ) && !defined( SCOREP_MPI_NO_MISC ) && !defined( MPI_Get_address )
@@ -2425,7 +2427,7 @@ scorep_mpi_register_regions( void )
                                           SCOREP_INVALID_LINE_NO,
                                           SCOREP_INVALID_LINE_NO,
                                           SCOREP_PARADIGM_MPI,
-                                          SCOREP_REGION_NONE );
+                                          SCOREP_REGION_COLL_ALL2ALL );
     }
 #endif
 #if HAVE( DECL_PMPI_IALLGATHERV ) && !defined( SCOREP_MPI_NO_COLL ) && !defined( MPI_Iallgatherv )
@@ -2438,7 +2440,7 @@ scorep_mpi_register_regions( void )
                                           SCOREP_INVALID_LINE_NO,
                                           SCOREP_INVALID_LINE_NO,
                                           SCOREP_PARADIGM_MPI,
-                                          SCOREP_REGION_NONE );
+                                          SCOREP_REGION_COLL_ALL2ALL );
     }
 #endif
 #if HAVE( DECL_PMPI_IALLREDUCE ) && !defined( SCOREP_MPI_NO_COLL ) && !defined( MPI_Iallreduce )
@@ -2451,7 +2453,7 @@ scorep_mpi_register_regions( void )
                                           SCOREP_INVALID_LINE_NO,
                                           SCOREP_INVALID_LINE_NO,
                                           SCOREP_PARADIGM_MPI,
-                                          SCOREP_REGION_NONE );
+                                          SCOREP_REGION_COLL_ALL2ALL );
     }
 #endif
 #if HAVE( DECL_PMPI_IALLTOALL ) && !defined( SCOREP_MPI_NO_COLL ) && !defined( MPI_Ialltoall )
@@ -2464,7 +2466,7 @@ scorep_mpi_register_regions( void )
                                           SCOREP_INVALID_LINE_NO,
                                           SCOREP_INVALID_LINE_NO,
                                           SCOREP_PARADIGM_MPI,
-                                          SCOREP_REGION_NONE );
+                                          SCOREP_REGION_COLL_ALL2ALL );
     }
 #endif
 #if HAVE( DECL_PMPI_IALLTOALLV ) && !defined( SCOREP_MPI_NO_COLL ) && !defined( MPI_Ialltoallv )
@@ -2477,7 +2479,7 @@ scorep_mpi_register_regions( void )
                                           SCOREP_INVALID_LINE_NO,
                                           SCOREP_INVALID_LINE_NO,
                                           SCOREP_PARADIGM_MPI,
-                                          SCOREP_REGION_NONE );
+                                          SCOREP_REGION_COLL_ALL2ALL );
     }
 #endif
 #if HAVE( DECL_PMPI_IALLTOALLW ) && !defined( SCOREP_MPI_NO_COLL ) && !defined( MPI_Ialltoallw )
@@ -2490,7 +2492,7 @@ scorep_mpi_register_regions( void )
                                           SCOREP_INVALID_LINE_NO,
                                           SCOREP_INVALID_LINE_NO,
                                           SCOREP_PARADIGM_MPI,
-                                          SCOREP_REGION_NONE );
+                                          SCOREP_REGION_COLL_ALL2ALL );
     }
 #endif
 #if HAVE( DECL_PMPI_IBARRIER ) && !defined( SCOREP_MPI_NO_COLL ) && !defined( MPI_Ibarrier )
@@ -2503,7 +2505,7 @@ scorep_mpi_register_regions( void )
                                           SCOREP_INVALID_LINE_NO,
                                           SCOREP_INVALID_LINE_NO,
                                           SCOREP_PARADIGM_MPI,
-                                          SCOREP_REGION_NONE );
+                                          SCOREP_REGION_BARRIER );
     }
 #endif
 #if HAVE( DECL_PMPI_IBCAST ) && !defined( SCOREP_MPI_NO_COLL ) && !defined( MPI_Ibcast )
@@ -2516,7 +2518,7 @@ scorep_mpi_register_regions( void )
                                           SCOREP_INVALID_LINE_NO,
                                           SCOREP_INVALID_LINE_NO,
                                           SCOREP_PARADIGM_MPI,
-                                          SCOREP_REGION_NONE );
+                                          SCOREP_REGION_COLL_ONE2ALL );
     }
 #endif
 #if HAVE( DECL_PMPI_IBSEND ) && !defined( SCOREP_MPI_NO_P2P ) && !defined( MPI_Ibsend )
@@ -2542,7 +2544,7 @@ scorep_mpi_register_regions( void )
                                           SCOREP_INVALID_LINE_NO,
                                           SCOREP_INVALID_LINE_NO,
                                           SCOREP_PARADIGM_MPI,
-                                          SCOREP_REGION_NONE );
+                                          SCOREP_REGION_COLL_OTHER );
     }
 #endif
 #if HAVE( DECL_PMPI_IGATHER ) && !defined( SCOREP_MPI_NO_COLL ) && !defined( MPI_Igather )
@@ -2555,7 +2557,7 @@ scorep_mpi_register_regions( void )
                                           SCOREP_INVALID_LINE_NO,
                                           SCOREP_INVALID_LINE_NO,
                                           SCOREP_PARADIGM_MPI,
-                                          SCOREP_REGION_NONE );
+                                          SCOREP_REGION_COLL_ALL2ONE );
     }
 #endif
 #if HAVE( DECL_PMPI_IGATHERV ) && !defined( SCOREP_MPI_NO_COLL ) && !defined( MPI_Igatherv )
@@ -2568,7 +2570,7 @@ scorep_mpi_register_regions( void )
                                           SCOREP_INVALID_LINE_NO,
                                           SCOREP_INVALID_LINE_NO,
                                           SCOREP_PARADIGM_MPI,
-                                          SCOREP_REGION_NONE );
+                                          SCOREP_REGION_COLL_ALL2ONE );
     }
 #endif
 #if HAVE( DECL_PMPI_IMPROBE ) && !defined( SCOREP_MPI_NO_EXTRA ) && !defined( SCOREP_MPI_NO_P2P ) && !defined( MPI_Improbe )
@@ -2581,7 +2583,7 @@ scorep_mpi_register_regions( void )
                                           SCOREP_INVALID_LINE_NO,
                                           SCOREP_INVALID_LINE_NO,
                                           SCOREP_PARADIGM_MPI,
-                                          SCOREP_REGION_NONE );
+                                          SCOREP_REGION_POINT2POINT );
     }
 #endif
 #if HAVE( DECL_PMPI_IMRECV ) && !defined( SCOREP_MPI_NO_P2P ) && !defined( MPI_Imrecv )
@@ -2594,7 +2596,7 @@ scorep_mpi_register_regions( void )
                                           SCOREP_INVALID_LINE_NO,
                                           SCOREP_INVALID_LINE_NO,
                                           SCOREP_PARADIGM_MPI,
-                                          SCOREP_REGION_NONE );
+                                          SCOREP_REGION_POINT2POINT );
     }
 #endif
 #if HAVE( DECL_PMPI_INEIGHBOR_ALLGATHER )
@@ -2607,7 +2609,7 @@ scorep_mpi_register_regions( void )
                                           SCOREP_INVALID_LINE_NO,
                                           SCOREP_INVALID_LINE_NO,
                                           SCOREP_PARADIGM_MPI,
-                                          SCOREP_REGION_NONE );
+                                          SCOREP_REGION_COLL_ALL2ALL );
     }
 #endif
 #if HAVE( DECL_PMPI_INEIGHBOR_ALLGATHERV ) && !defined( SCOREP_MPI_NO_TOPO ) && !defined( MPI_Ineighbor_allgatherv )
@@ -2620,7 +2622,7 @@ scorep_mpi_register_regions( void )
                                           SCOREP_INVALID_LINE_NO,
                                           SCOREP_INVALID_LINE_NO,
                                           SCOREP_PARADIGM_MPI,
-                                          SCOREP_REGION_NONE );
+                                          SCOREP_REGION_COLL_ALL2ALL );
     }
 #endif
 #if HAVE( DECL_PMPI_INEIGHBOR_ALLTOALL ) && !defined( SCOREP_MPI_NO_TOPO ) && !defined( MPI_Ineighbor_alltoall )
@@ -2633,7 +2635,7 @@ scorep_mpi_register_regions( void )
                                           SCOREP_INVALID_LINE_NO,
                                           SCOREP_INVALID_LINE_NO,
                                           SCOREP_PARADIGM_MPI,
-                                          SCOREP_REGION_NONE );
+                                          SCOREP_REGION_COLL_ALL2ALL );
     }
 #endif
 #if HAVE( DECL_PMPI_INEIGHBOR_ALLTOALLV ) && !defined( SCOREP_MPI_NO_TOPO ) && !defined( MPI_Ineighbor_alltoallv )
@@ -2646,7 +2648,7 @@ scorep_mpi_register_regions( void )
                                           SCOREP_INVALID_LINE_NO,
                                           SCOREP_INVALID_LINE_NO,
                                           SCOREP_PARADIGM_MPI,
-                                          SCOREP_REGION_NONE );
+                                          SCOREP_REGION_COLL_ALL2ALL );
     }
 #endif
 #if HAVE( DECL_PMPI_INEIGHBOR_ALLTOALLW ) && !defined( SCOREP_MPI_NO_TOPO ) && !defined( MPI_Ineighbor_alltoallw )
@@ -2659,7 +2661,7 @@ scorep_mpi_register_regions( void )
                                           SCOREP_INVALID_LINE_NO,
                                           SCOREP_INVALID_LINE_NO,
                                           SCOREP_PARADIGM_MPI,
-                                          SCOREP_REGION_NONE );
+                                          SCOREP_REGION_COLL_ALL2ALL );
     }
 #endif
 #if HAVE( DECL_PMPI_INFO_C2F ) && !defined( SCOREP_MPI_NO_EXTRA ) && !defined( SCOREP_MPI_NO_MISC ) && !defined( MPI_Info_c2f )
@@ -2906,7 +2908,7 @@ scorep_mpi_register_regions( void )
                                           SCOREP_INVALID_LINE_NO,
                                           SCOREP_INVALID_LINE_NO,
                                           SCOREP_PARADIGM_MPI,
-                                          SCOREP_REGION_NONE );
+                                          SCOREP_REGION_COLL_ALL2ONE );
     }
 #endif
 #if HAVE( DECL_PMPI_IREDUCE_SCATTER ) && !defined( SCOREP_MPI_NO_COLL ) && !defined( MPI_Ireduce_scatter )
@@ -2919,7 +2921,7 @@ scorep_mpi_register_regions( void )
                                           SCOREP_INVALID_LINE_NO,
                                           SCOREP_INVALID_LINE_NO,
                                           SCOREP_PARADIGM_MPI,
-                                          SCOREP_REGION_NONE );
+                                          SCOREP_REGION_COLL_ALL2ALL );
     }
 #endif
 #if HAVE( DECL_PMPI_IREDUCE_SCATTER_BLOCK ) && !defined( SCOREP_MPI_NO_COLL ) && !defined( MPI_Ireduce_scatter_block )
@@ -2932,7 +2934,7 @@ scorep_mpi_register_regions( void )
                                           SCOREP_INVALID_LINE_NO,
                                           SCOREP_INVALID_LINE_NO,
                                           SCOREP_PARADIGM_MPI,
-                                          SCOREP_REGION_NONE );
+                                          SCOREP_REGION_COLL_ALL2ALL );
     }
 #endif
 #if HAVE( DECL_PMPI_IRSEND ) && !defined( SCOREP_MPI_NO_P2P ) && !defined( MPI_Irsend )
@@ -2971,7 +2973,7 @@ scorep_mpi_register_regions( void )
                                           SCOREP_INVALID_LINE_NO,
                                           SCOREP_INVALID_LINE_NO,
                                           SCOREP_PARADIGM_MPI,
-                                          SCOREP_REGION_NONE );
+                                          SCOREP_REGION_COLL_OTHER );
     }
 #endif
 #if HAVE( DECL_PMPI_ISCATTER ) && !defined( SCOREP_MPI_NO_COLL ) && !defined( MPI_Iscatter )
@@ -2984,7 +2986,7 @@ scorep_mpi_register_regions( void )
                                           SCOREP_INVALID_LINE_NO,
                                           SCOREP_INVALID_LINE_NO,
                                           SCOREP_PARADIGM_MPI,
-                                          SCOREP_REGION_NONE );
+                                          SCOREP_REGION_COLL_ONE2ALL );
     }
 #endif
 #if HAVE( DECL_PMPI_ISCATTERV ) && !defined( SCOREP_MPI_NO_COLL ) && !defined( MPI_Iscatterv )
@@ -2997,7 +2999,7 @@ scorep_mpi_register_regions( void )
                                           SCOREP_INVALID_LINE_NO,
                                           SCOREP_INVALID_LINE_NO,
                                           SCOREP_PARADIGM_MPI,
-                                          SCOREP_REGION_NONE );
+                                          SCOREP_REGION_COLL_ONE2ALL );
     }
 #endif
 #if HAVE( DECL_PMPI_ISEND ) && !defined( SCOREP_MPI_NO_P2P ) && !defined( MPI_Isend )
@@ -3075,7 +3077,7 @@ scorep_mpi_register_regions( void )
                                           SCOREP_INVALID_LINE_NO,
                                           SCOREP_INVALID_LINE_NO,
                                           SCOREP_PARADIGM_MPI,
-                                          SCOREP_REGION_NONE );
+                                          SCOREP_REGION_POINT2POINT );
     }
 #endif
 #if HAVE( DECL_PMPI_MRECV ) && !defined( SCOREP_MPI_NO_P2P ) && !defined( MPI_Mrecv )
@@ -3088,7 +3090,7 @@ scorep_mpi_register_regions( void )
                                           SCOREP_INVALID_LINE_NO,
                                           SCOREP_INVALID_LINE_NO,
                                           SCOREP_PARADIGM_MPI,
-                                          SCOREP_REGION_NONE );
+                                          SCOREP_REGION_POINT2POINT );
     }
 #endif
 #if HAVE( DECL_PMPI_NEIGHBOR_ALLGATHER )
@@ -3101,7 +3103,7 @@ scorep_mpi_register_regions( void )
                                           SCOREP_INVALID_LINE_NO,
                                           SCOREP_INVALID_LINE_NO,
                                           SCOREP_PARADIGM_MPI,
-                                          SCOREP_REGION_NONE );
+                                          SCOREP_REGION_COLL_ALL2ALL );
     }
 #endif
 #if HAVE( DECL_PMPI_NEIGHBOR_ALLGATHERV ) && !defined( SCOREP_MPI_NO_TOPO ) && !defined( MPI_Neighbor_allgatherv )
@@ -3114,7 +3116,7 @@ scorep_mpi_register_regions( void )
                                           SCOREP_INVALID_LINE_NO,
                                           SCOREP_INVALID_LINE_NO,
                                           SCOREP_PARADIGM_MPI,
-                                          SCOREP_REGION_NONE );
+                                          SCOREP_REGION_COLL_ALL2ALL );
     }
 #endif
 #if HAVE( DECL_PMPI_NEIGHBOR_ALLTOALL ) && !defined( SCOREP_MPI_NO_TOPO ) && !defined( MPI_Neighbor_alltoall )
@@ -3127,7 +3129,7 @@ scorep_mpi_register_regions( void )
                                           SCOREP_INVALID_LINE_NO,
                                           SCOREP_INVALID_LINE_NO,
                                           SCOREP_PARADIGM_MPI,
-                                          SCOREP_REGION_NONE );
+                                          SCOREP_REGION_COLL_ALL2ALL );
     }
 #endif
 #if HAVE( DECL_PMPI_NEIGHBOR_ALLTOALLV ) && !defined( SCOREP_MPI_NO_TOPO ) && !defined( MPI_Neighbor_alltoallv )
@@ -3140,7 +3142,7 @@ scorep_mpi_register_regions( void )
                                           SCOREP_INVALID_LINE_NO,
                                           SCOREP_INVALID_LINE_NO,
                                           SCOREP_PARADIGM_MPI,
-                                          SCOREP_REGION_NONE );
+                                          SCOREP_REGION_COLL_ALL2ALL );
     }
 #endif
 #if HAVE( DECL_PMPI_NEIGHBOR_ALLTOALLW ) && !defined( SCOREP_MPI_NO_TOPO ) && !defined( MPI_Neighbor_alltoallw )
@@ -3153,7 +3155,7 @@ scorep_mpi_register_regions( void )
                                           SCOREP_INVALID_LINE_NO,
                                           SCOREP_INVALID_LINE_NO,
                                           SCOREP_PARADIGM_MPI,
-                                          SCOREP_REGION_NONE );
+                                          SCOREP_REGION_COLL_ALL2ALL );
     }
 #endif
 #if HAVE( DECL_PMPI_OP_C2F ) && !defined( SCOREP_MPI_NO_EXTRA ) && !defined( SCOREP_MPI_NO_MISC ) && !defined( MPI_Op_c2f )
@@ -3335,7 +3337,7 @@ scorep_mpi_register_regions( void )
                                           SCOREP_INVALID_LINE_NO,
                                           SCOREP_INVALID_LINE_NO,
                                           SCOREP_PARADIGM_MPI,
-                                          SCOREP_REGION_NONE );
+                                          SCOREP_REGION_RMA );
     }
 #endif
 #if HAVE( DECL_PMPI_QUERY_THREAD ) && !defined( SCOREP_MPI_NO_EXTRA ) && !defined( SCOREP_MPI_NO_ENV ) && !defined( MPI_Query_thread )
@@ -3361,7 +3363,7 @@ scorep_mpi_register_regions( void )
                                           SCOREP_INVALID_LINE_NO,
                                           SCOREP_INVALID_LINE_NO,
                                           SCOREP_PARADIGM_MPI,
-                                          SCOREP_REGION_NONE );
+                                          SCOREP_REGION_ATOMIC );
     }
 #endif
 #if HAVE( DECL_PMPI_RECV ) && !defined( SCOREP_MPI_NO_P2P ) && !defined( MPI_Recv )
@@ -3517,7 +3519,7 @@ scorep_mpi_register_regions( void )
                                           SCOREP_INVALID_LINE_NO,
                                           SCOREP_INVALID_LINE_NO,
                                           SCOREP_PARADIGM_MPI,
-                                          SCOREP_REGION_NONE );
+                                          SCOREP_REGION_RMA );
     }
 #endif
 #if HAVE( DECL_PMPI_RGET_ACCUMULATE ) && !defined( SCOREP_MPI_NO_RMA ) && !defined( MPI_Rget_accumulate )
@@ -3530,7 +3532,7 @@ scorep_mpi_register_regions( void )
                                           SCOREP_INVALID_LINE_NO,
                                           SCOREP_INVALID_LINE_NO,
                                           SCOREP_PARADIGM_MPI,
-                                          SCOREP_REGION_NONE );
+                                          SCOREP_REGION_ATOMIC );
     }
 #endif
 #if HAVE( DECL_PMPI_RPUT ) && !defined( SCOREP_MPI_NO_RMA ) && !defined( MPI_Rput )
@@ -3543,7 +3545,7 @@ scorep_mpi_register_regions( void )
                                           SCOREP_INVALID_LINE_NO,
                                           SCOREP_INVALID_LINE_NO,
                                           SCOREP_PARADIGM_MPI,
-                                          SCOREP_REGION_NONE );
+                                          SCOREP_REGION_RMA );
     }
 #endif
 #if HAVE( DECL_PMPI_RSEND ) && !defined( SCOREP_MPI_NO_P2P ) && !defined( MPI_Rsend )
@@ -3803,7 +3805,7 @@ scorep_mpi_register_regions( void )
                                           SCOREP_INVALID_LINE_NO,
                                           SCOREP_INVALID_LINE_NO,
                                           SCOREP_PARADIGM_MPI,
-                                          SCOREP_REGION_POINT2POINT );
+                                          SCOREP_REGION_NONE );
     }
 #endif
 #if HAVE( DECL_PMPI_TEST_CANCELLED ) && !defined( SCOREP_MPI_NO_EXTRA ) && !defined( SCOREP_MPI_NO_P2P ) && !defined( MPI_Test_cancelled )
@@ -3829,7 +3831,7 @@ scorep_mpi_register_regions( void )
                                           SCOREP_INVALID_LINE_NO,
                                           SCOREP_INVALID_LINE_NO,
                                           SCOREP_PARADIGM_MPI,
-                                          SCOREP_REGION_POINT2POINT );
+                                          SCOREP_REGION_NONE );
     }
 #endif
 #if HAVE( DECL_PMPI_TESTANY ) && !defined( SCOREP_MPI_NO_P2P ) && !defined( MPI_Testany )
@@ -3842,7 +3844,7 @@ scorep_mpi_register_regions( void )
                                           SCOREP_INVALID_LINE_NO,
                                           SCOREP_INVALID_LINE_NO,
                                           SCOREP_PARADIGM_MPI,
-                                          SCOREP_REGION_POINT2POINT );
+                                          SCOREP_REGION_NONE );
     }
 #endif
 #if HAVE( DECL_PMPI_TESTSOME ) && !defined( SCOREP_MPI_NO_P2P ) && !defined( MPI_Testsome )
@@ -3855,7 +3857,7 @@ scorep_mpi_register_regions( void )
                                           SCOREP_INVALID_LINE_NO,
                                           SCOREP_INVALID_LINE_NO,
                                           SCOREP_PARADIGM_MPI,
-                                          SCOREP_REGION_POINT2POINT );
+                                          SCOREP_REGION_NONE );
     }
 #endif
 #if HAVE( DECL_PMPI_TOPO_TEST ) && !defined( SCOREP_MPI_NO_EXTRA ) && !defined( SCOREP_MPI_NO_TOPO ) && !defined( MPI_Topo_test )
@@ -4453,7 +4455,7 @@ scorep_mpi_register_regions( void )
                                           SCOREP_INVALID_LINE_NO,
                                           SCOREP_INVALID_LINE_NO,
                                           SCOREP_PARADIGM_MPI,
-                                          SCOREP_REGION_POINT2POINT );
+                                          SCOREP_REGION_NONE );
     }
 #endif
 #if HAVE( DECL_PMPI_WAITALL ) && !defined( SCOREP_MPI_NO_P2P ) && !defined( MPI_Waitall )
@@ -4466,7 +4468,7 @@ scorep_mpi_register_regions( void )
                                           SCOREP_INVALID_LINE_NO,
                                           SCOREP_INVALID_LINE_NO,
                                           SCOREP_PARADIGM_MPI,
-                                          SCOREP_REGION_POINT2POINT );
+                                          SCOREP_REGION_NONE );
     }
 #endif
 #if HAVE( DECL_PMPI_WAITANY ) && !defined( SCOREP_MPI_NO_P2P ) && !defined( MPI_Waitany )
@@ -4479,7 +4481,7 @@ scorep_mpi_register_regions( void )
                                           SCOREP_INVALID_LINE_NO,
                                           SCOREP_INVALID_LINE_NO,
                                           SCOREP_PARADIGM_MPI,
-                                          SCOREP_REGION_POINT2POINT );
+                                          SCOREP_REGION_NONE );
     }
 #endif
 #if HAVE( DECL_PMPI_WAITSOME ) && !defined( SCOREP_MPI_NO_P2P ) && !defined( MPI_Waitsome )
@@ -4492,7 +4494,7 @@ scorep_mpi_register_regions( void )
                                           SCOREP_INVALID_LINE_NO,
                                           SCOREP_INVALID_LINE_NO,
                                           SCOREP_PARADIGM_MPI,
-                                          SCOREP_REGION_POINT2POINT );
+                                          SCOREP_REGION_NONE );
     }
 #endif
 #if HAVE( DECL_PMPI_WIN_ALLOCATE ) && !defined( SCOREP_MPI_NO_RMA ) && !defined( MPI_Win_allocate )
@@ -4505,7 +4507,7 @@ scorep_mpi_register_regions( void )
                                           SCOREP_INVALID_LINE_NO,
                                           SCOREP_INVALID_LINE_NO,
                                           SCOREP_PARADIGM_MPI,
-                                          SCOREP_REGION_NONE );
+                                          SCOREP_REGION_ALLOCATE );
     }
 #endif
 #if HAVE( DECL_PMPI_WIN_ALLOCATE_SHARED ) && !defined( SCOREP_MPI_NO_RMA ) && !defined( MPI_Win_allocate_shared )
@@ -4518,7 +4520,7 @@ scorep_mpi_register_regions( void )
                                           SCOREP_INVALID_LINE_NO,
                                           SCOREP_INVALID_LINE_NO,
                                           SCOREP_PARADIGM_MPI,
-                                          SCOREP_REGION_NONE );
+                                          SCOREP_REGION_ALLOCATE );
     }
 #endif
 #if HAVE( DECL_PMPI_WIN_ATTACH ) && !defined( SCOREP_MPI_NO_RMA ) && !defined( MPI_Win_attach )

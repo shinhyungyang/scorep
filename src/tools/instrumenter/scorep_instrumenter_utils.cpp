@@ -7,7 +7,7 @@
  * Copyright (c) 2009-2013,
  * Gesellschaft fuer numerische Simulation mbH Braunschweig, Germany
  *
- * Copyright (c) 2009-2015,
+ * Copyright (c) 2009-2016,
  * Technische Universitaet Dresden, Germany
  *
  * Copyright (c) 2009-2013,
@@ -202,6 +202,7 @@ is_fortran_file( const std::string& filename )
     SCOREP_CHECK_EXT( ".F90" );
     SCOREP_CHECK_EXT( ".fpp" );
     SCOREP_CHECK_EXT( ".FPP" );
+    SCOREP_CHECK_EXT( ".for" );
     SCOREP_CHECK_EXT( ".For" );
     SCOREP_CHECK_EXT( ".FOR" );
     SCOREP_CHECK_EXT( ".Ftn" );
@@ -330,9 +331,11 @@ is_interposition_library( const std::string& library_name )
 bool
 check_lib_name(  const std::string& library_name, const std::string& value )
 {
-    std::string value_with_dot = value + ".";
+    std::string value_with_dot        = value + ".";
+    std::string value_with_underscore = value + "_";
     return ( ( library_name.length() == value.length() ) && ( library_name.substr( 0, value.length() ) == value ) ) ||
-           ( ( library_name.length() > value.length() ) && ( library_name.substr( 0, value.length() + 1 ) == value_with_dot ) );
+           ( ( library_name.length() > value.length() ) && ( library_name.substr( 0, value.length() + 1 ) == value_with_dot ) ) ||
+           ( ( library_name.length() > value.length() ) && ( library_name.substr( 0, value.length() + 1 ) == value_with_underscore ) );
 }
 
 bool
@@ -340,7 +343,10 @@ is_mpi_library( const std::string& library_name )
 {
     return check_lib_name( library_name, "mpi" ) ||
            check_lib_name( library_name, "mpich" ) ||
-           check_lib_name( library_name, "mpigf" );
+           check_lib_name( library_name, "mpigf" ) ||
+           check_lib_name( library_name, "mpigi" ) ||
+           check_lib_name( library_name, "mpifort" ) ||
+           check_lib_name( library_name, "mpicxx" );
 }
 
 bool
@@ -378,12 +384,14 @@ bool
 exists_file( const std::string& filename )
 {
     std::ifstream ifile( filename.c_str() );
-    return ifile;
+    return ( bool )ifile;
 }
 
 std::string
 find_library( std::string                     library,
-              const std::vector<std::string>& path_list )
+              const std::vector<std::string>& path_list,
+              bool                            allow_dynamic,
+              bool                            allow_static )
 {
     if ( library.substr( 0, 2 ) == "-l" )
     {
@@ -398,11 +406,11 @@ find_library( std::string                     library,
           current_libdir++ )
     {
         std::string current_path = *current_libdir + "/" + library;
-        if ( exists_file( current_path + ".so" ) )
+        if ( allow_dynamic && exists_file( current_path + ".so" ) )
         {
             return current_path + ".so";
         }
-        if ( exists_file( current_path + ".a" ) )
+        if ( allow_static && exists_file( current_path + ".a" ) )
         {
             return current_path + ".a";
         }

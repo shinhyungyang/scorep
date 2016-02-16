@@ -7,13 +7,13 @@
  * Copyright (c) 2009-2013,
  * Gesellschaft fuer numerische Simulation mbH Braunschweig, Germany
  *
- * Copyright (c) 2009-2015,
+ * Copyright (c) 2009-2016,
  * Technische Universitaet Dresden, Germany
  *
  * Copyright (c) 2009-2013,
  * University of Oregon, Eugene, USA
  *
- * Copyright (c) 2009-2015,
+ * Copyright (c) 2009-2016,
  * Forschungszentrum Juelich GmbH, Germany
  *
  * Copyright (c) 2009-2013,
@@ -56,6 +56,7 @@
 #include <UTILS_Error.h>
 #include <UTILS_Debug.h>
 #include <SCOREP_RuntimeManagement.h>
+#include <SCOREP_Profile.h>
 #include <tracing/SCOREP_Tracing_Events.h>
 
 
@@ -1356,7 +1357,9 @@ initialize_location_metric_after_mpp_init_cb( SCOREP_Location* location,
             {
                 if ( SCOREP_IsProfilingEnabled() )
                 {
-                    UTILS_WARNING( "Metrics recorded per host or system-wide are not supported in profiling mode and will be skipped." );
+                    UTILS_WARNING( "Metrics recorded per host or system-wide are "
+                                   "not supported in profiling mode. This metrics "
+                                   "will be skipped for all active substrates." );
                     break;
                 }
 
@@ -1504,7 +1507,9 @@ initialize_location_metric_after_mpp_init_cb( SCOREP_Location* location,
                 {
                     if ( SCOREP_IsProfilingEnabled() )
                     {
-                        UTILS_WARNING( "Metrics recorded per host or system-wide are not supported in profiling mode and will be skipped." );
+                        UTILS_WARNING( "Metrics recorded per host or system-wide are "
+                                       "not supported in profiling mode. This metrics "
+                                       "will be skipped for all active substrates." );
                         break;
                     }
 

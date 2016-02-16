@@ -7,7 +7,7 @@
  * Copyright (c) 2009-2011,
  * Gesellschaft fuer numerische Simulation mbH Braunschweig, Germany
  *
- * Copyright (c) 2009-2011, 2014-2015,
+ * Copyright (c) 2009-2011, 2014-2016,
  * Technische Universitaet Dresden, Germany
  *
  * Copyright (c) 2009-2011,
@@ -28,8 +28,8 @@
  *
  */
 
-#ifndef SCOREP_TAU_H_
-#define SCOREP_TAU_H_
+#ifndef SCOREP_TAU_H
+#define SCOREP_TAU_H
 
 
 
@@ -85,7 +85,7 @@ SCOREP_Tau_InitMeasurement( void );
 
 typedef uint32_t SCOREP_Tau_LineNo;
 
-typedef int ( *SCOREP_Tau_ExitCallback )( void );
+typedef int ( * SCOREP_Tau_ExitCallback )( void );
 
 
 /**
@@ -186,6 +186,10 @@ typedef enum
     SCOREP_TAU_REGION_THREAD_CREATE,
     SCOREP_TAU_REGION_THREAD_WAIT,
     SCOREP_TAU_REGION_TASK_UNTIED,
+    SCOREP_TAU_REGION_RMA,
+    SCOREP_TAU_REGION_ALLOCATE,
+    SCOREP_TAU_REGION_DEALLOCATE,
+    SCOREP_TAU_REGION_REALLOCATE,
 
     SCOREP_TAU_INVALID_REGION_TYPE /**< For internal use only. */
 } SCOREP_Tau_RegionType;
@@ -288,7 +292,7 @@ SCOREP_Tau_ExitRegion( SCOREP_Tau_RegionHandle regionHandle );
  * Tau_profile_exit_all_threads.
  */
 void
-SCOREP_Tau_RegisterExitCallback( SCOREP_Tau_ExitCallback );
+    SCOREP_Tau_RegisterExitCallback( SCOREP_Tau_ExitCallback );
 
 #define SCOREP_Tau_MetricHandle            SCOREP_SamplingSetHandle
 #define SCOREP_TAU_INIT_METRIC_HANDLE   SCOREP_INVALID_SAMPLING_SET
@@ -351,4 +355,4 @@ SCOREP_Tau_AddLocationProperty( const char* name,
 } /* extern C */
 #endif
 
-#endif /* SCOREP_TAU_H_ */
+#endif /* SCOREP_TAU_H */

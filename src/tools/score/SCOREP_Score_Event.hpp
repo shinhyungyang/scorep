@@ -1,7 +1,7 @@
 /*
  * This file is part of the Score-P software (http://www.score-p.org)
  *
- * Copyright (c) 2009-2013,
+ * Copyright (c) 2009-2013, 2016,
  * Forschungszentrum Juelich GmbH, Germany
  *
  * Copyright (c) 2015,
@@ -13,6 +13,9 @@
  *
  */
 
+#ifndef SCOREP_SCORE_EVENT_HPP
+#define SCOREP_SCORE_EVENT_HPP
+
 /**
  * @file
  *
@@ -20,16 +23,11 @@
  *             different event representations.
  */
 
-#ifndef SCOREP_SCORE_EVENT_H
-#define SCOREP_SCORE_EVENT_H
-
 #include <string>
 #include <deque>
 #include <map>
 #include <set>
 #include <stdint.h>
-
-class SCOREP_Score_Profile;
 
 /* **************************************************************************************
  * class SCOREP_Score_Event
@@ -251,4 +249,4 @@ protected:
 };
 
 
-#endif /* SCOREP_SCORE_EVENT_H */
+#endif /* SCOREP_SCORE_EVENT_HPP */

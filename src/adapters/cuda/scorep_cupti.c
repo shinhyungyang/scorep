@@ -7,7 +7,7 @@
  * Copyright (c) 2009-2013,
  * Gesellschaft fuer numerische Simulation mbH Braunschweig, Germany
  *
- * Copyright (c) 2009-2014,
+ * Copyright (c) 2009-2014, 2016,
  * Technische Universitaet Dresden, Germany
  *
  * Copyright (c) 2009-2013,
@@ -41,6 +41,7 @@
 #include "scorep_cupti_callbacks.h"
 
 #include <SCOREP_Timer_Ticks.h>
+
 #include <UTILS_CStr.h>
 
 /* String constants for CUDA attribute references */
@@ -55,7 +56,7 @@
 static scorep_cuda_kernel_hash_node* scorep_cuda_kernel_hashtab[ SCOREP_CUDA_KERNEL_HASHTABLE_SIZE ];
 
 /* mutex for locking the CUPTI environment */
-SCOREP_Mutex scorep_cupti_mutex = NULL;
+SCOREP_Mutex scorep_cupti_mutex = SCOREP_INVALID_MUTEX;
 
 /* attribute handles for CUDA references */
 scorep_cupti_attribute_handles scorep_cupti_attributes;
@@ -289,7 +290,8 @@ scorep_cupti_stream_create( scorep_cupti_context* context,
         if ( scorep_cuda_record_gpumemusage )
         {
             SCOREP_Location_TriggerCounterUint64( stream->scorep_location,
-                                                  stream->scorep_last_timestamp, scorep_cupti_sampling_set_gpumemusage, 0 );
+                                                  stream->scorep_last_timestamp,
+                                                  scorep_cupti_sampling_set_gpumemusage, 0 );
         }
     }
 

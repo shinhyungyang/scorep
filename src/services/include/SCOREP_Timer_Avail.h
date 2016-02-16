@@ -1,6 +1,3 @@
-#ifndef SCOREP_TIMER_AVAIL
-#define SCOREP_TIMER_AVAIL
-
 /*
  * This file is part of the Score-P software (http://www.score-p.org)
  *
@@ -11,6 +8,9 @@
  * a BSD-style license.  See the COPYING file in the package base
  * directory for details.
  */
+
+#ifndef SCOREP_TIMER_AVAIL_H
+#define SCOREP_TIMER_AVAIL_H
 
 /**
  * @file
@@ -30,7 +30,7 @@
  * SCOREP_Timer_GetClockTicks(). They must not be used by clients of
  * SCOREP_Timer_Ticks.h.
  */
-typedef enum timer_type timer_type;
+typedef uint64_t timer_type;
 enum timer_type
 {
 #if HAVE( BACKEND_SCOREP_TIMER_BGL )
@@ -69,4 +69,4 @@ enum timer_type
 };
 
 
-#endif /* SCOREP_TIMER_AVAIL */
+#endif /* SCOREP_TIMER_AVAIL_H */
