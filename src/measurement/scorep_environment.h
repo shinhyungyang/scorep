@@ -7,7 +7,7 @@
  * Copyright (c) 2009-2011,
  * Gesellschaft fuer numerische Simulation mbH Braunschweig, Germany
  *
- * Copyright (c) 2009-2011, 2015,
+ * Copyright (c) 2009-2011, 2015-2016,
  * Technische Universitaet Dresden, Germany
  *
  * Copyright (c) 2009-2011,
@@ -98,7 +98,7 @@ SCOREP_Env_DoProfiling( void );
  */
 
 bool
-SCOREP_Env_DoCallingContext( void );
+SCOREP_Env_DoUnwinding( void );
 
 
 UTILS_END_C_DECLS

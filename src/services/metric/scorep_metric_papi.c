@@ -786,7 +786,7 @@ scorep_metric_papi_test( scorep_metric_definition_data* metricDefinition )
 
         /* Search for the eventset that matches the counter */
         j = 0;
-        while ( event_set[ j ] != NULL && j < SCOREP_METRIC_MAXNUM && event_set[ j ]->component_id != component )
+        while ( j < SCOREP_METRIC_MAXNUM && event_set[ j ] != NULL && event_set[ j ]->component_id != component )
         {
             j++;
         }
@@ -1253,6 +1253,7 @@ const SCOREP_MetricSource SCOREP_Metric_Papi =
     &scorep_metric_papi_register,
     &scorep_metric_papi_initialize_source,
     &scorep_metric_papi_initialize_location,
+    NULL,                                         // no synchronization function needed
     &scorep_metric_papi_free,
     &scorep_metric_papi_finalize_location,
     &scorep_metric_papi_finalize_source,

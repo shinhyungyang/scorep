@@ -116,13 +116,16 @@ typedef struct SCOREP_Subsystem
     SCOREP_ErrorCode ( * subsystem_register )( size_t uniqueId );
 
     /**
-     *  The next 4 callbacks notify the subsystem about the lifetime of the whole
+     *  The next 6 callbacks notify the subsystem about the lifetime of the whole
      *  measurement:
      *
      *  1. init
      *  2. begin
-     *  3. end
-     *  4. finalize
+     *  3. init_mpp
+     *  4. synchronize(BEGIN) or synchronize(BEGIN_MPP)
+     *  5. synchronize(END)
+     *  6. end
+     *  7. finalize
      */
 
     /**
@@ -139,7 +142,7 @@ typedef struct SCOREP_Subsystem
      * It is NOT ok to trigger a subsystem_init_location callback from a
      * subsystem_init one. For locations created during initialization the
      * subsystem_init_location step will be performed at the end of
-     * SCOREP_InitMeasurement() (currently SCOREP_Thread_ActivateMaster()).
+     * SCOREP_InitMeasurement() (currently SCOREP_Location_ActivateInitLocations()).
      * It is ok to use malloc. If you need to realloc during measurement,
      * please consider not to use malloc.
      */
@@ -149,6 +152,17 @@ typedef struct SCOREP_Subsystem
      * Notifies the subsystems that Score-P enters the measurement phase.
      */
     SCOREP_ErrorCode ( * subsystem_begin )( void );
+
+    /**
+     * Notifies the subsystems that Score-P initialized the MPP. This is called
+     * in both MPP and non-MPP case.
+     */
+    SCOREP_ErrorCode ( * subsystem_init_mpp )( void );
+
+    /**
+     * Notifies the subsystems that Score-P synchronizes itself.
+     */
+    void ( * subsystem_synchronize )( SCOREP_SynchronizationMode syncMode );
 
     /**
      * Notifies the subsystems that Score-P leavs the measurement phase.

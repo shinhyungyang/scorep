@@ -7,7 +7,7 @@
  * Copyright (c) 2009-2013,
  * Gesellschaft fuer numerische Simulation mbH Braunschweig, Germany
  *
- * Copyright (c) 2009-2015,
+ * Copyright (c) 2009-2016,
  * Technische Universitaet Dresden, Germany
  *
  * Copyright (c) 2009-2013,
@@ -46,6 +46,7 @@
 #include <fstream>
 #include <iomanip>
 #include <deque>
+#include <limits>
 
 using namespace std;
 
@@ -217,7 +218,7 @@ get_temp_filename( void )
             return filename.str();
         }
 
-        cerr << "ERROR: Failed to find writable directory for temporary files." << endl;
+        cerr << "ERROR: Failed to find writable directory for temporary files" << endl;
         exit( EXIT_FAILURE );
     }
 
@@ -469,7 +470,7 @@ SCOREP_Score_Estimator::initializeFilter( string filterFile )
 
     if ( err != SCOREP_SUCCESS )
     {
-        cerr << "ERROR: Failed to open '" << filterFile << "'." << endl;
+        cerr << "ERROR: Failed to open '" << filterFile << "'" << endl;
         exit( EXIT_FAILURE );
     }
 
@@ -517,7 +518,7 @@ SCOREP_Score_Estimator::calculate( bool showRegions, bool useMangled )
         uint64_t      group           = m_profile->getGroup( region );
         uint64_t      bytes_per_visit = 0;
 
-        /* Calculate bytes per visit, though visists into sampling regions wont
+        /* Calculate bytes per visit, though visits into sampling regions wont
            be recorded in the trace */
         if ( m_profile->getRegionParadigm( region ) != "sampling" )
         {
@@ -637,10 +638,20 @@ SCOREP_Score_Estimator::printGroups( void )
          << get_user_readable_byte_no( max_buf ) << endl;
     cout << "Estimated memory requirements (SCOREP_TOTAL_MEMORY):       "
          << get_user_readable_byte_no( memory_req ) << endl;
-    cout << "(hint: When tracing set SCOREP_TOTAL_MEMORY="
-         << get_user_readable_byte_no( memory_req ) << " to avoid intermediate flushes\n"
-         << " or reduce requirements using USR regions filters.)"
-         << endl << endl;
+    if ( memory_req > numeric_limits<uint32_t>::max() )
+    {
+        cout << "(warning: The memory requirements can not be satisfied by Score-P to avoid\n"
+             << " intermediate flushes when tracing. Set SCOREP_TOTAL_MEMORY=4G to get the\n"
+             << " maximum supported memory or reduce requirements using USR regions filters.)"
+             << endl << endl;
+    }
+    else
+    {
+        cout << "(hint: When tracing set SCOREP_TOTAL_MEMORY="
+             << get_user_readable_byte_no( memory_req ) << " to avoid intermediate flushes\n"
+             << " or reduce requirements using USR regions filters.)"
+             << endl << endl;
+    }
 
     quicksort( m_groups, SCOREP_SCORE_TYPE_NUM );
 
@@ -711,17 +722,18 @@ SCOREP_Score_Estimator::calculate_event_sizes( void )
     fstream estimator_in( in_filename.c_str(), ios_base::out );
     if ( !estimator_in )
     {
-        cerr << "ERROR: Failed to open temorary file for otf2-estimator input."
-             << endl;
+        cerr << "ERROR: Failed to open temorary file for 'otf2-estimator' input" << endl;
         exit( EXIT_FAILURE );
     }
 
     estimator_in << "set Region " << m_region_num << "\n";
     estimator_in << "set Metric " << m_profile->getNumberOfMetrics() << "\n";
-    if ( m_profile->hasHits() )
+    const map<string, uint64_t>& definition_counters =
+        m_profile->getDefinitionCounters();
+    for ( map<string, uint64_t>::const_iterator it = definition_counters.begin();
+          it != definition_counters.end(); ++it )
     {
-        estimator_in << "set CallingContext " << m_profile->getNumberOfCallingContextNodes() << "\n";
-        estimator_in << "set InterruptGenerator " << m_profile->getNumberOfInterruptGenerators() << "\n";
+        estimator_in << "set " << it->first << " " << it->second << "\n";
     }
 
     for ( map<string, SCOREP_Score_Event*>::iterator i = SCOREP_Score_Event::m_all_events.begin(); i != SCOREP_Score_Event::m_all_events.end(); i++ )
@@ -735,7 +747,7 @@ SCOREP_Score_Estimator::calculate_event_sizes( void )
                      out_filename + "\" < \"" + in_filename + "\"";
     if ( system( command.c_str() ) != EXIT_SUCCESS )
     {
-        cerr << "ERROR: Failed to call otf2-estimator." << endl;
+        cerr << "ERROR: Failed to call 'otf2-estimator'" << endl;
         exit( EXIT_FAILURE );
     }
 
@@ -743,8 +755,7 @@ SCOREP_Score_Estimator::calculate_event_sizes( void )
     fstream estimator_out( out_filename.c_str(), ios_base::in );
     if ( !estimator_out )
     {
-        cerr << "ERROR: Failed to open temorary file for otf2-estimator input."
-             << endl;
+        cerr << "ERROR: Failed to open temorary file for 'otf2-estimator' output" << endl;
         exit( EXIT_FAILURE );
     }
 

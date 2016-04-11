@@ -46,6 +46,7 @@
 #include <SCOREP_RuntimeManagement.h>
 #include <SCOREP_AllocMetric.h>
 #include "SCOREP_Mpi.h"
+#include "scorep_mpi_communicator.h"
 #include "scorep_mpi_communicator_mgmt.h"
 #include "scorep_mpi_request.h"
 
@@ -263,6 +264,19 @@ mpi_subsystem_begin( void )
     return SCOREP_SUCCESS;
 }
 
+static SCOREP_ErrorCode
+mpi_subsystem_init_mpp( void )
+{
+    /* initialize communicator management and register MPI_COMM_WORLD*/
+    scorep_mpi_comm_init();
+
+#if !defined( SCOREP_MPI_NO_HOOKS )
+    scorep_mpiprofile_init();
+#endif
+
+    return SCOREP_SUCCESS;
+}
+
 static void
 mpi_subsystem_end( void )
 {
@@ -366,6 +380,7 @@ const SCOREP_Subsystem SCOREP_Subsystem_MpiAdapter =
     .subsystem_register   = &mpi_subsystem_register,
     .subsystem_init       = &mpi_subsystem_init,
     .subsystem_begin      = &mpi_subsystem_begin,
+    .subsystem_init_mpp   = &mpi_subsystem_init_mpp,
     .subsystem_end        = &mpi_subsystem_end,
     .subsystem_finalize   = &mpi_subsystem_finalize,
     .subsystem_pre_unify  = &mpi_subsystem_pre_unify,

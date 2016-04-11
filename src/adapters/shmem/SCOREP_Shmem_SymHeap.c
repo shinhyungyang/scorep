@@ -136,7 +136,7 @@ SHMEM_MEMALIGN( shmemalign )
 
 #define SHMEM_REALLOC( FUNCNAME )                                                       \
     void*                                                                               \
-    SCOREP_LIBWRAP_FUNC_NAME( FUNCNAME ) ( void * ptr,                                  \
+    SCOREP_LIBWRAP_FUNC_NAME( FUNCNAME ) ( void*  ptr,                                  \
                                            size_t size )                                \
     {                                                                                   \
         SCOREP_IN_MEASUREMENT_INCREMENT();                                              \
@@ -156,11 +156,17 @@ SHMEM_MEMALIGN( shmemalign )
             SCOREP_EnterWrappedRegion( scorep_shmem_region__ ## FUNCNAME,               \
                                        ( intptr_t )CALL_SHMEM( FUNCNAME ) );            \
                                                                                         \
+            void* allocation = NULL;                                                    \
+            if ( scorep_shmem_memory_recording && ptr )                                 \
+            {                                                                           \
+                SCOREP_AllocMetric_AcquireAlloc( scorep_shmem_allocations_metric,       \
+                                                 ( uint64_t )ptr, &allocation );        \
+            }                                                                           \
+                                                                                        \
             SCOREP_ENTER_WRAPPED_REGION();                                              \
             result = SCOREP_LIBWRAP_FUNC_CALL( lw, FUNCNAME, ( ptr, size ) );           \
             SCOREP_EXIT_WRAPPED_REGION();                                               \
                                                                                         \
-            uint64_t dealloc_size = 0;                                                  \
             if ( scorep_shmem_memory_recording )                                        \
             {                                                                           \
                 /*                                                                      \
@@ -177,18 +183,20 @@ SHMEM_MEMALIGN( shmemalign )
                  */                                                                     \
                 else if ( ptr != NULL && size == 0 )                                    \
                 {                                                                       \
+                    uint64_t dealloc_size = 0;                                          \
                     SCOREP_AllocMetric_HandleFree( scorep_shmem_allocations_metric,     \
-                                                   ( uint64_t )ptr, &dealloc_size );    \
+                                                   allocation, &dealloc_size );         \
                     SCOREP_AddAttribute( scorep_shmem_memory_dealloc_size_attribute,    \
                                          &dealloc_size );                               \
                 }                                                                       \
                 /* Otherwise it is a realloc, treat as realloc on success, ... */       \
                 else if ( result )                                                      \
                 {                                                                       \
+                    uint64_t dealloc_size = 0;                                          \
                     SCOREP_AllocMetric_HandleRealloc( scorep_shmem_allocations_metric,  \
                                                       ( uint64_t )result,               \
                                                       size,                             \
-                                                      ( uint64_t )ptr,                  \
+                                                      allocation,                       \
                                                       &dealloc_size );                  \
                     SCOREP_AddAttribute( scorep_shmem_memory_dealloc_size_attribute,    \
                                          &dealloc_size );                               \
@@ -221,7 +229,7 @@ SHMEM_REALLOC( shrealloc )
 
 #define SHMEM_FREE( FUNCNAME )                                                      \
     void                                                                            \
-    SCOREP_LIBWRAP_FUNC_NAME( FUNCNAME ) ( void * ptr )                             \
+    SCOREP_LIBWRAP_FUNC_NAME( FUNCNAME ) ( void* ptr )                              \
     {                                                                               \
         SCOREP_IN_MEASUREMENT_INCREMENT();                                          \
                                                                                     \
@@ -232,14 +240,25 @@ SHMEM_REALLOC( shrealloc )
             SCOREP_EnterWrappedRegion( scorep_shmem_region__ ## FUNCNAME,           \
                                        ( intptr_t )CALL_SHMEM( FUNCNAME ) );        \
                                                                                     \
+            void* allocation = NULL;                                                \
+            if ( scorep_shmem_memory_recording && ptr )                                                              \
+            {                                                                       \
+                SCOREP_AllocMetric_AcquireAlloc( scorep_shmem_allocations_metric,   \
+                                                 ( uint64_t )ptr, &allocation );    \
+            }                                                                       \
+                                                                                    \
             SCOREP_ENTER_WRAPPED_REGION();                                          \
             SCOREP_LIBWRAP_FUNC_CALL( lw, FUNCNAME, ( ptr ) );                      \
             SCOREP_EXIT_WRAPPED_REGION();                                           \
-            if ( scorep_shmem_memory_recording && ptr )                             \
+                                                                                    \
+            if ( scorep_shmem_memory_recording )                                    \
             {                                                                       \
                 uint64_t dealloc_size = 0;                                          \
-                SCOREP_AllocMetric_HandleFree( scorep_shmem_allocations_metric,     \
-                                               ( uint64_t )ptr, &dealloc_size );    \
+                if ( ptr )                                                          \
+                {                                                                   \
+                    SCOREP_AllocMetric_HandleFree( scorep_shmem_allocations_metric, \
+                                                   allocation, &dealloc_size );     \
+                }                                                                   \
                 SCOREP_AddAttribute( scorep_shmem_memory_dealloc_size_attribute,    \
                                      &dealloc_size );                               \
             }                                                                       \

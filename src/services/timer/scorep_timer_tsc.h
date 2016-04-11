@@ -1,7 +1,7 @@
 /*
  * This file is part of the Score-P software (http://www.score-p.org)
  *
- * Copyright (c) 2015,
+ * Copyright (c) 2015-2016,
  * Forschungszentrum Juelich GmbH, Germany
  *
  * This software may be modified and distributed under the terms of
@@ -86,23 +86,17 @@ _compile_time_assert( void )
 #define HAVE_SCOREP_DARWIN_TSC 1
 #endif
 
-/* X86-64 cycle counter */
-#if ( defined( __GNUC__ ) || defined( __ICC ) || defined( __SUNPRO_C ) ) && defined( __x86_64__ )  && !defined( HAVE_TICK_COUNTER )
+/* Pentium cycle counter */
+/* cycle.h claims it to be unreliable, but why? We check for constant_tsc and nonstop_tsc elsewhere. */
+#if ( defined( __GNUC__ ) || defined( __ICC ) ) && defined( __i386__ )  && !defined( HAVE_TICK_COUNTER )
 #define HAVE_TICK_COUNTER
-#define HAVE_SCOREP_X86_64_TSC 1
+#define HAVE_SCOREP_X86_32_TSC 1
 #endif
 
-/* X86-64 cycle counter, PGI compiler, courtesy Cristiano Calonaci,
- * Andrea Tarsi, & Roberto Gori. NOTE: if this code fails to link,
- * try the -Masmkeyword compiler option. */
-#if defined( __PGI ) && defined( __x86_64__ ) && !defined( HAVE_TICK_COUNTER )
-static void
-_compile_time_assert( void )
-{
-    COMPILE_TIME_ASSERT( sizeof( uint64_t ) == sizeof( unsigned long long ) );
-}
+/* X86-64 cycle counter */
+#if ( defined( __GNUC__ ) || defined( __ICC ) || defined( __SUNPRO_C ) || defined( __PGI ) ) && defined( __x86_64__ )  && !defined( HAVE_TICK_COUNTER )
 #define HAVE_TICK_COUNTER
-#define HAVE_SCOREP_X86_64_PGI_TSC 1
+#define HAVE_SCOREP_X86_64_TSC 1
 #endif
 
 /* X86-64 cycle counter, Visual C++, courtesy of Dirk Michaelis */
@@ -182,6 +176,11 @@ _compile_time_assert( void )
 #define HAVE_SCOREP_CRAY_TSC 1
 #endif
 
+#if defined( __aarch64__ ) && !defined( HAVE_TICK_COUNTER )
+#define HAVE_TICK_COUNTER
+#define HAVE_SCOREP_ARMV8_TSC 1
+#endif
+
 
 #undef COMPILE_TIME_ASSERT
 
@@ -211,10 +210,10 @@ _compile_time_assert( void )
 # include <mach/mach_time.h>
 #endif
 
-#if HAVE( SCOREP_X86_64_TSC )
+#if HAVE( SCOREP_X86_32_TSC )
 #endif
 
-#if HAVE( SCOREP_X86_64_PGI_TSC )
+#if HAVE( SCOREP_X86_64_TSC )
 #endif
 
 #if HAVE( SCOREP_X86_64_MSVC_TSC )
@@ -242,4 +241,7 @@ _compile_time_assert( void )
 # ifdef HAVE_INTRINSICS_H
 #  include <intrinsics.h>
 # endif
+#endif
+
+#if HAVE( SCOREP_ARMV8_TSC )
 #endif

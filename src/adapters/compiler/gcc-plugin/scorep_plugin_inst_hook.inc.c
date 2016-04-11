@@ -1,7 +1,7 @@
 /*
  * This file is part of the Score-P software (http://www.score-p.org)
  *
- * Copyright (c) 2012-2014,
+ * Copyright (c) 2012-2014, 2016,
  * Technische Universitaet Dresden, Germany
  *
  * This software may be modified and distributed under the terms of
@@ -17,7 +17,6 @@
  *
  */
 
-#include "gcc-plugin.h"
 #include "tree.h"
 
 #include "libiberty.h"
@@ -85,9 +84,9 @@ build_inst_function( scorep_gcc_plugin_hook_type hook_type,
 } /* build_inst_function */
 
 
-static gimple
+static GIMPLE
 build_condition( scorep_gcc_plugin_hook_type hook_type,
-                 gimple                      tmp_assignment,
+                 GIMPLE                      tmp_assignment,
                  scorep_plugin_inst_handle*  handle )
 {
     switch ( hook_type )
@@ -112,10 +111,10 @@ build_condition( scorep_gcc_plugin_hook_type hook_type,
 } /* build_condition */
 
 
-static gimple
+static GIMPLE
 build_fn_call( scorep_gcc_plugin_hook_type hook_type,
                scorep_plugin_inst_hook*    hook,
-               gimple                      tmp_assignment,
+               GIMPLE                      tmp_assignment,
                tree                        region_descr_var )
 {
     switch ( hook_type )
@@ -138,8 +137,7 @@ void
 scorep_plugin_inst_hook_build( scorep_plugin_inst_hook*    hook,
                                scorep_plugin_inst_handle*  handle,
                                tree                        region_descr_var,
-                               scorep_gcc_plugin_hook_type hook_type,
-                               int                         exclude_condition )
+                               scorep_gcc_plugin_hook_type hook_type )
 {
     if ( !hook
          || !( handle || region_descr_var ) )
@@ -151,23 +149,19 @@ scorep_plugin_inst_hook_build( scorep_plugin_inst_hook*    hook,
                                          handle,
                                          region_descr_var );
 
-    hook->hook_type         = hook_type;
-    hook->exclude_condition = exclude_condition;
+    hook->hook_type = hook_type;
 
     hook->stmt_sequence = 0;
 
-    gimple tmp_assignment = scorep_plugin_inst_handle_build_tmp_assignment( handle );
+    GIMPLE tmp_assignment = scorep_plugin_inst_handle_build_tmp_assignment( handle );
     gimple_seq_add_stmt( &hook->stmt_sequence,
                          tmp_assignment );
 
-    if ( !exclude_condition )
-    {
-        hook->condition = build_condition( hook_type,
-                                           tmp_assignment,
-                                           handle );
-        gimple_seq_add_stmt( &hook->stmt_sequence,
-                             hook->condition );
-    }
+    hook->condition = build_condition( hook_type,
+                                       tmp_assignment,
+                                       handle );
+    gimple_seq_add_stmt( &hook->stmt_sequence,
+                         hook->condition );
 
     hook->fn_call = build_fn_call( hook_type,
                                    hook,
@@ -183,12 +177,6 @@ basic_block
 scorep_plugin_inst_hook_finalize_condition( scorep_plugin_inst_hook* hook,
                                             basic_block              condition_bb )
 {
-    if ( hook->exclude_condition )
-    {
-        return condition_bb;
-    }
-
-
     basic_block then_bb;
     basic_block join_bb;
 

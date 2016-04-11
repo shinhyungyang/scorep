@@ -112,9 +112,9 @@ SCOREP_Config_Mutex::SCOREP_Config_Mutex( std::string           name,
                                           std::string           library,
                                           SCOREP_Config_MutexId id )
     : m_name( name ),
-      m_variant( variant ),
-      m_library( library ),
-      m_id( id )
+    m_variant( variant ),
+    m_library( library ),
+    m_id( id )
 {
 }
 

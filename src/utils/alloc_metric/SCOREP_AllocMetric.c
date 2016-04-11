@@ -196,6 +196,37 @@ splay( allocation_item* root,
 }
 
 
+static void
+insert_memory_allocation( SCOREP_AllocMetric* allocMetric,
+                          allocation_item*    allocation )
+{
+    if ( allocMetric->allocations == NULL )
+    {
+        allocMetric->allocations = allocation;
+        return;
+    }
+
+    allocMetric->allocations = splay( allocMetric->allocations, allocation->address );
+    if ( allocation->address < allocMetric->allocations->address )
+    {
+        allocation->left               = allocMetric->allocations->left;
+        allocation->right              = allocMetric->allocations;
+        allocMetric->allocations->left = NULL;
+        allocMetric->allocations       = allocation;
+    }
+    else if ( allocation->address > allocMetric->allocations->address )
+    {
+        allocation->right               = allocMetric->allocations->right;
+        allocation->left                = allocMetric->allocations;
+        allocMetric->allocations->right = NULL;
+        allocMetric->allocations        = allocation;
+    }
+    else
+    {
+        UTILS_WARNING( "Allocation already known: %" PRIx64, allocation->address );
+    }
+}
+
 static allocation_item*
 add_memory_allocation( SCOREP_AllocMetric* allocMetric,
                        uint64_t            addr,
@@ -215,34 +246,12 @@ add_memory_allocation( SCOREP_AllocMetric* allocMetric,
     {
         new_item = SCOREP_Memory_AllocForMisc( sizeof( *new_item ) );
     }
+    memset( new_item, 0, sizeof( *new_item ) );
     new_item->address = addr;
     new_item->size    = size;
 
-    if ( allocMetric->allocations == NULL )
-    {
-        allocMetric->allocations = new_item;
-        return new_item;
-    }
+    insert_memory_allocation( allocMetric, new_item );
 
-    allocMetric->allocations = splay( allocMetric->allocations, addr );
-    if ( addr < allocMetric->allocations->address )
-    {
-        new_item->left                 = allocMetric->allocations->left;
-        new_item->right                = allocMetric->allocations;
-        allocMetric->allocations->left = NULL;
-        allocMetric->allocations       = new_item;
-    }
-    else if ( addr > allocMetric->allocations->address )
-    {
-        new_item->right                 = allocMetric->allocations->right;
-        new_item->left                  = allocMetric->allocations;
-        allocMetric->allocations->right = NULL;
-        allocMetric->allocations        = new_item;
-    }
-    else
-    {
-        UTILS_WARNING( "Allocation already known: %" PRIx64, addr );
-    }
     return new_item;
 }
 
@@ -266,7 +275,7 @@ find_memory_allocation( SCOREP_AllocMetric* allocMetric,
 
 
 static void
-delete_memory_allocation( SCOREP_AllocMetric* allocMetric,
+remove_memory_allocation( SCOREP_AllocMetric* allocMetric,
                           allocation_item*    allocation )
 {
     if ( allocMetric == NULL
@@ -288,9 +297,25 @@ delete_memory_allocation( SCOREP_AllocMetric* allocMetric,
         allocMetric->allocations->right = allocation->right;
     }
 
+    allocation->right = NULL;
+    allocation->left  = NULL;
+}
+
+static void
+free_memory_allocation( SCOREP_AllocMetric* allocMetric,
+                        allocation_item*    allocation )
+{
     free_list_item* next = allocMetric->free_list;
     allocMetric->free_list       = ( free_list_item* )allocation;
     allocMetric->free_list->next = next;
+}
+
+static void
+delete_memory_allocation( SCOREP_AllocMetric* allocMetric,
+                          allocation_item*    allocation )
+{
+    remove_memory_allocation( allocMetric, allocation );
+    free_memory_allocation( allocMetric, allocation );
 }
 
 /* Keep track of the allocated memory per process, not only per SCOREP_AllocMetric */
@@ -358,13 +383,41 @@ SCOREP_AllocMetric_Destroy( SCOREP_AllocMetric* allocMetric )
 
 
 void
+SCOREP_AllocMetric_AcquireAlloc( SCOREP_AllocMetric* allocMetric,
+                                 uint64_t            addr,
+                                 void**              allocation )
+{
+    SCOREP_MutexLock( allocMetric->mutex );
+
+    UTILS_DEBUG_ENTRY( "%p", ( void* )addr );
+
+    UTILS_BUG_ON( addr == 0, "Can't acquire allocation for NULL pointers." );
+
+    *allocation = find_memory_allocation( allocMetric, addr );
+    if ( *allocation )
+    {
+        remove_memory_allocation( allocMetric, *allocation );
+    }
+    else
+    {
+        UTILS_WARNING( "Could not find allocation %p.",
+                       ( void* )addr );
+    }
+
+    UTILS_DEBUG_EXIT( "Total Memory: %" PRIu64, allocMetric->total_allocated_memory );
+
+    SCOREP_MutexUnlock( allocMetric->mutex );
+}
+
+
+void
 SCOREP_AllocMetric_HandleAlloc( SCOREP_AllocMetric* allocMetric,
                                 uint64_t            resultAddr,
                                 size_t              size )
 {
-    UTILS_DEBUG_ENTRY( "%p , %zu", ( void* )resultAddr, size );
-
     SCOREP_MutexLock( allocMetric->mutex );
+
+    UTILS_DEBUG_ENTRY( "%p , %zu", ( void* )resultAddr, size );
 
     SCOREP_MutexLock( process_allocated_memory_mutex );
     process_allocated_memory += size;
@@ -389,9 +442,9 @@ SCOREP_AllocMetric_HandleAlloc( SCOREP_AllocMetric* allocMetric,
                        allocMetric->total_allocated_memory,
                        process_allocated_memory_save );
 
-    SCOREP_MutexUnlock( allocMetric->mutex );
-
     UTILS_DEBUG_EXIT( "Total Memory: %" PRIu64, allocMetric->total_allocated_memory );
+
+    SCOREP_MutexUnlock( allocMetric->mutex );
 }
 
 
@@ -399,22 +452,18 @@ void
 SCOREP_AllocMetric_HandleRealloc( SCOREP_AllocMetric* allocMetric,
                                   uint64_t            resultAddr,
                                   size_t              size,
-                                  uint64_t            prevAddr,
+                                  void*               prevAllocation,
                                   uint64_t*           prevSize )
 {
-    UTILS_DEBUG_ENTRY( "%p , %zu, %p", ( void* )resultAddr, size, ( void* )prevAddr );
-
-    UTILS_BUG_ON( prevAddr == 0 );
-
-    uint64_t freed_memory = 0;
-
     SCOREP_MutexLock( allocMetric->mutex );
 
-    uint64_t total_allocated_memory = allocMetric->total_allocated_memory;
+    UTILS_DEBUG_ENTRY( "%p , %zu, %p", ( void* )resultAddr, size, prevAllocation );
+
+    uint64_t total_allocated_memory_save;
     uint64_t process_allocated_memory_save;
 
     /* get the handle of the previously allocated memory */
-    allocation_item* allocation = find_memory_allocation( allocMetric, prevAddr );
+    allocation_item* allocation = prevAllocation;
     if ( allocation )
     {
         if ( prevSize )
@@ -426,19 +475,23 @@ SCOREP_AllocMetric_HandleRealloc( SCOREP_AllocMetric* allocMetric,
         /*
          * If the allocation did not resulted in a new address, than assign
          * the new size to the handle. */
-        if ( prevAddr == resultAddr )
+        if ( allocation->address == resultAddr )
         {
             SCOREP_MutexLock( process_allocated_memory_mutex );
             process_allocated_memory     += ( size - allocation->size );
             process_allocated_memory_save = process_allocated_memory;
             SCOREP_MutexUnlock( process_allocated_memory_mutex );
 
-            total_allocated_memory += ( size - allocation->size );
-            SCOREP_TrackRealloc( prevAddr, allocation->size, allocation->substrate_data,
+            allocMetric->total_allocated_memory += ( size - allocation->size );
+            total_allocated_memory_save          = allocMetric->total_allocated_memory;
+
+            SCOREP_TrackRealloc( allocation->address, allocation->size, allocation->substrate_data,
                                  resultAddr, size, allocation->substrate_data,
-                                 total_allocated_memory,
+                                 total_allocated_memory_save,
                                  process_allocated_memory_save );
+
             allocation->size = size;
+            insert_memory_allocation( allocMetric, allocation );
         }
         /* System allocates size before freeing allocation->size (actually,
          * a free(prevAddr) is done), report the memory usage after the allocation
@@ -449,27 +502,44 @@ SCOREP_AllocMetric_HandleRealloc( SCOREP_AllocMetric* allocMetric,
             SCOREP_MutexLock( process_allocated_memory_mutex );
             process_allocated_memory     += size;
             process_allocated_memory_save = process_allocated_memory;
+            process_allocated_memory     -= allocation->size;
             SCOREP_MutexUnlock( process_allocated_memory_mutex );
 
-            total_allocated_memory += size;
-            freed_memory            = allocation->size;
-            void* substrate_data[ SCOREP_SUBSTRATES_NUM_SUBSTRATES ];
-            memcpy( &( substrate_data[ 0 ] ), &( allocation->substrate_data[ 0 ] ),
-                    SCOREP_SUBSTRATES_NUM_SUBSTRATES * sizeof( void* ) );
-            delete_memory_allocation( allocMetric, allocation );
+            allocMetric->total_allocated_memory += size;
+            total_allocated_memory_save          = allocMetric->total_allocated_memory;
+            allocMetric->total_allocated_memory -= allocation->size;
 
-            allocation_item* new_allocation =
-                add_memory_allocation( allocMetric, resultAddr, size );
-            SCOREP_TrackRealloc( prevAddr, freed_memory, substrate_data,
-                                 resultAddr, size, new_allocation->substrate_data,
-                                 total_allocated_memory,
+            SCOREP_TrackRealloc( allocation->address, allocation->size, allocation->substrate_data,
+                                 resultAddr, size, allocation->substrate_data,
+                                 total_allocated_memory_save,
                                  process_allocated_memory_save );
+
+            allocation->address = resultAddr;
+            allocation->size    = size;
+            insert_memory_allocation( allocMetric, allocation );
         }
     }
     else
     {
-        UTILS_WARNING( "Could not find previous allocation %p.",
-                       ( void* )prevAddr );
+        UTILS_WARNING( "Could not find previous allocation." );
+
+        if ( prevSize )
+        {
+            *prevSize = 0;
+        }
+
+        SCOREP_MutexLock( process_allocated_memory_mutex );
+        process_allocated_memory     += size;
+        process_allocated_memory_save = process_allocated_memory;
+        SCOREP_MutexUnlock( process_allocated_memory_mutex );
+
+        allocMetric->total_allocated_memory += size;
+        total_allocated_memory_save          = allocMetric->total_allocated_memory;
+
+        allocation = add_memory_allocation( allocMetric, resultAddr, size );
+        SCOREP_TrackAlloc( resultAddr, size, allocation->substrate_data,
+                           total_allocated_memory_save,
+                           process_allocated_memory_save );
     }
 
     /* We need to ensure, that we take the timestamp  *after* we acquired
@@ -479,72 +549,69 @@ SCOREP_AllocMetric_HandleRealloc( SCOREP_AllocMetric* allocMetric,
     SCOREP_Location_TriggerCounterUint64( per_process_metric_location,
                                           SCOREP_Timer_GetClockTicks(),
                                           allocMetric->sampling_set,
-                                          total_allocated_memory );
+                                          total_allocated_memory_save );
     SCOREP_Location_ReleasePerProcessMetricsLocation();
 
-    allocMetric->total_allocated_memory = total_allocated_memory - freed_memory;
-
-    SCOREP_MutexLock( process_allocated_memory_mutex );
-    process_allocated_memory -= freed_memory;
-    SCOREP_MutexUnlock( process_allocated_memory_mutex );
+    UTILS_DEBUG_EXIT( "Total Memory: %" PRIu64, allocMetric->total_allocated_memory );
 
     SCOREP_MutexUnlock( allocMetric->mutex );
-
-    UTILS_DEBUG_EXIT( "Total Memory: %" PRIu64, allocMetric->total_allocated_memory );
 }
 
 
 void
 SCOREP_AllocMetric_HandleFree( SCOREP_AllocMetric* allocMetric,
-                               uint64_t            addr,
+                               void*               allocation_,
                                uint64_t*           size )
 {
-    UTILS_DEBUG_ENTRY( "%p", ( void* )addr );
-
     SCOREP_MutexLock( allocMetric->mutex );
 
-    uint64_t deallocation_size = 0;
-    uint64_t process_allocated_memory_save;
-    void*    substrate_data[ SCOREP_SUBSTRATES_NUM_SUBSTRATES ];
-    /* get value of memory to be freed */
-    allocation_item* allocation = find_memory_allocation( allocMetric, addr );
-    if ( allocation )
+    UTILS_DEBUG_ENTRY( "%p", allocation_ );
+
+    allocation_item* allocation = allocation_;
+    if ( !allocation )
     {
-        deallocation_size = allocation->size;
+        UTILS_WARNING( "Could not find previous allocation, ignoring event." );
 
-        SCOREP_MutexLock( process_allocated_memory_mutex );
-        process_allocated_memory     -= deallocation_size;
-        process_allocated_memory_save = process_allocated_memory;
-        SCOREP_MutexUnlock( process_allocated_memory_mutex );
+        if ( size )
+        {
+            *size = 0;
+        }
 
-        allocMetric->total_allocated_memory -= deallocation_size;
-        memcpy( &( substrate_data[ 0 ] ), &( allocation->substrate_data[ 0 ] ),
-                SCOREP_SUBSTRATES_NUM_SUBSTRATES * sizeof( void* ) );
-        delete_memory_allocation( allocMetric, allocation );
-
-        /* We need to ensure, that we take the timestamp  *after* we acquired
-           the metric location, else we may end up with an invalid timestamp order */
-        SCOREP_Location* per_process_metric_location =
-            SCOREP_Location_AcquirePerProcessMetricsLocation();
-        SCOREP_Location_TriggerCounterUint64( per_process_metric_location,
-                                              SCOREP_Timer_GetClockTicks(),
-                                              allocMetric->sampling_set,
-                                              allocMetric->total_allocated_memory );
-        SCOREP_Location_ReleasePerProcessMetricsLocation();
-    }
-    else
-    {
-        UTILS_WARNING( "Could not find previous allocation %p, ignoring event.",
-                       ( void* )addr );
         SCOREP_MutexUnlock( allocMetric->mutex );
         return;
     }
+
+    uint64_t allocation_addr   = allocation->address;
+    uint64_t deallocation_size = allocation->size;
+
+    SCOREP_MutexLock( process_allocated_memory_mutex );
+    process_allocated_memory -= deallocation_size;
+    uint64_t process_allocated_memory_save = process_allocated_memory;
+    SCOREP_MutexUnlock( process_allocated_memory_mutex );
+
+    allocMetric->total_allocated_memory -= deallocation_size;
+
+    void* substrate_data[ SCOREP_SUBSTRATES_NUM_SUBSTRATES ];
+    memcpy( substrate_data, allocation->substrate_data,
+            SCOREP_SUBSTRATES_NUM_SUBSTRATES * sizeof( void* ) );
+    free_memory_allocation( allocMetric, allocation );
+
+    /* We need to ensure, that we take the timestamp  *after* we acquired
+       the metric location, else we may end up with an invalid timestamp order */
+    SCOREP_Location* per_process_metric_location =
+        SCOREP_Location_AcquirePerProcessMetricsLocation();
+    SCOREP_Location_TriggerCounterUint64( per_process_metric_location,
+                                          SCOREP_Timer_GetClockTicks(),
+                                          allocMetric->sampling_set,
+                                          allocMetric->total_allocated_memory );
+    SCOREP_Location_ReleasePerProcessMetricsLocation();
+
     if ( size )
     {
         *size = deallocation_size;
     }
 
-    SCOREP_TrackFree( addr, deallocation_size, substrate_data,
+    SCOREP_TrackFree( allocation_addr, deallocation_size, substrate_data,
                       allocMetric->total_allocated_memory,
                       process_allocated_memory_save );
 
@@ -562,8 +629,8 @@ SCOREP_AllocMetric_ReportLeaked( SCOREP_AllocMetric* allocMetric )
     {
         allocation_item* node = allocMetric->allocations;
 
-        UTILS_DEBUG_PRINTF( SCOREP_DEBUG_MEMORY, "[leaked] ptr %p, size %zu",
-                            ( void* )( node->address ), node->size );
+        UTILS_DEBUG( "[leaked] ptr %p, size %zu",
+                     ( void* )( node->address ), node->size );
 
         SCOREP_LeakedMemory( node->address,
                              node->size,

@@ -1,7 +1,7 @@
 /*
  * This file is part of the Score-P software (http://www.score-p.org)
  *
- * Copyright (c) 2012-2013, 2015,
+ * Copyright (c) 2012-2013, 2015-2016,
  * Technische Universitaet Dresden, Germany
  *
  * Copyright (c) 2015,
@@ -46,9 +46,11 @@ extern const scorep_compiler_region_description scorep_region_descriptions_end;
 void
 scorep_compiler_register_region( const scorep_compiler_region_description* regionDescr )
 {
-    /* Do not filter if this function does not have a conditional trigger. */
-    if ( ~regionDescr->flags & SCOREP_COMPILER_REGION_FLAG_NO_CONDITION
-         && SCOREP_Filter_Match( regionDescr->file,
+    /*
+     * If unwinding is enabled, we filter out all regions.
+     */
+    if ( SCOREP_IsUnwindingEnabled()
+         || SCOREP_Filter_Match( regionDescr->file,
                                  regionDescr->name,
                                  regionDescr->canonical_name ) )
     {
@@ -83,15 +85,13 @@ scorep_compiler_subsystem_init( void )
     /* Initialize region mutex */
     SCOREP_MutexCreate( &scorep_compiler_region_mutex );
 
-    if ( !SCOREP_IsUnwindingEnabled() )
+    /* Initialize plugin instrumentation */
+    for ( const scorep_compiler_region_description* region_descr = &scorep_region_descriptions_begin + 1;
+          region_descr < &scorep_region_descriptions_end;
+          region_descr++ )
     {
-        /* Initialize plugin instrumentation */
-        for ( const scorep_compiler_region_description* region_descr = &scorep_region_descriptions_begin + 1;
-              region_descr < &scorep_region_descriptions_end;
-              region_descr++ )
-        {
-            scorep_compiler_register_region( region_descr );
-        }
+        /* This handles SCOREP_IsUnwindingEnabled() and sets all regions handles to `FILTERED`. */
+        scorep_compiler_register_region( region_descr );
     }
 
     return SCOREP_SUCCESS;

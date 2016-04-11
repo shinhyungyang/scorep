@@ -41,6 +41,8 @@
 #include <CubeTypes.h>
 #include <assert.h>
 #include <sys/stat.h>
+#include <sstream>
+#include <cctype>
 
 using namespace std;
 using namespace cube;
@@ -61,19 +63,36 @@ SCOREP_Score_Profile::SCOREP_Score_Profile( string cubeFile )
     {
         m_visits = m_time;
     }
-    m_hits                            = m_cube->get_met( "hits" );
-    m_number_of_calling_context_nodes = 0;
-    m_number_of_interrupt_generators  = 0;
-    std::string attribute =
-        m_cube->get_attr( "SCOREP_NUMBER_OF_CALLING_CONTEXT_NODES" );
-    if ( attribute.size() )
+    m_hits = m_cube->get_met( "hits" );
+
+    /* Collect all attributes from the definition counters */
+    const string               attr_prefix( "Score-P::DefinitionCounters::" );
+    const map<string, string>& attributes = m_cube->get_attrs();
+    for ( map<string, string>::const_iterator it = attributes.begin();
+          it != attributes.end(); ++it )
     {
-        m_number_of_calling_context_nodes = atoi( attribute.c_str() );
-    }
-    attribute = m_cube->get_attr( "SCOREP_NUMBER_OF_INTERRUPT_GENERATORS" );
-    if ( attribute.size() )
-    {
-        m_number_of_interrupt_generators = atoi( attribute.c_str() );
+        const string& key = it->first;
+        if ( key.size() <= attr_prefix.size() || 0 != key.compare( 0, attr_prefix.size(), attr_prefix ) )
+        {
+            continue;
+        }
+
+        istringstream value_as_string( it->second );
+        uint64_t      value;
+        try
+        {
+            value_as_string >> value;
+        }
+        catch ( ... )
+        {
+            cerr << "WARNING: Cannot parse '" << key << "' value as number: "
+                 << "'" << it->second << "'" << endl;
+            continue;
+        }
+
+        m_definition_counters.insert( map<string, uint64_t>::value_type(
+                                          key.substr( attr_prefix.size() ),
+                                          value ) );
     }
 
     m_processes = m_cube->get_procv();
@@ -245,17 +264,21 @@ SCOREP_Score_Profile::getRegionName( uint64_t region )
 }
 
 string
-SCOREP_Score_Profile::getRegionParadigm( uint64_t region )
-{
-    return m_regions[ region ]->get_paradigm();
-}
-
-string
 SCOREP_Score_Profile::getMangledName( uint64_t region )
 {
     return m_regions[ region ]->get_mangled_name();
 }
 
+string
+SCOREP_Score_Profile::getRegionParadigm( uint64_t region )
+{
+    string paradigm = m_regions[ region ]->get_paradigm();
+    if ( paradigm == "unknown" )
+    {
+        paradigm = m_regions[ region ]->get_descr();
+    }
+    return paradigm;
+}
 
 string
 SCOREP_Score_Profile::getFileName( uint64_t region )
@@ -295,16 +318,10 @@ SCOREP_Score_Profile::getMaxNumberOfLocationsPerProcess()
     return max;
 }
 
-uint64_t
-SCOREP_Score_Profile::getNumberOfCallingContextNodes( void )
+const map<string, uint64_t>&
+SCOREP_Score_Profile::getDefinitionCounters( void )
 {
-    return m_number_of_calling_context_nodes;
-}
-
-uint64_t
-SCOREP_Score_Profile::getNumberOfInterruptGenerators( void )
-{
-    return m_number_of_interrupt_generators;
+    return m_definition_counters;
 }
 
 void
@@ -341,27 +358,65 @@ SCOREP_Score_Profile::getFileSize( void )
 SCOREP_Score_Type
 SCOREP_Score_Profile::get_definition_type( uint64_t region )
 {
-    string name = getRegionName( region );
-    if ( name.substr( 0, 4 ) == "MPI_" )
+    string paradigm = getRegionParadigm( region );
+    if ( paradigm == "mpi" )
     {
         return SCOREP_SCORE_TYPE_MPI;
     }
-    if ( name.substr( 0, 6 ) == "shmem_" )
+    if ( paradigm == "shmem" )
     {
         return SCOREP_SCORE_TYPE_SHMEM;
     }
-    if ( name.substr( 0, 6 ) == "!$omp " )
+    if ( paradigm == "openmp" )
     {
         return SCOREP_SCORE_TYPE_OMP;
     }
-    if ( name.substr( 0, 8 ) == "pthread_" )
+    if ( paradigm == "pthread" )
     {
         return SCOREP_SCORE_TYPE_PTHREAD;
     }
-    else
+    if ( paradigm == "cuda" )
     {
-        return SCOREP_SCORE_TYPE_USR;
+        return SCOREP_SCORE_TYPE_CUDA;
     }
+    if ( paradigm == "opencl" )
+    {
+        return SCOREP_SCORE_TYPE_OPENCL;
+    }
+    if ( paradigm == "memory" )
+    {
+        return SCOREP_SCORE_TYPE_MEMORY;
+    }
+    if ( paradigm == "unknown" )
+    {
+        string name = getRegionName( region );
+        if ( name.substr( 0, 4 ) == "MPI_" )
+        {
+            return SCOREP_SCORE_TYPE_MPI;
+        }
+        if ( name.substr( 0, 6 ) == "shmem_" )
+        {
+            return SCOREP_SCORE_TYPE_SHMEM;
+        }
+        if ( name.substr( 0, 6 ) == "!$omp " || name.substr( 0, 4 ) == "omp_" )
+        {
+            return SCOREP_SCORE_TYPE_OMP;
+        }
+        if ( name.substr( 0, 8 ) == "pthread_" )
+        {
+            return SCOREP_SCORE_TYPE_PTHREAD;
+        }
+        if ( has_prefix_than_upper( name, "cu" ) || has_prefix_than_upper( name, "cuda" ) )
+        {
+            return SCOREP_SCORE_TYPE_CUDA;
+        }
+        if ( has_prefix_than_upper( name, "cl" ) )
+        {
+            return SCOREP_SCORE_TYPE_OPENCL;
+        }
+    }
+
+    return SCOREP_SCORE_TYPE_USR;
 }
 
 bool
@@ -382,11 +437,24 @@ SCOREP_Score_Profile::calculate_calltree_types( const vector<Cnode*>* cnodes,
         m_region_types[ region ] = SCOREP_SCORE_TYPE_COM;
     }
 
-    if ( type == SCOREP_SCORE_TYPE_OMP ||
-         type == SCOREP_SCORE_TYPE_MPI ||
-         type == SCOREP_SCORE_TYPE_SHMEM )
+    if ( type > SCOREP_SCORE_TYPE_COM )
     {
         is_on_path = true;
     }
     return is_on_path;
+}
+
+bool
+SCOREP_Score_Profile::has_prefix_than_upper( const string& str,
+                                             const string& prefix )
+{
+    if ( str.size() <= prefix.size() )
+    {
+        return false;
+    }
+    if ( 0 != str.compare( 0, prefix.size(), prefix ) )
+    {
+        return false;
+    }
+    return isupper( str[ prefix.size() ] );
 }

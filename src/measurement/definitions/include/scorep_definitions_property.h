@@ -43,6 +43,8 @@
  */
 
 
+#define SCOREP_INVALID_PROPERTY SCOREP_MOVABLE_NULL
+
 
 SCOREP_DEFINE_DEFINITION_TYPE( Property )
 {
@@ -63,8 +65,6 @@ SCOREP_Definitions_NewProperty( SCOREP_Property          property,
                                 SCOREP_PropertyCondition condition,
                                 bool                     initialValue );
 
-
-struct SCOREP_Allocator_PageManager;
 
 void
 scorep_definitions_unify_property( SCOREP_PropertyDef*                  definition,

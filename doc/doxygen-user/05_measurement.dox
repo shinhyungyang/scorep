@@ -25,18 +25,9 @@ You may start with a profiling run, because of its lower space requirements. Acc
 to profiling results, you may configure the trace buffer limits, filtering or selective
 recording for recording traces.
 
-@scorep allows to configure several parameters via environment variables. After the
-measurement run you can find a <tt>scorep.cfg</tt> file in your experiment directory
-which contains the configuration of the measurement run. If you had not set configuration
-values explicitly, the file will contain the default values. This file is safe to be used
-as input for a POSIX shell. For example if you want to reuse the same configuration from
-an previous measurement run something like this:
-
-@code
-$ set -a
-$ . scorep.cfg
-$ set +a
-@endcode
+@scorep allows to configure several parameters via environment variables.
+See Appendix @secref{scorepmeasurementconfig} for a detailed description of how
+to configure the measurement.
 
 @section profiling Profiling
 @seclabel{profiling}
@@ -783,28 +774,28 @@ The libraries are loaded when tracing or profiling your application.
 So there is no need to recompile your application or instrument it manually.
 
 A simple example of a synchronous metric plugin can be found in Appendix @secref{metricpluginexample}.
+Every plugin needs to include SCOREP_MetricPlugins.h.
 The commands to build the corresponding library of this plugin might look like:
 
 @code
 gcc -c -fPIC hello_world.c   \
-    -o libHelloWorld.so.o `scorep-config --cppflags`
-gcc -shared -Wl,-soname,libHelloWorld.so  \
-    -o libHelloWorld.so libHelloWorld.so.o
+    -o libHelloWorld_plugin.so.o `scorep-config --cppflags`
+gcc -shared -Wl,-soname,libHelloWorld_plugin.so  \
+    -o libHelloWorld.so libHelloWorld_plugin.so.o
 @endcode
 
-To enable a metric plugin, set the environment variable \confvar{SCOREP_METRIC_PLUGINS}.
-In the following example we want to use a plugin named <tt>HelloWorld</tt>.
-The corresponding library was built as <tt>libHelloWorld.so</tt>.
-Furthermore, we select two counters <tt>metric1</tt> and <tt>metric2</tt> from the plugin.
+To enable a metric plugin, add the plugin <PLUGINNAME> to the environment variable \confvar{SCOREP_METRIC_PLUGINS} and configure the used metrics through the environment variable SCOREP_METRIC_PLUGINNAME.
+In the following example we want to use the above <tt>HelloWorld</tt> plugin.
+We select two counters <tt>metric1</tt> and <tt>metric2</tt> from the plugin.
 Make sure that the metric plugin library is placed in a directory which is part of <tt>LD_LIBRARY_PATH</tt>.
 
 <pre>
-SCOREP_METRIC_PLUGINS=HelloWorld
-SCOREP_METRIC_HELLOWORLD=metric1,metric2
+SCOREP_METRIC_PLUGINS=HelloWorld_plugin
+SCOREP_METRIC_HELLOWORLD_PLUGIN=metric1,metric2
 </pre>
 
 @note Plugins are not supposed to trigger events (e.g. via @mpi, @openmp, Pthreads or user instrumentation) during initialization and finalization of the plugin.
-
+@note A set of open source metric plugins is available at <a href="https://github.com/score-p">GitHub</a>.
 
 @section cuda_adapter CUDA Performance Measurement
 @seclabel{cuda_adapter}
@@ -849,19 +840,10 @@ GPU idle time is not affected by kernel filtering.
 @section opencl_adapter OpenCL Performance Measurement
 @seclabel{opencl_adapter}
 
-If @scorep has been built with OpenCL support it is capable of recording OpencCL API function calls.
+If @scorep has been built with OpenCL support it is capable of recording OpenCL API function calls.
 
 Setting the environment variable \confvar{SCOREP_OPENCL_ENABLE} to <b><tt>yes</tt></b> enables OpenCL measurement.
-To enable a particular composition of OpenCL measurement features the variable should contain a comma-separated list of the following OpenCL measurement options:
-
-@code
-api            = OpenCL runtime API
-kernel         = OpenCL kernels
-memcpy         = OpenCL buffer reads/writes
-memusage       = Record OpenCL memory (de)allocations as a counter
-default/yes/1  = OpenCL API and GPU activities
-no             = Disable OpenCL measurement
-@endcode
+Please refer to the description of this variable to enable a particular composition of OpenCL measurement features.
 
 OpenCL measurement uses an extra buffer to store its activity records.
 If the size of this buffer is too small, @scorep will print a warning about the current buffer size and the number of dropped records.

@@ -55,6 +55,7 @@
 
 #include <SCOREP_Types.h>
 #include <SCOREP_Definitions.h>
+#include <SCOREP_Paradigms.h>
 #include <SCOREP_Properties.h>
 #include <SCOREP_Metric_Management.h>
 #include <SCOREP_Substrates_Management.h>
@@ -1061,19 +1062,19 @@ static void
 set_rewind_affected_thread_paradigm( SCOREP_Location*    location,
                                      SCOREP_ParadigmType paradigm )
 {
-    switch ( paradigm )
+    switch ( SCOREP_Paradigms_GetParadigmClass( paradigm ) )
     {
-#define case_break( thread_model, rewind_paradigm ) \
-    case SCOREP_PARADIGM_ ## thread_model: \
-        scorep_rewind_set_affected_paradigm( location, SCOREP_REWIND_PARADIGM_ ## rewind_paradigm ); \
+#define case_break( threading_class ) \
+    case SCOREP_PARADIGM_CLASS_ ## threading_class: \
+        scorep_rewind_set_affected_paradigm( location, SCOREP_REWIND_PARADIGM_ ## threading_class ); \
         break;
 
-        case_break( OPENMP, THREAD_FORK_JOIN );
-        case_break( PTHREAD, THREAD_CREATE_WAIT );
+        case_break( THREAD_FORK_JOIN );
+        case_break( THREAD_CREATE_WAIT );
 
 #undef case_break
         default:
-            UTILS_BUG( "Invalid threading model: %u", paradigm );
+            UTILS_BUG( "Unhandled threading model: %u", paradigm );
     }
 }
 
@@ -1243,7 +1244,7 @@ thread_acquire_lock( SCOREP_Location*    location,
                                       lockId,
                                       acquisitionOrder );
 
-    set_rewind_affected_thread_paradigm( location, paradigm );
+    scorep_rewind_set_affected_paradigm( location, SCOREP_REWIND_PARADIGM_THREAD_LOCKING );
 }
 
 
@@ -1263,7 +1264,7 @@ thread_release_lock( SCOREP_Location*    location,
                                       lockId,
                                       acquisitionOrder );
 
-    set_rewind_affected_thread_paradigm( location, paradigm );
+    scorep_rewind_set_affected_paradigm( location, SCOREP_REWIND_PARADIGM_THREAD_LOCKING );
 }
 
 
@@ -1555,6 +1556,16 @@ exit_rewind_point( SCOREP_Location*    location,
         if ( paradigm_affected[ SCOREP_REWIND_PARADIGM_THREAD_FORK_JOIN ] )
         {
             SCOREP_InvalidateProperty( SCOREP_PROPERTY_THREAD_FORK_JOIN_EVENT_COMPLETE );
+        }
+        /* Did it affect thread-create-wait events? */
+        if ( paradigm_affected[ SCOREP_REWIND_PARADIGM_THREAD_CREATE_WAIT ] )
+        {
+            SCOREP_InvalidateProperty( SCOREP_PROPERTY_THREAD_CREATE_WAIT_EVENT_COMPLETE );
+        }
+        /* Did it affect thread-locking events? */
+        if ( paradigm_affected[ SCOREP_REWIND_PARADIGM_THREAD_LOCKING ] )
+        {
+            SCOREP_InvalidateProperty( SCOREP_PROPERTY_THREAD_LOCK_EVENT_COMPLETE );
         }
     }
 

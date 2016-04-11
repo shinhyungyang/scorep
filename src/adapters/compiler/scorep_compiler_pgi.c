@@ -22,6 +22,9 @@
  * Copyright (c) 2009-2013,
  * Technische Universitaet Muenchen, Germany
  *
+ * Copyright (c) 2016,
+ * Technische Universitaet Darmstadt, Germany
+ *
  * This software may be modified and distributed under the terms of
  * a BSD-style license.  See the COPYING file in the package base
  * directory for details.
@@ -171,10 +174,111 @@ struct PGI_PROFENT_64
 
 #endif
 
-
 /* **************************************************************************************
  * Implementation of complier inserted functions
  ***************************************************************************************/
+
+/* *INDENT-OFF* */
+
+#define SCOREP_COMPILER_ENTER_MINST()                                                   \
+    SCOREP_IN_MEASUREMENT_INCREMENT();                                                  \
+    if ( SCOREP_IS_MEASUREMENT_PHASE( PRE ) )                                           \
+    {                                                                                   \
+        SCOREP_InitMeasurement();                                                       \
+    }                                                                                   \
+    if ( !SCOREP_IS_MEASUREMENT_PHASE( WITHIN ) || SCOREP_IsUnwindingEnabled() )        \
+    {                                                                                   \
+        SCOREP_IN_MEASUREMENT_DECREMENT();                                              \
+        return;                                                                         \
+    }                                                                                   \
+                                                                                        \
+    check_region( &profent->handle,                                                     \
+                  profent->fcnm,                                                        \
+                  profent->flnm,                                                        \
+                  profent->lineno );                                                    \
+                                                                                        \
+    if ( profent->handle != SCOREP_FILTERED_REGION )                                    \
+    {                                                                                   \
+        SCOREP_EnterRegion( profent->handle );                                          \
+    }                                                                                   \
+                                                                                        \
+    SCOREP_IN_MEASUREMENT_DECREMENT()
+
+#define SCOREP_COMPILER_EXIT_MINST()                                                    \
+    SCOREP_IN_MEASUREMENT_INCREMENT();                                                  \
+    if ( !SCOREP_IS_MEASUREMENT_PHASE( WITHIN ) || SCOREP_IsUnwindingEnabled() )        \
+    {                                                                                   \
+        SCOREP_IN_MEASUREMENT_DECREMENT();                                              \
+        return;                                                                         \
+    }                                                                                   \
+                                                                                        \
+    if ( profent->handle != SCOREP_FILTERED_REGION )                                    \
+    {                                                                                   \
+        SCOREP_ExitRegion( profent->handle );                                           \
+    }                                                                                   \
+                                                                                        \
+    SCOREP_IN_MEASUREMENT_DECREMENT();
+
+
+#define SCOREP_COMPILER_ENTER_MPROF()                                                   \
+    SCOREP_IN_MEASUREMENT_INCREMENT();                                                  \
+    if ( SCOREP_IS_MEASUREMENT_PHASE( PRE ) )                                           \
+    {                                                                                   \
+        SCOREP_InitMeasurement();                                                       \
+    }                                                                                   \
+    if ( !SCOREP_IS_MEASUREMENT_PHASE( WITHIN ) || SCOREP_IsUnwindingEnabled() )        \
+    {                                                                                   \
+        SCOREP_IN_MEASUREMENT_DECREMENT();                                              \
+        return;                                                                         \
+    }                                                                                   \
+                                                                                        \
+    check_region( &profent->handle,                                                     \
+                  profent->fcnm,                                                        \
+                  profent->flnm,                                                        \
+                  profent->lineno );                                                    \
+                                                                                        \
+    if ( profent->handle != SCOREP_FILTERED_REGION )                                    \
+    {                                                                                   \
+        SCOREP_EnterRegion( profent->handle );                                          \
+    }                                                                                   \
+    else                                                                                \
+    {                                                                                   \
+        SCOREP_Task_Enter( SCOREP_Location_GetCurrentCPULocation(), profent->handle );  \
+    }                                                                                   \
+                                                                                        \
+    SCOREP_IN_MEASUREMENT_DECREMENT()
+
+
+#define SCOREP_COMPILER_EXIT_MPROF()                                                    \
+    SCOREP_IN_MEASUREMENT_INCREMENT();                                                  \
+    if ( !SCOREP_IS_MEASUREMENT_PHASE( WITHIN ) || SCOREP_IsUnwindingEnabled() )        \
+    {                                                                                   \
+        SCOREP_IN_MEASUREMENT_DECREMENT();                                              \
+        return;                                                                         \
+    }                                                                                   \
+                                                                                        \
+    SCOREP_Location* location = SCOREP_Location_GetCurrentCPULocation();                \
+    UTILS_ASSERT( location != NULL );                                                   \
+                                                                                        \
+    SCOREP_RegionHandle region_handle =                                                 \
+        SCOREP_Task_GetTopRegion( SCOREP_Task_GetCurrentTask( location ) );             \
+    UTILS_ASSERT( region_handle != SCOREP_INVALID_REGION );                             \
+                                                                                        \
+    /* Check whether the top element of the callstack has a valid region handle.*/      \
+    /* If the region is filtered the top pointer is SCOREP_INVALID_REGION. */           \
+    if ( region_handle != SCOREP_FILTERED_REGION )                                      \
+    {                                                                                   \
+        SCOREP_ExitRegion( region_handle );                                             \
+    }                                                                                   \
+    else                                                                                \
+    {                                                                                   \
+        SCOREP_Task_Exit( location );                                                   \
+    }                                                                                   \
+    SCOREP_IN_MEASUREMENT_DECREMENT()
+
+
+/* *INDENT-ON* */
+
 
 /**
  * called during program initialization
@@ -249,67 +353,92 @@ check_region( SCOREP_RegionHandle* region,
 void
 ___rouent( struct PGI_PROFENT_32* profent )
 {
-    SCOREP_IN_MEASUREMENT_INCREMENT();
-    if ( SCOREP_IS_MEASUREMENT_PHASE( PRE ) )
-    {
-        SCOREP_InitMeasurement();
-    }
-    if ( !SCOREP_IS_MEASUREMENT_PHASE( WITHIN ) || SCOREP_IsUnwindingEnabled() )
-    {
-        SCOREP_IN_MEASUREMENT_DECREMENT();
-        return;
-    }
-
-    check_region( &profent->handle,
-                  profent->fcnm,
-                  profent->flnm,
-                  profent->lineno );
-
-    if ( profent->handle != SCOREP_FILTERED_REGION )
-    {
-        SCOREP_EnterRegion( profent->handle );
-    }
-    else
-    {
-        SCOREP_Task_Enter( SCOREP_Location_GetCurrentCPULocation(), profent->handle );
-    }
-
-    SCOREP_IN_MEASUREMENT_DECREMENT();
+    SCOREP_COMPILER_ENTER_MPROF();
 }
 
 #pragma save_all_gp_regs
 void
 ___rouent2( struct PGI_PROFENT_32* profent )
 {
-    SCOREP_IN_MEASUREMENT_INCREMENT();
-    if ( SCOREP_IS_MEASUREMENT_PHASE( PRE ) )
-    {
-        SCOREP_InitMeasurement();
-    }
-    if ( !SCOREP_IS_MEASUREMENT_PHASE( WITHIN ) || SCOREP_IsUnwindingEnabled() )
-    {
-        SCOREP_IN_MEASUREMENT_DECREMENT();
-        return;
-    }
+    SCOREP_COMPILER_ENTER_MPROF();
+}
 
-    check_region( &profent->handle,
-                  profent->fcnm,
-                  profent->flnm,
-                  profent->lineno );
+/**
+ * called at the end of each instrumented routine
+ */
+#pragma save_all_gp_regs
+void
+___rouret( void )
+{
+    SCOREP_COMPILER_EXIT_MPROF();
+}
 
-    if ( profent->handle != SCOREP_FILTERED_REGION )
-    {
-        SCOREP_EnterRegion( profent->handle );
-    }
-    else
-    {
-        SCOREP_Task_Enter( SCOREP_Location_GetCurrentCPULocation(), profent->handle );
-    }
-
-    SCOREP_IN_MEASUREMENT_DECREMENT();
+#pragma save_all_gp_regs
+void
+___rouret2( void )
+{
+    SCOREP_COMPILER_EXIT_MPROF();
 }
 
 #elif __x86_64__
+
+/**
+ * Called at the beginning of each instrumented routine
+ *
+ * The profent is in register %r9, which is by the amd64 calling convention
+ * the 6th argument
+ */
+#pragma save_all_gp_regs
+void
+___instent64( void*                  arg0,
+              void*                  arg1,
+              void*                  arg2,
+              void*                  arg3,
+              void*                  arg4,
+              struct PGI_PROFENT_64* profent )
+{
+    SCOREP_COMPILER_ENTER_MINST();
+}
+
+/**
+ * called at the end of each instrumented routine
+ */
+#pragma save_all_gp_regs
+void
+___instret64( void*                  arg0,
+              void*                  arg1,
+              void*                  arg2,
+              void*                  arg3,
+              void*                  arg4,
+              struct PGI_PROFENT_64* profent )
+{
+    SCOREP_COMPILER_EXIT_MINST();
+}
+
+#pragma save_all_gp_regs
+void
+___instentavx( void*                  arg0,
+               void*                  arg1,
+               void*                  arg2,
+               void*                  arg3,
+               void*                  arg4,
+               struct PGI_PROFENT_64* profent )
+{
+    SCOREP_COMPILER_ENTER_MINST();
+}
+
+
+#pragma save_all_gp_regs
+void
+___instretavx( void*                  arg0,
+               void*                  arg1,
+               void*                  arg2,
+               void*                  arg3,
+               void*                  arg4,
+               struct PGI_PROFENT_64* profent )
+{
+    SCOREP_COMPILER_EXIT_MINST();
+}
 
 /**
  * Called at the beginning of each instrumented routine
@@ -326,89 +455,17 @@ ___rouent64( void*                  arg0,
              void*                  arg4,
              struct PGI_PROFENT_64* profent )
 {
-    SCOREP_IN_MEASUREMENT_INCREMENT();
-    if ( SCOREP_IS_MEASUREMENT_PHASE( PRE ) )
-    {
-        SCOREP_InitMeasurement();
-    }
-    if ( !SCOREP_IS_MEASUREMENT_PHASE( WITHIN ) || SCOREP_IsUnwindingEnabled() )
-    {
-        SCOREP_IN_MEASUREMENT_DECREMENT();
-        return;
-    }
-
-    check_region( &profent->handle,
-                  profent->fcnm,
-                  profent->flnm,
-                  profent->lineno );
-
-    if ( profent->handle != SCOREP_FILTERED_REGION )
-    {
-        SCOREP_EnterRegion( profent->handle );
-    }
-    else
-    {
-        SCOREP_Task_Enter( SCOREP_Location_GetCurrentCPULocation(), profent->handle );
-    }
-
-    SCOREP_IN_MEASUREMENT_DECREMENT();
-}
-
-#endif
-
-/**
- * called at the end of each instrumented routine
- */
-#pragma save_all_gp_regs
-void
-___rouret( void )
-{
-    SCOREP_IN_MEASUREMENT_INCREMENT();
-    if ( !SCOREP_IS_MEASUREMENT_PHASE( WITHIN ) || SCOREP_IsUnwindingEnabled() )
-    {
-        SCOREP_IN_MEASUREMENT_DECREMENT();
-        return;
-    }
-
-    SCOREP_Location* location = SCOREP_Location_GetCurrentCPULocation();
-    UTILS_ASSERT( location != NULL );
-
-    SCOREP_RegionHandle region_handle =
-        SCOREP_Task_GetTopRegion( SCOREP_Task_GetCurrentTask( location ) );
-    UTILS_ASSERT( region_handle != SCOREP_INVALID_REGION );
-
-    /* Check whether the top element of the callstack has a valid region handle.
-       If the region is filtered the top pointer is SCOREP_INVALID_REGION.
-     */
-    if ( region_handle != SCOREP_FILTERED_REGION )
-    {
-        SCOREP_ExitRegion( region_handle );
-    }
-    else
-    {
-        SCOREP_Task_Exit( location );
-    }
-
-    SCOREP_IN_MEASUREMENT_DECREMENT();
-}
-
-#pragma save_all_gp_regs
-void
-___rouret2( void )
-{
-    SCOREP_IN_MEASUREMENT_INCREMENT();
-    ___rouret();
-    SCOREP_IN_MEASUREMENT_DECREMENT();
+    SCOREP_COMPILER_ENTER_MINST();
 }
 
 #pragma save_all_gp_regs
 void
 ___rouret64( void )
 {
-    SCOREP_IN_MEASUREMENT_INCREMENT();
-    ___rouret();
-    SCOREP_IN_MEASUREMENT_DECREMENT();
+    SCOREP_COMPILER_EXIT_MPROF();
 }
+
+#endif
 
 #pragma save_all_gp_regs
 void

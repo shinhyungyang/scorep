@@ -63,6 +63,8 @@ EXTRA_DIST += $(srcdir)/src/config.h                                      \
               $(srcdir)/doc/doxygen-user/main_6.dox.in                    \
               $(srcdir)/doc/doxygen-user/main_7.dox.in                    \
               $(srcdir)/doc/doxygen-user/main_8.dox.in                    \
+              $(srcdir)/doc/doxygen-user/main_9.dox.in                    \
+              $(srcdir)/doc/doxygen-user/scorep_info_confvars_help.md     \
               $(srcdir)/doc/profile/scorep_metrics.html                   \
               $(srcdir)/src/adapters/include/SCOREP_Fortran_Wrapper.h     \
               $(srcdir)/share/scorep.errors                               \
@@ -85,7 +87,8 @@ EXTRA_DIST += $(srcdir)/build-frontend/configure.ac \
 endif
 
 pkgdata_DATA = @PACKAGE@.summary \
-               share/scorep.spec
+               share/scorep.spec \
+               $(srcdir)/doc/doxygen-user/scorep_info_confvars_help.md
 
 doc_DATA = $(srcdir)/OPEN_ISSUES \
            $(srcdir)/ChangeLog
@@ -154,19 +157,21 @@ doc/doxygen-user/scorep_score_usage.dox.in: scorep-score-command
 scorep-wrapper-command:
 	@$(am__cd) build-backend && $(MAKE) $(AM_MAKEFLAGS) scorep-wrapper
 
-CLEANFILES += doc/doxygen-user/scorep_wrapper.dox.in
-doc/doxygen-user/scorep_wrapper.dox.in: scorep-wrapper-command
+CLEANFILES += doc/doxygen-user/scorep_wrapper_usage.md
+doc/doxygen-user/scorep_wrapper_usage.md: scorep-wrapper-command
 	$(AM_V_GEN)$(MKDIR_P) `dirname $@` && \
-	./build-backend/scorep-wrapper --help >$@.raw && \
-	( \
-            sed -e '/^WRAPPER INSTANCES$$/q' $@.raw; \
+	./build-backend/scorep-wrapper --help | \
+            sed '$$d' >$@.raw && \
+        ( \
+            sed -e '/^Wrapper Instances$$/q' $@.raw; \
+            echo "================="; \
             echo ""; \
-            echo "    The installation provides wrapper instances based on the compilers used to"; \
-            echo "    build Score-P.  This section than provides a listing of all these instances."; \
+            echo "The installation provides wrapper instances based on the compilers used to"; \
+            echo "build Score-P.  This section than provides a listing of all these instances."; \
             echo ""; \
-            echo "    Additional wrapper instances can be created with 'scorep-wrapper --create'."; \
+            echo "Additional wrapper instances can be created with \`scorep-wrapper --create\`."; \
             echo ""; \
-            sed -n -e '/^EXAMPLES$$/,$$p' $@.raw; \
+            sed -n -e '/^Examples$$/,$$p' $@.raw; \
         ) >$@ && \
         rm $@.raw
 
@@ -181,10 +186,12 @@ doc/doxygen-user/main.dox: $(srcdir)/doc/doxygen-user/main_1.dox.in \
     $(srcdir)/doc/doxygen-user/main_5.dox.in \
     doc/doxygen-user/scorep_backend_info_usage.dox.in \
     $(srcdir)/doc/doxygen-user/main_6.dox.in \
-    doc/doxygen-user/confvars.dox.in \
+    $(srcdir)/doc/doxygen-user/scorep_info_confvars_help.md \
     $(srcdir)/doc/doxygen-user/main_7.dox.in \
-    doc/doxygen-user/scorep_wrapper.dox.in \
-    $(srcdir)/doc/doxygen-user/main_8.dox.in
+    doc/doxygen-user/confvars.dox.in \
+    $(srcdir)/doc/doxygen-user/main_8.dox.in \
+    doc/doxygen-user/scorep_wrapper_usage.md \
+    $(srcdir)/doc/doxygen-user/main_9.dox.in
 	$(AM_V_GEN)$(MKDIR_P) `dirname $@` && \
 	cat $^ >$@
 

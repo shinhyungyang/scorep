@@ -1,7 +1,7 @@
 /*
  * This file is part of the Score-P software (http://www.score-p.org)
  *
- * Copyright (c) 2015,
+ * Copyright (c) 2015-2016,
  * Forschungszentrum Juelich GmbH, Germany
  *
  * This software may be modified and distributed under the terms of
@@ -73,18 +73,16 @@
     return mach_absolute_time();
 #endif
 
+#if HAVE( SCOREP_X86_32_TSC )
+    unsigned long long ticks;
+    __asm__ __volatile__("rdtsc": "=A" (ticks));
+    return ( uint64_t )ticks;
+#endif
+
 #if HAVE( SCOREP_X86_64_TSC )
     unsigned a, d;
     asm volatile ( "rdtsc" : "=a" ( a ), "=d" ( d ) );
     return ( ( uint64_t )a ) | ( ( ( uint64_t )d ) << 32 );
-#endif
-
-#if HAVE( SCOREP_X86_64_PGI_TSC )
-    asm ( " rdtsc; shl    $0x20,%rdx; mov    %eax,%eax; or     %rdx,%rax;    " );
-    /* 'rdtsc' returns its value in %eax/%edx pair, which just
-     * happens to be the register pair used for returning long long
-     * function return values. */
-    return;
 #endif
 
 #if HAVE( SCOREP_X86_64_MSVC_TSC )
@@ -122,4 +120,10 @@
 
 #if HAVE( SCOREP_CRAY_TSC )
     return ( uint64_t )_rtc();
+#endif
+
+#if HAVE( SCOREP_ARMV8_TSC )
+    uint64_t ticks;
+    asm ( "mrs %[result], CNTVCT_EL0\n\t" :[ result ] "=r" ( ticks ) );
+    return ticks;
 #endif

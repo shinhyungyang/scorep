@@ -315,10 +315,10 @@ typedef enum SCOREP_ParadigmFlags
      *  measurement data reader that the additional communicator definitions
      *  are not used.
      */
-    SCOREP_PARADIGM_FLAG_RMA_ONLY = 1 << 0,
+    SCOREP_PARADIGM_FLAG_RMA_ONLY = ( 1 << 0 ),
 
-        /** Value for empty flags. */
-        SCOREP_PARADIGM_FLAG_NONE = 0
+    /** Value for empty flags. */
+    SCOREP_PARADIGM_FLAG_NONE     = 0
 } SCOREP_ParadigmFlags;
 
 
@@ -771,15 +771,15 @@ typedef enum SCOREP_SamplingSetClass
  */
 typedef enum SCOREP_SystemTreeDomain
 {
-    SCOREP_SYSTEM_TREE_DOMAIN_NONE              = 0,
+    SCOREP_SYSTEM_TREE_DOMAIN_NONE          = 0,
 
-    SCOREP_SYSTEM_TREE_DOMAIN_MACHINE           = 1 << 0,
-        SCOREP_SYSTEM_TREE_DOMAIN_SHARED_MEMORY = 1 << 1,
-        SCOREP_SYSTEM_TREE_DOMAIN_NUMA          = 1 << 2,
-        SCOREP_SYSTEM_TREE_DOMAIN_SOCKET        = 1 << 3,
-        SCOREP_SYSTEM_TREE_DOMAIN_CACHE         = 1 << 4,
-        SCOREP_SYSTEM_TREE_DOMAIN_CORE          = 1 << 5,
-        SCOREP_SYSTEM_TREE_DOMAIN_PU            = 1 << 6
+    SCOREP_SYSTEM_TREE_DOMAIN_MACHINE       = ( 1 << 0 ),
+    SCOREP_SYSTEM_TREE_DOMAIN_SHARED_MEMORY = ( 1 << 1 ),
+    SCOREP_SYSTEM_TREE_DOMAIN_NUMA          = ( 1 << 2 ),
+    SCOREP_SYSTEM_TREE_DOMAIN_SOCKET        = ( 1 << 3 ),
+    SCOREP_SYSTEM_TREE_DOMAIN_CACHE         = ( 1 << 4 ),
+    SCOREP_SYSTEM_TREE_DOMAIN_CORE          = ( 1 << 5 ),
+    SCOREP_SYSTEM_TREE_DOMAIN_PU            = ( 1 << 6 )
 } SCOREP_SystemTreeDomain;
 
 
@@ -897,6 +897,23 @@ typedef enum SCOREP_AttributeType
     SCOREP_ATTRIBUTE_TYPE_CALLING_CONTEXT,
     SCOREP_ATTRIBUTE_TYPE_INTERRUPT_GENERATOR
 } SCOREP_AttributeType;
+
+/**
+ * Possible modes of a synchronization point.
+ * Express the time when a synchronization happens.
+ *
+ */
+typedef enum SCOREP_SynchronizationMode
+{
+    /** Synchronization at the beginning of the measurement */
+    SCOREP_SYNCHRONIZATION_MODE_BEGIN,
+    /** Synchronization at the initialization of a multi-process paradigm */
+    SCOREP_SYNCHRONIZATION_MODE_BEGIN_MPP,
+    /** Synchronization at the end of the measurement */
+    SCOREP_SYNCHRONIZATION_MODE_END,
+
+    SCOREP_SYNCHRONIZATION_MODE_MAX /**< NON-ABI, for internal use only. */
+} SCOREP_SynchronizationMode;
 
 /**
  * Interrupt generator modes.
