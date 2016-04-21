@@ -1,19 +1,25 @@
 ------------------- Upcoming version 2.0.2 ---------------------------
 
-------------------- Released version 2.0.1 ---------------------------
+Bugfixes:
 
-Features and improvements:
+- The preprocessing of source files before they will be instrumented
+  with OPARI2 was broken.  This is fixed.
+
+- Prevent potential division by zero error during calculation of tsc
+  timer frequency.
+
+------------------- Released version 2.0.1 ---------------------------
 
 Bugfixes:
 
- - Prevent the memory adapter from initializing the measurement system
-   as this leads to program crashes if it happens too early, e.g., on
-   Blue Gene systems. If memory instrumentation is the only means of
-   instrumentation, the measurement system is initialized via the
-   feature 'compiler constructor'. If this feature isn't available
-   (search for 'compiler constructor: yes' in 'scorep-info
-   config-summary'), you need to add e.g., user instrumentation to
-   initialize the measurement system.
+- Prevent the memory adapter from initializing the measurement system
+  as this leads to program crashes if it happens too early, e.g., on
+  Blue Gene systems. If memory instrumentation is the only means of
+  instrumentation, the measurement system is initialized via the
+  feature 'compiler constructor'. If this feature isn't available
+  (search for 'compiler constructor: yes' in 'scorep-info
+  config-summary'), you need to add e.g., user instrumentation to
+  initialize the measurement system.
 
 ------------------- Released version 2.0 -----------------------------
 
@@ -355,11 +361,10 @@ User tools and API improvements and changes:
   deprecated and are no longer documented.
 - Added handling for special characters, like space, in file names and
   path names. However, there are still some limitation when using
-  special characters: The PDT parser can not deal with these
-  characters and, thus, fails if PDT instrumentation is enabled and
-  special characters appear. Furthermore, compilation fails when
-  double quotes appear in source file names and preprocessing is
-  enabled.
+  special characters: The PDT parser cannot deal with these characters
+  and, thus, fails if PDT instrumentation is enabled and special
+  characters appear. Furthermore, compilation fails when double quotes
+  appear in source file names and preprocessing is enabled.
 - Unified naming of macros in the user adapter. In C/C++ the macros to
   define global region handles (SCOREP_GLOBAL_REGION_DEFINE and
   SCOREP_GLOBAL_REGION_EXTERNAL) and in Fortran the parameter macros
