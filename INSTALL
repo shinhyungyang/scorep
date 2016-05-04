@@ -92,6 +92,11 @@ compiler suite other than GCC.
                non-cross-compiling environments. Needs to be in $PATH.
                [Default: gcc]
 
+  Note that for --with-nocross-compiler-suite=pgi and pgi >= 16.1,
+  you additionally need to add CXX=pgc++ CXXFLAGS='-O2 -gopt' to the
+  configure line. This is to override our CXX=pgCC setting; pgCC was
+  removed in version 16.1.
+
 In cross-compiling environments, the compiler suite used to build the
 frontend parts can be specified explicitly if desired.
 
