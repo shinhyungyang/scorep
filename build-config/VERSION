@@ -9,9 +9,9 @@ library interface version:
 
 package.major=2
 package.minor=0
-package.bugfix=2
+package.bugfix=3
 package.suffix=beta
 
 library.current=4
-library.revision=1
+library.revision=2
 library.age=0
