@@ -70,11 +70,27 @@ SCOREP_Config_Adapter::init( void )
     all.push_back( new SCOREP_Config_CompilerAdapter() );
     all.push_back( new SCOREP_Config_UserAdapter() );
     all.push_back( new SCOREP_Config_Opari2Adapter() );
+#if HAVE_BACKEND( CUDA_SUPPORT )
     all.push_back( new SCOREP_Config_CudaAdapter() );
+#else
+    all.push_back( new SCOREP_Config_MockupAdapter( "cuda" ) );
+#endif
+#if HAVE_BACKEND( OPENACC_SUPPORT )
     all.push_back( new SCOREP_Config_OpenaccAdapter() );
+#else
+    all.push_back( new SCOREP_Config_MockupAdapter( "openacc" ) );
+#endif
+#if HAVE_BACKEND( OPENCL_SUPPORT )
     all.push_back( new SCOREP_Config_OpenclAdapter() );
+#else
+    all.push_back( new SCOREP_Config_MockupAdapter( "opencl" ) );
+#endif
     all.push_back( new SCOREP_Config_PreprocessAdapter() );
+#if HAVE_BACKEND( MEMORY_SUPPORT )
     all.push_back( new SCOREP_Config_MemoryAdapter() );
+#else
+    all.push_back( new SCOREP_Config_MockupAdapter( "memory" ) );
+#endif
 }
 
 void
@@ -118,7 +134,10 @@ SCOREP_Config_Adapter::addLibsAll( std::deque<std::string>&           libs,
     std::deque<SCOREP_Config_Adapter*>::iterator i;
     for ( i = all.begin(); i != all.end(); i++ )
     {
-        ( *i )->addLibs( libs, deps );
+        if ( ( *i )->m_is_enabled )
+        {
+            ( *i )->addLibs( libs, deps );
+        }
     }
 }
 
@@ -131,7 +150,10 @@ SCOREP_Config_Adapter::addCFlagsAll( std::string&           cflags,
     std::deque<SCOREP_Config_Adapter*>::iterator i;
     for ( i = all.begin(); i != all.end(); i++ )
     {
-        ( *i )->addCFlags( cflags, build_check, language, nvcc );
+        if ( ( *i )->m_is_enabled )
+        {
+            ( *i )->addCFlags( cflags, build_check, language, nvcc );
+        }
     }
 }
 
@@ -144,7 +166,10 @@ SCOREP_Config_Adapter::addIncFlagsAll( std::string&           incflags,
     std::deque<SCOREP_Config_Adapter*>::iterator i;
     for ( i = all.begin(); i != all.end(); i++ )
     {
-        ( *i )->addIncFlags( incflags, build_check, language, nvcc );
+        if ( ( *i )->m_is_enabled )
+        {
+            ( *i )->addIncFlags( incflags, build_check, language, nvcc );
+        }
     }
 }
 
@@ -156,7 +181,23 @@ SCOREP_Config_Adapter::addLdFlagsAll( std::string& ldflags,
     std::deque<SCOREP_Config_Adapter*>::iterator i;
     for ( i = all.begin(); i != all.end(); i++ )
     {
-        ( *i )->addLdFlags( ldflags, build_check, nvcc );
+        if ( ( *i )->m_is_enabled )
+        {
+            ( *i )->addLdFlags( ldflags, build_check, nvcc );
+        }
+    }
+}
+
+void
+SCOREP_Config_Adapter::getAllInitStructNames( std::deque<std::string>& init_structs )
+{
+    std::deque<SCOREP_Config_Adapter*>::iterator i;
+    for ( i = all.begin(); i != all.end(); i++ )
+    {
+        if ( ( *i )->m_is_enabled )
+        {
+            ( *i )->appendInitStructName( init_structs );
+        }
     }
 }
 
@@ -202,11 +243,8 @@ void
 SCOREP_Config_Adapter::addLibs( std::deque<std::string>&           libs,
                                 SCOREP_Config_LibraryDependencies& deps )
 {
-    if ( m_is_enabled )
-    {
-        libs.push_back( "lib" + m_library + "_event" );
-        deps.addDependency( "libscorep_measurement", "lib" + m_library + "_mgmt" );
-    }
+    libs.push_back( "lib" + m_library + "_event" );
+    deps.addDependency( "libscorep_measurement", "lib" + m_library + "_mgmt" );
 }
 
 void
@@ -240,17 +278,48 @@ SCOREP_Config_Adapter::appendInitStructName( std::deque<std::string>& init_struc
     init_structs.push_back( "SCOREP_Subsystem_" + name + "Adapter" );
 }
 
-void
-SCOREP_Config_Adapter::getAllInitStructNames( std::deque<std::string>& init_structs )
+/* **************************************************************************************
+ * Mockup adapter
+ * *************************************************************************************/
+
+SCOREP_Config_MockupAdapter::SCOREP_Config_MockupAdapter( const std::string& name )
+    : SCOREP_Config_Adapter( name, "", false )
 {
-    std::deque<SCOREP_Config_Adapter*>::iterator i;
-    for ( i = all.begin(); i != all.end(); i++ )
+}
+
+void
+SCOREP_Config_MockupAdapter::printHelp( void )
+{
+}
+
+bool
+SCOREP_Config_MockupAdapter::checkArgument( const std::string& arg )
+{
+    if ( arg == "--" + m_name )
     {
-        if ( ( *i )->m_is_enabled )
-        {
-            ( *i )->appendInitStructName( init_structs );
-        }
+        std::cerr << "ERROR: Unsupported feature '" << m_name << "' cannot be enabled by '" << arg << "'" << std::endl;
+        exit( EXIT_FAILURE );
+        return false;
     }
+
+    if ( arg == "--no" + m_name )
+    {
+        m_is_enabled = false;
+        return true;
+    }
+
+    return false;
+}
+
+void
+SCOREP_Config_MockupAdapter::addLibs( std::deque<std::string>& /* libs */,
+                                      SCOREP_Config_LibraryDependencies& /* deps */ )
+{
+}
+
+void
+SCOREP_Config_MockupAdapter::appendInitStructName( std::deque<std::string>& init_structs )
+{
 }
 
 /* **************************************************************************************
@@ -288,23 +357,20 @@ SCOREP_Config_CompilerAdapter::addCFlags( std::string&           cflags,
                                           SCOREP_Config_Language language,
                                           bool /* nvcc */ )
 {
-    if ( m_is_enabled )
-    {
-        cflags += SCOREP_COMPILER_INSTRUMENTATION_CFLAGS " ";
+    cflags += SCOREP_COMPILER_INSTRUMENTATION_CFLAGS " ";
 
 #if HAVE_BACKEND( GCC_PLUGIN_SUPPORT )
-        if ( build_check )
-        {
-            extern std::string path_to_binary;
-            cflags += "-fplugin=" + path_to_binary + "../build-gcc-plugin/" LT_OBJDIR "scorep_instrument_function.so ";
-        }
-        else
-        {
-            cflags += "-fplugin=" SCOREP_PKGLIBDIR "/scorep_instrument_function.so ";
-        }
-        cflags += m_cflags;
-#endif
+    if ( build_check )
+    {
+        extern std::string path_to_binary;
+        cflags += "-fplugin=" + path_to_binary + "../build-gcc-plugin/" LT_OBJDIR "scorep_instrument_function.so ";
     }
+    else
+    {
+        cflags += "-fplugin=" SCOREP_PKGLIBDIR "/scorep_instrument_function.so ";
+    }
+    cflags += m_cflags;
+#endif
 }
 
 void
@@ -312,32 +378,29 @@ SCOREP_Config_CompilerAdapter::addLdFlags( std::string& ldflags,
                                            bool /* build_check */,
                                            bool         nvcc )
 {
-    if ( m_is_enabled )
+    if ( nvcc )
     {
-        if ( nvcc )
-        {
-            ldflags += " " SCOREP_COMPILER_INSTRUMENTATION_LDFLAGS;
-        }
-        else
-        {
-            /*
-             * Add compiler instrumentation cflags, because we encaountered a
-             * case on JUQUEEN with the XLC compiler, that performed
-             * rebuilding of code during linking on high optimization
-             * levels. If the link command does not contain compiler
-             * instrumentation flags, the code was not instrumented.
-             *
-             * However, we got errors with PGI on Todi, because compiler instrumentation
-             * functions were defined twice. Thus do not add the
-             * compiler instrumentation for PGI.
-             *
-             * See also ticket #855.
-             */
+        ldflags += " " SCOREP_COMPILER_INSTRUMENTATION_LDFLAGS;
+    }
+    else
+    {
+        /*
+         * Add compiler instrumentation cflags, because we encaountered a
+         * case on JUQUEEN with the XLC compiler, that performed
+         * rebuilding of code during linking on high optimization
+         * levels. If the link command does not contain compiler
+         * instrumentation flags, the code was not instrumented.
+         *
+         * However, we got errors with PGI on Todi, because compiler instrumentation
+         * functions were defined twice. Thus do not add the
+         * compiler instrumentation for PGI.
+         *
+         * See also ticket #855.
+         */
 #if !SCOREP_BACKEND_COMPILER_PGI
-            ldflags += " " SCOREP_COMPILER_INSTRUMENTATION_CFLAGS;
+        ldflags += " " SCOREP_COMPILER_INSTRUMENTATION_CFLAGS;
 #endif
-            ldflags += " " SCOREP_COMPILER_INSTRUMENTATION_LDFLAGS;
-        }
+        ldflags += " " SCOREP_COMPILER_INSTRUMENTATION_LDFLAGS;
     }
 }
 
@@ -355,19 +418,16 @@ SCOREP_Config_UserAdapter::addIncFlags( std::string&           cflags,
                                         SCOREP_Config_Language language,
                                         bool /* nvcc */ )
 {
-    if ( m_is_enabled )
+    if ( language == SCOREP_CONFIG_LANGUAGE_FORTRAN )
     {
-        if ( language == SCOREP_CONFIG_LANGUAGE_FORTRAN )
-        {
 #if SCOREP_BACKEND_COMPILER_IBM
-            cflags += "-WF,";
+        cflags += "-WF,";
 #endif      // SCOREP_BACKEND_COMPILER_IBM
-            cflags += "-DSCOREP_USER_ENABLE ";
-        }
-        else
-        {
-            cflags += "-DSCOREP_USER_ENABLE ";
-        }
+        cflags += "-DSCOREP_USER_ENABLE ";
+    }
+    else
+    {
+        cflags += "-DSCOREP_USER_ENABLE ";
     }
 }
 
@@ -379,33 +439,12 @@ SCOREP_Config_CudaAdapter::SCOREP_Config_CudaAdapter()
 {
 }
 
-bool
-SCOREP_Config_CudaAdapter::checkArgument( const std::string& arg )
-{
-#if HAVE_BACKEND( CUDA_SUPPORT )
-    if ( arg == "--" + m_name )
-    {
-        m_is_enabled = true;
-        return true;
-    }
-#endif
-    if ( arg == "--no" + m_name )
-    {
-        m_is_enabled = false;
-        return true;
-    }
-    return false;
-}
-
 void
 SCOREP_Config_CudaAdapter::addLibs( std::deque<std::string>&           libs,
                                     SCOREP_Config_LibraryDependencies& deps )
 {
-    if ( HAVE_BACKEND_CUDA_SUPPORT && m_is_enabled )
-    {
-        libs.push_back( "lib" + m_library + "_event" );
-        deps.addDependency( "libscorep_measurement", "lib" + m_library + "_mgmt" );
-    }
+    libs.push_back( "lib" + m_library + "_event" );
+    deps.addDependency( "libscorep_measurement", "lib" + m_library + "_mgmt" );
 }
 
 /* **************************************************************************************
@@ -416,34 +455,13 @@ SCOREP_Config_OpenaccAdapter::SCOREP_Config_OpenaccAdapter()
 {
 }
 
-bool
-SCOREP_Config_OpenaccAdapter::checkArgument( const std::string& arg )
-{
-#if HAVE_BACKEND( OPENACC_SUPPORT )
-    if ( arg == "--" + m_name )
-    {
-        m_is_enabled = true;
-        return true;
-    }
-#endif
-    if ( arg == "--no" + m_name )
-    {
-        m_is_enabled = false;
-        return true;
-    }
-    return false;
-}
-
 void
 SCOREP_Config_OpenaccAdapter::addLibs( std::deque<std::string>&           libs,
                                        SCOREP_Config_LibraryDependencies& deps )
 {
-    if ( HAVE_BACKEND_OPENACC_SUPPORT && m_is_enabled )
-    {
-        libs.push_back( "lib" + m_library + "_event" );
-        deps.addDependency( "libscorep_measurement", "lib" + m_library + "_mgmt" );
-        deps.addDependency( "lib" + m_library + "_mgmt", "libscorep_alloc_metric" );
-    }
+    libs.push_back( "lib" + m_library + "_event" );
+    deps.addDependency( "libscorep_measurement", "lib" + m_library + "_mgmt" );
+    deps.addDependency( "lib" + m_library + "_mgmt", "libscorep_alloc_metric" );
 }
 
 
@@ -455,33 +473,12 @@ SCOREP_Config_OpenclAdapter::SCOREP_Config_OpenclAdapter()
 {
 }
 
-bool
-SCOREP_Config_OpenclAdapter::checkArgument( const std::string& arg )
-{
-#if HAVE_BACKEND( OPENCL_SUPPORT )
-    if ( arg == "--" + m_name )
-    {
-        m_is_enabled = true;
-        return true;
-    }
-#endif
-    if ( arg == "--no" + m_name )
-    {
-        m_is_enabled = false;
-        return true;
-    }
-    return false;
-}
-
 void
 SCOREP_Config_OpenclAdapter::addLibs( std::deque<std::string>&           libs,
                                       SCOREP_Config_LibraryDependencies& deps )
 {
-    if ( HAVE_BACKEND_OPENCL_SUPPORT && m_is_enabled )
-    {
-        libs.push_back( "lib" + m_library + "_event_static" );
-        deps.addDependency( "libscorep_measurement", "lib" + m_library + "_mgmt_static" );
-    }
+    libs.push_back( "lib" + m_library + "_event_static" );
+    deps.addDependency( "libscorep_measurement", "lib" + m_library + "_mgmt_static" );
 }
 
 void
@@ -489,30 +486,27 @@ SCOREP_Config_OpenclAdapter::addLdFlags( std::string& ldflags,
                                          bool         build_check,
                                          bool         nvcc )
 {
-    if ( m_is_enabled )
+    if ( build_check )
     {
-        if ( build_check )
+        extern std::string path_to_binary;
+        if ( nvcc )
         {
-            extern std::string path_to_binary;
-            if ( nvcc )
-            {
-                ldflags += " -Wl,@" + path_to_binary + "../share/opencl.nvcc.wrap";
-            }
-            else
-            {
-                ldflags += " -Wl,@" + path_to_binary + "../share/opencl.wrap";
-            }
+            ldflags += " -Wl,@" + path_to_binary + "../share/opencl.nvcc.wrap";
         }
         else
         {
-            if ( nvcc )
-            {
-                ldflags += " -Wl,@" SCOREP_DATADIR "/opencl.nvcc.wrap";
-            }
-            else
-            {
-                ldflags += " -Wl,@" SCOREP_DATADIR "/opencl.wrap";
-            }
+            ldflags += " -Wl,@" + path_to_binary + "../share/opencl.wrap";
+        }
+    }
+    else
+    {
+        if ( nvcc )
+        {
+            ldflags += " -Wl,@" SCOREP_DATADIR "/opencl.nvcc.wrap";
+        }
+        else
+        {
+            ldflags += " -Wl,@" SCOREP_DATADIR "/opencl.wrap";
         }
     }
 }
@@ -531,7 +525,7 @@ SCOREP_Config_PreprocessAdapter::addCFlags( std::string&           cflags,
                                             SCOREP_Config_Language language,
                                             bool                   nvcc )
 {
-    if ( m_is_enabled && ( language == SCOREP_CONFIG_LANGUAGE_CXX ) )
+    if ( language == SCOREP_CONFIG_LANGUAGE_CXX )
     {
         cflags += SCOREP_NO_PREINCLUDE_FLAG " ";
     }
@@ -564,13 +558,10 @@ SCOREP_Config_Opari2Adapter::addIncFlags( std::string&           incflags,
                                           SCOREP_Config_Language language,
                                           bool                   nvcc )
 {
-    if ( m_is_enabled )
-    {
-        printOpariCFlags( build_check,
-                          false,
-                          language,
-                          nvcc );
-    }
+    printOpariCFlags( build_check,
+                      false,
+                      language,
+                      nvcc );
 }
 
 void
@@ -579,13 +570,10 @@ SCOREP_Config_Opari2Adapter::addCFlags( std::string&           cflags,
                                         SCOREP_Config_Language language,
                                         bool                   nvcc )
 {
-    if ( m_is_enabled )
-    {
-        printOpariCFlags( build_check,
-                          true,
-                          language,
-                          nvcc );
-    }
+    printOpariCFlags( build_check,
+                      true,
+                      language,
+                      nvcc );
 }
 
 
@@ -655,7 +643,7 @@ SCOREP_Config_Opari2Adapter::printOpariCFlags( bool                   build_chec
  * Memory adapter
  * *************************************************************************************/
 SCOREP_Config_MemoryAdapter::SCOREP_Config_MemoryAdapter()
-    : SCOREP_Config_Adapter( "memory", "scorep_adapter_memory", true )
+    : SCOREP_Config_Adapter( "memory", "scorep_adapter_memory", false )
 {
 }
 
@@ -680,7 +668,6 @@ SCOREP_Config_MemoryAdapter::printHelp( void )
 bool
 SCOREP_Config_MemoryAdapter::checkArgument( const std::string& arg )
 {
-#if HAVE_BACKEND( MEMORY_SUPPORT )
     if ( arg == "--" + m_name )
     {
         m_is_enabled = true;
@@ -694,7 +681,7 @@ SCOREP_Config_MemoryAdapter::checkArgument( const std::string& arg )
         m_categories.insert( categories.begin(), categories.end() );
         return true;
     }
-#endif
+
     if ( arg == "--no" + m_name )
     {
         m_is_enabled = false;
@@ -707,51 +694,48 @@ void
 SCOREP_Config_MemoryAdapter::addLibs( std::deque<std::string>&           libs,
                                       SCOREP_Config_LibraryDependencies& deps )
 {
-    if ( HAVE_BACKEND_MEMORY_SUPPORT && m_is_enabled )
+    if ( m_categories.count( "libc" ) )
     {
-        if ( m_categories.count( "libc" ) )
-        {
-            libs.push_back( "lib" + m_library + "_event_libc" );
-        }
-
-        if ( m_categories.count( "libc11" ) )
-        {
-            libs.push_back( "lib" + m_library + "_event_libc11" );
-        }
-
-        if ( m_categories.count( "c++L32" ) || m_categories.count( "c++L64" ) )
-        {
-            libs.push_back( "lib" + m_library + "_event_cxx" );
-        }
-
-        if ( m_categories.count( "c++L32" ) )
-        {
-            libs.push_back( "lib" + m_library + "_event_cxx_L32" );
-        }
-
-        if ( m_categories.count( "c++L64" ) )
-        {
-            libs.push_back( "lib" + m_library + "_event_cxx_L64" );
-        }
-
-        if ( m_categories.count( "pgCCL32" ) || m_categories.count( "pgCCL64" ) )
-        {
-            libs.push_back( "lib" + m_library + "_event_pgCC" );
-        }
-
-        if ( m_categories.count( "pgCCL32" ) )
-        {
-            libs.push_back( "lib" + m_library + "_event_pgCC_L32" );
-        }
-
-        if ( m_categories.count( "pgCCL64" ) )
-        {
-            libs.push_back( "lib" + m_library + "_event_pgCC_L64" );
-        }
-
-        deps.addDependency( "libscorep_measurement", "lib" + m_library + "_mgmt" );
-        deps.addDependency( "lib" + m_library + "_mgmt", "libscorep_alloc_metric" );
+        libs.push_back( "lib" + m_library + "_event_libc" );
     }
+
+    if ( m_categories.count( "libc11" ) )
+    {
+        libs.push_back( "lib" + m_library + "_event_libc11" );
+    }
+
+    if ( m_categories.count( "c++L32" ) || m_categories.count( "c++L64" ) )
+    {
+        libs.push_back( "lib" + m_library + "_event_cxx" );
+    }
+
+    if ( m_categories.count( "c++L32" ) )
+    {
+        libs.push_back( "lib" + m_library + "_event_cxx_L32" );
+    }
+
+    if ( m_categories.count( "c++L64" ) )
+    {
+        libs.push_back( "lib" + m_library + "_event_cxx_L64" );
+    }
+
+    if ( m_categories.count( "pgCCL32" ) || m_categories.count( "pgCCL64" ) )
+    {
+        libs.push_back( "lib" + m_library + "_event_pgCC" );
+    }
+
+    if ( m_categories.count( "pgCCL32" ) )
+    {
+        libs.push_back( "lib" + m_library + "_event_pgCC_L32" );
+    }
+
+    if ( m_categories.count( "pgCCL64" ) )
+    {
+        libs.push_back( "lib" + m_library + "_event_pgCC_L64" );
+    }
+
+    deps.addDependency( "libscorep_measurement", "lib" + m_library + "_mgmt" );
+    deps.addDependency( "lib" + m_library + "_mgmt", "libscorep_alloc_metric" );
 }
 
 void
@@ -759,78 +743,75 @@ SCOREP_Config_MemoryAdapter::addLdFlags( std::string& ldflags,
                                          bool         build_check,
                                          bool         nvcc )
 {
-    if ( m_is_enabled )
-    {
 #if SCOREP_BACKEND_COMPILER_CRAY
-        ldflags += "-h system_alloc ";
+    ldflags += " -h system_alloc";
 #endif
 
-        if ( m_categories.count( "libc" ) )
-        {
-            ldflags += " -Wl,"
-                       "--undefined,__wrap_malloc,"
-                       "-wrap,malloc,"
-                       "-wrap,realloc,"
-                       "-wrap,calloc,"
-                       "-wrap,free,"
-                       "-wrap,memalign,"
-                       "-wrap,posix_memalign,"
-                       "-wrap,valloc";
-        }
+    if ( m_categories.count( "libc" ) )
+    {
+        ldflags += " -Wl,"
+                   "--undefined,__wrap_malloc,"
+                   "-wrap,malloc,"
+                   "-wrap,realloc,"
+                   "-wrap,calloc,"
+                   "-wrap,free,"
+                   "-wrap,memalign,"
+                   "-wrap,posix_memalign,"
+                   "-wrap,valloc";
+    }
 
-        if ( m_categories.count( "libc11" ) )
-        {
-            ldflags += " -Wl,"
-                       "--undefined,__wrap_aligned_alloc,"
-                       "-wrap,aligned_alloc";
-        }
+    if ( m_categories.count( "libc11" ) )
+    {
+        ldflags += " -Wl,"
+                   "--undefined,__wrap_aligned_alloc,"
+                   "-wrap,aligned_alloc";
+    }
 
-        if ( m_categories.count( "c++L32" ) || m_categories.count( "c++L64" ) )
-        {
-            ldflags += " -Wl,"
-                       "--undefined,__wrap__ZdlPv,"
-                       "-wrap,_ZdlPv,"
-                       "-wrap,_ZdaPv";
-        }
+    if ( m_categories.count( "c++L32" ) || m_categories.count( "c++L64" ) )
+    {
+        ldflags += " -Wl,"
+                   "--undefined,__wrap__ZdlPv,"
+                   "-wrap,_ZdlPv,"
+                   "-wrap,_ZdaPv";
+    }
 
-        if ( m_categories.count( "c++L32" ) )
-        {
-            ldflags += " -Wl,"
-                       "--undefined,__wrap__Znwj,"
-                       "-wrap,_Znwj,"
-                       "-wrap,_Znaj";
-        }
+    if ( m_categories.count( "c++L32" ) )
+    {
+        ldflags += " -Wl,"
+                   "--undefined,__wrap__Znwj,"
+                   "-wrap,_Znwj,"
+                   "-wrap,_Znaj";
+    }
 
-        if ( m_categories.count( "c++L64" ) )
-        {
-            ldflags += " -Wl,"
-                       "--undefined,__wrap__Znwm,"
-                       "-wrap,_Znwm,"
-                       "-wrap,_Znam";
-        }
+    if ( m_categories.count( "c++L64" ) )
+    {
+        ldflags += " -Wl,"
+                   "--undefined,__wrap__Znwm,"
+                   "-wrap,_Znwm,"
+                   "-wrap,_Znam";
+    }
 
-        if ( m_categories.count( "pgCCL32" ) || m_categories.count( "pgCCL64" ) )
-        {
-            ldflags += " -Wl,"
-                       "--undefined,__wrap___dl__FPv,"
-                       "-wrap,__dl__FPv,"
-                       "-wrap,__dla__FPv";
-        }
+    if ( m_categories.count( "pgCCL32" ) || m_categories.count( "pgCCL64" ) )
+    {
+        ldflags += " -Wl,"
+                   "--undefined,__wrap___dl__FPv,"
+                   "-wrap,__dl__FPv,"
+                   "-wrap,__dla__FPv";
+    }
 
-        if ( m_categories.count( "pgCCL32" ) )
-        {
-            ldflags += " -Wl,"
-                       "--undefined,__wrap___nw__FUi,"
-                       "-wrap,__nw__FUi,"
-                       "-wrap,__nwa__FUi";
-        }
+    if ( m_categories.count( "pgCCL32" ) )
+    {
+        ldflags += " -Wl,"
+                   "--undefined,__wrap___nw__FUi,"
+                   "-wrap,__nw__FUi,"
+                   "-wrap,__nwa__FUi";
+    }
 
-        if ( m_categories.count( "pgCCL64" ) )
-        {
-            ldflags += " -Wl,"
-                       "--undefined,__wrap___nw__FUl,"
-                       "-wrap,__nw__FUl,"
-                       "-wrap,__nwa__FUl";
-        }
+    if ( m_categories.count( "pgCCL64" ) )
+    {
+        ldflags += " -Wl,"
+                   "--undefined,__wrap___nw__FUl,"
+                   "-wrap,__nw__FUl,"
+                   "-wrap,__nwa__FUl";
     }
 }
