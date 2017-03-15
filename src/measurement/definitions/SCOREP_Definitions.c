@@ -185,6 +185,7 @@ SCOREP_Definitions_InitializeDefinitionManager( SCOREP_DefinitionManager**    de
     SCOREP_DEFINITIONS_MANAGER_INIT_MEMBER( *definitionManager, marker_group );
     SCOREP_DEFINITIONS_MANAGER_INIT_MEMBER( *definitionManager, marker );
     SCOREP_DEFINITIONS_MANAGER_INIT_MEMBER( *definitionManager, parameter );
+    SCOREP_DEFINITIONS_MANAGER_ALLOC_MEMBER_HASH_TABLE( *definitionManager, parameter );
     SCOREP_DEFINITIONS_MANAGER_INIT_MEMBER( *definitionManager, callpath );
     SCOREP_DEFINITIONS_MANAGER_INIT_MEMBER( *definitionManager, property );
     SCOREP_DEFINITIONS_MANAGER_INIT_MEMBER( *definitionManager, attribute );
@@ -210,7 +211,6 @@ SCOREP_Definitions_InitializeDefinitionManager( SCOREP_DefinitionManager**    de
         SCOREP_DEFINITIONS_MANAGER_ALLOC_MEMBER_HASH_TABLE( *definitionManager, io_file );
         SCOREP_DEFINITIONS_MANAGER_ALLOC_MEMBER_HASH_TABLE( *definitionManager, marker_group );
         SCOREP_DEFINITIONS_MANAGER_ALLOC_MEMBER_HASH_TABLE( *definitionManager, marker );
-        SCOREP_DEFINITIONS_MANAGER_ALLOC_MEMBER_HASH_TABLE( *definitionManager, parameter );
         SCOREP_DEFINITIONS_MANAGER_ALLOC_MEMBER_HASH_TABLE( *definitionManager, callpath );
         SCOREP_DEFINITIONS_MANAGER_ALLOC_MEMBER_HASH_TABLE( *definitionManager, property );
         SCOREP_DEFINITIONS_MANAGER_ALLOC_MEMBER_HASH_TABLE( *definitionManager, location_property );

@@ -4,6 +4,9 @@
  * Copyright (c) 2016,
  * Technische Universitaet Dresden, Germany
  *
+ * Copyright (c) 2017,
+ * Technische Universitaet Darmstadt, Germany
+ *
  * This software may be modified and distributed under the terms of
  * a BSD-style license.  See the COPYING file in the package base
  * directory for details.
@@ -60,6 +63,12 @@ SCOREP_Instrumenter_MemoryAdapter::printHelp( void )
 std::string
 SCOREP_Instrumenter_MemoryAdapter::getConfigToolFlag( SCOREP_Instrumenter_CmdLine& /* cmdLine */ )
 {
+    /* Explicit user arguments */
+    if ( isEnabled() && m_params != "" )
+    {
+        return " --" + m_name + "=" + m_params.substr( 1 );
+    }
+    /* Auto-detected arguments */
     if ( isEnabled() && m_categories.size() )
     {
         std::stringstream categories;
@@ -72,6 +81,7 @@ SCOREP_Instrumenter_MemoryAdapter::getConfigToolFlag( SCOREP_Instrumenter_CmdLin
         }
         return categories.str();
     }
+    /* Disabled */
     else if ( !isEnabled() )
     {
         return " --no" + m_name;
@@ -79,11 +89,39 @@ SCOREP_Instrumenter_MemoryAdapter::getConfigToolFlag( SCOREP_Instrumenter_CmdLin
     return "";
 }
 
+bool
+SCOREP_Instrumenter_MemoryAdapter::checkCommand( const std::string& current,
+                                                 const std::string& next )
+{
+#if SCOREP_BACKEND_COMPILER_IBM
+    if ( current == "-O4" ||
+         current == "-O5" ||
+         current == "-qipa" ||
+         ( current.substr( 0, 6 ) == "-qipa=" ) )
+    {
+        if ( isEnabled() )
+        {
+            std::cerr << "ERROR: Function wrapping does not work in combination with\n"
+                      << "       interprocedural analysis (-qipa compiler flag)\n"
+                      << "       Disable the memory measurement in Score-P or remove the\n"
+                      << "       interprocedural analysis flag."
+                      << std::endl;
+            exit( EXIT_FAILURE );
+        }
+        else
+        {
+            m_usage = disabled;
+        }
+    }
+#endif  /* SCOREP_BACKEND_COMPILER_IBM */
+    return false;
+}
 
 void
 SCOREP_Instrumenter_MemoryAdapter::checkObjects( SCOREP_Instrumenter& instrumenter )
 {
-    if ( m_usage != detect )
+    if ( m_usage != detect &&
+         !( isEnabled() && m_params == "" ) )
     {
         return;
     }

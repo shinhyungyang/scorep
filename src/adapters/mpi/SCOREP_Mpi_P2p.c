@@ -155,7 +155,7 @@ MPI_Bsend( SCOREP_MPI_CONST_DECL void* buf, int count, MPI_Datatype datatype, in
         {
             PMPI_Type_size( datatype, &sz );
             SCOREP_MpiSend( dest, SCOREP_MPI_COMM_HANDLE( comm ),
-                            tag, count * sz );
+                            tag, ( uint64_t )count * sz );
         }
 
         SCOREP_ENTER_WRAPPED_REGION();
@@ -221,7 +221,7 @@ MPI_Rsend( SCOREP_MPI_CONST_DECL void* buf, int count, MPI_Datatype datatype, in
         {
             PMPI_Type_size( datatype, &sz );
             SCOREP_MpiSend( dest, SCOREP_MPI_COMM_HANDLE( comm ),
-                            tag, count * sz );
+                            tag, ( uint64_t )count * sz );
         }
 
         SCOREP_ENTER_WRAPPED_REGION();
@@ -287,7 +287,7 @@ MPI_Send( SCOREP_MPI_CONST_DECL void* buf, int count, MPI_Datatype datatype, int
         {
             PMPI_Type_size( datatype, &sz );
             SCOREP_MpiSend( dest, SCOREP_MPI_COMM_HANDLE( comm ),
-                            tag, count * sz );
+                            tag, ( uint64_t )count * sz );
         }
 
         SCOREP_ENTER_WRAPPED_REGION();
@@ -353,7 +353,7 @@ MPI_Ssend( SCOREP_MPI_CONST_DECL void* buf, int count, MPI_Datatype datatype, in
         {
             PMPI_Type_size( datatype, &sz );
             SCOREP_MpiSend( dest, SCOREP_MPI_COMM_HANDLE( comm ),
-                            tag, count * sz );
+                            tag, ( uint64_t )count * sz );
         }
 
         SCOREP_ENTER_WRAPPED_REGION();
@@ -441,7 +441,7 @@ MPI_Recv( void* buf,
             PMPI_Type_size( datatype, &sz );
             PMPI_Get_count( status, datatype, &count );
             SCOREP_MpiRecv( status->MPI_SOURCE, SCOREP_MPI_COMM_HANDLE( comm ),
-                            status->MPI_TAG, count * sz );
+                            status->MPI_TAG, ( uint64_t )count * sz );
         }
 
 
@@ -520,7 +520,6 @@ MPI_Sendrecv( SCOREP_MPI_CONST_DECL void* sendbuf, int sendcount, MPI_Datatype s
 
     if ( SCOREP_MPI_IS_EVENT_GEN_ON_FOR( SCOREP_MPI_ENABLED_P2P ) )
     {
-        int        sendsz, recvsz;
         MPI_Status mystatus;
 
         SCOREP_MPI_EVENT_GEN_OFF();
@@ -529,9 +528,10 @@ MPI_Sendrecv( SCOREP_MPI_CONST_DECL void* sendbuf, int sendcount, MPI_Datatype s
 
         if ( dest != MPI_PROC_NULL )
         {
-            PMPI_Type_size( sendtype, &sendsz );
+            int sz;
+            PMPI_Type_size( sendtype, &sz );
             SCOREP_MpiSend( dest, SCOREP_MPI_COMM_HANDLE( comm ),
-                            sendtag, sendcount * sendsz );
+                            sendtag, sendcount * sz );
         }
         if ( status == MPI_STATUS_IGNORE )
         {
@@ -544,10 +544,11 @@ MPI_Sendrecv( SCOREP_MPI_CONST_DECL void* sendbuf, int sendcount, MPI_Datatype s
 
         if ( source != MPI_PROC_NULL && return_val == MPI_SUCCESS )
         {
-            PMPI_Type_size( recvtype, &recvsz );
+            int sz;
+            PMPI_Type_size( recvtype, &sz );
             PMPI_Get_count( status, recvtype, &recvcount );
             SCOREP_MpiRecv( status->MPI_SOURCE, SCOREP_MPI_COMM_HANDLE( comm ),
-                            status->MPI_TAG, recvcount * recvsz );
+                            status->MPI_TAG, recvcount * sz );
         }
 
         SCOREP_ExitRegion( scorep_mpi_regions[ SCOREP_MPI_REGION__MPI_SENDRECV ] );
@@ -579,12 +580,14 @@ MPI_Sendrecv_replace( void* buf, int count, MPI_Datatype datatype, int dest, int
 {
     SCOREP_IN_MEASUREMENT_INCREMENT();
     int          return_val;
-    int          sendcount = count, recvcount = count;
-    MPI_Datatype sendtype  = datatype, recvtype = datatype;
+    int          sendcount = count;
+    int          recvcount = count;
+    MPI_Datatype sendtype  = datatype;
+    MPI_Datatype recvtype  = datatype;
+
 
     if ( SCOREP_MPI_IS_EVENT_GEN_ON_FOR( SCOREP_MPI_ENABLED_P2P ) )
     {
-        int        sendsz, recvsz;
         MPI_Status mystatus;
 
         SCOREP_MPI_EVENT_GEN_OFF();
@@ -593,9 +596,10 @@ MPI_Sendrecv_replace( void* buf, int count, MPI_Datatype datatype, int dest, int
 
         if ( dest != MPI_PROC_NULL )
         {
-            PMPI_Type_size( sendtype, &sendsz );
+            int sz;
+            PMPI_Type_size( sendtype, &sz );
             SCOREP_MpiSend( dest, SCOREP_MPI_COMM_HANDLE( comm ),
-                            sendtag, sendcount * sendsz );
+                            sendtag, sendcount * sz );
         }
         if ( status == MPI_STATUS_IGNORE )
         {
@@ -608,10 +612,11 @@ MPI_Sendrecv_replace( void* buf, int count, MPI_Datatype datatype, int dest, int
 
         if ( source != MPI_PROC_NULL && return_val == MPI_SUCCESS )
         {
-            PMPI_Type_size( recvtype, &recvsz );
+            int sz;
+            PMPI_Type_size( recvtype, &sz );
             PMPI_Get_count( status, recvtype, &recvcount );
             SCOREP_MpiRecv( status->MPI_SOURCE, SCOREP_MPI_COMM_HANDLE( comm ),
-                            status->MPI_TAG, recvcount * sendsz );
+                            status->MPI_TAG, recvcount * sz );
         }
 
         SCOREP_ExitRegion( scorep_mpi_regions[ SCOREP_MPI_REGION__MPI_SENDRECV_REPLACE ] );
@@ -673,12 +678,12 @@ MPI_Ibsend( SCOREP_MPI_CONST_DECL void* buf, int count, MPI_Datatype datatype, i
             if ( xnb_active )
             {
                 SCOREP_MpiIsend( dest, SCOREP_MPI_COMM_HANDLE( comm ),
-                                 tag, count * sz, reqid );
+                                 tag, ( uint64_t )count * sz, reqid );
             }
             else
             {
                 SCOREP_MpiSend( dest, SCOREP_MPI_COMM_HANDLE( comm ),
-                                tag, count * sz );
+                                tag, ( uint64_t )count * sz );
             }
         }
 
@@ -688,7 +693,7 @@ MPI_Ibsend( SCOREP_MPI_CONST_DECL void* buf, int count, MPI_Datatype datatype, i
         if ( xnb_active && dest != MPI_PROC_NULL && return_val == MPI_SUCCESS )
         {
             scorep_mpi_request_create( *request, SCOREP_MPI_REQUEST_SEND,
-                                       tag, dest, count * sz, datatype, comm, reqid );
+                                       tag, dest, ( uint64_t )count * sz, datatype, comm, reqid );
 
         #if !defined( SCOREP_MPI_NO_HOOKS )
             if ( SCOREP_IS_MPI_HOOKS_ON )
@@ -749,12 +754,12 @@ MPI_Irsend( SCOREP_MPI_CONST_DECL void* buf, int count, MPI_Datatype datatype, i
             if ( xnb_active )
             {
                 SCOREP_MpiIsend( dest, SCOREP_MPI_COMM_HANDLE( comm ),
-                                 tag, count * sz, reqid );
+                                 tag, ( uint64_t )count * sz, reqid );
             }
             else
             {
                 SCOREP_MpiSend( dest, SCOREP_MPI_COMM_HANDLE( comm ),
-                                tag, count * sz );
+                                tag, ( uint64_t )count * sz );
             }
         }
 
@@ -764,7 +769,7 @@ MPI_Irsend( SCOREP_MPI_CONST_DECL void* buf, int count, MPI_Datatype datatype, i
         if ( xnb_active && dest != MPI_PROC_NULL && return_val == MPI_SUCCESS )
         {
             scorep_mpi_request_create( *request, SCOREP_MPI_REQUEST_SEND,
-                                       tag, dest, count * sz, datatype, comm, reqid );
+                                       tag, dest, ( uint64_t )count * sz, datatype, comm, reqid );
 
         #if !defined( SCOREP_MPI_NO_HOOKS )
             if ( SCOREP_IS_MPI_HOOKS_ON )
@@ -825,12 +830,12 @@ MPI_Isend( SCOREP_MPI_CONST_DECL void* buf, int count, MPI_Datatype datatype, in
             if ( xnb_active )
             {
                 SCOREP_MpiIsend( dest, SCOREP_MPI_COMM_HANDLE( comm ),
-                                 tag, count * sz, reqid );
+                                 tag, ( uint64_t )count * sz, reqid );
             }
             else
             {
                 SCOREP_MpiSend( dest, SCOREP_MPI_COMM_HANDLE( comm ),
-                                tag, count * sz );
+                                tag, ( uint64_t )count * sz );
             }
         }
 
@@ -840,7 +845,7 @@ MPI_Isend( SCOREP_MPI_CONST_DECL void* buf, int count, MPI_Datatype datatype, in
         if ( xnb_active && dest != MPI_PROC_NULL && return_val == MPI_SUCCESS )
         {
             scorep_mpi_request_create( *request, SCOREP_MPI_REQUEST_SEND,
-                                       tag, dest, count * sz, datatype, comm, reqid );
+                                       tag, dest, ( uint64_t )count * sz, datatype, comm, reqid );
 
         #if !defined( SCOREP_MPI_NO_HOOKS )
             if ( SCOREP_IS_MPI_HOOKS_ON )
@@ -901,12 +906,12 @@ MPI_Issend( SCOREP_MPI_CONST_DECL void* buf, int count, MPI_Datatype datatype, i
             if ( xnb_active )
             {
                 SCOREP_MpiIsend( dest, SCOREP_MPI_COMM_HANDLE( comm ),
-                                 tag, count * sz, reqid );
+                                 tag, ( uint64_t )count * sz, reqid );
             }
             else
             {
                 SCOREP_MpiSend( dest, SCOREP_MPI_COMM_HANDLE( comm ),
-                                tag, count * sz );
+                                tag, ( uint64_t )count * sz );
             }
         }
 
@@ -916,7 +921,7 @@ MPI_Issend( SCOREP_MPI_CONST_DECL void* buf, int count, MPI_Datatype datatype, i
         if ( xnb_active && dest != MPI_PROC_NULL && return_val == MPI_SUCCESS )
         {
             scorep_mpi_request_create( *request, SCOREP_MPI_REQUEST_SEND,
-                                       tag, dest, count * sz, datatype, comm, reqid );
+                                       tag, dest, ( uint64_t )count * sz, datatype, comm, reqid );
 
         #if !defined( SCOREP_MPI_NO_HOOKS )
             if ( SCOREP_IS_MPI_HOOKS_ON )
@@ -999,7 +1004,7 @@ MPI_Irecv( void*        buf,
         }
 
         scorep_mpi_request_create( *request, SCOREP_MPI_REQUEST_RECV,
-                                   tag, 0, count * sz, datatype, comm, reqid );
+                                   tag, 0, ( uint64_t )count * sz, datatype, comm, reqid );
         #if !defined( SCOREP_MPI_NO_HOOKS )
         if ( SCOREP_IS_MPI_HOOKS_ON )
         {
@@ -1894,7 +1899,7 @@ MPI_Bsend_init( SCOREP_MPI_CONST_DECL void* buf, int count, MPI_Datatype datatyp
     if ( dest != MPI_PROC_NULL && return_val == MPI_SUCCESS )
     {
         scorep_mpi_request_create( *request, ( SCOREP_MPI_REQUEST_SEND | SCOREP_MPI_REQUEST_IS_PERSISTENT ),
-                                   tag, dest, count * sz, datatype, comm,
+                                   tag, dest, ( uint64_t )count * sz, datatype, comm,
                                    scorep_mpi_get_request_id() );
     }
     if ( event_gen_active )
@@ -1946,7 +1951,7 @@ MPI_Rsend_init( SCOREP_MPI_CONST_DECL void* buf, int count, MPI_Datatype datatyp
     if ( dest != MPI_PROC_NULL && return_val == MPI_SUCCESS )
     {
         scorep_mpi_request_create( *request, ( SCOREP_MPI_REQUEST_SEND | SCOREP_MPI_REQUEST_IS_PERSISTENT ),
-                                   tag, dest, count * sz, datatype, comm,
+                                   tag, dest, ( uint64_t )count * sz, datatype, comm,
                                    scorep_mpi_get_request_id() );
     }
     if ( event_gen_active )
@@ -1998,7 +2003,7 @@ MPI_Send_init( SCOREP_MPI_CONST_DECL void* buf, int count, MPI_Datatype datatype
     if ( dest != MPI_PROC_NULL && return_val == MPI_SUCCESS )
     {
         scorep_mpi_request_create( *request, ( SCOREP_MPI_REQUEST_SEND | SCOREP_MPI_REQUEST_IS_PERSISTENT ),
-                                   tag, dest, count * sz, datatype, comm,
+                                   tag, dest, ( uint64_t )count * sz, datatype, comm,
                                    scorep_mpi_get_request_id() );
     }
     if ( event_gen_active )
@@ -2050,7 +2055,7 @@ MPI_Ssend_init( SCOREP_MPI_CONST_DECL void* buf, int count, MPI_Datatype datatyp
     if ( dest != MPI_PROC_NULL && return_val == MPI_SUCCESS )
     {
         scorep_mpi_request_create( *request, ( SCOREP_MPI_REQUEST_SEND | SCOREP_MPI_REQUEST_IS_PERSISTENT ),
-                                   tag, dest, count * sz, datatype, comm,
+                                   tag, dest, ( uint64_t )count * sz, datatype, comm,
                                    scorep_mpi_get_request_id() );
     }
     if ( event_gen_active )
@@ -2108,7 +2113,7 @@ MPI_Recv_init( void*        buf,
         int sz;
         PMPI_Type_size( datatype, &sz );
         scorep_mpi_request_create( *request, ( SCOREP_MPI_REQUEST_RECV | SCOREP_MPI_REQUEST_IS_PERSISTENT ),
-                                   tag, source, count * sz, datatype, comm,
+                                   tag, source, ( uint64_t )count * sz, datatype, comm,
                                    scorep_mpi_get_request_id() );
 
         #if !defined( SCOREP_MPI_NO_HOOKS )

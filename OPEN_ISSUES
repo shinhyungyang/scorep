@@ -13,15 +13,15 @@ various Score-P components.
   - Score-P has been tested on the following platforms:
     + IBM Blue Gene/Q, only static libraries supported
     + IBM BladeCenter & iDataPlex clusters
-    + Cray XC, only static libraries supported
-    + SGI Altix/ICE
+    + Cray XC (see 'Shared libraries on Cray systems' below)
     + K Computer, Fujitsu FX10 and FX100 systems
     + various Linux/Intel (x86/x64/Power8/ARM AArch32/AArch64) clusters
-    + Intel Xeon Phi, only native mode supported
+    + Intel Xeon Phi (KNC and KNL), only native mode supported
     The provided configure options (see INSTALL) may provide a good
     basis for building and testing the toolset on other systems.
 
   - The following platforms have not been tested recently:
+    + SGI Altix/ICE
     + IBM Blue Gene/P
     + Cray XT, XE, XK
     + Sun Solaris/SPARC-based clusters
@@ -46,6 +46,23 @@ various Score-P components.
 
   - To build Score-P it is required to have Fortran compilers and
     highly recommended to have MPI compilers.
+
+  - To build Score-P, a C and C++ compiler as well as C and Fortran
+    compiler wrappers (e.g., MPI od SHMEM) are used. Compilers and
+    compiler wrappers must be compatible.
+
+     - Note: PGI changed its default C++ compiler from 'pgCC' (which
+       was entirely removed in 16.1) to 'pgc++'. For building Score-P
+       with '--with-nocross-compiler-suite=pgi', 'CXX=pgc++' is used.
+       If your MPI and SHMEM compiler wrappers still use the old
+       'pgCC', please add 'CXX=pgCC' to your configure line to force
+       Score-P to use 'pgCC' as well. This will prevent link failures.
+
+  - Shared libraries on Cray systems: it is possible to build shared
+    libraries on Cray systems just by using the '--enable-shared'
+    configure option. Note that in order to link to these libraries,
+    you need to pass the '-dynamic' flag to the compiler wrapper;
+    static is the default linking mode on Cray systems.
 
 --------------------------------------------------------------------------------
 
@@ -165,7 +182,7 @@ various Score-P components.
     with the following warning: "If you are using MPICH1, please
     ignore this warning. If not, it seems that your interprocess
     communication library (e.g., MPI) hasn't been initialized. Score-P
-    can't generate output."
+    cannot generate output."
     If your MPI implements the C++ bindings in a separate library on
     top of the C bindings, the following workaround might work for
     you:
@@ -187,7 +204,7 @@ various Score-P components.
     when messages sent within different communicators overtake each
     other.
 
-  - Currently, Score-P can't handle MPI_Finalize() calls that occur
+  - Currently, Score-P cannot handle MPI_Finalize() calls that occur
     after the end of main(), e.g., via a destructor of a static C++
     object. Please call MPI_Finalize() before the end of main(). The
     issue will be resolved in a future version of Score-P.
@@ -260,6 +277,12 @@ various Score-P components.
     definition. Thus, macros like UINT32_C are left undefined. As workaround,
     pass macros like __STDC_CONSTANT_MACROS or __STDC_LIMIT_MACROS on the
     command line. See also the Open Issues of OPARI2.
+
+  - OPARI2-instrumented OpenMP code using user-defined reductions
+    (UDR), introduced with OpenMP 4, might crash when the UDR includes
+    execution of instrumented routines, which Score-P currently
+    reports as events on invalid threads or mis-matching enter/exit
+    events.
 
 --------------------------------------------------------------------------------
 
@@ -345,7 +368,7 @@ various Score-P components.
 
   - Please note that on systems where Pthreads don't need extra flags
     (like e.g., -pthread) to be compiled and linked (e.g., Cray, Blue
-    Gene/Q), Score-P can't instrument Pthreads automatically. You need
+    Gene/Q), Score-P cannot instrument Pthreads automatically. You need
     to enable Pthread instrumentation manually via scorep's
     --thread=pthread option.
 
@@ -400,7 +423,7 @@ various Score-P components.
   - Score-P does not support MPMD style programs where the executables
     are instrumented differently. I.e., it is best to compile/link all
     sources with the same set of flags for the Score-P instrumenter, so
-    that the instrumenter itself can't automatically decides what
+    that the instrumenter itself cannot automatically decides what
     paradigms the program uses. This applies to the --mpp and --thread
     flags.
 
