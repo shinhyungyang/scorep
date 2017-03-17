@@ -1,6 +1,7 @@
 ------------------- Upcoming version 3.1 -----------------------------
 
 Features and improvements:
+
 - The induced penalty to access thread-local storage variables was
   considerably reduced for some compilers, notable for the Intel
   compilers.
@@ -8,6 +9,9 @@ Features and improvements:
   are supported, use omp:ancestry as default. This works around a
   problem found with recent Intel compilers (e.g., 17.0.0) and the
   omp:tpd option.
+- The GCC compiler instrumentation plug-in now instruments functions
+  that will not return in the usual way, like, e.g., a Pthread
+  start_routine that calls pthread_exit.
 
 Bugfixes:
 
@@ -16,7 +20,7 @@ Bugfixes:
 - Fix loosing parameter call-paths by avoiding multiple definitions of
   the same parameters.
 - Fix that memory allocation measurements are disabled if the
-  user explicitly specifies --memory
+  user explicitly specifies --memory.
 - Fix conflict of function wrapping with IPA on BlueGene systems.
 - Do not preprocess assembler files anymore.
 - Fix race condition in parallel make (make -j). Note that parallel
