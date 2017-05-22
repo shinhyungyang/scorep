@@ -13,7 +13,7 @@
  * Copyright (c) 2009-2013,
  * University of Oregon, Eugene, USA
  *
- * Copyright (c) 2009-2015,
+ * Copyright (c) 2009-2015, 2017,
  * Forschungszentrum Juelich GmbH, Germany
  *
  * Copyright (c) 2009-2013,
@@ -223,6 +223,12 @@ scorep_tracing_chunk_allocate( void*         userData,
     void* chunk = SCOREP_Allocator_Alloc( *perBufferData, chunkSize );
 
     /* ignore allocation failures, OTF2 will flush and free chunks */
+#if HAVE( UTILS_DEBUG )
+    if ( !chunk )
+    {
+        UTILS_WARNING( "Cannot allocate %" PRIu64 " bytes for tracing; but OTF2 will flush and free chunks.", chunkSize );
+    }
+#endif
 
     return chunk;
 }

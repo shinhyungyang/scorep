@@ -170,11 +170,11 @@ various Score-P components.
 
 * MPI support
 
-  - Functions added with MPI-3.0 are not supported by Score-P.
-    Measurements using libraries providing MPI-3.0 functions will be
-    incomplete if any of the new functions are used, and use of
-    communicators or windows created by new functions are likely to
-    result in measurement failure.
+  - Most functions added with MPI-3.0 and MPI-3.1 only have Enter
+    and Exit event records, i.e. Score-P can measure the time spend 
+    in these routines, but no further analysis is possible.
+
+  - MPI_Comm_idup() is not supported and will abort the measurement.
 
   - C++ bindings for MPI are not supported. These were deprecated as
     of MPI-2.2 and removed with MPI-3.0. When using C++ bindings for
@@ -226,6 +226,14 @@ various Score-P components.
     to the previous behavior, adding user-instrumentation, e.g., in
     'main', would be sufficient. We will address this issue in a
     future release of Score-P.
+
+  - Score-P expects the MPI communication to be done on the master
+    thread only. It is not that it is not possible to measure
+    communication from other threads. But it is nearly impossible to
+    do reasonable analysis when only ranks but not the real
+    communication partners (threads) are known. There are efforts in
+    the MPI forum to address this issue (endpoints). Until then, only
+    MPI_THREAD_FUNNELED is supported.
 
 --------------------------------------------------------------------------------
 

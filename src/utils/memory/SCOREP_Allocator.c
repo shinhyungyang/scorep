@@ -274,10 +274,9 @@ static void*
 page_manager_alloc( SCOREP_Allocator_PageManager* pageManager,
                     size_t                        requestedSize )
 {
-    if ( requestedSize == 0 )
-    {
-        return 0;
-    }
+    assert( pageManager );
+    assert( pageManager->moved_page_id_mapping == 0 );
+    assert( requestedSize > 0 );
 
     /* do not try to allocate more than the allocator has memory */
     if ( requestedSize > total_memory( pageManager->allocator ) )
@@ -480,24 +479,29 @@ SCOREP_Allocator_DeleteAllocator( SCOREP_Allocator_Allocator* allocator )
 }
 
 
+#define get_page_manager( alloc, pm ) \
+    do { \
+        assert( alloc ); \
+        lock_allocator( alloc ); \
+        pm = get_union_object( alloc ); \
+        unlock_allocator( alloc ); \
+        if ( !pm ) \
+        { \
+            /* Out of memory. */ \
+            return 0; \
+        } \
+        pm->allocator             = alloc; \
+        pm->pages_in_use_list     = 0; \
+        pm->moved_page_id_mapping = 0; \
+        pm->last_allocation       = 0; \
+    } while ( 0 )
+
+
 SCOREP_Allocator_PageManager*
 SCOREP_Allocator_CreatePageManager( SCOREP_Allocator_Allocator* allocator )
 {
-    assert( allocator );
-
-    lock_allocator( allocator );
-    SCOREP_Allocator_PageManager* page_manager = get_union_object( allocator );
-    unlock_allocator( allocator );
-
-    if ( !page_manager )
-    {
-        return 0;
-    }
-
-    page_manager->allocator             = allocator;
-    page_manager->pages_in_use_list     = 0;
-    page_manager->moved_page_id_mapping = 0;
-    page_manager->last_allocation       = 0;
+    SCOREP_Allocator_PageManager* page_manager;
+    get_page_manager( allocator, page_manager );
 
     /* may fail, but maybe we have free pages later */
     page_manager_get_new_page( page_manager, page_size( allocator ) );
@@ -509,21 +513,8 @@ SCOREP_Allocator_CreatePageManager( SCOREP_Allocator_Allocator* allocator )
 SCOREP_Allocator_PageManager*
 SCOREP_Allocator_CreateMovedPageManager( SCOREP_Allocator_Allocator* allocator )
 {
-    assert( allocator );
-
-    lock_allocator( allocator );
-    SCOREP_Allocator_PageManager* page_manager = get_union_object( allocator );
-    unlock_allocator( allocator );
-
-    if ( !page_manager )
-    {
-        return 0;
-    }
-
-    page_manager->allocator             = allocator;
-    page_manager->pages_in_use_list     = 0;
-    page_manager->moved_page_id_mapping = 0;
-    page_manager->last_allocation       = 0;
+    SCOREP_Allocator_PageManager* page_manager;
+    get_page_manager( allocator, page_manager );
 
     uint32_t order = get_order( allocator,
                                 sizeof( *page_manager->moved_page_id_mapping )
@@ -533,11 +524,20 @@ SCOREP_Allocator_CreateMovedPageManager( SCOREP_Allocator_Allocator* allocator )
     SCOREP_Allocator_Page* page = get_page( allocator, order );
     unlock_allocator( allocator );
 
+    if ( !page )
+    {
+        /* Out of memory. */
+        return 0;
+    }
+
     page_manager->moved_page_id_mapping = ( uint32_t* )page->memory_start_address;
     memset( page_manager->moved_page_id_mapping, 0, order << allocator->page_shift );
 
     return page_manager;
 }
+
+
+#undef get_page_manager
 
 
 void
@@ -588,14 +588,6 @@ void*
 SCOREP_Allocator_Alloc( SCOREP_Allocator_PageManager* pageManager,
                         size_t                        memorySize )
 {
-    assert( pageManager );
-    assert( pageManager->moved_page_id_mapping == 0 );
-
-    if ( memorySize == 0 )
-    {
-        return 0;
-    }
-
     return page_manager_alloc( pageManager, memorySize );
 }
 
@@ -631,14 +623,6 @@ SCOREP_Allocator_MovableMemory
 SCOREP_Allocator_AllocMovable( SCOREP_Allocator_PageManager* pageManager,
                                size_t                        memorySize )
 {
-    assert( pageManager );
-    assert( pageManager->moved_page_id_mapping == 0 );
-
-    if ( memorySize == 0 )
-    {
-        return 0;
-    }
-
     /// @todo padding?
     void* memory = page_manager_alloc( pageManager, memorySize );
     if ( !memory )
