@@ -32,6 +32,16 @@ static int scorep_mpi_parallel_entered = 0;
 static bool mpi_finalize_called = false;
 
 /**
+ * Issue an 'undefined reference' link error in libscorep_adapter_mpi_mgmt if
+ * no symbols from SCOREP_Mpi_Env.o were linked due to missing corresponding
+ * MPI symbols in the application.
+ */
+void
+scorep_hint_No_MPI_startup_symbols_found_in_application( void )
+{
+}
+
+/**
  * @name C wrappers
  * @{
  */
@@ -234,7 +244,7 @@ int MPI_Finalize( void )
   }
 
   /* Be so kind and name the MPI_COMM_WORLD, if the user didn't do so already */
-  scorep_mpi_comm_set_default_names();
+  scorep_mpi_comm_set_name( MPI_COMM_WORLD, "MPI_COMM_WORLD" );
 
   /* finalize MPI event handling */
   /* We need to make sure that our exit handler is called before the MPI one. */

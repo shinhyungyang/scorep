@@ -82,6 +82,16 @@ static int scorep_mpi_parallel_entered = 0;
 static bool mpi_finalize_called = false;
 
 /**
+ * Issue an 'undefined reference' link error in libscorep_adapter_mpi_mgmt if
+ * no symbols from SCOREP_Mpi_Env.o were linked due to missing corresponding
+ * MPI symbols in the application.
+ */
+void
+scorep_hint_No_MPI_startup_symbols_found_in_application( void )
+{
+}
+
+/**
  * @name C wrappers
  * @{
  */

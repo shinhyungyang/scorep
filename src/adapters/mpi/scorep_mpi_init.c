@@ -267,6 +267,10 @@ mpi_subsystem_begin( void )
 static SCOREP_ErrorCode
 mpi_subsystem_init_mpp( void )
 {
+    extern void
+    scorep_hint_No_MPI_startup_symbols_found_in_application( void );
+
+    scorep_hint_No_MPI_startup_symbols_found_in_application();
     /* initialize communicator management and register MPI_COMM_WORLD*/
     scorep_mpi_comm_init();
 
