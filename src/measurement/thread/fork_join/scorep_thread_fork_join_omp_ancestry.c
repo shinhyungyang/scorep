@@ -142,18 +142,6 @@ scorep_thread_on_fork( uint32_t            nRequestedThreads,
 }
 
 
-/* *INDENT-OFF* */
-#define SCOREP_THREAD_ASSERT_TIMESTAMPS_IN_ORDER( location ) \
-    do \
-    { \
-        uint64_t current_timestamp = SCOREP_Timer_GetClockTicks(); \
-        UTILS_BUG_ON( SCOREP_Location_GetLastTimestamp( location ) > current_timestamp, \
-                      "Wrong timestamp order: %" PRIu64 " (last recorded) > %" PRIu64 " (current).", \
-                      SCOREP_Location_GetLastTimestamp( location ), current_timestamp ); \
-    } \
-    while ( 0 )
-/* *INDENT-ON* */
-
 /* This function uses the OpenMP ancestry functions to determine the
  * thread_private_data of the current thread's parent in the tree of nested
  * parallel regions. */
@@ -279,7 +267,15 @@ scorep_thread_on_team_begin( scorep_thread_private_data*  parentTpd,
         set_tpd_to( *currentTpd );
     }
 
-    SCOREP_THREAD_ASSERT_TIMESTAMPS_IN_ORDER( scorep_thread_get_location( *currentTpd ) );
+    uint64_t         current_timestamp = SCOREP_Timer_GetClockTicks();
+    SCOREP_Location* location          = scorep_thread_get_location( *currentTpd );
+    UTILS_BUG_ON( SCOREP_Location_GetLastTimestamp( location ) > current_timestamp,
+                  "Wrong timestamp order at team_begin on location %" PRIu32 ": %" PRIu64 " (last recorded) > %" PRIu64 " (current)."
+                  "This might be an indication of thread migration. Please pin your threads. "
+                  "Using a SCOREP_TIMER different from tsc might also help.",
+                  SCOREP_Location_GetId( location ),
+                  SCOREP_Location_GetLastTimestamp( location ),
+                  current_timestamp );
 }
 
 
