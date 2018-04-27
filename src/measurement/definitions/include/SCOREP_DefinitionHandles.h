@@ -45,6 +45,8 @@
 
 typedef SCOREP_AnyHandle SCOREP_AttributeHandle;
 
+typedef SCOREP_AnyHandle SCOREP_CallpathHandle;
+
 typedef SCOREP_AnyHandle SCOREP_CommunicatorHandle;
 
 typedef SCOREP_AnyHandle SCOREP_IOFileGroupHandle;
@@ -58,5 +60,7 @@ typedef SCOREP_AnyHandle SCOREP_MarkerGroupHandle;
 typedef SCOREP_AnyHandle SCOREP_MPICartesianTopologyHandle;
 
 typedef SCOREP_AnyHandle SCOREP_MPICartesianCoordsHandle;
+
+typedef SCOREP_AnyHandle SCOREP_PropertyHandle;
 
 #endif /* SCOREP_DEFINITIONHANDLES_H */

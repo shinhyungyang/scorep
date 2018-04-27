@@ -87,9 +87,6 @@ SCOREP_Definitions_NewCallingContext( uint64_t                        ip,
     SCOREP_Definitions_Unlock();
 
 
-    SCOREP_CALL_SUBSTRATE_MGMT( NewDefinitionHandle, NEW_DEFINITION_HANDLE,
-                                ( new_handle, SCOREP_HANDLE_TYPE_CALLING_CONTEXT ) );
-
     UTILS_DEBUG_EXIT( "ip %" PRIx64 ", region %u, scl %u, parent %u: %u",
                       ip, region, scl, parent, new_handle );
     return new_handle;
@@ -221,6 +218,12 @@ define_calling_context( SCOREP_DefinitionManager*       definition_manager,
     /* Does return if it is a duplicate */
     SCOREP_DEFINITIONS_MANAGER_ADD_DEFINITION( CallingContext, calling_context );
 
+    if ( definition_manager == &scorep_local_definition_manager )
+    {
+        SCOREP_CALL_SUBSTRATE_MGMT( NewDefinitionHandle, NEW_DEFINITION_HANDLE,
+                                    ( new_handle, SCOREP_HANDLE_TYPE_CALLING_CONTEXT ) );
+    }
+
     return new_handle;
 }
 
@@ -329,6 +332,12 @@ define_interrupt_generator( SCOREP_DefinitionManager*     definition_manager,
 
     /* Does return if it is a duplicate */
     SCOREP_DEFINITIONS_MANAGER_ADD_DEFINITION( InterruptGenerator, interrupt_generator );
+
+    if ( definition_manager == &scorep_local_definition_manager )
+    {
+        SCOREP_CALL_SUBSTRATE_MGMT( NewDefinitionHandle, NEW_DEFINITION_HANDLE,
+                                    ( new_handle, SCOREP_HANDLE_TYPE_INTERRUPT_GENERATOR ) );
+    }
 
     return new_handle;
 }

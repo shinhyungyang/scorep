@@ -50,9 +50,7 @@
 typedef enum SCOREP_HandleType
 {
     SCOREP_HANDLE_TYPE_ANY = 0,                   /** The handle type is not defined/invalid */
-    SCOREP_HANDLE_TYPE_ATTRIBUTE,                 /** The handle type is SCOREP_AttributeHandle (defined in src/measurement/definitions/include/SCOREP_DefinitionHandles.h) */
     SCOREP_HANDLE_TYPE_CALLING_CONTEXT,           /** The handle type is SCOREP_CallingContextHandle */
-    SCOREP_HANDLE_TYPE_CALLPATH,                  /** The handle type is SCOREP_CallpathHandle */
     SCOREP_HANDLE_TYPE_GROUP,                     /** The handle type is SCOREP_GroupHandle */
     SCOREP_HANDLE_TYPE_INTERIM_COMMUNICATOR,      /** The handle type is SCOREP_InterimCommunicatorHandle */
     SCOREP_HANDLE_TYPE_INTERRUPT_GENERATOR,       /** The handle type is SCOREP_InterruptGeneratorHandle */
@@ -62,7 +60,6 @@ typedef enum SCOREP_HandleType
     SCOREP_HANDLE_TYPE_METRIC,                    /** The handle type is SCOREP_MetricHandle (defined in SCOREP_PublicTypes.h) */
     SCOREP_HANDLE_TYPE_PARADIGM,                  /** The handle type is SCOREP_ParadigmHandle (defined in SCOREP_PublicTypes.h) */
     SCOREP_HANDLE_TYPE_PARAMETER,                 /** The handle type is SCOREP_ParameterHandle */
-    SCOREP_HANDLE_TYPE_PROPERTY,                  /** The handle type is SCOREP_PropertyHandle */
     SCOREP_HANDLE_TYPE_REGION,                    /** The handle type is SCOREP_RegionHandle (defined in SCOREP_PublicTypes.h) */
     SCOREP_HANDLE_TYPE_RMA_WINDOW,                /** The handle type is SCOREP_RmaWindowHandle */
     SCOREP_HANDLE_TYPE_SAMPLING_SET,              /** The handle type is SCOREP_SamplingSetHandle (defined in SCOREP_PublicTypes.h) */
@@ -78,8 +75,6 @@ typedef enum SCOREP_HandleType
 
 typedef SCOREP_AnyHandle SCOREP_CallingContextHandle;
 
-typedef SCOREP_AnyHandle SCOREP_CallpathHandle;
-
 typedef SCOREP_AnyHandle SCOREP_GroupHandle;
 
 typedef SCOREP_AnyHandle SCOREP_InterimCommunicatorHandle;
@@ -93,8 +88,6 @@ typedef SCOREP_AnyHandle SCOREP_LocationGroupHandle;
 typedef SCOREP_AnyHandle SCOREP_LocationPropertyHandle;
 
 typedef SCOREP_AnyHandle SCOREP_ParameterHandle;
-
-typedef SCOREP_AnyHandle SCOREP_PropertyHandle;
 
 typedef SCOREP_AnyHandle SCOREP_RmaWindowHandle;
 

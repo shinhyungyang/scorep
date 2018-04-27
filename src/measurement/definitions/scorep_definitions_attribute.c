@@ -106,9 +106,6 @@ SCOREP_Definitions_NewAttribute( const char*          name,
 
     SCOREP_Definitions_Unlock();
 
-    SCOREP_CALL_SUBSTRATE_MGMT( NewDefinitionHandle, NEW_DEFINITION_HANDLE,
-                                ( new_handle, SCOREP_HANDLE_TYPE_ATTRIBUTE ) );
-
     return new_handle;
 }
 
@@ -165,6 +162,8 @@ define_attribute( SCOREP_DefinitionManager* definition_manager,
 
     /* Does return if it is a duplicate */
     SCOREP_DEFINITIONS_MANAGER_ADD_DEFINITION( Attribute, attribute );
+
+    /* no NewDefinitionHandle yet, as attributes are not substrate unaware */
 
     return new_handle;
 }
