@@ -111,14 +111,14 @@ linker flags and libraries, or include paths:
 @endverbatim
 
 The @verb{--mpp=<paradigm>} switch selects which message passing paradigm is used.
-Currently, @scorep supports applications using MPI ( @verb{--mpp=mpi} ) or SHMEM
-( @verb{--mpp=shmem} ) and applications without any message passing paradigm.
+Currently, @scorep supports applications using MPI (@verb{--mpp=mpi}) or SHMEM
+(@verb{--mpp=shmem}) and applications without any message passing paradigm.
 It is not possible to specify two message passing systems for the same application.
 The @verb{--thread=<paradigm>} switch selects which threading system is used in
-@scorep. You may use OpenMP ( @verb{--thread=omp} ), no threading system
-( @verb{--thread=none} ) or POSIX threading system ( @verb{--thread=pthread} ). It is not possible to specify two threading systems
-for the same application. However, you may combine a message passing system with
-a threading system.
+@scorep. You may use OpenMP (@verb{--thread=omp}), no threading system
+(@verb{--thread=none}) or POSIX threading system (@verb{--thread=pthread}). It
+is not possible to specify two threading systems for the same application. However,
+you may combine a message passing system with a threading system.
 
 @note
   A particular installation of @scorep may not offer all measurement
@@ -158,30 +158,6 @@ disables compiler instrumentation.
 source routines and arbitrary regions, in addition to fully-automatic
 @mpi and @openmp instrumentation, as summarized in Table @tabref{instopts}.
 
-\if LATEX
-\latexonly
-   \begin{table}
-	\caption{Score-P instrumenter option overview}
-	\label{tab:instopts}
-    	\begin{tabular}{ | p{1.7cm} | p{3.0cm} | p{1.6cm} | p{2.1cm} | p{2.1cm} |}
-	    \hline
-	    \bf Type of\newline instrumen\-tation & \bf Instrumenter switch & \bf Default value & \bf Instrumented routines & \bf  Runtime measurement control \\ \hline
-
-	    MPI & {\ttfamily -\/-\/mpp=mpi/ \newline -\/-\/mpp=none} & (auto) &  configured by install & see Sec. \ref{sec:mpi_groups}  \\ \hline
-	    SHMEM & {\ttfamily -\/-\/mpp=shmem/ \newline -\/-\/mpp=none} & (auto) &  configured by install & --  \\ \hline
-	    OpenCL & {\ttfamily -\/-\/opencl/ \newline -\/-\/noopencl} & enabled &  configured by install & see Sec. \ref{sec:opencl_adapter}  \\ \hline
-	    OpenACC & {\ttfamily -\/-\/openacc/ \newline -\/-\/noopenacc} & enabled &  configured by install & see Sec. \ref{sec:openacc_adapter}  \\ \hline
-	    OpenMP & {\ttfamily -\/-\/thread=omp/ \newline -\/-\/thread=none \newline -\/-\/openmp \newline -\/-\/noopenmp} & (auto)  &  all parallel constructs &  --  \\ \hline
-	    Pthread & {\ttfamily -\/-\/thread= \newline pthread} & (auto) &  Basic Pthread library calls &  --  \\ \hline
-	    Compiler, Sec. \ref{sec:compiler_instrumentation} & {\ttfamily -\/-\/compiler/ \newline -\/-\/nocompiler} & enabled &  all & Filtering, Sec. \ref{sec:filtering}  \\ \hline
-	    PDT,\newline Sec. \ref{sec:tau_instrumentation} & {\ttfamily -\/-\/pdt/ \newline -\/-\/nopdt} & disabled &  all & Filtering, Sec. \ref{sec:filtering}  \\ \hline
-	    POMP2 user regions, Sec. \ref{sec:pomp_instrumentation} & {\ttfamily -\/-\/pomp/ \newline -\/-\/nopomp} & disabled &  manually\newline annotated & Filtering, Sec. \ref{sec:filtering}  \\ \hline
-	    Manual, Sec. \ref{sec:manual_instrumentation} & {\ttfamily -\/-\/user/ \newline -\/-\/nouser} & disabled &  manually\newline annotated & Filtering, Sec. \ref{sec:filtering}, and selective recording, Sec. \ref{sec:selective_recording}\\ \hline
-    	\end{tabular}
-    \end{table}
-\endlatexonly
-
-\else
   <table border=1 cellspacing=0>
     <caption>@scorep instrumenter option overview</caption>
     <tr>
@@ -192,38 +168,45 @@ source routines and arbitrary regions, in addition to fully-automatic
       <th align="center" valign="middle" style="width:8em;">Runtime measurement control</th>
     </tr>
     <tr>
-      <td align="left" valign="middle"> MPI </td>
-      <td align="center" valign="middle"> \--mpp=mpi </td>
+      <td align="left" valign="middle"> @mpi </td>
+      <td align="center" valign="middle"> \--mpp=mpi/<br>\--mpp=none </td>
       <td align="center" valign="middle"> (auto) </td>
       <td align="center" valign="middle"> configured by install </td>
-      <td align="center" valign="middle"> (see Sec. @ref mpi_groups ) </td>
+      <td align="center" valign="middle"> @secref{mpi_groups} </td>
     </tr>
     <tr>
-      <td align="left" valign="middle"> SHMEM </td>
-      <td align="center" valign="middle"> \--mpp=shmem/\--mpp=none </td>
+      <td align="left" valign="middle"> @shmem </td>
+      <td align="center" valign="middle"> \--mpp=shmem/<br>\--mpp=none </td>
       <td align="center" valign="middle"> (auto) </td>
       <td align="center" valign="middle"> configured by install </td>
       <td align="center" valign="middle"> &mdash; </td>
     </tr>
     <tr>
+      <td align="left" valign="middle"> CUDA </td>
+      <td align="center" valign="middle"> \--[no]cuda </td>
+      <td align="center" valign="middle"> enabled </td>
+      <td align="center" valign="middle"> all </td>
+      <td align="center" valign="middle"> @secref{cuda_adapter} </td>
+    </tr>
+    <tr>
       <td align="left" valign="middle"> OpenCL </td>
-      <td align="center" valign="middle"> \--opencl/\--noopencl </td>
+      <td align="center" valign="middle"> \--[no]opencl </td>
       <td align="center" valign="middle"> enabled </td>
       <td align="center" valign="middle"> configured by install </td>
-      <td align="center" valign="middle"> (see Sec. @ref opencl_adapter ) </td>
+      <td align="center" valign="middle"> @secref{opencl_adapter} </td>
     </tr>
     <tr>
       <td align="left" valign="middle"> OpenACC </td>
-      <td align="center" valign="middle"> \--openacc/\--noopenacc </td>
+      <td align="center" valign="middle"> \--[no]openacc </td>
       <td align="center" valign="middle"> enabled </td>
       <td align="center" valign="middle"> configured by install </td>
-      <td align="center" valign="middle"> (see Sec. @ref openacc_adapter ) </td>
+      <td align="center" valign="middle"> @secref{openacc_adapter} </td>
     </tr>
     <tr>
       <td align="left" valign="middle"> OpenMP </td>
-      <td align="center" valign="middle"> \--thread=omp / \--no|openmp </td>
+      <td align="center" valign="middle"> \--thread=omp / \--[no]openmp </td>
       <td align="center" valign="middle"> (auto) </td>
-      <td align="center" valign="middle"> all parallel constructs </td>
+      <td align="center" valign="middle"> all parallel constructs, see Note below </td>
       <td align="center" valign="middle"> &mdash; </td>
     </tr>
     <tr>
@@ -234,35 +217,41 @@ source routines and arbitrary regions, in addition to fully-automatic
       <td align="center" valign="middle"> &mdash; </td>
     </tr>
     <tr>
-      <td align="left" valign="middle"> Compiler (see Sec. @ref compiler_instrumentation ) </td>
-      <td align="center" valign="middle"> \--compiler/\--nocompiler </td>
+      <td align="left" valign="middle"> @secref{compiler_instrumentation} </td>
+      <td align="center" valign="middle"> \--[no]compiler </td>
       <td align="center" valign="middle"> enabled </td>
       <td align="center" valign="middle"> all </td>
-      <td align="center" valign="middle"> Filtering (see Sec. @ref filtering ) </tt> </td>
+      <td align="center" valign="middle"> @secref{filtering} </td>
     </tr>
     <tr>
-      <td align="left" valign="middle"> PDT instrumentation (see Sec. @ref tau_instrumentation ) </td>
-      <td align="center" valign="middle"> \--pdt/\--nopdt </td>
+      <td align="left" valign="middle"> @secref{tau_instrumentation} </td>
+      <td align="center" valign="middle"> \--[no]pdt </td>
       <td align="center" valign="middle"> disabled </td>
       <td align="center" valign="middle"> all </td>
-      <td align="center" valign="middle"> Filtering (see Sec. @ref filtering ) </td>
+      <td align="center" valign="middle"> @secref{filtering} </td>
     </tr>
     <tr>
-      <td align="left" valign="middle"> @pomp2 user regions (see Sec. @ref pomp_instrumentation ) </td>
-      <td align="center" valign="middle"> \--pomp/\--nopomp</td>
+      <td align="left" valign="middle"> @secref{pomp_instrumentation} </td>
+      <td align="center" valign="middle"> \--[no]pomp</td>
       <td align="center" valign="middle"> disabled </td>
       <td align="center" valign="middle"> manually annotated </td>
-      <td align="center" valign="middle"> Filtering (see Sec. @ref filtering ) </td>
+      <td align="center" valign="middle"> @secref{filtering} </td>
     </tr>
     <tr>
-      <td align="left" valign="middle"> Manual (see Sec. @ref manual_instrumentation ) </td>
-      <td align="center" valign="middle"> \--user/\--nouser </td>
+      <td align="left" valign="middle"> @secref{manual_instrumentation} </td>
+      <td align="center" valign="middle"> \--[no]user </td>
       <td align="center" valign="middle"> disabled </td>
       <td align="center" valign="middle"> manually annotated </td>
-      <td align="center" valign="middle"> Filtering (see Sec. @ref filtering )<br> and<br> selective recording (see Sec. @ref selective_recording ) </td>
+      <td align="center" valign="middle"> @secref{filtering} and @secref{selective_recording} </td>
+    </tr>
+    <tr>
+      <td align="left" valign="middle"> @secref{scoreplibwrap} </td>
+      <td align="center" valign="middle"> \--libwrap=[...] </td>
+      <td align="center" valign="middle"> disabled </td>
+      <td align="center" valign="middle"> all by library wrapper </td>
+      <td align="center" valign="middle"> @secref{filtering} </td>
     </tr>
   </table>
-\endif
 
 When the instrumenter determines that MPI or OpenMP are being used, it
 automatically enables MPI library instrumentation or OPARI2-based OpenMP
@@ -951,7 +940,7 @@ You can find out whether user library wrapping is enabled via
 `scorep-info config-summary` in Section "Score-P (libwrap)".
 
 This section covers how to use already installed wrappers.
-Appendix @ref scoreplibwrap explains how to create user library wrappers,
+Appendix @secref{scoreplibwrap} explains how to create user library wrappers,
 and provides additional details.
 
 <!-- adapted from src/tools/libwrap-init/README.md Workflow for Wrapping a Library Use the Wrapper -->

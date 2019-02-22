@@ -289,6 +289,7 @@ static void
 define_topology_locations_pre_unify_create_groups( void )
 {
     /* check which types of topologies are used, process x threads is always available if enabled */
+    uint32_t have_user_local = 0;
     SCOREP_DEFINITIONS_MANAGER_FOREACH_DEFINITION_BEGIN( &scorep_local_definition_manager,
                                                          CartesianTopology,
                                                          cartesian_topology )
@@ -299,13 +300,24 @@ define_topology_locations_pre_unify_create_groups( void )
                 have_platform = true;
                 break;
             case SCOREP_TOPOLOGIES_USER:
-                have_user = true;
+                have_user_local = 1;
                 break;
             default:
                 break;
         }
     }
     SCOREP_DEFINITIONS_MANAGER_FOREACH_DEFINITION_END();
+
+    // In edge cases some processes might not participate in user topologies at all while others do.
+    // Ensure that those processes will partake in the required global comm calls.
+    // Only required for user topologies.
+    uint32_t have_user_global = have_user_local;
+    SCOREP_Ipc_Allreduce( &have_user_local,
+                          &have_user_global,
+                          1,
+                          SCOREP_IPC_UINT32_T,
+                          SCOREP_IPC_MAX );
+    have_user = ( bool )have_user_global;
 
     /* we need group(s) for non-MPI topology communicators */
     if ( have_process || have_platform || have_user )
@@ -421,7 +433,8 @@ define_topology_locations_pre_unify_create_groups( void )
                         start_pos =  comm_locations_user_count - 1;
                     }
                     // Storing respective index to COMM_LOCATIONS group in unique_local_group_members
-                    for ( uint64_t i = start_pos; i >= 0; i-- )
+                    uint64_t i = start_pos;
+                    while ( true )
                     {
                         if ( comm_locations_user[ i ] == global_location_id )
                         {
@@ -448,6 +461,7 @@ define_topology_locations_pre_unify_create_groups( void )
                             // a match in the COMM_LOCATIONS definition for this coordinate. That should never happen
                             UTILS_FATAL( "No location match found for this coordinate!" );
                         }
+                        i--;
                     }
                 }
             }
@@ -581,11 +595,11 @@ define_topology_locations_pre_unify_create_groups( void )
 
 
             // group exchange allgather
-            uint64_t global_location_ids_groups[ num_procs ][ max_number_local_topologies ][ max_locations_per_rank ];
+            uint64_t global_location_ids_groups[ num_procs ][ number_global_topology_name_strings ][ max_locations_per_rank ];
 
             for ( uint64_t i = 0; i < num_procs; i++ )
             {
-                for ( uint64_t j = 0; j < max_number_local_topologies; j++ )
+                for ( uint64_t j = 0; j < number_global_topology_name_strings; j++ )
                 {
                     for ( uint64_t k = 0; k < max_locations_per_rank; k++ )
                     {
@@ -604,7 +618,7 @@ define_topology_locations_pre_unify_create_groups( void )
 
             SCOREP_Ipc_Allgather( global_location_ids_groups[ rank ],
                                   global_location_ids_groups,
-                                  max_number_local_topologies * max_locations_per_rank,
+                                  number_global_topology_name_strings * max_locations_per_rank,
                                   SCOREP_IPC_UINT64_T );
 
             // check which indices have to be added as we need only unique entries of location ids
@@ -634,7 +648,7 @@ define_topology_locations_pre_unify_create_groups( void )
                             if ( global_location_ids_groups[ i ][ global_topo_index ][ k ] == final_groups[ j ][ n ] )
                             {
                                 // existing location id, no need to add
-                                found_new_element = true;
+                                found_new_element = false;
                                 break;
                             }
                         }
@@ -920,7 +934,8 @@ topologies_subsystem_post_unify( void )
                         // maximum start position is the last index
                         start_pos =  comm_locations_member_count - 1;
                     }
-                    for ( uint64_t i = start_pos; i >= 0; i-- )
+                    uint64_t i = start_pos;
+                    while ( true )
                     {
                         if ( cart_topo_type == SCOREP_TOPOLOGIES_PROCESS )
                         {
@@ -960,13 +975,14 @@ topologies_subsystem_post_unify( void )
                                 }
                                 break;
                             }
-                            if ( i == 0 )
-                            {
-                                // if we are still here and didn't break in any of the other cases, we haven't found
-                                // a match in the COMM_LOCATIONS definition for this coordinate. That should never happen
-                                UTILS_FATAL( "No location match found for this coordinate!" );
-                            }
                         }
+                        if ( i == 0 )
+                        {
+                            // if we are still here and didn't break in any of the other cases, we haven't found
+                            // a match in the COMM_LOCATIONS definition for this coordinate. That should never happen
+                            UTILS_FATAL( "No location match found for this coordinate!" );
+                        }
+                        i--;
                     }
                 }
             }

@@ -67,6 +67,7 @@
 #include <SCOREP_RuntimeManagement.h>
 #include "scorep_profile_task_init.h"
 #include <SCOREP_Profile_MpiEvents.h>
+#include <SCOREP_Thread_Mgmt.h>
 
 #include <string.h>
 
@@ -834,6 +835,7 @@ program_begin( SCOREP_Location*     location,
                           timestamp,
                           SCOREP_GetProgramRegion(),
                           metric_values );
+    SCOREP_Metric_WriteSynchronousMetrics( location, timestamp, write_sparse_metrics_enter );
 }
 
 
@@ -844,10 +846,18 @@ program_end( SCOREP_Location*    location,
              SCOREP_RegionHandle programRegionHandle )
 {
     uint64_t* metric_values = SCOREP_Metric_Read( location );
+    SCOREP_Metric_WriteSynchronousMetrics( location, timestamp, write_sparse_metrics_exit );
     SCOREP_Profile_Exit( location,
                          timestamp,
                          SCOREP_GetProgramRegion(),
                          metric_values );
+    if ( SCOREP_Metric_GetNumberOfStrictlySynchronousMetrics() > 0 &&
+         !SCOREP_Thread_IsIntialThread() )
+    {
+        UTILS_WARNING( "Program ended on a thread different from the intial thread. "
+                       "Per thread metric values for the program region (%s) might be invalid.",
+                       SCOREP_RegionHandle_GetName( programRegionHandle ) );
+    }
 }
 
 

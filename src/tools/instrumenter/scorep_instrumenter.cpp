@@ -13,7 +13,7 @@
  * Copyright (c) 2009-2013,
  * University of Oregon, Eugene, USA
  *
- * Copyright (c) 2009-2013, 2015,
+ * Copyright (c) 2009-2013, 2015, 2019,
  * Forschungszentrum Juelich GmbH, Germany
  *
  * Copyright (c) 2009-2014,
@@ -208,12 +208,6 @@ SCOREP_Instrumenter::Run( void )
                  */
                 prepare_config_tool_calls( *current_file );
 
-                /* If we create modified source, we must add the original
-                   source directory to the include dirs, because local
-                   files may be included
-                 */
-                m_compiler_flags += " -I" + extract_path( *current_file );
-
                 /* If compiling and linking is performed in one step.
                    The compiler leave no object file.
                    Thus, we delete the object file, too.
@@ -223,6 +217,26 @@ SCOREP_Instrumenter::Run( void )
                     addTempFile( object_file );
                 }
 
+                /* If we create modified source, we must add the original
+                     source directory to the include dirs, because local
+                     files may be included
+                 */
+                std::string search_path                = extract_path( *current_file );
+                std::string pdt_include_search_path    = " -I" + search_path;
+                std::string opari2_include_search_path = " -I" +  search_path;
+                if ( is_c_file( *current_file ) )
+                {
+                    #if SCOREP_BACKEND_HAVE_C_IQUOTE_SUPPORT
+                    opari2_include_search_path = " -iquote " +  search_path;
+                    #endif /* SCOREP_BACKEND_HAVE_IQUOTE_SUPPORT */
+                }
+                else if ( is_cpp_file( *current_file ) )
+                {
+                    #if SCOREP_BACKEND_HAVE_CXX_IQUOTE_SUPPORT
+                    opari2_include_search_path = " -iquote " +  search_path;
+                        #endif /* SCOREP_BACKEND_HAVE_IQUOTE_SUPPORT */
+                }
+                std::string compiler_flags_save = m_compiler_flags;
 
                 // Perform preprocessing steps
                 if ( m_command_line.getPreprocessMode() != SCOREP_Instrumenter_CmdLine::DISABLE &&
@@ -240,23 +254,34 @@ SCOREP_Instrumenter::Run( void )
                                         + orig_extension;
                             addTempFile( prep_file );
                         }
+                        m_compiler_flags += opari2_include_search_path;
                         preprocess_source_file( *current_file, prep_file );
                         *current_file = prep_file;
                     }
                 }
+                m_compiler_flags = compiler_flags_save;
 
                 // Perform compile step
                 if ( m_command_line.isCompiling() )
                 {
+                    if ( m_pdt_adapter->isEnabled() )
+                    {
+                        m_compiler_flags += pdt_include_search_path;
+                    }
+                    else if ( m_opari_adapter->isEnabled() &&
+                              m_command_line.getPreprocessMode() != SCOREP_Instrumenter_CmdLine::EXPLICIT_STEP )
+                    {
+                        m_compiler_flags += opari2_include_search_path;
+                    }
                     *current_file = precompile( *current_file );
 
-                  #if SCOREP_BACKEND_COMPILER_CRAY
+                    #if SCOREP_BACKEND_COMPILER_CRAY
                     if ( m_opari_adapter->isEnabled() &&
                          m_command_line.getCompilerName().find( "ftn" ) != std::string::npos )
                     {
                         m_compiler_flags += " -I.";
                     }
-                  #endif
+                    #endif
 
                     compile_source_file( *current_file, object_file );
 

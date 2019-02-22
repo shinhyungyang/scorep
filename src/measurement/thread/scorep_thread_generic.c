@@ -190,7 +190,7 @@ scorep_thread_is_initial_thread( scorep_thread_private_data* tpd )
 {
     UTILS_DEBUG_ENTRY();
     UTILS_ASSERT( tpd );
-    return tpd->parent == 0;
+    return tpd == initial_tpd;
 }
 
 
@@ -201,6 +201,12 @@ SCOREP_Thread_GetInitialTpd( void )
     return initial_tpd;
 }
 
+
+bool
+SCOREP_Thread_IsIntialThread( void )
+{
+    return scorep_thread_is_initial_thread( scorep_thread_get_private_data() );
+}
 
 scorep_thread_private_data*
 scorep_thread_get_parent( scorep_thread_private_data* tpd )
