@@ -1,4 +1,6 @@
-------------------- Upcoming version 5.0 -----------------------------
+------------------- Upcoming version 5.1 -----------------------------
+
+------------------- Released version 5.0 -----------------------------
 
 Major features:
 
@@ -100,6 +102,8 @@ Bugfixes:
   wrapped the `delete`/`delete[]` operators with size argument.
 - Fix possible overflow of send/recv bytes in MPI_Bcast, MPI_Sendrecv,
   and MPI_Sendrecv_replace.
+- In selecting MPI groups to be recorded (SCOREP_MPI_ENABLE_GROUPS),
+  fix handling of MPI subgroups.
 
 ------------------- Released version 4.1 -----------------------------
 
