@@ -8,7 +8,7 @@ library interface version:
     http://sourceware.org/autobook/autobook/autobook_91.html#SEC91
 
 package.major=6
-package.bugfix=0
+package.bugfix=1
 package.suffix=beta
 
 library.current=9
