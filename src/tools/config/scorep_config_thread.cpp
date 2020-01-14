@@ -255,7 +255,7 @@ SCOREP_Config_Opari2ThreadSystem::addLibs( std::deque<std::string>&           li
     libs.push_back( "libscorep_adapter_opari2_openmp_event" );
     deps.addDependency( libs.back(), "libscorep_measurement" );
     deps.addDependency( "libscorep_measurement", "libscorep_adapter_opari2_openmp_mgmt" );
-    deps.addDependency( "libscorep_measurement", "libscorep_thread_fork_join_omp" );
+    SCOREP_Config_ThreadSystem::addLibs( libs, deps );
 }
 
 void
@@ -315,8 +315,8 @@ SCOREP_Config_PthreadThreadSystem::addLibs( std::deque<std::string>&           l
     libs.push_back( "libscorep_adapter_pthread_event" );
     deps.addDependency( libs.back(), "libscorep_measurement" );
     deps.addDependency( "libscorep_measurement", "libscorep_adapter_pthread_mgmt" );
+    SCOREP_Config_ThreadSystem::addLibs( libs, deps );
     deps.addDependency( "libscorep_thread_create_wait_pthread", "libscorep_adapter_pthread_mgmt" );
-    deps.addDependency( "libscorep_measurement", "libscorep_thread_create_wait_pthread" );
 }
 
 void
