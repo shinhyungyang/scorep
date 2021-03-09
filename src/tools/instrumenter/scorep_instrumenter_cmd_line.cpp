@@ -7,7 +7,7 @@
  * Copyright (c) 2009-2013,
  * Gesellschaft fuer numerische Simulation mbH Braunschweig, Germany
  *
- * Copyright (c) 2009-2017, 2021, 2024,
+ * Copyright (c) 2009-2017, 2021, 2024-2025,
  * Technische Universitaet Dresden, Germany
  *
  * Copyright (c) 2009-2013,
@@ -370,7 +370,7 @@ SCOREP_Instrumenter_CmdLine::print_parameter( void )
     std::cerr << "[Score-P]  Flags after interposition lib: " << m_flags_after_interposition_lib << "\n";
     std::cerr << "[Score-P]                    Output file: " << m_output_name << "\n";
     std::cerr << "[Score-P]                  Input file(s): "
-              << scorep_vector_to_string( m_input_files, "", "", ", " )
+              << vector_to_string( m_input_files, "", "", ", " )
               << "\n";
 }
 

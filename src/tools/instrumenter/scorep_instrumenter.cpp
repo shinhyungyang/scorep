@@ -7,7 +7,7 @@
  * Copyright (c) 2009-2013,
  * Gesellschaft fuer numerische Simulation mbH Braunschweig, Germany
  *
- * Copyright (c) 2009-2017, 2020-2022, 2024,
+ * Copyright (c) 2009-2017, 2020-2022, 2024-2025,
  * Technische Universitaet Dresden, Germany
  *
  * Copyright (c) 2009-2013,
@@ -134,8 +134,7 @@ SCOREP_Instrumenter::Run( void )
         std::string command = m_command_line.getCompilerName()
                               + " " + m_command_line.getFlagsBeforeInterpositionLib()
                               + " " + m_command_line.getFlagsAfterInterpositionLib()
-                              + scorep_vector_to_string( m_input_files,
-                                                         " ", "", " " );
+                              + vector_to_string( m_input_files, " ", "", " " );
 
         std::string output_name =  m_command_line.getOutputName();
         if ( output_name != "" )
@@ -429,7 +428,7 @@ SCOREP_Instrumenter::clean_temp_files( void )
         const std::vector<std::string>& cmd_line_files = m_command_line.getTempFiles();
         if ( !cmd_line_files.empty() )
         {
-            executeCommand( scorep_vector_to_string( cmd_line_files, "rm ", "", " " ) );
+            executeCommand( vector_to_string( cmd_line_files, "rm ", "", " " ) );
         }
     }
 }
@@ -655,7 +654,7 @@ SCOREP_Instrumenter::link_step( void )
     std::stringstream command;
     command << SCOREP_Instrumenter_InstallData::getCompilerEnvironmentVars();
     command << m_command_line.getCompilerName();
-    command << scorep_vector_to_string( m_input_files, " ", "", " " );
+    command << vector_to_string( m_input_files, " ", "", " " );
 #if HAVE_BACKEND( COMPILER_CONSTRUCTOR_SUPPORT )
     if ( !m_command_line.isTargetSharedLib() )
     {

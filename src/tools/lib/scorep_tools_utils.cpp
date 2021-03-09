@@ -7,7 +7,7 @@
  * Copyright (c) 2009-2013,
  * Gesellschaft fuer numerische Simulation mbH Braunschweig, Germany
  *
- * Copyright (c) 2009-2017, 2024,
+ * Copyright (c) 2009-2017, 2024-2025,
  * Technische Universitaet Dresden, Germany
  *
  * Copyright (c) 2009-2013,
@@ -388,10 +388,10 @@ scorep_toupper( string str )
 }
 
 string
-scorep_vector_to_string( const vector<string>& list,
-                         const string&         head,
-                         const string&         tail,
-                         const string&         delimiter )
+vector_to_string( const vector<string>& list,
+                  const string&         head,
+                  const string&         tail,
+                  const string&         delimiter )
 {
     return join_to_string( list.begin(), list.end(), head, tail, delimiter );
 }

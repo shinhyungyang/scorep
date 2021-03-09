@@ -7,7 +7,7 @@
  * Copyright (c) 2009-2013,
  * Gesellschaft fuer numerische Simulation mbH Braunschweig, Germany
  *
- * Copyright (c) 2009-2017, 2024,
+ * Copyright (c) 2009-2017, 2024-2025,
  * Technische Universitaet Dresden, Germany
  *
  * Copyright (c) 2009-2013,
@@ -335,7 +335,7 @@ append_list_to_env( std::vector<std::string> newEnvItems,
     {
         newEnvItems.insert( newEnvItems.begin(), std::string( env_variable_value ) );
     }
-    const auto new_value = scorep_vector_to_string( newEnvItems, "", "", delimiter );
+    const auto new_value = vector_to_string( newEnvItems, "", "", delimiter );
 
     setenv( environmentVariable.c_str(), new_value.c_str(), /* Overwrite */ 1 );
 }
