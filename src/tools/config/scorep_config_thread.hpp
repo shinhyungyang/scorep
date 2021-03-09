@@ -4,7 +4,7 @@
  * Copyright (c) 2013-2014, 2016, 2020, 2022,
  * Forschungszentrum Juelich GmbH, Germany
  *
- * Copyright (c) 2014, 2022,
+ * Copyright (c) 2014, 2022, 2025,
  * Technische Universitaet Dresden, Germany
  *
  * Copyright (c) 2014,
@@ -213,7 +213,7 @@ private:
     /**
      * List of available threading systems.
      */
-    static std::deque<SCOREP_Config_ThreadSystem*> m_all;
+    static std::deque<SCOREP_Config_ThreadSystem*> all;
 };
 
 
