@@ -4,7 +4,7 @@
  * Copyright (c) 2013-2014, 2016, 2020, 2022, 2024,
  * Forschungszentrum Juelich GmbH, Germany
  *
- * Copyright (c) 2014, 2017,
+ * Copyright (c) 2014, 2017, 2025,
  * Technische Universitaet Dresden, Germany
  *
  * Copyright (c) 2014,
@@ -33,24 +33,24 @@
  * class SCOREP_Config_ThreadSystem
  * *************************************************************************************/
 
-std::deque<SCOREP_Config_ThreadSystem*> SCOREP_Config_ThreadSystem::m_all;
+std::deque<SCOREP_Config_ThreadSystem*> SCOREP_Config_ThreadSystem::all;
 
 SCOREP_Config_ThreadSystem* SCOREP_Config_ThreadSystem::current = NULL;
 
 void
 SCOREP_Config_ThreadSystem::init( void )
 {
-    m_all.push_back( new SCOREP_Config_MockupThreadSystem() );
+    all.push_back( new SCOREP_Config_MockupThreadSystem() );
 #if HAVE( BACKEND_SCOREP_OMPT_SUPPORT )
-    m_all.push_back( new SCOREP_Config_OmptThreadSystem() );
+    all.push_back( new SCOREP_Config_OmptThreadSystem() );
 #endif // BACKEND_SCOREP_OMPT_SUPPORT
 #if SCOREP_BACKEND_HAVE_OMP_TPD || SCOREP_BACKEND_HAVE_OMP_ANCESTRY
-    m_all.push_back( new SCOREP_Config_Opari2ThreadSystem() );
+    all.push_back( new SCOREP_Config_Opari2ThreadSystem() );
 #endif
 #if SCOREP_BACKEND_HAVE_PTHREAD_SUPPORT
-    m_all.push_back( new SCOREP_Config_PthreadThreadSystem() );
+    all.push_back( new SCOREP_Config_PthreadThreadSystem() );
 #endif
-    current = m_all.front();
+    current = all.front();
 }
 
 void
@@ -58,7 +58,7 @@ SCOREP_Config_ThreadSystem::fini( void )
 {
     current = NULL;
     std::deque<SCOREP_Config_ThreadSystem*>::iterator i;
-    for ( i = m_all.begin(); i != m_all.end(); i++ )
+    for ( i = all.begin(); i != all.end(); i++ )
     {
         delete ( *i );
     }
@@ -70,7 +70,7 @@ SCOREP_Config_ThreadSystem::printAll( void )
     std::cout << "   --thread=<threading system>\n"
               << "              Available threading systems are:\n";
     std::deque<SCOREP_Config_ThreadSystem*>::iterator i;
-    for ( i = m_all.begin(); i != m_all.end(); i++ )
+    for ( i = all.begin(); i != all.end(); i++ )
     {
         ( *i )->printHelp();
     }
@@ -94,7 +94,7 @@ SCOREP_Config_ThreadSystem::checkAll( const std::string& arg )
         system  = arg.substr( 0, pos );
         variant = arg.substr( pos + 1 );
 
-        for ( i = m_all.begin(); i != m_all.end(); i++ )
+        for ( i = all.begin(); i != all.end(); i++ )
         {
             if ( ( system == ( *i )->m_name ) &&
                  ( variant == ( *i )->m_variant ) )
@@ -107,7 +107,7 @@ SCOREP_Config_ThreadSystem::checkAll( const std::string& arg )
     }
 
     /* If only the system is provided, choose the first matching system */
-    for ( i = m_all.begin(); i != m_all.end(); i++ )
+    for ( i = all.begin(); i != all.end(); i++ )
     {
         if ( system == ( *i )->m_name )
         {
