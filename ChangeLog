@@ -64,6 +64,8 @@ Bugfixes:
 - Improve error handling of calls to `realpath` on kernel files in
   `/proc` or `/sys` when recording I/O activities.
 - Allow to select 'runtime' wrapping of OpenCL in the instrumenter again.
+- Fix event sequence and attributes when recording non-blocking
+  `lio_listio` operations.
 
 Compatibility:
 
