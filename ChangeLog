@@ -67,6 +67,7 @@ Bugfixes:
 - Fix event sequence and attributes when recording non-blocking
   `lio_listio` operations.
 - Improve thread-safety of CUDA adapter.
+- Improve mount point extraction for some corner cases.
 
 Compatibility:
 
