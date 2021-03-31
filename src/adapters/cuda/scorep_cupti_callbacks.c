@@ -229,7 +229,7 @@ exit_with_refs( uint64_t*           time,
 /************************** CUDA function table *******************************/
 #define SCOREP_CUPTI_CALLBACKS_CUDA_API_FUNC_MAX 1024 /* "educated guess" */
 static SCOREP_RegionHandle cuda_function_table[ SCOREP_CUPTI_CALLBACKS_CUDA_API_FUNC_MAX ];
-static SCOREP_Mutex        cuda_function_table_mutex;
+static SCOREP_Mutex        cuda_function_table_mutex = SCOREP_INVALID_MUTEX;
 
 /**
  * This is a pseudo hash function for CUPTI callbacks. No real hash is needed,
@@ -296,11 +296,11 @@ cuda_api_get_region( CUpti_CallbackDomain domain,
         return region_handle;
     }
 
-    SCOREP_MutexLock( &cuda_function_table_mutex );
+    SCOREP_MutexLock( cuda_function_table_mutex );
     region_handle = cuda_function_table[ idx ];
     if ( region_handle != SCOREP_INVALID_REGION )
     {
-        SCOREP_MutexUnlock( &cuda_function_table_mutex );
+        SCOREP_MutexUnlock( cuda_function_table_mutex );
         return region_handle;
     }
 
@@ -313,7 +313,7 @@ cuda_api_get_region( CUpti_CallbackDomain domain,
 
     cuda_function_table[ idx ] = region_handle;
 
-    SCOREP_MutexUnlock( &cuda_function_table_mutex );
+    SCOREP_MutexUnlock( cuda_function_table_mutex );
     return region_handle;
 }
 
@@ -2246,6 +2246,7 @@ scorep_cupti_callbacks_init( void )
         /* reset the hash table for CUDA API functions */
         memset( cuda_function_table, SCOREP_INVALID_REGION,
                 SCOREP_CUPTI_CALLBACKS_CUDA_API_FUNC_MAX * sizeof( uint32_t ) );
+        SCOREP_MutexCreate( &cuda_function_table_mutex );
 
         if ( scorep_cuda_record_kernels )
         {
@@ -2362,6 +2363,8 @@ scorep_cupti_callbacks_finalize( void )
     {
         UTILS_DEBUG_PRINTF( SCOREP_DEBUG_CUDA,
                             "[CUPTI Callbacks] Finalizing ... " );
+
+        SCOREP_MutexDestroy( &cuda_function_table_mutex );
 
         if ( scorep_record_runtime_api || scorep_record_driver_api ||
              scorep_cuda_record_kernels || scorep_cuda_record_memcpy ||
