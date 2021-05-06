@@ -1,5 +1,12 @@
 ------------------- Upcoming version 7.1 -----------------------------
 
+------------------- Upcoming version 7.1 -----------------------------
+
+Bug fixes:
+
+- Properly handle `nvcc` compiler flags beginning with -o that do
+  not set output files.
+
 ------------------- Released version 7.0 -----------------------------
 
 Features and improvements:
