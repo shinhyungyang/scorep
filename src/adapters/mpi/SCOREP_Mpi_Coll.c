@@ -59,6 +59,7 @@
 #include "SCOREP_Mpi.h"
 #include "scorep_mpi_communicator.h"
 #include "scorep_mpi_request_mgmt.h"
+#include "scorep_mpi_logical_timer.h"
 #include <SCOREP_RuntimeManagement.h>
 #include <SCOREP_InMeasurement.h>
 #include <SCOREP_Events.h>
@@ -128,6 +129,11 @@ MPI_Allgather( SCOREP_MPI_CONST_DECL void* sendbuf, int sendcount, MPI_Datatype 
     {
         if ( event_gen_active_for_group )
         {
+            if ( scorep_mpi_ltimer_enabled() )
+            {
+                scorep_mpi_ltimer_allreduce( comm );
+            }
+
             SCOREP_MpiCollectiveEnd( SCOREP_MPI_COMM_HANDLE( comm ),
                                      root_loc,
                                      SCOREP_MPI_COLLECTIVE__MPI_ALLGATHER,
@@ -219,6 +225,11 @@ MPI_Allgatherv( SCOREP_MPI_CONST_DECL void* sendbuf, int sendcount, MPI_Datatype
     {
         if ( event_gen_active_for_group )
         {
+            if ( scorep_mpi_ltimer_enabled() )
+            {
+                scorep_mpi_ltimer_allreduce( comm );
+            }
+
             SCOREP_MpiCollectiveEnd( SCOREP_MPI_COMM_HANDLE( comm ),
                                      root_loc,
                                      SCOREP_MPI_COLLECTIVE__MPI_ALLGATHERV,
@@ -296,6 +307,11 @@ MPI_Allreduce( SCOREP_MPI_CONST_DECL void* sendbuf, void* recvbuf, int count, MP
     {
         if ( event_gen_active_for_group )
         {
+            if ( scorep_mpi_ltimer_enabled() )
+            {
+                scorep_mpi_ltimer_allreduce( comm );
+            }
+
             SCOREP_MpiCollectiveEnd( SCOREP_MPI_COMM_HANDLE( comm ),
                                      root_loc,
                                      SCOREP_MPI_COLLECTIVE__MPI_ALLREDUCE,
@@ -372,6 +388,11 @@ MPI_Alltoall( SCOREP_MPI_CONST_DECL void* sendbuf, int sendcount, MPI_Datatype s
     {
         if ( event_gen_active_for_group )
         {
+            if ( scorep_mpi_ltimer_enabled() )
+            {
+                scorep_mpi_ltimer_allreduce( comm );
+            }
+
             SCOREP_MpiCollectiveEnd( SCOREP_MPI_COMM_HANDLE( comm ),
                                      root_loc,
                                      SCOREP_MPI_COLLECTIVE__MPI_ALLTOALL,
@@ -462,6 +483,11 @@ MPI_Alltoallv( SCOREP_MPI_CONST_DECL void* sendbuf, SCOREP_MPI_CONST_DECL int* s
     {
         if ( event_gen_active_for_group )
         {
+            if ( scorep_mpi_ltimer_enabled() )
+            {
+                scorep_mpi_ltimer_allreduce( comm );
+            }
+
             SCOREP_MpiCollectiveEnd( SCOREP_MPI_COMM_HANDLE( comm ),
                                      root_loc,
                                      SCOREP_MPI_COLLECTIVE__MPI_ALLTOALLV,
@@ -556,6 +582,11 @@ MPI_Alltoallw( SCOREP_MPI_CONST_DECL void* sendbuf, SCOREP_MPI_CONST_DECL int se
     {
         if ( event_gen_active_for_group )
         {
+            if ( scorep_mpi_ltimer_enabled() )
+            {
+                scorep_mpi_ltimer_allreduce( comm );
+            }
+
             SCOREP_MpiCollectiveEnd( SCOREP_MPI_COMM_HANDLE( comm ),
                                      root_loc,
                                      SCOREP_MPI_COLLECTIVE__MPI_ALLTOALLW,
@@ -616,6 +647,11 @@ MPI_Barrier( MPI_Comm comm )
     {
         if ( event_gen_active_for_group )
         {
+            if ( scorep_mpi_ltimer_enabled() )
+            {
+                scorep_mpi_ltimer_allreduce( comm );
+            }
+
             SCOREP_MpiCollectiveEnd( SCOREP_MPI_COMM_HANDLE( comm ),
                                      root_loc,
                                      SCOREP_MPI_COLLECTIVE__MPI_BARRIER,
@@ -695,6 +731,11 @@ MPI_Bcast( void* buffer, int count, MPI_Datatype datatype, int root, MPI_Comm co
     {
         if ( event_gen_active_for_group )
         {
+            if ( scorep_mpi_ltimer_enabled() )
+            {
+                scorep_mpi_ltimer_bcast( root, comm );
+            }
+
             SCOREP_MpiCollectiveEnd( SCOREP_MPI_COMM_HANDLE( comm ),
                                      root_loc,
                                      SCOREP_MPI_COLLECTIVE__MPI_BCAST,
@@ -851,6 +892,11 @@ MPI_Gather( SCOREP_MPI_CONST_DECL void* sendbuf, int sendcount, MPI_Datatype sen
     {
         if ( event_gen_active_for_group )
         {
+            if ( scorep_mpi_ltimer_enabled() )
+            {
+                scorep_mpi_ltimer_reduce( root, comm );
+            }
+
             SCOREP_MpiCollectiveEnd( SCOREP_MPI_COMM_HANDLE( comm ),
                                      root_loc,
                                      SCOREP_MPI_COLLECTIVE__MPI_GATHER,
@@ -940,6 +986,11 @@ MPI_Gatherv( SCOREP_MPI_CONST_DECL void* sendbuf, int sendcount, MPI_Datatype se
     {
         if ( event_gen_active_for_group )
         {
+            if ( scorep_mpi_ltimer_enabled() )
+            {
+                scorep_mpi_ltimer_reduce( root, comm );
+            }
+
             SCOREP_MpiCollectiveEnd( SCOREP_MPI_COMM_HANDLE( comm ),
                                      root_loc,
                                      SCOREP_MPI_COLLECTIVE__MPI_GATHERV,
@@ -1023,6 +1074,11 @@ MPI_Reduce( SCOREP_MPI_CONST_DECL void* sendbuf, void* recvbuf, int count, MPI_D
     {
         if ( event_gen_active_for_group )
         {
+            if ( scorep_mpi_ltimer_enabled() )
+            {
+                scorep_mpi_ltimer_reduce( root, comm );
+            }
+
             SCOREP_MpiCollectiveEnd( SCOREP_MPI_COMM_HANDLE( comm ),
                                      root_loc,
                                      SCOREP_MPI_COLLECTIVE__MPI_REDUCE,
@@ -1108,6 +1164,11 @@ MPI_Reduce_scatter( SCOREP_MPI_CONST_DECL void* sendbuf, void* recvbuf, SCOREP_M
     {
         if ( event_gen_active_for_group )
         {
+            if ( scorep_mpi_ltimer_enabled() )
+            {
+                scorep_mpi_ltimer_allreduce( comm );
+            }
+
             SCOREP_MpiCollectiveEnd( SCOREP_MPI_COMM_HANDLE( comm ),
                                      root_loc,
                                      SCOREP_MPI_COLLECTIVE__MPI_REDUCE_SCATTER,
@@ -1184,6 +1245,11 @@ MPI_Reduce_scatter_block( SCOREP_MPI_CONST_DECL void* sendbuf, void* recvbuf, in
     {
         if ( event_gen_active_for_group )
         {
+            if ( scorep_mpi_ltimer_enabled() )
+            {
+                scorep_mpi_ltimer_allreduce( comm );
+            }
+
             SCOREP_MpiCollectiveEnd( SCOREP_MPI_COMM_HANDLE( comm ),
                                      root_loc,
                                      SCOREP_MPI_COLLECTIVE__MPI_REDUCE_SCATTER_BLOCK,
@@ -1351,6 +1417,11 @@ MPI_Scatter( SCOREP_MPI_CONST_DECL void* sendbuf, int sendcount, MPI_Datatype se
     {
         if ( event_gen_active_for_group )
         {
+            if ( scorep_mpi_ltimer_enabled() )
+            {
+                scorep_mpi_ltimer_bcast( root, comm );
+            }
+
             SCOREP_MpiCollectiveEnd( SCOREP_MPI_COMM_HANDLE( comm ),
                                      root_loc,
                                      SCOREP_MPI_COLLECTIVE__MPI_SCATTER,
@@ -1441,6 +1512,11 @@ MPI_Scatterv( SCOREP_MPI_CONST_DECL void* sendbuf, SCOREP_MPI_CONST_DECL int* se
     {
         if ( event_gen_active_for_group )
         {
+            if ( scorep_mpi_ltimer_enabled() )
+            {
+                scorep_mpi_ltimer_bcast( root, comm );
+            }
+
             SCOREP_MpiCollectiveEnd( SCOREP_MPI_COMM_HANDLE( comm ),
                                      root_loc,
                                      SCOREP_MPI_COLLECTIVE__MPI_SCATTERV,

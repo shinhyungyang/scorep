@@ -32,12 +32,15 @@ MODS            = SCOREP_Wrapgen_Funcparam.o SCOREP_Wrapgen_Func.o SCOREP_Wrapge
 MPI_FILES       = $(patsubst $(MPI_TMPL_DIR)/%.tmpl,%,$(wildcard $(MPI_TMPL_DIR)/*.tmpl))
 DOC_FILES       = $(patsubst $(DOC_TMPL_DIR)/%.tmpl,%,$(wildcard $(DOC_TMPL_DIR)/*.tmpl))
 
+.PHONY: all install clean diff-files clean-diff-files
+
+.FORCE:
 
 all: protogen wrapgen all-files
 
 install: all install-files
 
-clean: clean-files
+clean: clean-files clean-diff-files
 	rm -f *.o wrapgen
 
 doc: all-files $(DOXYGEN_CONF)
@@ -77,15 +80,44 @@ clean-files:
 	@if [ -d $(MPI_OUTPUTDIR) ]; then (cd $(MPI_OUTPUTDIR) && rm -f $(MPI_FILES)) fi
 	@if [ -d $(MPI_OUTPUTDIR) ] && [ -z `ls $(MPI_OUTPUTDIR)` ]; then (rmdir $(MPI_OUTPUTDIR)) fi
 
-install-files: all-files
-	@(cd $(MPI_OUTPUTDIR) && $(INSTALL) -m 644 $(MPI_FILES) $(MPI_INSTALLDIR))
+install-files: all-files $(addprefix install_,$(MPI_FILES))
 	@(cd $(DOC_OUTPUTDIR) && $(INSTALL) -m 644 $(DOC_FILES) $(DOC_INSTALLDIR))
+
+# Install each file only if it differs from the installed version
+$(addprefix install_,$(MPI_FILES)): install_%: $(MPI_OUTPUTDIR)/% $(MPI_OUTPUTDIR)/diff_%
+	@if [ "$$(find $(MPI_OUTPUTDIR) -not -empty -name diff_$*)" = "$(MPI_OUTPUTDIR)/diff_$*" ]; \
+	then echo "Installing $* into $(MPI_INSTALLDIR)"; (cd $(MPI_OUTPUTDIR) && $(INSTALL) -m 644 $* $(MPI_INSTALLDIR)); \
+	fi
+
+.PHONY: $(addprefix install_,$(MPI_FILES))
+
+diff-files: $(addprefix $(MPI_OUTPUTDIR)/diff_,$(MPI_FILES))
+
+# Produce a diff  between generated and installed files
+# Diff reports differences with exit code 1, therefore we have to make sure
+# that this is not seen as an error by make
+# diff -N : -N treat missing files as new
+$(MPI_OUTPUTDIR)/diff_SCOREP_%: $(MPI_OUTPUTDIR)/SCOREP_% .FORCE
+	@cd $(MPI_OUTPUTDIR) && diff -N SCOREP_$* $(MPI_INSTALLDIR)SCOREP_$* > diff_SCOREP_$*; \
+	diff_status=$$?; \
+	if [ $$diff_status -gt 1 ]; \
+	then exit 1; \
+	fi; \
+	if [ $$diff_status -eq 1 ]; \
+	then echo "$<"; \
+	fi; \
+	exit 0
+
+clean-diff-files:
+	-rm -f $(MPI_OUTPUTDIR)/diff_SCOREP_*
+
 
 # Auto-gerenation targets for MPI wrappers
 
 $(MPI_OUTPUTDIR)/SCOREP_%: $(MPI_PROTOTYPES) $(MPI_TMPL_DIR)/SCOREP_%.tmpl $(MPI_TMPL_DIR)/*.w wrapgen
 	@if [ ! -d $(MPI_OUTPUTDIR) ]; then mkdir -p $(MPI_OUTPUTDIR); fi
 	@echo "  GEN   " $@; $(WRAPGEN) $(WFLAGS) $(MPI_TMPL_DIR)/$(notdir $@).tmpl > $@
+	uncrustify -c ../../common/beautifier/beautify.cfg --no-backup -q $@
 
 $(DOC_OUTPUTDIR)/%: $(MPI_PROTOTYPES) $(DOC_TMPL_DIR)/%.tmpl $(DOC_TMPL_DIR)/*.w wrapgen
 	@if [ ! -d $(DOC_OUTPUTDIR) ]; then mkdir -p $(DOC_OUTPUTDIR); fi

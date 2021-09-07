@@ -103,6 +103,7 @@ SCOREP_Timer_GetClockTicks( void )
      * needs to be extracted into additional function call.
      * 2. Use computed goto instead of switch if available. */
     extern timer_type scorep_timer;
+
     switch ( scorep_timer )
     {
 #if HAVE( BACKEND_SCOREP_TIMER_BGL )

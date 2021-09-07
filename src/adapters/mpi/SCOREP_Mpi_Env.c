@@ -58,6 +58,7 @@
 #include <config.h>
 #include "SCOREP_Mpi.h"
 #include "scorep_mpi_communicator.h"
+#include "scorep_mpi_logical_timer.h"
 #include <UTILS_Error.h>
 #include <SCOREP_RuntimeManagement.h>
 #include <SCOREP_InMeasurement.h>
@@ -144,6 +145,12 @@ MPI_Init( int* argc, char*** argv )
     {
         /* complete initialization of measurement core and MPI event handling */
         SCOREP_InitMppMeasurement();
+
+        /* initialize the logical timer module if necessary */
+        if ( scorep_mpi_ltimer_enabled() )
+        {
+            scorep_mpi_ltimer_init();
+        }
     }
 
     if ( event_gen_active )
@@ -240,6 +247,12 @@ MPI_Init_thread( int* argc, char*** argv, int required, int* provided )
     {
         /* complete initialization of measurement core and MPI event handling */
         SCOREP_InitMppMeasurement();
+
+        /* initialize the logical timer module if necessary */
+        if ( scorep_mpi_ltimer_enabled() )
+        {
+            scorep_mpi_ltimer_init_thread();
+        }
     }
 
     if ( event_gen_active )
@@ -300,6 +313,11 @@ MPI_Finalize( void )
     /* finalize MPI event handling */
     /* We need to make sure that our exit handler is called before the MPI one. */
     SCOREP_RegisterExitHandler();
+
+    if ( scorep_mpi_ltimer_enabled() )
+    {
+        scorep_mpi_ltimer_allreduce( MPI_COMM_WORLD );
+    }
 
     /* fake finalization, so that MPI can be used during Score-P finalization */
     SCOREP_ENTER_WRAPPED_REGION();

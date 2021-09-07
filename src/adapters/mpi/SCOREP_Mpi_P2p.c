@@ -59,6 +59,7 @@
 #include "SCOREP_Mpi.h"
 #include "scorep_mpi_communicator.h"
 #include "scorep_mpi_request_mgmt.h"
+#include "scorep_mpi_logical_timer.h"
 #include <UTILS_Error.h>
 #include <SCOREP_RuntimeManagement.h>
 #include <SCOREP_InMeasurement.h>
@@ -118,6 +119,18 @@ MPI_Bsend( SCOREP_MPI_CONST_DECL void* buf, int count, MPI_Datatype datatype, in
     {
         if ( event_gen_active_for_group )
         {
+            if ( dest != MPI_PROC_NULL && scorep_mpi_ltimer_enabled() )
+            {
+                const scorep_mpi_ltimer timer_value = scorep_mpi_get_ltimer();
+                PMPI_Send( &timer_value, 1, scorep_mpi_ltimer_datatype, dest, scorep_mpi_ltimer_tag, comm );
+                /* TODO:
+                 * use
+                 * scorep_mpi_ltimer_send( dest, comm );
+                 * instead.
+                 * This currently leads to a deadlock/indefinetly waiting program,
+                 * when an MPI_Send is used in combination with an MPI_Irecv
+                 */
+            }
             SCOREP_ExitRegion( scorep_mpi_regions[ SCOREP_MPI_REGION__MPI_BSEND ] );
         }
         else if ( SCOREP_IsUnwindingEnabled() )
@@ -181,6 +194,18 @@ MPI_Rsend( SCOREP_MPI_CONST_DECL void* buf, int count, MPI_Datatype datatype, in
     {
         if ( event_gen_active_for_group )
         {
+            if ( dest != MPI_PROC_NULL && scorep_mpi_ltimer_enabled() )
+            {
+                const scorep_mpi_ltimer timer_value = scorep_mpi_get_ltimer();
+                PMPI_Send( &timer_value, 1, scorep_mpi_ltimer_datatype, dest, scorep_mpi_ltimer_tag, comm );
+                /* TODO:
+                 * use
+                 * scorep_mpi_ltimer_send( dest, comm );
+                 * instead.
+                 * This currently leads to a deadlock/indefinetly waiting program,
+                 * when an MPI_Send is used in combination with an MPI_Irecv
+                 */
+            }
             SCOREP_ExitRegion( scorep_mpi_regions[ SCOREP_MPI_REGION__MPI_RSEND ] );
         }
         else if ( SCOREP_IsUnwindingEnabled() )
@@ -244,6 +269,18 @@ MPI_Send( SCOREP_MPI_CONST_DECL void* buf, int count, MPI_Datatype datatype, int
     {
         if ( event_gen_active_for_group )
         {
+            if ( dest != MPI_PROC_NULL && scorep_mpi_ltimer_enabled() )
+            {
+                const scorep_mpi_ltimer timer_value = scorep_mpi_get_ltimer();
+                PMPI_Send( &timer_value, 1, scorep_mpi_ltimer_datatype, dest, scorep_mpi_ltimer_tag, comm );
+                /* TODO:
+                 * use
+                 * scorep_mpi_ltimer_send( dest, comm );
+                 * instead.
+                 * This currently leads to a deadlock/indefinetly waiting program,
+                 * when an MPI_Send is used in combination with an MPI_Irecv
+                 */
+            }
             SCOREP_ExitRegion( scorep_mpi_regions[ SCOREP_MPI_REGION__MPI_SEND ] );
         }
         else if ( SCOREP_IsUnwindingEnabled() )
@@ -307,6 +344,18 @@ MPI_Ssend( SCOREP_MPI_CONST_DECL void* buf, int count, MPI_Datatype datatype, in
     {
         if ( event_gen_active_for_group )
         {
+            if ( dest != MPI_PROC_NULL && scorep_mpi_ltimer_enabled() )
+            {
+                const scorep_mpi_ltimer timer_value = scorep_mpi_get_ltimer();
+                PMPI_Send( &timer_value, 1, scorep_mpi_ltimer_datatype, dest, scorep_mpi_ltimer_tag, comm );
+                /* TODO:
+                 * use
+                 * scorep_mpi_ltimer_send( dest, comm );
+                 * instead.
+                 * This currently leads to a deadlock/indefinetly waiting program,
+                 * when an MPI_Send is used in combination with an MPI_Irecv
+                 */
+            }
             SCOREP_ExitRegion( scorep_mpi_regions[ SCOREP_MPI_REGION__MPI_SSEND ] );
         }
         else if ( SCOREP_IsUnwindingEnabled() )
@@ -376,6 +425,19 @@ MPI_Recv( void* buf,
     {
         if ( event_gen_active_for_group )
         {
+            if ( source != MPI_PROC_NULL && scorep_mpi_ltimer_enabled() )
+            {
+                scorep_mpi_ltimer remote_timer_value = 0;
+                PMPI_Recv( &remote_timer_value, 1, scorep_mpi_ltimer_datatype, source, scorep_mpi_ltimer_tag, comm, MPI_STATUS_IGNORE );
+                scorep_mpi_forward_ltimer( remote_timer_value );
+                /* TODO:
+                 * use
+                 * scorep_mpi_ltimer_recv( source, comm );
+                 * instead.
+                 * This currently leads to a deadlock/indefinetly waiting program
+                 * when an MPI_Recv is used in combination with an MPI_Isend
+                 */
+            }
             if ( source != MPI_PROC_NULL && return_val == MPI_SUCCESS )
             {
                 PMPI_Type_size( datatype, &sz );
@@ -888,8 +950,12 @@ MPI_Ibsend( SCOREP_MPI_CONST_DECL void* buf, int count, MPI_Datatype datatype, i
         {
             if ( xnb_active && dest != MPI_PROC_NULL && return_val == MPI_SUCCESS )
             {
-                scorep_mpi_request_p2p_create( *request, SCOREP_MPI_REQUEST_TYPE_SEND, SCOREP_MPI_REQUEST_FLAG_NONE,
-                                               tag, dest, ( uint64_t )count * sz, datatype, comm, reqid );
+                scorep_mpi_request* scorep_req = scorep_mpi_request_p2p_create( *request, SCOREP_MPI_REQUEST_TYPE_SEND, SCOREP_MPI_REQUEST_FLAG_NONE,
+                                                                                tag, dest, ( uint64_t )count * sz, datatype, comm, reqid );
+                if ( scorep_mpi_ltimer_enabled() )
+                {
+                    scorep_mpi_ltimer_isend( dest, comm, scorep_req );
+                }
             }
 
             SCOREP_ExitRegion( scorep_mpi_regions[ SCOREP_MPI_REGION__MPI_IBSEND ] );
@@ -964,8 +1030,12 @@ MPI_Irsend( SCOREP_MPI_CONST_DECL void* buf, int count, MPI_Datatype datatype, i
         {
             if ( xnb_active && dest != MPI_PROC_NULL && return_val == MPI_SUCCESS )
             {
-                scorep_mpi_request_p2p_create( *request, SCOREP_MPI_REQUEST_TYPE_SEND, SCOREP_MPI_REQUEST_FLAG_NONE,
-                                               tag, dest, ( uint64_t )count * sz, datatype, comm, reqid );
+                scorep_mpi_request* scorep_req = scorep_mpi_request_p2p_create( *request, SCOREP_MPI_REQUEST_TYPE_SEND, SCOREP_MPI_REQUEST_FLAG_NONE,
+                                                                                tag, dest, ( uint64_t )count * sz, datatype, comm, reqid );
+                if ( scorep_mpi_ltimer_enabled() )
+                {
+                    scorep_mpi_ltimer_isend( dest, comm, scorep_req );
+                }
             }
 
             SCOREP_ExitRegion( scorep_mpi_regions[ SCOREP_MPI_REGION__MPI_IRSEND ] );
@@ -1040,8 +1110,12 @@ MPI_Isend( SCOREP_MPI_CONST_DECL void* buf, int count, MPI_Datatype datatype, in
         {
             if ( xnb_active && dest != MPI_PROC_NULL && return_val == MPI_SUCCESS )
             {
-                scorep_mpi_request_p2p_create( *request, SCOREP_MPI_REQUEST_TYPE_SEND, SCOREP_MPI_REQUEST_FLAG_NONE,
-                                               tag, dest, ( uint64_t )count * sz, datatype, comm, reqid );
+                scorep_mpi_request* scorep_req = scorep_mpi_request_p2p_create( *request, SCOREP_MPI_REQUEST_TYPE_SEND, SCOREP_MPI_REQUEST_FLAG_NONE,
+                                                                                tag, dest, ( uint64_t )count * sz, datatype, comm, reqid );
+                if ( scorep_mpi_ltimer_enabled() )
+                {
+                    scorep_mpi_ltimer_isend( dest, comm, scorep_req );
+                }
             }
 
             SCOREP_ExitRegion( scorep_mpi_regions[ SCOREP_MPI_REGION__MPI_ISEND ] );
@@ -1116,8 +1190,12 @@ MPI_Issend( SCOREP_MPI_CONST_DECL void* buf, int count, MPI_Datatype datatype, i
         {
             if ( xnb_active && dest != MPI_PROC_NULL && return_val == MPI_SUCCESS )
             {
-                scorep_mpi_request_p2p_create( *request, SCOREP_MPI_REQUEST_TYPE_SEND, SCOREP_MPI_REQUEST_FLAG_NONE,
-                                               tag, dest, ( uint64_t )count * sz, datatype, comm, reqid );
+                scorep_mpi_request* scorep_req = scorep_mpi_request_p2p_create( *request, SCOREP_MPI_REQUEST_TYPE_SEND, SCOREP_MPI_REQUEST_FLAG_NONE,
+                                                                                tag, dest, ( uint64_t )count * sz, datatype, comm, reqid );
+                if ( scorep_mpi_ltimer_enabled() )
+                {
+                    scorep_mpi_ltimer_isend( dest, comm, scorep_req );
+                }
             }
 
             SCOREP_ExitRegion( scorep_mpi_regions[ SCOREP_MPI_REGION__MPI_ISSEND ] );
@@ -1188,8 +1266,13 @@ MPI_Irecv( void*        buf,
             SCOREP_MpiIrecvRequest( reqid );
         }
 
-        scorep_mpi_request_p2p_create( *request, SCOREP_MPI_REQUEST_TYPE_RECV, SCOREP_MPI_REQUEST_FLAG_NONE,
-                                       tag, 0, ( uint64_t )count * sz, datatype, comm, reqid );
+        scorep_mpi_request* scorep_req = scorep_mpi_request_p2p_create( *request, SCOREP_MPI_REQUEST_TYPE_RECV, SCOREP_MPI_REQUEST_FLAG_NONE,
+                                                                        tag, 0, ( uint64_t )count * sz, datatype, comm, reqid );
+
+        if ( scorep_mpi_ltimer_enabled() )
+        {
+            scorep_mpi_ltimer_irecv( source, comm, scorep_req );
+        }
     }
 
     if ( event_gen_active )

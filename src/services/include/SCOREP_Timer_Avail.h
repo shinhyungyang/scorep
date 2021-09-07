@@ -15,6 +15,8 @@
 #ifndef SCOREP_TIMER_AVAIL_H
 #define SCOREP_TIMER_AVAIL_H
 
+#include <stdint.h> /* for uint64_t */
+
 /**
  * @file
  * Provides an enum containing available timers.

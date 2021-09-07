@@ -351,6 +351,12 @@ comm_parent
     const SCOREP::Wrapgen::Func& func
 );
 
+std::string
+ltimer_comm
+(
+    const SCOREP::Wrapgen::Func& func
+);
+
 /**
  * @}
  */

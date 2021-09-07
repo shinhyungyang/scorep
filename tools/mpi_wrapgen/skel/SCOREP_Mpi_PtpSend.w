@@ -47,6 +47,18 @@ ${proto:c}
   {
     if (event_gen_active_for_group)
     {
+      if ( dest != MPI_PROC_NULL && scorep_mpi_ltimer_enabled() )
+      {
+        const scorep_mpi_ltimer timer_value = scorep_mpi_get_ltimer();
+        PMPI_Send( &timer_value, 1, scorep_mpi_ltimer_datatype, dest, scorep_mpi_ltimer_tag, comm );
+        /* TODO:
+         * use
+         * scorep_mpi_ltimer_send( dest, comm );
+         * instead.
+         * This currently leads to a deadlock/indefinetly waiting program,
+         * when an MPI_Send is used in combination with an MPI_Irecv
+         */
+      }
       SCOREP_ExitRegion(scorep_mpi_regions[SCOREP_MPI_REGION__${name|uppercase}]);
     }
     else if ( SCOREP_IsUnwindingEnabled() )

@@ -388,6 +388,7 @@ scorep_mpi_get_request_hash_entry( MPI_Request req )
     return &scorep_mpi_request_table[ h ];
 }
 
+static const scorep_mpi_request_lt_piggyback scorep_mpi_request_lt_piggyback_NULL = { MPI_REQUEST_NULL, 0 };
 
 SCOREP_MpiRequestId
 scorep_mpi_get_request_id( void )
@@ -449,7 +450,7 @@ scorep_mpi_request_create_entry( MPI_Request             request,
     return req;
 }
 
-void
+scorep_mpi_request*
 scorep_mpi_request_p2p_create( MPI_Request             request,
                                scorep_mpi_request_type type,
                                scorep_mpi_request_flag flags,
@@ -463,15 +464,25 @@ scorep_mpi_request_p2p_create( MPI_Request             request,
     scorep_mpi_request* req = scorep_mpi_request_create_entry( request, id, type, flags );
 
     /* store request information */
-    req->payload.p2p.tag   = tag;
-    req->payload.p2p.dest  = dest;
-    req->payload.p2p.bytes = bytes;
+    req->payload.p2p.tag          = tag;
+    req->payload.p2p.dest         = dest;
+    req->payload.p2p.bytes        = bytes;
+    req->payload.p2p.lt_piggyback = scorep_mpi_request_lt_piggyback_NULL;
 #if HAVE( DECL_PMPI_TYPE_DUP )
     PMPI_Type_dup( datatype, &req->payload.p2p.datatype );
 #else
     req->payload.p2p.datatype = datatype;
 #endif
     req->payload.p2p.comm_handle = SCOREP_MPI_COMM_HANDLE( comm );
+
+    return req;
+}
+
+bool
+scorep_mpi_request_lt_piggyback_is_NULL( scorep_mpi_request_lt_piggyback* pb )
+{
+    return pb->request == scorep_mpi_request_lt_piggyback_NULL.request
+           && pb->timer == scorep_mpi_request_lt_piggyback_NULL.timer;
 }
 
 void
@@ -683,6 +694,12 @@ scorep_mpi_check_request( scorep_mpi_request* req,
                 {
                     /* if receive request, write receive trace record */
 
+                    /* update the logical timer if this feature is activated */
+                    if ( scorep_mpi_ltimer_enabled() )
+                    {
+                        scorep_mpi_ltimer_wait( req );
+                    }
+
                     PMPI_Type_size( req->payload.p2p.datatype, &sz );
                     PMPI_Get_count( status, req->payload.p2p.datatype, &count );
 
@@ -702,6 +719,15 @@ scorep_mpi_check_request( scorep_mpi_request* req,
             case SCOREP_MPI_REQUEST_TYPE_SEND:
                 if ( p2p_events_active && xnb_active )
                 {
+                    if ( scorep_mpi_ltimer_enabled() )
+                    {
+                        if ( !scorep_mpi_request_lt_piggyback_is_NULL( &( req->payload.p2p.lt_piggyback ) ) )
+                        {
+                            MPI_Request* pb_req = &( req->payload.p2p.lt_piggyback.request );
+                            PMPI_Request_free( pb_req );
+                        }
+                    }
+
                     SCOREP_MpiIsendComplete( req->id );
                 }
                 break;
@@ -839,5 +865,36 @@ scorep_mpi_request_finalize( void )
             scorep_mpi_request_table[ i ].head_block = scorep_mpi_request_table[ i ].head_block->next;
             free( block );
         }
+    }
+}
+
+void
+scorep_mpi_ltimer_isend( int dest, MPI_Comm comm, scorep_mpi_request* scorep_req )
+{
+    const scorep_mpi_ltimer timer_value = scorep_mpi_get_ltimer();
+    scorep_req->payload.p2p.lt_piggyback.timer = timer_value;
+    PMPI_Isend( &( scorep_req->payload.p2p.lt_piggyback.timer ), 1, scorep_mpi_ltimer_datatype,
+                dest, scorep_mpi_ltimer_tag, comm,
+                &( scorep_req->payload.p2p.lt_piggyback.request ) );
+}
+
+void
+scorep_mpi_ltimer_irecv( int source, MPI_Comm comm, scorep_mpi_request* scorep_req )
+{
+    scorep_mpi_ltimer* remote_timer = &( scorep_req->payload.p2p.lt_piggyback.timer );
+    MPI_Request*       pb_req       = &( scorep_req->payload.p2p.lt_piggyback.request );
+    PMPI_Irecv( remote_timer, 1, scorep_mpi_ltimer_datatype, source, scorep_mpi_ltimer_tag, comm, pb_req );
+}
+
+
+scorep_mpi_ltimer
+scorep_mpi_ltimer_wait( scorep_mpi_request* req )
+{
+    if ( !scorep_mpi_request_lt_piggyback_is_NULL( &( req->payload.p2p.lt_piggyback ) ) )
+    {
+        MPI_Request*       pb_req   = &( req->payload.p2p.lt_piggyback.request );
+        scorep_mpi_ltimer* pb_timer = &( req->payload.p2p.lt_piggyback.timer );
+        PMPI_Wait( pb_req, MPI_STATUS_IGNORE );
+        return scorep_mpi_forward_ltimer( *pb_timer );
     }
 }

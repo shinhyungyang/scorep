@@ -42,6 +42,7 @@
 #include <mpi.h>
 
 #include "scorep_mpi_rma_request.h"
+#include "scorep_mpi_logical_timer.h"
 
 typedef enum scorep_mpi_request_type
 {
@@ -72,11 +73,20 @@ typedef uint64_t scorep_mpi_request_flag;
 
 typedef struct
 {
+    MPI_Request       request;
+    scorep_mpi_ltimer timer;
+} scorep_mpi_request_lt_piggyback;
+
+static const scorep_mpi_request_lt_piggyback scorep_mpi_request_lt_piggyback_NULL;
+
+typedef struct
+{
     int                              tag;
     int                              dest;
     uint64_t                         bytes;
     MPI_Datatype                     datatype;
     SCOREP_InterimCommunicatorHandle comm_handle;
+    scorep_mpi_request_lt_piggyback  lt_piggyback;
 } scorep_mpi_request_p2p_data;
 
 typedef struct
@@ -131,7 +141,7 @@ scorep_mpi_get_request_id( void );
  * @param comm      MPI communicator handle
  * @param id        Request id
  */
-void
+scorep_mpi_request*
 scorep_mpi_request_p2p_create( MPI_Request             request,
                                scorep_mpi_request_type type,
                                scorep_mpi_request_flag flags,
@@ -141,6 +151,9 @@ scorep_mpi_request_p2p_create( MPI_Request             request,
                                MPI_Datatype            datatype,
                                MPI_Comm                comm,
                                SCOREP_MpiRequestId     id );
+
+bool
+scorep_mpi_request_lt_piggyback_is_NULL( scorep_mpi_request_lt_piggyback* pb );
 
 void
 scorep_mpi_request_comm_idup_create( MPI_Request request,
@@ -206,5 +219,27 @@ scorep_mpi_saved_request_get( int i );
 
 void
 scorep_mpi_request_finalize( void );
+
+/**
+ * @name LogicalTimerMPI
+ * @{
+ */
+
+void
+scorep_mpi_ltimer_isend( int                 dest,
+                         MPI_Comm            comm,
+                         scorep_mpi_request* scorep_req );
+
+void
+scorep_mpi_ltimer_irecv( int                 source,
+                         MPI_Comm            comm,
+                         scorep_mpi_request* scorep_req );
+
+scorep_mpi_ltimer
+scorep_mpi_ltimer_wait( scorep_mpi_request* req );
+
+/**
+ * @}
+ */
 
 #endif /* SCOREP_MPI_REQUEST_MGMT_H */

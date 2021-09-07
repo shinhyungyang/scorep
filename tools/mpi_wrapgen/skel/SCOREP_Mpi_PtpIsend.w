@@ -53,8 +53,12 @@ ${proto:c}
     {
       if (xnb_active && dest != MPI_PROC_NULL && return_val == MPI_SUCCESS)
       {
-         scorep_mpi_request_p2p_create(*request, SCOREP_MPI_REQUEST_TYPE_SEND, SCOREP_MPI_REQUEST_FLAG_NONE,
-                             tag, dest, (uint64_t)count*sz, datatype, comm, reqid);
+         scorep_mpi_request* scorep_req = scorep_mpi_request_p2p_create( *request, SCOREP_MPI_REQUEST_TYPE_SEND, SCOREP_MPI_REQUEST_FLAG_NONE,
+                                                                          tag, dest, ( uint64_t )count * sz, datatype, comm, reqid );
+         if ( scorep_mpi_ltimer_enabled() )
+         {
+           scorep_mpi_ltimer_isend( dest, comm, scorep_req );
+         }
       }
 
       SCOREP_ExitRegion(scorep_mpi_regions[SCOREP_MPI_REGION__${name|uppercase}]);

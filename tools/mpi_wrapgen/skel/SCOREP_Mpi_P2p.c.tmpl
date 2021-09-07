@@ -59,6 +59,7 @@
 #include "SCOREP_Mpi.h"
 #include "scorep_mpi_communicator.h"
 #include "scorep_mpi_request_mgmt.h"
+#include "scorep_mpi_logical_timer.h"
 #include <UTILS_Error.h>
 #include <SCOREP_RuntimeManagement.h>
 #include <SCOREP_InMeasurement.h>
@@ -122,6 +123,19 @@ int MPI_Recv( void* buf,
   {
     if (event_gen_active_for_group)
     {
+      if ( source != MPI_PROC_NULL && scorep_mpi_ltimer_enabled() )
+      {
+        scorep_mpi_ltimer remote_timer_value = 0;
+        PMPI_Recv( &remote_timer_value, 1, scorep_mpi_ltimer_datatype, source, scorep_mpi_ltimer_tag, comm, MPI_STATUS_IGNORE );
+        scorep_mpi_forward_ltimer( remote_timer_value );
+        /* TODO:
+         * use
+         * scorep_mpi_ltimer_recv( source, comm );
+         * instead.
+         * This currently leads to a deadlock/indefinetly waiting program
+         * when an MPI_Recv is used in combination with an MPI_Isend
+         */
+      }
       if (source != MPI_PROC_NULL && return_val == MPI_SUCCESS)
       {
         PMPI_Type_size(datatype, &sz);
@@ -217,8 +231,13 @@ int MPI_Irecv(void* buf,
     if (event_gen_active_for_group && xnb_active)
       SCOREP_MpiIrecvRequest(reqid);
 
-    scorep_mpi_request_p2p_create(*request, SCOREP_MPI_REQUEST_TYPE_RECV, SCOREP_MPI_REQUEST_FLAG_NONE,
-                       tag, 0, (uint64_t)count * sz, datatype, comm, reqid);
+    scorep_mpi_request* scorep_req = scorep_mpi_request_p2p_create( *request, SCOREP_MPI_REQUEST_TYPE_RECV, SCOREP_MPI_REQUEST_FLAG_NONE,
+                                                                     tag, 0, ( uint64_t )count * sz, datatype, comm, reqid );
+
+    if ( scorep_mpi_ltimer_enabled() )
+    {
+      scorep_mpi_ltimer_irecv( source, comm, scorep_req );
+    }
   }
 
   if (event_gen_active)

@@ -120,6 +120,7 @@ SCOREP::Wrapgen::handler::mpi::_initialize
     func_handlers[ "guard:end" ]       = handler::mpi::guard_end;
     func_handlers[ "comm:new" ]        = handler::mpi::comm_new;
     func_handlers[ "comm:parent" ]     = handler::mpi::comm_parent;
+    func_handlers[ "ltimer:comm" ]     = handler::mpi::ltimer_comm;
 
     /** - Fortran<->C conversion types */
     f2c_types[ "MPI_Status" ]   = "PMPI_Status";
@@ -1222,4 +1223,39 @@ SCOREP::Wrapgen::handler::mpi::comm_parent
 
     // Use MPI_COMM_NULL, if no parent communicator is available
     return "MPI_COMM_NULL";
+}
+
+string
+SCOREP::Wrapgen::handler::mpi::ltimer_comm
+(
+    const Func& func
+)
+{
+    std::string kind = func.get_attribute( "kind" );
+
+    std::stringstream ss;
+
+    if ( kind == "COLL_ONE2ALL"
+         || kind == "COLL_ALL2ONE"
+         || kind == "COLL_ALL2ALL"
+         || kind == "BARRIER" )
+    {
+        ss << "if ( scorep_mpi_ltimer_enabled() )\n"
+           << "{\n";
+        if ( kind == "COLL_ONE2ALL" )
+        {
+            ss << "scorep_mpi_ltimer_bcast( root, comm );\n";
+        }
+        else if ( kind == "COLL_ALL2ONE" )
+        {
+            ss << "scorep_mpi_ltimer_reduce( root, comm );\n";
+        }
+        else if ( kind == "COLL_ALL2ALL" || kind == "BARRIER" )
+        {
+            ss << "scorep_mpi_ltimer_allreduce( comm );\n";
+        }
+        ss << "}\n";
+    }
+
+    return ss.str();
 }

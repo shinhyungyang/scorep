@@ -408,6 +408,6 @@ SCOREP_RegisterAllConfigVariables( void )
     SCOREP_Profile_Register();
     SCOREP_Tracing_Register();
     SCOREP_Filtering_Register();
-    SCOREP_Timer_Register();
+    SCOREP_Timer_Register();  // TODO: to be removed when impl. moved to func below
     scorep_subsystems_register();
 }

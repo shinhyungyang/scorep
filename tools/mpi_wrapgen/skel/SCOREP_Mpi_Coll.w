@@ -40,6 +40,7 @@ ${proto:c}
     {
       if (event_gen_active_for_group)
         {
+          ${ltimer:comm}
           SCOREP_MpiCollectiveEnd(SCOREP_MPI_COMM_HANDLE(comm),
                                   root_loc,
                                   SCOREP_MPI_COLLECTIVE__${name|uppercase},
