@@ -53,6 +53,8 @@
 #include "SCOREP_Opari2_Openmp_Tpd.h"
 #include "SCOREP_Opari2_Openmp_Regions.h"
 #include "SCOREP_Opari2_Openmp_Lock.h"
+#include "SCOREP_Opari2_Openmp.h"
+
 
 #ifdef __FUJITSU
 
@@ -74,6 +76,8 @@ POMP2_Task_handle pomp_task_counter = 1;
 
 #endif /* !__FUJITSU */
 
+
+/* ************************************** Functions def */
 
 /*
  * NOTE: The POMP2_Task_handle changes its value and
@@ -205,6 +209,11 @@ POMP2_Barrier_exit( POMP2_Region_handle* pomp_handle,
             SCOREP_ThreadForkJoin_TaskSwitch( SCOREP_PARADIGM_OPENMP,
                                               pomp2_to_scorep_handle( pomp_old_task ) );
         }
+
+        SCOREP_OPARI2_OMP_UPDATE_LOGICAL_MAX( SCOREP_OPARI2_OMP_LAMPORT_EVENT_BARRIER );
+        #pragma omp barrier
+        SCOREP_OPARI2_OMP_SET_LOGICAL_TIMER( SCOREP_OPARI2_OMP_LAMPORT_EVENT_BARRIER );
+
         SCOREP_ExitRegion( region->outerBlock );
     }
     pomp_current_task = pomp_old_task;
@@ -225,6 +234,7 @@ POMP2_Implicit_barrier_enter( POMP2_Region_handle* pomp_handle,
     if ( SCOREP_IS_MEASUREMENT_PHASE( WITHIN ) && scorep_opari2_recording_on )
     {
         SCOREP_Opari2_Openmp_Region* region = *( SCOREP_Opari2_Openmp_Region** )pomp_handle;
+
         SCOREP_EnterRegion( region->barrier );
     }
 
@@ -247,6 +257,11 @@ POMP2_Implicit_barrier_exit( POMP2_Region_handle* pomp_handle,
             SCOREP_ThreadForkJoin_TaskSwitch( SCOREP_PARADIGM_OPENMP,
                                               pomp2_to_scorep_handle( pomp_old_task ) );
         }
+
+        SCOREP_OPARI2_OMP_UPDATE_LOGICAL_MAX( SCOREP_OPARI2_OMP_LAMPORT_EVENT_BARRIER );
+        #pragma omp barrier
+        SCOREP_OPARI2_OMP_SET_LOGICAL_TIMER( SCOREP_OPARI2_OMP_LAMPORT_EVENT_BARRIER );
+
         SCOREP_ExitRegion( region->barrier );
     }
     pomp_current_task = pomp_old_task;
@@ -297,6 +312,9 @@ POMP2_Critical_begin( POMP2_Region_handle* pomp_handle )
 
     if ( SCOREP_IS_MEASUREMENT_PHASE( WITHIN ) && scorep_opari2_recording_on )
     {
+        SCOREP_OPARI2_OMP_UPDATE_LOGICAL_MAX( SCOREP_OPARI2_OMP_LAMPORT_EVENT_CRITICAL );
+        SCOREP_OPARI2_OMP_SET_LOGICAL_TIMER( SCOREP_OPARI2_OMP_LAMPORT_EVENT_CRITICAL );
+
         SCOREP_Opari2_Openmp_Region* region = *( SCOREP_Opari2_Openmp_Region** )pomp_handle;
         region->lock->acquisition_order++;
         SCOREP_ThreadAcquireLock( SCOREP_PARADIGM_OPENMP,
@@ -322,6 +340,9 @@ POMP2_Critical_end( POMP2_Region_handle* pomp_handle )
         SCOREP_ThreadReleaseLock( SCOREP_PARADIGM_OPENMP,
                                   region->lock->handle,
                                   region->lock->acquisition_order );
+
+        SCOREP_OPARI2_OMP_UPDATE_LOGICAL_MAX( SCOREP_OPARI2_OMP_LAMPORT_EVENT_CRITICAL );
+        SCOREP_OPARI2_OMP_SET_LOGICAL_TIMER( SCOREP_OPARI2_OMP_LAMPORT_EVENT_CRITICAL );
     }
 
     SCOREP_IN_MEASUREMENT_DECREMENT();
@@ -505,6 +526,8 @@ POMP2_Parallel_end( POMP2_Region_handle* pomp_handle )
         SCOREP_ThreadForkJoin_TeamEnd( SCOREP_PARADIGM_OPENMP,
                                        omp_get_thread_num(),
                                        omp_get_num_threads() );
+
+        SCOREP_OPARI2_OMP_UPDATE_LOGICAL_MAX( SCOREP_OPARI2_OMP_LAMPORT_EVENT_JOIN );
     }
 
     SCOREP_IN_MEASUREMENT_DECREMENT();
@@ -531,6 +554,8 @@ POMP2_Parallel_fork( POMP2_Region_handle* pomp_handle,
         UTILS_ASSERT( region != NULL );
         SCOREP_ThreadForkJoin_Fork( SCOREP_PARADIGM_OPENMP,
                                     num_threads );
+
+        SCOREP_OPARI2_OMP_UPDATE_LOGICAL_MAX( SCOREP_OPARI2_OMP_LAMPORT_EVENT_FORK );
     }
 
     SCOREP_IN_MEASUREMENT_DECREMENT();
@@ -551,6 +576,8 @@ POMP2_Parallel_join( POMP2_Region_handle* pomp_handle,
         struct scorep_thread_private_data* tpd_from_now_on = NULL;
         SCOREP_ThreadForkJoin_Join( SCOREP_PARADIGM_OPENMP, &tpd_from_now_on );
         SCOREP_OMP_SET_POMP_TPD_TO( tpd_from_now_on );
+
+        SCOREP_OPARI2_OMP_SET_LOGICAL_TIMER( SCOREP_OPARI2_OMP_LAMPORT_EVENT_JOIN );
     }
 
     SCOREP_IN_MEASUREMENT_DECREMENT();
@@ -1174,6 +1201,11 @@ POMP2_Set_lock( omp_lock_t* s )
     {
         SCOREP_MutexLock( &scorep_opari2_openmp_lock );
         SCOREP_Opari2_Openmp_Lock* lock = SCOREP_Opari2_Openmp_GetAcquireLock( s );
+
+        SCOREP_OPARI2_OMP_UPDATE_LOGICAL_MAX_LOCK( lock );
+        /* A dummy call to increment thread's logical timer */
+        SCOREP_Timer_GetClockTicks();
+
         SCOREP_ThreadAcquireLock( SCOREP_PARADIGM_OPENMP, lock->handle, lock->acquisition_order );
         SCOREP_MutexUnlock( &scorep_opari2_openmp_lock );
 
@@ -1207,6 +1239,9 @@ POMP2_Unset_lock( omp_lock_t* s )
 
         SCOREP_MutexLock( &scorep_opari2_openmp_lock );
         SCOREP_Opari2_Openmp_Lock* lock = SCOREP_Opari2_Openmp_GetReleaseLock( s );
+
+        SCOREP_OPARI2_OMP_UPDATE_LOGICAL_MAX_LOCK( lock );
+
         SCOREP_ThreadReleaseLock( SCOREP_PARADIGM_OPENMP, lock->handle, lock->acquisition_order );
         SCOREP_MutexUnlock( &scorep_opari2_openmp_lock );
     }

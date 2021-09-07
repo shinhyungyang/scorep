@@ -27,8 +27,8 @@
  * directory for details.
  */
 
-#ifndef SCOREP_OPARI2_OPENMP_H
-#define SCOREP_OPARI2_OPENMP_H
+#ifndef SCOREP_OPARI2_OPENMP_LOCK_H
+#define SCOREP_OPARI2_OPENMP_LOCK_H
 
 /**
  * @file
@@ -75,6 +75,7 @@ struct SCOREP_Opari2_Openmp_Lock
     SCOREP_Opari2_Openmp_Lock_HandleType handle;
     uint32_t                             acquisition_order;
     uint32_t                             nest_level; // only used for nested locks
+    uint64_t                             logic_timer_max;
 };
 
 /** Mutex to ensure exclusive access to opari2_openmp_lock lock data structure.
@@ -120,5 +121,19 @@ scorep_opari2_openmp_lock_destroy( const void* lock );
 /** Clean up of the locking management. Frees all memory for locking managment. */
 void
 scorep_opari2_openmp_lock_finalize( void );
+
+
+inline uint64_t
+SCOREP_Opari2_Openmp_LockGetLogicTimer( const SCOREP_Opari2_Openmp_Lock* lock )
+{
+    return lock->logic_timer_max;
+}
+
+
+inline void
+SCOREP_Opari2_Openmp_LockSetLogicTimer( SCOREP_Opari2_Openmp_Lock* lock, uint64_t timer_val )
+{
+    lock->logic_timer_max = timer_val;
+}
 
 #endif /* SCOREP_OPARI2_OPENMP_LOCK_H */

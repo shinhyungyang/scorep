@@ -81,4 +81,17 @@ bool
 SCOREP_Timer_ClockIsGlobal( void );
 
 
+/**
+ * Sets logical timer for current CPU location.
+ */
+void
+SCOREP_Timer_SetLogical( uint64_t val );
+
+
+/**
+ * @return logical timer value for current CPU location.
+ */
+uint64_t
+SCOREP_Timer_GetLogical( void );
+
 #endif /* SCOREP_TIMER_UTILS_H */

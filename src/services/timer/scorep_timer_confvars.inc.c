@@ -101,6 +101,12 @@ static const SCOREP_ConfigType_SetEntry timer_table[] = {
     },
 #endif /* BACKEND_SCOREP_TIMER_CLOCK_GETTIME */
 
+    {
+        "logical",
+        TIMER_LOGICAL,
+        "Logical counter for events."
+    },
+
     { NULL, 0, NULL }
 };
 

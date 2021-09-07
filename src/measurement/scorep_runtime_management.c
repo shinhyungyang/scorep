@@ -236,7 +236,7 @@ scorep_format_time( time_t* timestamp )
         _Exit( EXIT_FAILURE );
     }
 
-    strftime( local_time_buf, FORMAT_TIME_SIZE - 1, "%Y%m%d_%H%M_", local_time );
+    strftime( local_time_buf, FORMAT_TIME_SIZE - 1, "%Y%m%d_%H%M%S_", local_time );
     snprintf( &( local_time_buf[ strlen( local_time_buf ) ] ),
               FORMAT_TIME_SIZE - strlen( local_time_buf ) - 1,
               "%" PRIu64, SCOREP_Timer_GetClockTicks() );

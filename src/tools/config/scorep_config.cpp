@@ -1049,6 +1049,7 @@ print_adapter_init_source( void )
         init_structs.push_front( "SCOREP_Subsystem_MetricService" );
         init_structs.push_front( "SCOREP_Subsystem_TaskStack" );
         init_structs.push_front( "SCOREP_Subsystem_Substrates" );
+        init_structs.push_front( "SCOREP_Subsystem_Timer" );
 
         init_structs = remove_double_entries( init_structs );
 

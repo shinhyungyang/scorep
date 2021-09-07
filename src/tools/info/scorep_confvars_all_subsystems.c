@@ -62,6 +62,7 @@ extern const SCOREP_Subsystem SCOREP_Subsystem_MemoryAdapter;
 extern const SCOREP_Subsystem SCOREP_Subsystem_Topologies;
 extern const SCOREP_Subsystem SCOREP_Subsystem_PlatformTopology;
 extern const SCOREP_Subsystem SCOREP_Subsystem_KokkosAdapter;
+extern const SCOREP_Subsystem SCOREP_Subsystem_Timer;
 
 /**
  * List of subsystems.
@@ -86,7 +87,8 @@ const SCOREP_Subsystem* scorep_subsystems[] = {
     &SCOREP_Subsystem_OpenclAdapter,
     &SCOREP_Subsystem_OpenaccAdapter,
     &SCOREP_Subsystem_MemoryAdapter,
-    &SCOREP_Subsystem_KokkosAdapter
+    &SCOREP_Subsystem_KokkosAdapter,
+    &SCOREP_Subsystem_Timer
 };
 
 const size_t scorep_number_of_subsystems = sizeof( scorep_subsystems ) /

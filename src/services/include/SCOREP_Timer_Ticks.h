@@ -29,7 +29,7 @@
 
 #include <UTILS_Error.h>
 #include "SCOREP_Timer_Avail.h"
-
+#include <SCOREP_Location.h>
 
 /* Includes needed by specific timers. */
 
@@ -80,6 +80,14 @@
 # include <time.h>
 #endif /* BACKEND_SCOREP_TIMER_CLOCK_GETTIME */
 
+/* ************************************** typedefs */
+
+typedef struct scorep_location_timers_data
+{
+    uint64_t logical_timer_val;
+} scorep_location_timers_data;
+
+/* ************************************** static functions */
 
 /**
  * Platform independent timing functions to be used for providing timestamps
@@ -166,6 +174,31 @@ SCOREP_Timer_GetClockTicks( void )
         }
 #endif  /* BACKEND_SCOREP_TIMER_CLOCK_GETTIME */
 
+        case TIMER_LOGICAL:
+        {
+            extern size_t timer_subsystem_id;
+            extern bool   master_loc_initialized;
+
+            /* timer subsystem registerd and location initialized */
+            if ( master_loc_initialized )
+            {
+                SCOREP_Location*             location       = SCOREP_Location_GetCurrentCPULocation();
+                scorep_location_timers_data* subsystem_data =
+                    SCOREP_Location_GetSubsystemData( location, timer_subsystem_id );
+
+                subsystem_data->logical_timer_val++;
+
+                SCOREP_Location_SetSubsystemData( location,
+                                                  timer_subsystem_id,
+                                                  subsystem_data );
+
+                return subsystem_data->logical_timer_val;
+            }
+            else
+            {
+                return 0;
+            }
+        }
         default:
             UTILS_FATAL( "Invalid timer selected, shouldn't happen." );
     }

@@ -269,16 +269,6 @@ scorep_thread_on_team_begin( scorep_thread_private_data*  parentTpd,
 
         set_tpd_to( *currentTpd );
     }
-
-    uint64_t         current_timestamp = SCOREP_Timer_GetClockTicks();
-    SCOREP_Location* location          = scorep_thread_get_location( *currentTpd );
-    UTILS_BUG_ON( SCOREP_Location_GetLastTimestamp( location ) > current_timestamp,
-                  "Wrong timestamp order at team_begin on location %" PRIu32 ": %" PRIu64 " (last recorded) > %" PRIu64 " (current)."
-                  "This might be an indication of thread migration. Please pin your threads. "
-                  "Using a SCOREP_TIMER different from tsc might also help.",
-                  SCOREP_Location_GetId( location ),
-                  SCOREP_Location_GetLastTimestamp( location ),
-                  current_timestamp );
 }
 
 

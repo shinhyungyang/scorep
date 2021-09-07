@@ -72,6 +72,8 @@ enum timer_type
     TIMER_CLOCK_GETTIME,
 #endif /* BACKEND_SCOREP_TIMER_CLOCK_GETTIME */
 
+    TIMER_LOGICAL,  /* Logical Timer system independent */
+
     TIMER_INVALID
 };
 

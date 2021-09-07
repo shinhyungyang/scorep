@@ -123,6 +123,7 @@ scorep_opari2_openmp_lock_init( const void* lock )
     last_lock->handle            = current_lock_handle++;
     last_lock->acquisition_order = 0;
     last_lock->nest_level        = 0;
+    last_lock->logic_timer_max   = 0;
 
     SCOREP_MutexUnlock( &scorep_opari2_openmp_lock );
     return last_lock;

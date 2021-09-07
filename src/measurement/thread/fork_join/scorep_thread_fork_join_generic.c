@@ -61,6 +61,9 @@
 #include <string.h>
 
 
+#include <SCOREP_Timer_Utils.h>
+
+
 /* Note: tpd is short for thread private data. This usually refers to
  * scorep_thread_private_data, not to thread private/local storage of a
  * particular threading model. */
@@ -199,13 +202,22 @@ SCOREP_ThreadForkJoin_TeamBegin( SCOREP_ParadigmType                 paradigm,
 
     SCOREP_Location* parent_location  = scorep_thread_get_location( parent_tpd );
     SCOREP_Location* current_location = scorep_thread_get_location( *newTpd );
-    uint64_t         timestamp        = scorep_get_timestamp( current_location );
 
     if ( location_is_created )
     {
         scorep_subsystems_initialize_location( current_location,
                                                parent_location );
     }
+
+    /* Update threads subsystem.timer with lamport timer value */
+    extern uint64_t scorep_opari2_omp_timer_max[];
+    /* index of SCOREP_OPARI2_OMP_LAMPORT_EVENT_FORK */
+    SCOREP_Timer_SetLogical( scorep_opari2_omp_timer_max[ 2 ] );
+    /* caveat: Acquiring timestamp must be called after the check
+               if ( location_is_created )                            */
+    /* Comment: scorep_get_timestamp sets the last_timestamp for current_location */
+    uint64_t timestamp = scorep_get_timestamp( current_location );
+
 
     /* handles recursion into the same singleton thread-team */
     SCOREP_InterimCommunicatorHandle team = scorep_thread_get_team_handle(

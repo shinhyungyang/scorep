@@ -78,6 +78,7 @@ lib_LTLIBRARIES += libscorep_adapter_opari2_openmp_event.la
 
 libscorep_adapter_opari2_openmp_event_la_SOURCES =         \
     $(SRC_ROOT)src/adapters/opari2/openmp/SCOREP_Opari2_Openmp.c \
+    $(SRC_ROOT)src/adapters/opari2/openmp/SCOREP_Opari2_Openmp.h \
     $(SRC_ROOT)src/adapters/opari2/openmp/SCOREP_Opari2_Openmp_Tpd.h
 
 libscorep_adapter_opari2_openmp_event_la_CFLAGS = \
@@ -87,6 +88,8 @@ libscorep_adapter_opari2_openmp_event_la_CFLAGS = \
 libscorep_adapter_opari2_openmp_event_la_CPPFLAGS = \
     $(AM_CPPFLAGS)                                  \
     -I$(INC_ROOT)src/measurement/include            \
+    -I$(INC_ROOT)src/services/include               \
+    -I$(INC_ROOT)src/utils/include                  \
     -I$(INC_ROOT)src/adapters/opari2                \
     -I$(PUBLIC_INC_DIR)                             \
     -I$(INC_DIR_DEFINITIONS)                        \

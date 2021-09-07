@@ -17,6 +17,7 @@
 
 
 #include <config.h>
+#include <SCOREP_Subsystem.h>
 
 #include "scorep_timer_confvars.inc.c"
 
@@ -27,3 +28,8 @@ SCOREP_Timer_Register( void )
 {
     SCOREP_ConfigRegister( "", scorep_timer_confvars );
 }
+
+const SCOREP_Subsystem SCOREP_Subsystem_Timer =
+{
+    .subsystem_name = "Timer (config variables only)"
+};

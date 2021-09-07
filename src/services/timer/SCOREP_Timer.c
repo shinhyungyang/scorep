@@ -35,6 +35,20 @@
 #include <math.h>
 #endif  /* HAVE( BACKEND_SCOREP_TIMER_TSC ) && ! HAVE( SCOREP_ARMV8_TSC ) */
 
+#include <SCOREP_Subsystem.h>
+#include <SCOREP_Config.h>
+#include <SCOREP_ErrorCodes.h>
+#include <assert.h>
+
+
+#define SCOREP_DEBUG_MODULE_NAME TIMER
+#include <UTILS_Error.h>
+#include <UTILS_Debug.h>
+
+
+#include <SCOREP_Memory.h>
+#include <SCOREP_Location.h>
+
 /* *INDENT-OFF* */
 /* *INDENT-ON*  */
 
@@ -72,6 +86,60 @@ double scorep_ticks_to_nsec_mac;
 
 #include "scorep_timer_confvars.inc.c"
 
+
+static SCOREP_ErrorCode
+timer_subsystem_register( size_t );
+
+static SCOREP_ErrorCode
+timer_subsystem_init_location( SCOREP_Location* location,
+                               SCOREP_Location* parent );
+
+bool master_loc_initialized;
+
+/* ************************************** subsystem struct */
+
+const SCOREP_Subsystem SCOREP_Subsystem_Timer =
+{
+    .subsystem_name          = "Timer",
+    .subsystem_register      = &timer_subsystem_register,
+    .subsystem_init_location = &timer_subsystem_init_location
+};
+
+/* ************************************** static functions */
+size_t timer_subsystem_id = UINT16_MAX;
+
+
+static SCOREP_ErrorCode
+timer_subsystem_register( size_t subsystemId )
+{
+    UTILS_DEBUG_ENTRY();
+    timer_subsystem_id = subsystemId;
+    return SCOREP_SUCCESS;
+}
+
+
+static SCOREP_ErrorCode
+timer_subsystem_init_location( SCOREP_Location* location, SCOREP_Location* parent )
+{
+    /* Allocate memory for location running subsystem */
+    scorep_location_timers_data* subsystem_data
+        = SCOREP_Location_AllocForMisc( location,
+                                        sizeof( scorep_location_timers_data ) );
+
+    subsystem_data->logical_timer_val = 0;
+
+    SCOREP_Location_SetSubsystemData( location,
+                                      timer_subsystem_id,
+                                      subsystem_data );
+
+    /* global variable to all locations */
+    master_loc_initialized = true;
+
+    return SCOREP_SUCCESS;
+}
+
+/* ************************************** functions */
+
 void
 SCOREP_Timer_Register( void )
 {
@@ -79,6 +147,7 @@ SCOREP_Timer_Register( void )
 }
 
 
+/* SCOREP_Timer_Initialize is called earlier than scorep_subsystems_initialize */
 void
 SCOREP_Timer_Initialize( void )
 {
@@ -226,6 +295,11 @@ SCOREP_Timer_Initialize( void )
         case TIMER_CLOCK_GETTIME:
             break;
 #endif  /* BACKEND_SCOREP_TIMER_CLOCK_GETTIME */
+
+        case TIMER_LOGICAL:
+        {
+            break;
+        }
 
         default:
             UTILS_FATAL( "Invalid timer selected, shouldn't happen." );
@@ -416,6 +490,11 @@ SCOREP_Timer_GetClockResolution( void )
             return UINT64_C( 1000000000 );
 #endif  /* BACKEND_SCOREP_TIMER_CLOCK_GETTIME */
 
+        case TIMER_LOGICAL:
+        {
+            return UINT64_C( 1 );
+        }
+
         default:
             UTILS_FATAL( "Invalid timer selected, shouldn't happen." );
     }
@@ -472,7 +551,50 @@ SCOREP_Timer_ClockIsGlobal( void )
             return false;
 #endif  /* BACKEND_SCOREP_TIMER_CLOCK_GETTIME */
 
+        case TIMER_LOGICAL:
+            return true;
+
         default:
             UTILS_FATAL( "Invalid timer selected, shouldn't happen." );
     }
+}
+
+
+void
+SCOREP_Timer_SetLogical( uint64_t timerVal )
+{
+    /* timer subsystem registerd and location initialized */
+    if ( master_loc_initialized )
+    {
+        extern size_t    timer_subsystem_id;
+        SCOREP_Location* location = SCOREP_Location_GetCurrentCPULocation();
+
+        scorep_location_timers_data* subsystem_data =
+            SCOREP_Location_GetSubsystemData( location, timer_subsystem_id );
+
+        subsystem_data->logical_timer_val = ( timerVal > subsystem_data->logical_timer_val ) ?
+                                            timerVal : subsystem_data->logical_timer_val;
+
+        SCOREP_Location_SetSubsystemData( location,
+                                          timer_subsystem_id,
+                                          subsystem_data );
+    }
+}
+
+
+uint64_t
+SCOREP_Timer_GetLogical( void )
+{
+    /* timer subsystem registerd and location initialized */
+    if ( master_loc_initialized )
+    {
+        extern size_t timer_subsystem_id;
+
+        SCOREP_Location*             location       = SCOREP_Location_GetCurrentCPULocation();
+        scorep_location_timers_data* subsystem_data =
+            SCOREP_Location_GetSubsystemData( location, timer_subsystem_id );
+
+        return subsystem_data->logical_timer_val;
+    }
+    return 0;
 }
