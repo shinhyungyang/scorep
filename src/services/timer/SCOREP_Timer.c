@@ -582,6 +582,27 @@ SCOREP_Timer_SetLogical( uint64_t timerVal )
 }
 
 
+void
+SCOREP_Timer_IncrementLogical( int increment )
+{
+    /* timer subsystem registerd and location initialized */
+    if ( master_loc_initialized )
+    {
+        extern size_t    timer_subsystem_id;
+        SCOREP_Location* location = SCOREP_Location_GetCurrentCPULocation();
+
+        scorep_location_timers_data* subsystem_data =
+            SCOREP_Location_GetSubsystemData( location, timer_subsystem_id );
+
+        subsystem_data->logical_timer_val += increment;
+
+        SCOREP_Location_SetSubsystemData( location,
+                                          timer_subsystem_id,
+                                          subsystem_data );
+    }
+}
+
+
 uint64_t
 SCOREP_Timer_GetLogical( void )
 {

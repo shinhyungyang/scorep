@@ -417,6 +417,13 @@ POMP2_For_exit( POMP2_Region_handle* pomp_handle )
 }
 
 void
+POMP2_Loop_iteration_count( POMP2_Region_handle* pomp_handle,
+                            int                  loop_iter_count )
+{
+    SCOREP_Timer_IncrementLogical( loop_iter_count );
+}
+
+void
 POMP2_Master_begin( POMP2_Region_handle* pomp_handle,
                     const char           ctc_string[] )
 {

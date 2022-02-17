@@ -68,6 +68,7 @@ typedef int64_t  POMP2_Task_handle_fortran;
 #define POMP2_Critical_exit_U            POMP2_CRITICAL_EXIT
 #define POMP2_Do_enter_U                 POMP2_DO_ENTER
 #define POMP2_Do_exit_U                  POMP2_DO_EXIT
+#define POMP2_Loop_iteration_count_U     POMP2_LOOP_ITERATION_COUNT
 #define POMP2_Master_begin_U             POMP2_MASTER_BEGIN
 #define POMP2_Master_end_U               POMP2_MASTER_END
 #define POMP2_Ordered_enter_U            POMP2_ORDERED_ENTER
@@ -136,6 +137,7 @@ typedef int64_t  POMP2_Task_handle_fortran;
 #define POMP2_Critical_exit_L            pomp2_critical_exit
 #define POMP2_Do_enter_L                 pomp2_do_enter
 #define POMP2_Do_exit_L                  pomp2_do_exit
+#define POMP2_Loop_iteration_count_L     pomp2_loop_iteration_count
 #define POMP2_Master_begin_L             pomp2_master_begin
 #define POMP2_Master_end_L               pomp2_master_end
 #define POMP2_Ordered_enter_L            pomp2_ordered_enter

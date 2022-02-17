@@ -182,6 +182,15 @@ FSUB( POMP2_Do_exit )( POMP2_Region_handle_fortran* region_handle )
 }
 
 void
+FSUB( POMP2_Loop_iteration_count )( POMP2_Region_handle_fortran* region_handle,
+                                    int*                         loop_iter_count )
+{
+    SCOREP_IN_MEASUREMENT_INCREMENT();
+    POMP2_Loop_iteration_count( SCOREP_POMP_F2C_REGION( region_handle ), *loop_iter_count );
+    SCOREP_IN_MEASUREMENT_DECREMENT();
+}
+
+void
 FSUB( POMP2_Master_begin )( POMP2_Region_handle_fortran* region_handle,
                             const char*                  ctc_string,
                             scorep_fortran_charlen_t     ctc_string_len )
