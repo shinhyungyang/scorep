@@ -107,6 +107,12 @@ static const SCOREP_ConfigType_SetEntry timer_table[] = {
         "Logical counter for events."
     },
 
+    {
+        "logical_hwctr",
+        TIMER_LOGICAL_HWCTR_INSTR,
+        "Logical & HW instructions count for events."
+    },
+
     { NULL, 0, NULL }
 };
 

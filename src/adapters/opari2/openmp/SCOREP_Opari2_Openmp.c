@@ -76,6 +76,9 @@ POMP2_Task_handle pomp_task_counter = 1;
 
 #endif /* !__FUJITSU */
 
+/* LAMPORT SYNC EVENT */
+bool POMP2_Sync_logic_event;
+
 
 /* ************************************** Functions def */
 
@@ -214,7 +217,9 @@ POMP2_Barrier_exit( POMP2_Region_handle* pomp_handle,
         #pragma omp barrier
         SCOREP_OPARI2_OMP_SET_LOGICAL_TIMER( SCOREP_OPARI2_OMP_LAMPORT_EVENT_BARRIER );
 
+        POMP2_Sync_logic_event = true;
         SCOREP_ExitRegion( region->outerBlock );
+        POMP2_Sync_logic_event = false;
     }
     pomp_current_task = pomp_old_task;
 
@@ -262,7 +267,9 @@ POMP2_Implicit_barrier_exit( POMP2_Region_handle* pomp_handle,
         #pragma omp barrier
         SCOREP_OPARI2_OMP_SET_LOGICAL_TIMER( SCOREP_OPARI2_OMP_LAMPORT_EVENT_BARRIER );
 
+        POMP2_Sync_logic_event = true;
         SCOREP_ExitRegion( region->barrier );
+        POMP2_Sync_logic_event = false;
     }
     pomp_current_task = pomp_old_task;
 
@@ -312,14 +319,14 @@ POMP2_Critical_begin( POMP2_Region_handle* pomp_handle )
 
     if ( SCOREP_IS_MEASUREMENT_PHASE( WITHIN ) && scorep_opari2_recording_on )
     {
-        SCOREP_OPARI2_OMP_UPDATE_LOGICAL_MAX( SCOREP_OPARI2_OMP_LAMPORT_EVENT_CRITICAL );
-        SCOREP_OPARI2_OMP_SET_LOGICAL_TIMER( SCOREP_OPARI2_OMP_LAMPORT_EVENT_CRITICAL );
-
         SCOREP_Opari2_Openmp_Region* region = *( SCOREP_Opari2_Openmp_Region** )pomp_handle;
         region->lock->acquisition_order++;
         SCOREP_ThreadAcquireLock( SCOREP_PARADIGM_OPENMP,
                                   region->lock->handle,
                                   region->lock->acquisition_order );
+
+        SCOREP_OPARI2_OMP_UPDATE_LOGICAL_MAX( SCOREP_OPARI2_OMP_LAMPORT_EVENT_CRITICAL );
+        SCOREP_OPARI2_OMP_SET_LOGICAL_TIMER( SCOREP_OPARI2_OMP_LAMPORT_EVENT_CRITICAL );
         SCOREP_EnterRegion( region->innerBlock );
     }
 
@@ -336,13 +343,17 @@ POMP2_Critical_end( POMP2_Region_handle* pomp_handle )
     if ( SCOREP_IS_MEASUREMENT_PHASE( WITHIN ) && scorep_opari2_recording_on )
     {
         SCOREP_Opari2_Openmp_Region* region = *( SCOREP_Opari2_Openmp_Region** )pomp_handle;
+
+        SCOREP_OPARI2_OMP_UPDATE_LOGICAL_MAX( SCOREP_OPARI2_OMP_LAMPORT_EVENT_CRITICAL );
+        SCOREP_OPARI2_OMP_SET_LOGICAL_TIMER( SCOREP_OPARI2_OMP_LAMPORT_EVENT_CRITICAL );
+        POMP2_Sync_logic_event = true;
         SCOREP_ExitRegion( region->innerBlock );
+        POMP2_Sync_logic_event = false;
+
         SCOREP_ThreadReleaseLock( SCOREP_PARADIGM_OPENMP,
                                   region->lock->handle,
                                   region->lock->acquisition_order );
 
-        SCOREP_OPARI2_OMP_UPDATE_LOGICAL_MAX( SCOREP_OPARI2_OMP_LAMPORT_EVENT_CRITICAL );
-        SCOREP_OPARI2_OMP_SET_LOGICAL_TIMER( SCOREP_OPARI2_OMP_LAMPORT_EVENT_CRITICAL );
     }
 
     SCOREP_IN_MEASUREMENT_DECREMENT();
@@ -514,6 +525,7 @@ POMP2_Parallel_begin( POMP2_Region_handle* pomp_handle )
         SCOREP_OMP_SET_POMP_TPD_TO( new_tpd );
         SCOREP_Opari2_Openmp_Region* region = *( SCOREP_Opari2_Openmp_Region** )pomp_handle;
         SCOREP_EnterRegion( region->innerParallel );
+        POMP2_Sync_logic_event = false;
     }
 
     SCOREP_IN_MEASUREMENT_DECREMENT();
@@ -529,12 +541,15 @@ POMP2_Parallel_end( POMP2_Region_handle* pomp_handle )
     if ( SCOREP_IS_MEASUREMENT_PHASE( WITHIN ) )
     {
         SCOREP_Opari2_Openmp_Region* region = *( SCOREP_Opari2_Openmp_Region** )pomp_handle;
+
+        SCOREP_OPARI2_OMP_UPDATE_LOGICAL_MAX( SCOREP_OPARI2_OMP_LAMPORT_EVENT_JOIN );
+        POMP2_Sync_logic_event = true;
         SCOREP_ExitRegion( region->innerParallel );
+
         SCOREP_ThreadForkJoin_TeamEnd( SCOREP_PARADIGM_OPENMP,
                                        omp_get_thread_num(),
                                        omp_get_num_threads() );
 
-        SCOREP_OPARI2_OMP_UPDATE_LOGICAL_MAX( SCOREP_OPARI2_OMP_LAMPORT_EVENT_JOIN );
     }
 
     SCOREP_IN_MEASUREMENT_DECREMENT();
@@ -563,6 +578,7 @@ POMP2_Parallel_fork( POMP2_Region_handle* pomp_handle,
                                     num_threads );
 
         SCOREP_OPARI2_OMP_UPDATE_LOGICAL_MAX( SCOREP_OPARI2_OMP_LAMPORT_EVENT_FORK );
+        // NDAO: Check this when possible, why wasn't setting the logical done here?
     }
 
     SCOREP_IN_MEASUREMENT_DECREMENT();
@@ -586,6 +602,8 @@ POMP2_Parallel_join( POMP2_Region_handle* pomp_handle,
 
         SCOREP_OPARI2_OMP_SET_LOGICAL_TIMER( SCOREP_OPARI2_OMP_LAMPORT_EVENT_JOIN );
     }
+
+    POMP2_Sync_logic_event = false;
 
     SCOREP_IN_MEASUREMENT_DECREMENT();
 }

@@ -45,7 +45,7 @@ enum omp_lamport_events
 };
 
 /**
-   Lock to protect shared global variable assignments.
+   Lock to protect shared global variable assignment.
  */
 SCOREP_Mutex scorep_opari2_omp_lock[] =
 {
@@ -55,42 +55,43 @@ SCOREP_Mutex scorep_opari2_omp_lock[] =
     SCOREP_MUTEX_INIT
 };
 
+/* global variable shared among all threads */
+/* protected by mutex                       */
+/* updated on logical sync events           */
 uint64_t scorep_opari2_omp_timer_max[ 4 ];
 
 
-#define SCOREP_OPARI2_OMP_UPDATE_LOGICAL_MAX( omp_lamport_event )              \
-    {                                                                          \
-        uint8_t  event_type        = ( int )( omp_lamport_event );             \
-        uint64_t current_timer_val = SCOREP_Timer_GetLogical();                \
-        SCOREP_MutexLock( &scorep_opari2_omp_lock[ event_type ] );             \
-        scorep_opari2_omp_timer_max[ event_type ] =                            \
-            ( scorep_opari2_omp_timer_max[ event_type ] < current_timer_val ) ? \
-            current_timer_val : scorep_opari2_omp_timer_max[ event_type ];     \
-        SCOREP_MutexUnlock( &scorep_opari2_omp_lock[ event_type ] );       \
-    }
+#define SCOREP_OPARI2_OMP_UPDATE_LOGICAL_MAX( omp_lamport_event )          \
+{                                                                          \
+    uint8_t  event_type        = ( int )( omp_lamport_event );             \
+    uint64_t current_timer_val = SCOREP_Timer_GetLogical();                \
+    SCOREP_MutexLock( &scorep_opari2_omp_lock[ event_type ] );             \
+    scorep_opari2_omp_timer_max[ event_type ] =                            \
+        scorep_opari2_omp_timer_max[ event_type ] < current_timer_val ?    \
+        current_timer_val : scorep_opari2_omp_timer_max[ event_type ];     \
+    SCOREP_MutexUnlock( &scorep_opari2_omp_lock[ event_type ] );           \
+}
 
+#define SCOREP_OPARI2_OMP_SET_LOGICAL_TIMER( omp_lamport_event )            \
+{                                                                           \
+    uint8_t event_type = ( int )( omp_lamport_event );                      \
+    SCOREP_Timer_SetLogical( scorep_opari2_omp_timer_max[ event_type ] );   \
+}
 
-#define SCOREP_OPARI2_OMP_SET_LOGICAL_TIMER( omp_lamport_event )                \
-    {                                                                           \
-        uint8_t event_type = ( int )( omp_lamport_event );                      \
-        SCOREP_Timer_SetLogical( scorep_opari2_omp_timer_max[ event_type ] );   \
-    }
-
-
-/* called inside mutex context */
+/* called inside mutex context                                   */
 /* update logic max inside lock struct and in thread's timestamp */
-#define SCOREP_OPARI2_OMP_UPDATE_LOGICAL_MAX_LOCK( lock )                          \
-    {                                                                              \
-        uint64_t current_timer_val = SCOREP_Timer_GetLogical();                    \
-        /* get timer max value stored inside lock struct   */                      \
-        uint64_t lock_timer_max = SCOREP_Opari2_Openmp_LockGetLogicTimer( lock );  \
-        lock_timer_max = ( lock_timer_max < current_timer_val ) ?                  \
-                         current_timer_val : lock_timer_max;                       \
-        /* update the lock struct with max value   */                              \
-        SCOREP_Opari2_Openmp_LockSetLogicTimer( lock, lock_timer_max );            \
-        /* update the timestamp for the thread  */                                 \
-        SCOREP_Timer_SetLogical( lock_timer_max );                                 \
-    }
+#define SCOREP_OPARI2_OMP_UPDATE_LOGICAL_MAX_LOCK( lock )                      \
+{                                                                              \
+    uint64_t current_timer_val = SCOREP_Timer_GetLogical();                    \
+    /* get timer max value stored inside lock struct   */                      \
+    uint64_t lock_timer_max = SCOREP_Opari2_Openmp_LockGetLogicTimer( lock );  \
+    lock_timer_max = lock_timer_max < current_timer_val?                       \
+                     current_timer_val : lock_timer_max;                       \
+    /* update the lock struct with max value   */                              \
+    SCOREP_Opari2_Openmp_LockSetLogicTimer( lock, lock_timer_max );            \
+    /* update the timestamp for the thread  */                                 \
+    SCOREP_Timer_SetLogical( lock_timer_max );                                 \
+}
 
 
 #endif /* SCOREP_OPARI2_OPENMP_H */

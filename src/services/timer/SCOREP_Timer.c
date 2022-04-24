@@ -94,7 +94,7 @@ static SCOREP_ErrorCode
 timer_subsystem_init_location( SCOREP_Location* location,
                                SCOREP_Location* parent );
 
-bool master_loc_initialized;
+bool scorep_timer_subsystem_initialized;
 
 /* ************************************** subsystem struct */
 
@@ -133,7 +133,7 @@ timer_subsystem_init_location( SCOREP_Location* location, SCOREP_Location* paren
                                       subsystem_data );
 
     /* global variable to all locations */
-    master_loc_initialized = true;
+    scorep_timer_subsystem_initialized = true;
 
     return SCOREP_SUCCESS;
 }
@@ -298,6 +298,15 @@ SCOREP_Timer_Initialize( void )
 
         case TIMER_LOGICAL:
         {
+            break;
+        }
+
+        case TIMER_LOGICAL_HWCTR_INSTR:
+        {
+            /* here we need to enable metric perf measurements
+             set SCOREP_METRIC_PERF env variable to instructions
+             or the user shall set 2 env variables to have this
+             measurement ready */
             break;
         }
 
@@ -495,6 +504,11 @@ SCOREP_Timer_GetClockResolution( void )
             return UINT64_C( 1 );
         }
 
+        case TIMER_LOGICAL_HWCTR_INSTR:
+        {
+            return UINT64_C( 1 );
+        }
+
         default:
             UTILS_FATAL( "Invalid timer selected, shouldn't happen." );
     }
@@ -554,6 +568,9 @@ SCOREP_Timer_ClockIsGlobal( void )
         case TIMER_LOGICAL:
             return true;
 
+        case TIMER_LOGICAL_HWCTR_INSTR:
+            return true;
+
         default:
             UTILS_FATAL( "Invalid timer selected, shouldn't happen." );
     }
@@ -564,7 +581,7 @@ void
 SCOREP_Timer_SetLogical( uint64_t timerVal )
 {
     /* timer subsystem registerd and location initialized */
-    if ( master_loc_initialized )
+    if ( scorep_timer_subsystem_initialized )
     {
         extern size_t    timer_subsystem_id;
         SCOREP_Location* location = SCOREP_Location_GetCurrentCPULocation();
@@ -572,7 +589,7 @@ SCOREP_Timer_SetLogical( uint64_t timerVal )
         scorep_location_timers_data* subsystem_data =
             SCOREP_Location_GetSubsystemData( location, timer_subsystem_id );
 
-        subsystem_data->logical_timer_val = ( timerVal > subsystem_data->logical_timer_val ) ?
+        subsystem_data->logical_timer_val = timerVal > subsystem_data->logical_timer_val ?
                                             timerVal : subsystem_data->logical_timer_val;
 
         SCOREP_Location_SetSubsystemData( location,
@@ -586,7 +603,7 @@ void
 SCOREP_Timer_IncrementLogical( int increment )
 {
     /* timer subsystem registerd and location initialized */
-    if ( master_loc_initialized )
+    if ( scorep_timer_subsystem_initialized )
     {
         extern size_t    timer_subsystem_id;
         SCOREP_Location* location = SCOREP_Location_GetCurrentCPULocation();
@@ -607,7 +624,7 @@ uint64_t
 SCOREP_Timer_GetLogical( void )
 {
     /* timer subsystem registerd and location initialized */
-    if ( master_loc_initialized )
+    if ( scorep_timer_subsystem_initialized )
     {
         extern size_t timer_subsystem_id;
 

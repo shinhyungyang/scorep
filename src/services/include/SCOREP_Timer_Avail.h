@@ -76,6 +76,8 @@ enum timer_type
 
     TIMER_LOGICAL,  /* Logical Timer system independent */
 
+    TIMER_LOGICAL_HWCTR_INSTR,
+
     TIMER_INVALID
 };
 

@@ -31,6 +31,8 @@
 #include "SCOREP_Timer_Avail.h"
 #include <SCOREP_Location.h>
 
+#include <SCOREP_Metric_Management.h>
+
 /* Includes needed by specific timers. */
 
 #if HAVE( BACKEND_SCOREP_TIMER_BGL )
@@ -178,10 +180,10 @@ SCOREP_Timer_GetClockTicks( void )
         case TIMER_LOGICAL:
         {
             extern size_t timer_subsystem_id;
-            extern bool   master_loc_initialized;
+            extern bool   scorep_timer_subsystem_initialized;
 
             /* timer subsystem registerd and location initialized */
-            if ( master_loc_initialized )
+            if ( scorep_timer_subsystem_initialized )
             {
                 SCOREP_Location*             location       = SCOREP_Location_GetCurrentCPULocation();
                 scorep_location_timers_data* subsystem_data =
@@ -200,6 +202,48 @@ SCOREP_Timer_GetClockTicks( void )
                 return 0;
             }
         }
+
+        case TIMER_LOGICAL_HWCTR_INSTR:
+        {
+            extern size_t timer_subsystem_id;
+            extern bool   scorep_timer_subsystem_initialized;
+            extern bool   POMP2_Sync_logic_event;
+
+            if ( scorep_timer_subsystem_initialized )
+            {
+                SCOREP_Location*    location      = SCOREP_Location_GetCurrentCPULocation();
+                uint64_t*           metric_values = SCOREP_Metric_Read( location );
+                scorep_location_timers_data* subsystem_data =
+                   SCOREP_Location_GetSubsystemData( location, timer_subsystem_id );
+
+                if (metric_values != NULL)
+                {
+                    /* must compare with existing value because in children threads
+                       number of instructions is less than number of instructions
+                       calculated at sync points (master thread has more instr)
+                       and so without this check, children threads won't be sync
+                       with master threads at all */
+
+                    if (POMP2_Sync_logic_event == false)
+                    {
+                        subsystem_data->logical_timer_val = metric_values[0] > subsystem_data->logical_timer_val ?
+                                                            metric_values[0] : subsystem_data->logical_timer_val;
+                    }
+                    subsystem_data->logical_timer_val++;
+
+                    SCOREP_Location_SetSubsystemData( location,
+                                                      timer_subsystem_id,
+                                                      subsystem_data );
+                }
+
+                return subsystem_data->logical_timer_val;
+            }
+            else
+            {
+                return 0;
+            }
+        }
+
         default:
             UTILS_FATAL( "Invalid timer selected, shouldn't happen." );
     }
