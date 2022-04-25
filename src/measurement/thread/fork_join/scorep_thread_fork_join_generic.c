@@ -211,12 +211,12 @@ SCOREP_ThreadForkJoin_TeamBegin( SCOREP_ParadigmType                 paradigm,
 
     /* Update threads subsystem timer with lamport timer value */
     extern uint64_t scorep_opari2_omp_timer_max[];
-    extern bool     POMP2_Sync_logic_event;
+    extern bool     SCOREP_Timer_Subsystem_Logic_Event_Sync;
     /* index of SCOREP_OPARI2_OMP_LAMPORT_EVENT_FORK */
     SCOREP_Timer_SetLogical( scorep_opari2_omp_timer_max[ 2 ] );
     /* caveat: Acquiring timestamp must be called after the check
                if ( location_is_created )                            */
-    POMP2_Sync_logic_event = true;
+    SCOREP_Timer_Subsystem_Logic_Event_Sync = true;
     /* Comment: scorep_get_timestamp sets the last_timestamp for current_location */
     uint64_t timestamp = scorep_get_timestamp( current_location );
 

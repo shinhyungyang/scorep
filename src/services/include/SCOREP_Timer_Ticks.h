@@ -207,7 +207,7 @@ SCOREP_Timer_GetClockTicks( void )
         {
             extern size_t timer_subsystem_id;
             extern bool   scorep_timer_subsystem_initialized;
-            extern bool   POMP2_Sync_logic_event;
+            extern bool   SCOREP_Timer_Subsystem_Logic_Event_Sync;
 
             if ( scorep_timer_subsystem_initialized )
             {
@@ -224,7 +224,7 @@ SCOREP_Timer_GetClockTicks( void )
                        and so without this check, children threads won't be sync
                        with master threads at all */
 
-                    if (POMP2_Sync_logic_event == false)
+                    if (SCOREP_Timer_Subsystem_Logic_Event_Sync == false)
                     {
                         subsystem_data->logical_timer_val = metric_values[0] > subsystem_data->logical_timer_val ?
                                                             metric_values[0] : subsystem_data->logical_timer_val;

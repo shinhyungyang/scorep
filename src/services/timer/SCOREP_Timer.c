@@ -95,6 +95,7 @@ timer_subsystem_init_location( SCOREP_Location* location,
                                SCOREP_Location* parent );
 
 bool scorep_timer_subsystem_initialized;
+bool SCOREP_Timer_Subsystem_Logic_Event_Sync;
 
 /* ************************************** subsystem struct */
 
@@ -133,7 +134,8 @@ timer_subsystem_init_location( SCOREP_Location* location, SCOREP_Location* paren
                                       subsystem_data );
 
     /* global variable to all locations */
-    scorep_timer_subsystem_initialized = true;
+    scorep_timer_subsystem_initialized      = true;
+    SCOREP_Timer_Subsystem_Logic_Event_Sync = false;
 
     return SCOREP_SUCCESS;
 }
