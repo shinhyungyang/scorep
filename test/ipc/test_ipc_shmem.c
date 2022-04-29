@@ -38,11 +38,11 @@ pshmem_n_pes( void );
 void
 pshmem_barrier_all( void );
 
-#if defined( SCOREP_SHMEM_INT_MIN_TO_ALL_PROTO_ARGS )
+#if defined( SCOREP_SHMEM_INT_MIN_TO_ALL_DECL_ARGS )
 
 /* *INDENT-OFF* */
 void
-pshmem_int_min_to_all SCOREP_SHMEM_INT_MIN_TO_ALL_PROTO_ARGS;
+pshmem_int_min_to_all SCOREP_SHMEM_INT_MIN_TO_ALL_DECL_ARGS;
 /* *INDENT-ON* */
 
 #else
