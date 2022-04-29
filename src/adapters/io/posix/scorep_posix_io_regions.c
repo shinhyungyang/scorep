@@ -29,7 +29,7 @@
 
 
 #define SCOREP_POSIX_IO_PROCESS_FUNC( PARADIGM, TYPE, return_type, func, func_args ) \
-    SCOREP_RegionHandle scorep_posix_io_region_ ##func;
+    SCOREP_RegionHandle scorep_posix_io_region_ ## func;
 
 #include "scorep_posix_io_function_list.inc.c"
 
@@ -40,14 +40,14 @@
 void
 scorep_posix_io_register_regions( void )
 {
-#define SCOREP_POSIX_IO_PROCESS_FUNC( PARADIGM, TYPE, return_type, func, func_args )                                \
-    scorep_posix_io_region_ ##func = SCOREP_Definitions_NewRegion( #func,                                           \
-                                                                   NULL,                                            \
-                                                                   SCOREP_Definitions_NewSourceFile( #PARADIGM ),   \
-                                                                   SCOREP_INVALID_LINE_NO,                          \
-                                                                   SCOREP_INVALID_LINE_NO,                          \
-                                                                   SCOREP_PARADIGM_IO,                              \
-                                                                   SCOREP_REGION_##TYPE );
+#define SCOREP_POSIX_IO_PROCESS_FUNC( PARADIGM, TYPE, return_type, func, func_args ) \
+    scorep_posix_io_region_ ## func = SCOREP_Definitions_NewRegion( #return_type " " #func #func_args, \
+                                                                    #func, \
+                                                                    SCOREP_Definitions_NewSourceFile( #PARADIGM ), \
+                                                                    SCOREP_INVALID_LINE_NO, \
+                                                                    SCOREP_INVALID_LINE_NO, \
+                                                                    SCOREP_PARADIGM_IO, \
+                                                                    SCOREP_REGION_##TYPE );
 
 #include "scorep_posix_io_function_list.inc.c"
 }
