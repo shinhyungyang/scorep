@@ -13,7 +13,7 @@
 
 #define SHMEM_FORTRAN_LOCK_1( FUNCNAME )    \
     void                                    \
-    FSUB( FUNCNAME )( long *lock )          \
+    FSUB( FUNCNAME )( long* lock )          \
     {                                       \
         SCOREP_IN_MEASUREMENT_INCREMENT();  \
         FUNCNAME( lock );                   \
@@ -34,7 +34,7 @@ SHMEM_FORTRAN_LOCK_1( shmem_set_lock )
 
 #define SHMEM_FORTRAN_LOCK_2( FUNCNAME )    \
     int                                     \
-    FSUB( FUNCNAME )( long *lock )          \
+    FSUB( FUNCNAME )( long* lock )          \
     {                                       \
         SCOREP_IN_MEASUREMENT_INCREMENT();  \
                                             \

@@ -1,7 +1,7 @@
 /*
  * This file is part of the Score-P software (http://www.score-p.org)
  *
- * Copyright (c) 2013-2017,
+ * Copyright (c) 2013-2017, 2025,
  * Technische Universitaet Dresden, Germany
  *
  * This software may be modified and distributed under the terms of
@@ -29,7 +29,7 @@
 
 #define QUERY_PE( FUNCNAME )                                                \
     int                                                                     \
-    SCOREP_LIBWRAP_FUNC_NAME( FUNCNAME ) ( void )                           \
+    SCOREP_LIBWRAP_FUNC_NAME( FUNCNAME )( void )                            \
     {                                                                       \
         SCOREP_IN_MEASUREMENT_INCREMENT();                                  \
         int ret;                                                            \
@@ -44,7 +44,7 @@
         }                                                                   \
                                                                             \
         SCOREP_ENTER_WRAPPED_REGION();                                      \
-        ret = SCOREP_LIBWRAP_FUNC_CALL( FUNCNAME, ( ) );                    \
+        ret = SCOREP_LIBWRAP_FUNC_CALL( FUNCNAME, () );                     \
         SCOREP_EXIT_WRAPPED_REGION();                                       \
                                                                             \
         if ( event_gen_active )                                             \
@@ -89,7 +89,7 @@ QUERY_PE( shmem_n_pes )
 
 #define QUERY_PE_ACCESSIBLE( FUNCNAME )                                     \
     int                                                                     \
-    SCOREP_LIBWRAP_FUNC_NAME( FUNCNAME ) ( int pe )                         \
+    SCOREP_LIBWRAP_FUNC_NAME( FUNCNAME )( int pe )                          \
     {                                                                       \
         SCOREP_IN_MEASUREMENT_INCREMENT();                                  \
                                                                             \

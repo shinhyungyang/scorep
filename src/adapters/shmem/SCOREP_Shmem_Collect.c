@@ -1,7 +1,7 @@
 /*
  * This file is part of the Score-P software (http://www.score-p.org)
  *
- * Copyright (c) 2013-2017,
+ * Copyright (c) 2013-2017, 2025,
  * Technische Universitaet Dresden, Germany
  *
  * This software may be modified and distributed under the terms of
@@ -29,13 +29,13 @@
 
 #define COLLECT_ROUTINE( FUNCNAME, NBYTES )                                                                             \
     void                                                                                                                \
-    SCOREP_LIBWRAP_FUNC_NAME( FUNCNAME ) ( void*       target,                                                          \
-                                           const void* source,                                                          \
-                                           size_t      nelems,                                                          \
-                                           int         peStart,                                                         \
-                                           int         logPeStride,                                                     \
-                                           int         peSize,                                                          \
-                                           long*       pSync )                                                          \
+    SCOREP_LIBWRAP_FUNC_NAME( FUNCNAME )( void*       target,                                                           \
+                                          const void* source,                                                           \
+                                          size_t      nelems,                                                           \
+                                          int         peStart,                                                          \
+                                          int         logPeStride,                                                      \
+                                          int         peSize,                                                           \
+                                          long*       pSync )                                                           \
     {                                                                                                                   \
         SCOREP_IN_MEASUREMENT_INCREMENT();                                                                              \
                                                                                                                         \

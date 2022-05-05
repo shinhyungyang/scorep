@@ -1,7 +1,7 @@
 /*
  * This file is part of the Score-P software (http://www.score-p.org)
  *
- * Copyright (c) 2013-2015, 2017,
+ * Copyright (c) 2013-2015, 2017, 2025,
  * Technische Universitaet Dresden, Germany
  *
  * This software may be modified and distributed under the terms of
@@ -30,7 +30,7 @@
 
 #define MANAGE_EVENT( FUNCNAME )                                            \
     void                                                                    \
-    SCOREP_LIBWRAP_FUNC_NAME( FUNCNAME ) ( long * event )                   \
+    SCOREP_LIBWRAP_FUNC_NAME( FUNCNAME )( long* event )                     \
     {                                                                       \
         SCOREP_IN_MEASUREMENT_INCREMENT();                                  \
                                                                             \
@@ -74,7 +74,7 @@ MANAGE_EVENT( shmem_wait_event )
 
 #define TEST_EVENT( FUNCNAME )                                              \
     int                                                                     \
-    SCOREP_LIBWRAP_FUNC_NAME( FUNCNAME ) ( long * event )                   \
+    SCOREP_LIBWRAP_FUNC_NAME( FUNCNAME )( long* event )                     \
     {                                                                       \
         SCOREP_IN_MEASUREMENT_INCREMENT();                                  \
         int ret;                                                            \

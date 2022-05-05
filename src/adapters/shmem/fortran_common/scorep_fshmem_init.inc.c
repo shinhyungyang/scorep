@@ -12,7 +12,7 @@
 
 #define SHMEM_FORTRAN_INITIALIZATION_WITH_ARG( FUNCNAME )   \
     void                                                    \
-    FSUB( FUNCNAME )( int *npes )                           \
+    FSUB( FUNCNAME )( int* npes )                           \
     {                                                       \
         SCOREP_IN_MEASUREMENT_INCREMENT();                  \
         FUNCNAME( *npes );                                  \

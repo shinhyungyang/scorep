@@ -1,7 +1,7 @@
 /*
  * This file is part of the Score-P software (http://www.score-p.org)
  *
- * Copyright (c) 2013-2017,
+ * Copyright (c) 2013-2017, 2025,
  * Technische Universitaet Dresden, Germany
  *
  * This software may be modified and distributed under the terms of
@@ -34,9 +34,9 @@
 
 #define ATOMIC_SWAP_ROUTINE( FUNCNAME, DATATYPE )                                   \
     DATATYPE                                                                        \
-    SCOREP_LIBWRAP_FUNC_NAME( FUNCNAME ) ( DATATYPE * target,                       \
-                                           DATATYPE   value,                        \
-                                           int        pe )                          \
+    SCOREP_LIBWRAP_FUNC_NAME( FUNCNAME )( DATATYPE* target,                         \
+                                          DATATYPE  value,                          \
+                                          int       pe )                            \
     {                                                                               \
         SCOREP_IN_MEASUREMENT_INCREMENT();                                          \
         DATATYPE ret;                                                               \
@@ -108,10 +108,10 @@ ATOMIC_SWAP_ROUTINE( shmem_double_swap,   double )
 
 #define ATOMIC_CSWAP_ROUTINE( FUNCNAME, DATATYPE )                                          \
     DATATYPE                                                                                \
-    SCOREP_LIBWRAP_FUNC_NAME( FUNCNAME ) ( DATATYPE * target,                               \
-                                           DATATYPE   cond,                                 \
-                                           DATATYPE   value,                                \
-                                           int        pe )                                  \
+    SCOREP_LIBWRAP_FUNC_NAME( FUNCNAME )( DATATYPE* target,                                 \
+                                          DATATYPE  cond,                                   \
+                                          DATATYPE  value,                                  \
+                                          int       pe )                                    \
     {                                                                                       \
         SCOREP_IN_MEASUREMENT_INCREMENT();                                                  \
         DATATYPE ret;                                                                       \
@@ -171,9 +171,9 @@ ATOMIC_CSWAP_ROUTINE( shmem_longlong_cswap, long long )
 
 #define ATOMIC_FETCH_ADD_ROUTINE( FUNCNAME, DATATYPE )                              \
     DATATYPE                                                                        \
-    SCOREP_LIBWRAP_FUNC_NAME( FUNCNAME ) ( DATATYPE * target,                       \
-                                           DATATYPE   value,                        \
-                                           int        pe )                          \
+    SCOREP_LIBWRAP_FUNC_NAME( FUNCNAME )( DATATYPE* target,                         \
+                                          DATATYPE  value,                          \
+                                          int       pe )                            \
     {                                                                               \
         SCOREP_IN_MEASUREMENT_INCREMENT();                                          \
         DATATYPE ret;                                                               \
@@ -233,8 +233,8 @@ ATOMIC_FETCH_ADD_ROUTINE( shmem_longlong_fadd, long long )
 
 #define ATOMIC_FETCH_INCREMENT_ROUTINE( FUNCNAME, DATATYPE )                            \
     DATATYPE                                                                            \
-    SCOREP_LIBWRAP_FUNC_NAME( FUNCNAME ) ( DATATYPE * target,                           \
-                                           int        pe )                              \
+    SCOREP_LIBWRAP_FUNC_NAME( FUNCNAME )( DATATYPE* target,                             \
+                                          int       pe )                                \
     {                                                                                   \
         SCOREP_IN_MEASUREMENT_INCREMENT();                                              \
         DATATYPE ret;                                                                   \
@@ -308,9 +308,9 @@ ATOMIC_FETCH_INCREMENT_ROUTINE( shmem_longlong_finc, long long )
 
 #define ATOMIC_ADD_ROUTINE( FUNCNAME, DATATYPE )                                    \
     void                                                                            \
-    SCOREP_LIBWRAP_FUNC_NAME( FUNCNAME ) ( DATATYPE * target,                       \
-                                           DATATYPE   value,                        \
-                                           int        pe )                          \
+    SCOREP_LIBWRAP_FUNC_NAME( FUNCNAME )( DATATYPE* target,                         \
+                                          DATATYPE  value,                          \
+                                          int       pe )                            \
     {                                                                               \
         SCOREP_IN_MEASUREMENT_INCREMENT();                                          \
                                                                                     \
@@ -370,8 +370,8 @@ ATOMIC_ADD_ROUTINE( shmem_longlong_add, long long )
 
 #define ATOMIC_INCREMENT_ROUTINE( FUNCNAME, DATATYPE )                              \
     void                                                                            \
-    SCOREP_LIBWRAP_FUNC_NAME( FUNCNAME ) ( DATATYPE * target,                       \
-                                           int        pe )                          \
+    SCOREP_LIBWRAP_FUNC_NAME( FUNCNAME )( DATATYPE* target,                         \
+                                          int       pe )                            \
     {                                                                               \
         SCOREP_IN_MEASUREMENT_INCREMENT();                                          \
                                                                                     \

@@ -16,14 +16,14 @@
 
 #define SHMEM_FORTRAN_BROADCAST_ROUTINE( F_FUNCNAME, C_FUNCNAME )   \
     void                                                            \
-    FSUB( shmem_ ## F_FUNCNAME )( void       *target,               \
-                                  const void *source,               \
-                                  int        *nelems,               \
-                                  int        *PE_root,              \
-                                  int        *PE_start,             \
-                                  int        *logPE_stride,         \
-                                  int        *PE_size,              \
-                                  int        *pSync )               \
+    FSUB( shmem_ ## F_FUNCNAME )( void*       target,               \
+                                  const void* source,               \
+                                  int*        nelems,               \
+                                  int*        PE_root,              \
+                                  int*        PE_start,             \
+                                  int*        logPE_stride,         \
+                                  int*        PE_size,              \
+                                  int*        pSync )               \
     {                                                               \
         SCOREP_IN_MEASUREMENT_INCREMENT();                          \
         shmem_ ## C_FUNCNAME( target,                               \
@@ -33,7 +33,7 @@
                               *PE_start,                            \
                               *logPE_stride,                        \
                               *PE_size,                             \
-                              ( long * ) pSync );                   \
+                              ( long* )pSync );                     \
         SCOREP_IN_MEASUREMENT_DECREMENT();                          \
     }
 
