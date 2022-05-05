@@ -24,7 +24,7 @@
     FSUB( FUNCNAME )( void )                            \
     {                                                   \
         SCOREP_IN_MEASUREMENT_INCREMENT();              \
-        FUNCNAME ( );                                   \
+        FUNCNAME();                                     \
         SCOREP_IN_MEASUREMENT_DECREMENT();              \
     }
 
@@ -45,10 +45,10 @@ SHMEM_FORTRAN_DATA_CACHE_ROUTINE( shmem_udcflush )
 
 #define SHMEM_FORTRAN_DATA_CACHE_ROUTINE_WITH_ARG( FUNCNAME )   \
     void                                                        \
-    FSUB( FUNCNAME )( void * target )                           \
+    FSUB( FUNCNAME )( void* target )                            \
     {                                                           \
         SCOREP_IN_MEASUREMENT_INCREMENT();                      \
-        FUNCNAME ( target );                                    \
+        FUNCNAME( target );                                     \
         SCOREP_IN_MEASUREMENT_DECREMENT();                      \
     }
 

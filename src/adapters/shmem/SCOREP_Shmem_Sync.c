@@ -1,7 +1,7 @@
 /*
  * This file is part of the Score-P software (http://www.score-p.org)
  *
- * Copyright (c) 2013-2017,
+ * Copyright (c) 2013-2017, 2025,
  * Technische Universitaet Dresden, Germany
  *
  * This software may be modified and distributed under the terms of
@@ -158,7 +158,7 @@ P2P_WAIT_UNTIL( shmem_wait_until,          SCOREP_SHMEM_WAIT_UNTIL_PROTO_ARGS )
 
 #define SHMEM_BARRIER_ALL( FUNCNAME )                                                                   \
     void                                                                                                \
-    SCOREP_LIBWRAP_FUNC_NAME( FUNCNAME ) ( void )                                                       \
+    SCOREP_LIBWRAP_FUNC_NAME( FUNCNAME )( void )                                                        \
     {                                                                                                   \
         SCOREP_IN_MEASUREMENT_INCREMENT();                                                              \
                                                                                                         \
@@ -174,7 +174,7 @@ P2P_WAIT_UNTIL( shmem_wait_until,          SCOREP_SHMEM_WAIT_UNTIL_PROTO_ARGS )
         }                                                                                               \
                                                                                                         \
         SCOREP_ENTER_WRAPPED_REGION();                                                                  \
-        SCOREP_LIBWRAP_FUNC_CALL( FUNCNAME, ( ) );                                                      \
+        SCOREP_LIBWRAP_FUNC_CALL( FUNCNAME, () );                                                       \
         SCOREP_EXIT_WRAPPED_REGION();                                                                   \
                                                                                                         \
         if ( event_gen_active )                                                                         \
@@ -273,7 +273,7 @@ SHMEM_BARRIER( shmem_barrier )
 
 #define SHMEM_MEM_ORDERING( FUNCNAME )                                      \
     void                                                                    \
-    SCOREP_LIBWRAP_FUNC_NAME( FUNCNAME ) ( void )                           \
+    SCOREP_LIBWRAP_FUNC_NAME( FUNCNAME )( void )                            \
     {                                                                       \
         SCOREP_IN_MEASUREMENT_INCREMENT();                                  \
                                                                             \
@@ -287,7 +287,7 @@ SHMEM_BARRIER( shmem_barrier )
         }                                                                   \
                                                                             \
         SCOREP_ENTER_WRAPPED_REGION();                                      \
-        SCOREP_LIBWRAP_FUNC_CALL( FUNCNAME, ( ) );                          \
+        SCOREP_LIBWRAP_FUNC_CALL( FUNCNAME, () );                           \
         SCOREP_EXIT_WRAPPED_REGION();                                       \
                                                                             \
         if ( event_gen_active )                                             \

@@ -1,7 +1,7 @@
 /*
  * This file is part of the Score-P software (http://www.score-p.org)
  *
- * Copyright (c) 2013-2017,
+ * Copyright (c) 2013-2017, 2025,
  * Technische Universitaet Dresden, Germany
  *
  * This software may be modified and distributed under the terms of
@@ -29,7 +29,7 @@
 
 #define SHMEM_MALLOC( FUNCNAME )                                                \
     void*                                                                       \
-    SCOREP_LIBWRAP_FUNC_NAME( FUNCNAME ) ( size_t size )                        \
+    SCOREP_LIBWRAP_FUNC_NAME( FUNCNAME )( size_t size )                         \
     {                                                                           \
         SCOREP_IN_MEASUREMENT_INCREMENT();                                      \
         void* ret;                                                              \
@@ -82,8 +82,8 @@ SHMEM_MALLOC( shmalloc )
 
 #define SHMEM_MEMALIGN( FUNCNAME )                                                  \
     void*                                                                           \
-    SCOREP_LIBWRAP_FUNC_NAME( FUNCNAME ) ( size_t alignment,                        \
-                                           size_t size )                            \
+    SCOREP_LIBWRAP_FUNC_NAME( FUNCNAME )( size_t alignment,                         \
+                                          size_t size )                             \
     {                                                                               \
         SCOREP_IN_MEASUREMENT_INCREMENT();                                          \
         void* ret;                                                                  \
@@ -136,8 +136,8 @@ SHMEM_MEMALIGN( shmemalign )
 
 #define SHMEM_REALLOC( FUNCNAME )                                                       \
     void*                                                                               \
-    SCOREP_LIBWRAP_FUNC_NAME( FUNCNAME ) ( void*  ptr,                                  \
-                                           size_t size )                                \
+    SCOREP_LIBWRAP_FUNC_NAME( FUNCNAME )( void*  ptr,                                   \
+                                          size_t size )                                 \
     {                                                                                   \
         SCOREP_IN_MEASUREMENT_INCREMENT();                                              \
         void* result;                                                                   \
@@ -228,7 +228,7 @@ SHMEM_REALLOC( shrealloc )
 
 #define SHMEM_FREE( FUNCNAME )                                                      \
     void                                                                            \
-    SCOREP_LIBWRAP_FUNC_NAME( FUNCNAME ) ( void* ptr )                              \
+    SCOREP_LIBWRAP_FUNC_NAME( FUNCNAME )( void* ptr )                               \
     {                                                                               \
         SCOREP_IN_MEASUREMENT_INCREMENT();                                          \
         void* allocation = NULL;                                                    \

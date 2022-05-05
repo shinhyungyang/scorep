@@ -49,16 +49,16 @@
 
 #define SHMEM_FORTRAN_ATOMIC_ROUTINE_1( F_FUNCNAME, DATATYPE, C_FUNCNAME )  \
     DATATYPE                                                                \
-    FSUB( shmem_ ## F_FUNCNAME )( DATATYPE *target,                         \
-                                  DATATYPE *value,                          \
-                                  int      *pe )                            \
+    FSUB( shmem_ ## F_FUNCNAME )( DATATYPE* target,                         \
+                                  DATATYPE* value,                          \
+                                  int*      pe )                            \
     {                                                                       \
         SCOREP_IN_MEASUREMENT_INCREMENT();                                  \
                                                                             \
         DATATYPE ret;                                                       \
-        ret = shmem_ ## C_FUNCNAME ( target,                                \
-                                      *value,                               \
-                                      *pe );                                \
+        ret = shmem_ ## C_FUNCNAME( target,                                 \
+                                    *value,                                 \
+                                    *pe );                                  \
                                                                             \
         SCOREP_IN_MEASUREMENT_DECREMENT();                                  \
         return ret;                                                         \
@@ -97,14 +97,14 @@ SHMEM_FORTRAN_ATOMIC_ROUTINE_1( int8_fadd,  long,   long_fadd )
 
 #define SHMEM_FORTRAN_ATOMIC_ADD_ROUTINE( F_DATATYPE, C_DATATYPE )  \
     void                                                            \
-    FSUB( shmem_ ## F_DATATYPE ## _add )( C_DATATYPE *target,       \
-                                          C_DATATYPE *value,        \
-                                          int        *pe )          \
+    FSUB( shmem_ ## F_DATATYPE ## _add )( C_DATATYPE* target,       \
+                                          C_DATATYPE* value,        \
+                                          int*        pe )          \
     {                                                               \
         SCOREP_IN_MEASUREMENT_INCREMENT();                          \
-        shmem_ ## C_DATATYPE ## _add ( target,                      \
-                                       *value,                      \
-                                       *pe );                       \
+        shmem_ ## C_DATATYPE ## _add( target,                       \
+                                      *value,                       \
+                                      *pe );                        \
         SCOREP_IN_MEASUREMENT_DECREMENT();                          \
     }
 
@@ -122,12 +122,12 @@ SHMEM_FORTRAN_ATOMIC_ADD_ROUTINE( int8, long )
 
 #define SHMEM_FORTRAN_ATOMIC_INCREMENT_ROUTINE( F_DATATYPE, C_DATATYPE )    \
     void                                                                    \
-    FSUB( shmem_ ## F_DATATYPE ## _inc )( C_DATATYPE *target,               \
-                                          int        *pe )                  \
+    FSUB( shmem_ ## F_DATATYPE ## _inc )( C_DATATYPE* target,               \
+                                          int*        pe )                  \
     {                                                                       \
         SCOREP_IN_MEASUREMENT_INCREMENT();                                  \
-        shmem_ ## C_DATATYPE ## _inc ( target,                              \
-                                       *pe );                               \
+        shmem_ ## C_DATATYPE ## _inc( target,                               \
+                                      *pe );                                \
         SCOREP_IN_MEASUREMENT_DECREMENT();                                  \
     }
 
@@ -145,18 +145,18 @@ SHMEM_FORTRAN_ATOMIC_INCREMENT_ROUTINE( int8, long )
 
 #define SHMEM_FORTRAN_ATOMIC_CSWAP_ROUTINE( F_DATATYPE, C_DATATYPE )    \
     C_DATATYPE                                                          \
-    FSUB( shmem_ ## F_DATATYPE ## _cswap )( C_DATATYPE *target,         \
-                                            C_DATATYPE *cond,           \
-                                            C_DATATYPE *value,          \
-                                            int        *pe )            \
+    FSUB( shmem_ ## F_DATATYPE ## _cswap )( C_DATATYPE* target,         \
+                                            C_DATATYPE* cond,           \
+                                            C_DATATYPE* value,          \
+                                            int*        pe )            \
     {                                                                   \
         SCOREP_IN_MEASUREMENT_INCREMENT();                              \
                                                                         \
         C_DATATYPE ret;                                                 \
-        ret = shmem_ ## C_DATATYPE ## _cswap ( target,                  \
-                                                *cond,                  \
-                                                *value,                 \
-                                                *pe );                  \
+        ret = shmem_ ## C_DATATYPE ## _cswap( target,                   \
+                                              *cond,                    \
+                                              *value,                   \
+                                              *pe );                    \
                                                                         \
         SCOREP_IN_MEASUREMENT_DECREMENT();                              \
         return ret;                                                     \
@@ -176,14 +176,14 @@ SHMEM_FORTRAN_ATOMIC_CSWAP_ROUTINE( int8, long )
 
 #define SHMEM_FORTRAN_ATOMIC_FETCH_INC_ROUTINE( F_DATATYPE, C_DATATYPE )    \
     C_DATATYPE                                                              \
-    FSUB( shmem_ ## F_DATATYPE ## _finc )( C_DATATYPE *target,              \
-                                           int        *pe )                 \
+    FSUB( shmem_ ## F_DATATYPE ## _finc )( C_DATATYPE* target,              \
+                                           int*        pe )                 \
     {                                                                       \
         SCOREP_IN_MEASUREMENT_INCREMENT();                                  \
                                                                             \
         C_DATATYPE ret;                                                     \
-        ret = shmem_ ## C_DATATYPE ## _finc ( target,                       \
-                                               *pe );                       \
+        ret = shmem_ ## C_DATATYPE ## _finc( target,                        \
+                                             *pe );                         \
                                                                             \
         SCOREP_IN_MEASUREMENT_DECREMENT();                                  \
         return ret;                                                         \

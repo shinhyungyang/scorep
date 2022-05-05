@@ -65,8 +65,8 @@ SHMEM_FORTRAN_QUERY_PE( shmem_n_pes, shmem_n_pes )
 
 #define SHMEM_FORTRAN_ADDR_ACCESSIBLE( F_FUNCNAME, C_FUNCNAME ) \
     int                                                         \
-    FSUB( F_FUNCNAME )( void *addr,                             \
-                        int  *pe )                              \
+    FSUB( F_FUNCNAME )( void* addr,                             \
+                        int*  pe )                              \
     {                                                           \
         SCOREP_IN_MEASUREMENT_INCREMENT();                      \
                                                                 \
@@ -88,7 +88,7 @@ SHMEM_FORTRAN_ADDR_ACCESSIBLE( shmem_addr_accessible, shmem_addr_accessible )
 
 #define SHMEM_FORTRAN_PE_ACCESSIBLE( F_FUNCNAME, C_FUNCNAME )   \
     int                                                         \
-    FSUB( F_FUNCNAME )( int  *pe )                              \
+    FSUB( F_FUNCNAME )( int* pe )                               \
     {                                                           \
         SCOREP_IN_MEASUREMENT_INCREMENT();                      \
                                                                 \

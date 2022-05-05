@@ -1,7 +1,7 @@
 /*
  * This file is part of the Score-P software (http://www.score-p.org)
  *
- * Copyright (c) 2013-2017,
+ * Copyright (c) 2013-2017, 2025,
  * Technische Universitaet Dresden, Germany
  *
  * This software may be modified and distributed under the terms of
@@ -35,7 +35,7 @@
 
 #define INIT_SHMEM( FUNCNAME )                                              \
     void                                                                    \
-    SCOREP_LIBWRAP_FUNC_NAME( FUNCNAME ) ( void )                           \
+    SCOREP_LIBWRAP_FUNC_NAME( FUNCNAME )( void )                            \
     {                                                                       \
         SCOREP_IN_MEASUREMENT_INCREMENT();                                  \
         if ( SCOREP_IS_MEASUREMENT_PHASE( PRE ) )                           \
@@ -48,7 +48,7 @@
         SCOREP_EnterWrappedRegion( scorep_shmem_region__ ## FUNCNAME );     \
                                                                             \
         SCOREP_ENTER_WRAPPED_REGION();                                      \
-        SCOREP_LIBWRAP_FUNC_CALL( FUNCNAME, ( ) );                          \
+        SCOREP_LIBWRAP_FUNC_CALL( FUNCNAME, () );                           \
         SCOREP_EXIT_WRAPPED_REGION();                                       \
                                                                             \
         SCOREP_InitMppMeasurement();                                        \
@@ -72,7 +72,7 @@ INIT_SHMEM( shmem_init )
 
 #define INIT_SHMEM_WITH_ARGUMENT( FUNCNAME )                                \
     void                                                                    \
-    SCOREP_LIBWRAP_FUNC_NAME( FUNCNAME ) ( int npes )                       \
+    SCOREP_LIBWRAP_FUNC_NAME( FUNCNAME )( int npes )                       \
     {                                                                       \
         SCOREP_IN_MEASUREMENT_INCREMENT();                                  \
         if ( SCOREP_IS_MEASUREMENT_PHASE( PRE ) )                           \
@@ -109,7 +109,7 @@ INIT_SHMEM_WITH_ARGUMENT( start_pes )
 
 #define INIT_THREAD_SHMEM_ONE_ARG( FUNCNAME )                               \
     int                                                                     \
-    SCOREP_LIBWRAP_FUNC_NAME( FUNCNAME ) ( int required )                   \
+    SCOREP_LIBWRAP_FUNC_NAME( FUNCNAME )( int required )                    \
     {                                                                       \
         SCOREP_IN_MEASUREMENT_INCREMENT();                                  \
         if ( SCOREP_IS_MEASUREMENT_PHASE( PRE ) )                           \
@@ -139,8 +139,8 @@ INIT_SHMEM_WITH_ARGUMENT( start_pes )
 
 #define INIT_THREAD_SHMEM_TWO_ARGS( FUNCNAME )                              \
     void                                                                    \
-    SCOREP_LIBWRAP_FUNC_NAME( FUNCNAME ) ( int   required,                  \
-                                           int * provided )                 \
+    SCOREP_LIBWRAP_FUNC_NAME( FUNCNAME )( int  required,                    \
+                                          int* provided )                   \
     {                                                                       \
         SCOREP_IN_MEASUREMENT_INCREMENT();                                  \
         if ( SCOREP_IS_MEASUREMENT_PHASE( PRE ) )                           \
@@ -193,7 +193,7 @@ INIT_THREAD_SHMEM_TWO_ARGS( shmem_init_thread )
         }                                                               \
                                                                         \
         SCOREP_ENTER_WRAPPED_REGION();                                  \
-        SCOREP_LIBWRAP_FUNC_CALL( shmem_barrier_all, ( ) );             \
+        SCOREP_LIBWRAP_FUNC_CALL( shmem_barrier_all, () );              \
         SCOREP_EXIT_WRAPPED_REGION();                                   \
                                                                         \
         SCOREP_RegisterExitHandler();                                   \
@@ -226,7 +226,7 @@ INIT_THREAD_SHMEM_TWO_ARGS( shmem_init_thread )
         }                                                               \
                                                                         \
         SCOREP_ENTER_WRAPPED_REGION();                                  \
-        SCOREP_LIBWRAP_FUNC_CALL( shmem_barrier_all, ( ) );             \
+        SCOREP_LIBWRAP_FUNC_CALL( shmem_barrier_all, () );              \
         SCOREP_EXIT_WRAPPED_REGION();                                   \
                                                                         \
         SCOREP_RegisterExitHandler();                                   \

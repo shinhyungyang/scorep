@@ -1,7 +1,7 @@
 /*
  * This file is part of the Score-P software (http://www.score-p.org)
  *
- * Copyright (c) 2013-2017,
+ * Copyright (c) 2013-2017, 2025,
  * Technische Universitaet Dresden, Germany
  *
  * This software may be modified and distributed under the terms of
@@ -29,9 +29,9 @@
 
 #define ELEMENTAL_PUT_ROUTINE( FUNCNAME, DATATYPE )                                 \
     void                                                                            \
-    SCOREP_LIBWRAP_FUNC_NAME( FUNCNAME ) ( DATATYPE * addr,                         \
-                                           DATATYPE   value,                        \
-                                           int        pe )                          \
+    SCOREP_LIBWRAP_FUNC_NAME( FUNCNAME )( DATATYPE* addr,                           \
+                                          DATATYPE  value,                          \
+                                          int       pe )                            \
     {                                                                               \
         SCOREP_IN_MEASUREMENT_INCREMENT();                                          \
                                                                                     \
@@ -112,10 +112,10 @@ ELEMENTAL_PUT_ROUTINE( shmem_longdouble_p, long double )
 
 #define BLOCK_DATA_PUT_ROUTINE( FUNCNAME, DATATYPE, NBYTES )                            \
     void                                                                                \
-    SCOREP_LIBWRAP_FUNC_NAME( FUNCNAME ) ( DATATYPE *       target,                     \
-                                           const DATATYPE * source,                     \
-                                           size_t           nElems,                     \
-                                           int              pe )                        \
+    SCOREP_LIBWRAP_FUNC_NAME( FUNCNAME )( DATATYPE*       target,                       \
+                                          const DATATYPE* source,                       \
+                                          size_t          nElems,                       \
+                                          int             pe )                          \
     {                                                                                   \
         SCOREP_IN_MEASUREMENT_INCREMENT();                                              \
                                                                                         \
@@ -221,12 +221,12 @@ BLOCK_DATA_PUT_ROUTINE( shmem_putmem,         void,        1 )
 
 #define STRIDED_PUT_ROUTINE( FUNCNAME, DATATYPE, NBYTES )                                       \
     void                                                                                        \
-    SCOREP_LIBWRAP_FUNC_NAME( FUNCNAME ) ( DATATYPE *       target,                             \
-                                           const DATATYPE * source,                             \
-                                           ptrdiff_t        tst,                                \
-                                           ptrdiff_t        sst,                                \
-                                           size_t           nElems,                             \
-                                           int              pe )                                \
+    SCOREP_LIBWRAP_FUNC_NAME( FUNCNAME )( DATATYPE*       target,                               \
+                                          const DATATYPE* source,                               \
+                                          ptrdiff_t       tst,                                  \
+                                          ptrdiff_t       sst,                                  \
+                                          size_t          nElems,                               \
+                                          int             pe )                                  \
     {                                                                                           \
         SCOREP_IN_MEASUREMENT_INCREMENT();                                                      \
                                                                                                 \
@@ -324,8 +324,8 @@ STRIDED_PUT_ROUTINE( shmem_iput128,         void,        16 )
 
 #define ELEMENTAL_GET_ROUTINE( FUNCNAME, DATATYPE, DATATYPE_IN )                    \
     DATATYPE                                                                        \
-    SCOREP_LIBWRAP_FUNC_NAME( FUNCNAME ) ( DATATYPE_IN * addr,                      \
-                                           int           pe )                       \
+    SCOREP_LIBWRAP_FUNC_NAME( FUNCNAME )( DATATYPE_IN* addr,                        \
+                                          int          pe )                         \
     {                                                                               \
         SCOREP_IN_MEASUREMENT_INCREMENT();                                          \
         DATATYPE ret;                                                               \
@@ -441,10 +441,10 @@ ELEMENTAL_GET_ROUTINE( shmem_longdouble_g, long double, const long double )
 
 #define BLOCK_DATA_GET_ROUTINE( FUNCNAME, DATATYPE, NBYTES )                            \
     void                                                                                \
-    SCOREP_LIBWRAP_FUNC_NAME( FUNCNAME ) ( DATATYPE *       target,                     \
-                                           const DATATYPE * source,                     \
-                                           size_t           nElems,                     \
-                                           int              pe )                        \
+    SCOREP_LIBWRAP_FUNC_NAME( FUNCNAME )( DATATYPE*       target,                       \
+                                          const DATATYPE* source,                       \
+                                          size_t          nElems,                       \
+                                          int             pe )                          \
     {                                                                                   \
         SCOREP_IN_MEASUREMENT_INCREMENT();                                              \
                                                                                         \
@@ -550,12 +550,12 @@ BLOCK_DATA_GET_ROUTINE( shmem_getmem,         void,        1 )
 
 #define STRIDED_GET_ROUTINE( FUNCNAME, DATATYPE, NBYTES )                                       \
     void                                                                                        \
-    SCOREP_LIBWRAP_FUNC_NAME( FUNCNAME ) ( DATATYPE *       target,                             \
-                                           const DATATYPE * source,                             \
-                                           ptrdiff_t        tst,                                \
-                                           ptrdiff_t        sst,                                \
-                                           size_t           nElems,                             \
-                                           int              pe )                                \
+    SCOREP_LIBWRAP_FUNC_NAME( FUNCNAME )( DATATYPE*       target,                               \
+                                          const DATATYPE* source,                               \
+                                          ptrdiff_t       tst,                                  \
+                                          ptrdiff_t       sst,                                  \
+                                          size_t          nElems,                               \
+                                          int             pe )                                  \
     {                                                                                           \
         SCOREP_IN_MEASUREMENT_INCREMENT();                                                      \
                                                                                                 \

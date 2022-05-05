@@ -118,24 +118,24 @@
 
 #define SHMEM_FORTRAN_REDUCTION( OP, F_FUNCNAME, C_FUNCNAME, DATATYPE )         \
     void                                                                        \
-    FSUB( shmem_ ## F_FUNCNAME ## _ ## OP ## _to_all )( DATATYPE *target,       \
-                                                        DATATYPE *source,       \
-                                                        int      *nReduce,      \
-                                                        int      *peStart,      \
-                                                        int      *logPeStride,  \
-                                                        int      *peSize,       \
-                                                        DATATYPE *pWork,        \
-                                                        int      *pSync )       \
+    FSUB( shmem_ ## F_FUNCNAME ## _ ## OP ## _to_all )( DATATYPE* target,       \
+                                                        DATATYPE* source,       \
+                                                        int*      nReduce,      \
+                                                        int*      peStart,      \
+                                                        int*      logPeStride,  \
+                                                        int*      peSize,       \
+                                                        DATATYPE* pWork,        \
+                                                        int*      pSync )       \
     {                                                                           \
         SCOREP_IN_MEASUREMENT_INCREMENT();                                      \
-        shmem_ ## C_FUNCNAME ## _ ## OP ## _to_all ( target,                    \
-                                                     source,                    \
-                                                     *nReduce,                  \
-                                                     *peStart,                  \
-                                                     *logPeStride,              \
-                                                     *peSize,                   \
-                                                     pWork,                     \
-                                                     ( long * ) pSync );        \
+        shmem_ ## C_FUNCNAME ## _ ## OP ## _to_all( target,                     \
+                                                    source,                     \
+                                                    *nReduce,                   \
+                                                    *peStart,                   \
+                                                    *logPeStride,               \
+                                                    *peSize,                    \
+                                                    pWork,                      \
+                                                    ( long* )pSync );           \
         SCOREP_IN_MEASUREMENT_DECREMENT();                                      \
     }
 
