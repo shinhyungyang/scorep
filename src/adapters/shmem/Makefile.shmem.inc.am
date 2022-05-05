@@ -135,7 +135,6 @@ libscorep_adapter_shmem_c_event_la_SOURCES = \
     $(SRC_ROOT)src/adapters/shmem/SCOREP_Shmem_RemotePtr.c  \
     $(SRC_ROOT)src/adapters/shmem/SCOREP_Shmem_SymHeap.c    \
     $(SRC_ROOT)src/adapters/shmem/SCOREP_Shmem_Sync.c       \
-    $(SRC_ROOT)src/adapters/shmem/SCOREP_Shmem_Team.c       \
     $(SRC_ROOT)src/adapters/shmem/scorep_shmem_internal.h
 
 libscorep_adapter_shmem_c_event_la_CPPFLAGS = \
@@ -165,5 +164,4 @@ EXTRA_DIST += \
     $(SRC_ROOT)src/adapters/shmem/fortran_common/scorep_fshmem_reduction.inc.c      \
     $(SRC_ROOT)src/adapters/shmem/fortran_common/scorep_fshmem_remote_ptr.inc.c     \
     $(SRC_ROOT)src/adapters/shmem/fortran_common/scorep_fshmem_sym_heap.inc.c       \
-    $(SRC_ROOT)src/adapters/shmem/fortran_common/scorep_fshmem_sync.inc.c           \
-    $(SRC_ROOT)src/adapters/shmem/fortran_common/scorep_fshmem_team.inc.c
+    $(SRC_ROOT)src/adapters/shmem/fortran_common/scorep_fshmem_sync.inc.c

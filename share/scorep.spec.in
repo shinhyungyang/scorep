@@ -311,7 +311,7 @@
                         {
                             ${shmem_mgmt_initfini}[${i}] = 1;
                         };
-                        if ( ${name} =~ /^((shmem_|_){0,1}(my_pe|num_pes)|shmem_team_(split|create_strided|free|npes|mype|translate_pe))$/ )
+                        if ( ${name} =~ /^((shmem_|_){0,1}(my_pe|num_pes))$/ )
                         {
                             ${shmem_mgmt_activesets}[${i}] = 1;
                         };

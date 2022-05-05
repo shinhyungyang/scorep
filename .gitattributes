@@ -59,7 +59,6 @@
 /src/adapters/shmem/fortran_common/scorep_fshmem_remote_ptr.inc.c -hook-config
 /src/adapters/shmem/fortran_common/scorep_fshmem_sym_heap.inc.c -hook-config
 /src/adapters/shmem/fortran_common/scorep_fshmem_sync.inc.c -hook-config
-/src/adapters/shmem/fortran_common/scorep_fshmem_team.inc.c -hook-config
 /src/measurement/filtering/scorep_filtering_confvars.inc.c -hook-config
 /src/measurement/profiling/scorep_profile_confvars.inc.c -hook-config
 /src/measurement/substrates/scorep_substrates_plugins_confvars.inc.c -hook-config
