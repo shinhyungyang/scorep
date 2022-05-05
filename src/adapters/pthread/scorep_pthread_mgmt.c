@@ -4,7 +4,7 @@
  * Copyright (c) 2014-2016, 2018,
  * Forschungszentrum Juelich GmbH, Germany
  *
- * Copyright (c) 2014-2015, 2017, 2020,
+ * Copyright (c) 2014-2015, 2017, 2020, 2025,
  * Technische Universitaet Dresden, Germany
  *
  * This software may be modified and distributed under the terms of
@@ -90,8 +90,8 @@ register_pthread_regions( void )
 
 #define SCOREP_PTHREAD_REGION( rettype, name, NAME, TYPE, ARGS ) \
     scorep_pthread_regions[ SCOREP_PTHREAD_ ## NAME ] = \
-        SCOREP_Definitions_NewRegion( #name, \
-                                      NULL, \
+        SCOREP_Definitions_NewRegion( #rettype " " #name #ARGS, \
+                                      #name, \
                                       file, \
                                       SCOREP_INVALID_LINE_NO, \
                                       SCOREP_INVALID_LINE_NO, \
