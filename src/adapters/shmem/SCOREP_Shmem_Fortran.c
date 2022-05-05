@@ -1,7 +1,7 @@
 /*
  * This file is part of the Score-P software (http://www.score-p.org)
  *
- * Copyright (c) 2013-2015,
+ * Copyright (c) 2013-2015, 2025,
  * Technische Universitaet Dresden, Germany
  *
  * This software may be modified and distributed under the terms of
@@ -66,5 +66,3 @@
 //#include "fortran_common/scorep_fshmem_sym_heap.inc.c"
 
 #include "fortran_common/scorep_fshmem_sync.inc.c"
-
-#include "fortran_common/scorep_fshmem_team.inc.c"

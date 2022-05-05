@@ -654,40 +654,6 @@ SCOREP_SHMEM_PROCESS_FUNC( COLL_ALL2ALL, void,        shmem_complexd_prod_to_all
 #endif
 
 /*
- * Team routines
- */
-#if SHMEM_HAVE_DECL( SHMEM_TEAM_SPLIT )
-SCOREP_SHMEM_PROCESS_FUNC( FUNCTION,     void,        shmem_team_split, ( shmem_team_t, int, int, shmem_team_t* ) )
-#endif
-#if SHMEM_HAVE_DECL( SHMEM_TEAM_CREATE_STRIDED )
-SCOREP_SHMEM_PROCESS_FUNC( FUNCTION,     void,        shmem_team_create_strided, ( int, int, int, shmem_team_t* ) )
-#endif
-#if SHMEM_HAVE_DECL( SHMEM_TEAM_FREE )
-SCOREP_SHMEM_PROCESS_FUNC( FUNCTION,     void,        shmem_team_free, ( shmem_team_t* ) )
-#endif
-#if SHMEM_HAVE_DECL( SHMEM_TEAM_NPES )
-SCOREP_SHMEM_PROCESS_FUNC( FUNCTION,     int,         shmem_team_npes, ( shmem_team_t ) )
-#endif
-#if SHMEM_HAVE_DECL( SHMEM_TEAM_MYPE )
-SCOREP_SHMEM_PROCESS_FUNC( FUNCTION,     int,         shmem_team_mype, ( shmem_team_t ) )
-#endif
-#if SHMEM_HAVE_DECL( SHMEM_TEAM_TRANSLATE_PE )
-SCOREP_SHMEM_PROCESS_FUNC( FUNCTION,     int,         shmem_team_translate_pe, ( shmem_team_t, int, shmem_team_t ) )
-#endif
-#if SHMEM_HAVE_DECL( SHMEM_TEAM_BARRIER )
-SCOREP_SHMEM_PROCESS_FUNC( BARRIER,      void,        shmem_team_barrier, ( shmem_team_t, long* ) )
-#endif
-#if SHMEM_HAVE_DECL( SHMEM_TEAM_ALLTOALL )
-SCOREP_SHMEM_PROCESS_FUNC( COLL_ALL2ALL, void,        shmem_team_alltoall, ( void*, const void*, size_t, shmem_team_t, long* ) )
-#endif
-#if SHMEM_HAVE_DECL( SHMEM_TEAM_ALLTOALLV )
-SCOREP_SHMEM_PROCESS_FUNC( COLL_ALL2ALL, void,        shmem_team_alltoallv, ( void*, size_t*, size_t*, const void*, size_t*, size_t*, shmem_team_t, long* ) )
-#endif
-#if SHMEM_HAVE_DECL( SHMEM_TEAM_ALLTOALLV_PACKED )
-SCOREP_SHMEM_PROCESS_FUNC( COLL_ALL2ALL, void,        shmem_team_alltoallv_packed, ( void*, size_t, size_t*, const void*, size_t*, size_t*, shmem_team_t, long* ) )
-#endif
-
-/*
  * Event routines
  */
 #if SHMEM_HAVE_DECL( SHMEM_CLEAR_EVENT )

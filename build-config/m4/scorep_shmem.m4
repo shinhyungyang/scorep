@@ -3,7 +3,7 @@
 ##
 ## This file is part of the Score-P software (http://www.score-p.org)
 ##
-## Copyright (c) 2013-2014, 2016-2017, 2019, 2024,
+## Copyright (c) 2013-2014, 2016-2017, 2019, 2024-2025,
 ## Technische Universitaet Dresden, Germany
 ##
 ## Copyright (c) 2015,
@@ -490,16 +490,6 @@ SCOREP_CHECK_SYMBOLS([SHMEM], $1, $2,
            shmem_short_wait_until,
            shmem_short_xor_to_all,
            shmem_swap,
-           shmem_team_alltoall,
-           shmem_team_alltoallv,
-           shmem_team_alltoallv_packed,
-           shmem_team_barrier,
-           shmem_team_create_strided,
-           shmem_team_free,
-           shmem_team_mype,
-           shmem_team_npes,
-           shmem_team_split,
-           shmem_team_translate_pe,
            shmem_test_event,
            shmem_test_lock,
            shmem_udcflush,
