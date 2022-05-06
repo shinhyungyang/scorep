@@ -27,7 +27,7 @@
 #include "scorep_shmem_internal.h"
 
 #define SCOREP_SHMEM_PROCESS_FUNC( type, return_type, func, func_args ) \
-    SCOREP_RegionHandle scorep_shmem_region__ ##func;
+    SCOREP_RegionHandle scorep_shmem_region__ ## func;
 
 #include "scorep_shmem_function_list.inc.c"
 
@@ -41,14 +41,14 @@ scorep_shmem_register_regions( void )
     SCOREP_SourceFileHandle source_file_handle =
         SCOREP_Definitions_NewSourceFile( SCOREP_SHMEM_NAME );
 
-#define SCOREP_SHMEM_PROCESS_FUNC( type, return_type, func, func_args )                    \
-    scorep_shmem_region__ ##func = SCOREP_Definitions_NewRegion( #func,                    \
-                                                                 NULL,                     \
-                                                                 source_file_handle,       \
-                                                                 SCOREP_INVALID_LINE_NO,   \
-                                                                 SCOREP_INVALID_LINE_NO,   \
-                                                                 SCOREP_PARADIGM_SHMEM,    \
-                                                                 SCOREP_REGION_ ## type );
+#define SCOREP_SHMEM_PROCESS_FUNC( type, return_type, func, func_args ) \
+    scorep_shmem_region__ ## func = SCOREP_Definitions_NewRegion( #return_type " " #func #func_args, \
+                                                                  #func, \
+                                                                  source_file_handle, \
+                                                                  SCOREP_INVALID_LINE_NO, \
+                                                                  SCOREP_INVALID_LINE_NO, \
+                                                                  SCOREP_PARADIGM_SHMEM, \
+                                                                  SCOREP_REGION_ ## type );
 
 
 #include "scorep_shmem_function_list.inc.c"

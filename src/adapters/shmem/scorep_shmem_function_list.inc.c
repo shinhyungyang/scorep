@@ -65,7 +65,7 @@ SCOREP_SHMEM_PROCESS_FUNC( FUNCTION,     void,         shmem_udcflush_line, ( vo
  * Accessability routines
  */
 #if SHMEM_HAVE_DECL( SHMEM_PE_ACCESSIBLE )
-SCOREP_SHMEM_PROCESS_FUNC( FUNCTION,     int,         shmem_pe_accessible, ( int pe ) )
+SCOREP_SHMEM_PROCESS_FUNC( FUNCTION,     int,         shmem_pe_accessible, ( int ) )
 #endif
 #if SHMEM_HAVE_DECL( SHMEM_ADDR_ACCESSIBLE ) && defined( SCOREP_SHMEM_ADDR_ACCESSIBLE_DECL_ARGS )
 SCOREP_SHMEM_PROCESS_FUNC( FUNCTION,     int,         shmem_addr_accessible, SCOREP_SHMEM_ADDR_ACCESSIBLE_DECL_ARGS )
@@ -75,7 +75,7 @@ SCOREP_SHMEM_PROCESS_FUNC( FUNCTION,     int,         shmem_addr_accessible, SCO
  * Symmetric heap routines
  */
 #if SHMEM_HAVE_DECL( SHMALLOC )
-SCOREP_SHMEM_PROCESS_FUNC( ALLOCATE,     void*,       shmalloc, ( size_t size ) )
+SCOREP_SHMEM_PROCESS_FUNC( ALLOCATE,     void*,       shmalloc, ( size_t ) )
 #endif
 #if SHMEM_HAVE_DECL( SHMEMALIGN )
 SCOREP_SHMEM_PROCESS_FUNC( ALLOCATE,     void*,       shmemalign, ( size_t, size_t ) )
@@ -84,7 +84,7 @@ SCOREP_SHMEM_PROCESS_FUNC( ALLOCATE,     void*,       shmemalign, ( size_t, size
 SCOREP_SHMEM_PROCESS_FUNC( REALLOCATE,   void*,       shrealloc, ( void*, size_t ) )
 #endif
 #if SHMEM_HAVE_DECL( SHFREE )
-SCOREP_SHMEM_PROCESS_FUNC( DEALLOCATE,   void,        shfree, ( void* ptr ) )
+SCOREP_SHMEM_PROCESS_FUNC( DEALLOCATE,   void,        shfree, ( void* ) )
 #endif
 
 /*
