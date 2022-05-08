@@ -81,12 +81,9 @@ scorep-config <command> [<options>]
    --hip|--nohip
               Specifies whether hip instrumentation is used.
               On default hip instrumentation is enabled.
-   --opencl[:<wrapping mode>]|--noopencl
+   --opencl|--noopencl
               Specifies whether opencl instrumentation is used.
               On default opencl instrumentation is enabled.
-              Available wrapping modes are:
-               linktime (default)
-               runtime
    --kokkos|--nokokkos
               Specifies whether kokkos instrumentation is used.
               On default kokkos instrumentation is enabled.

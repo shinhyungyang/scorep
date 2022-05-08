@@ -36,9 +36,7 @@
 #include "scorep_opencl.h"
 #include "scorep_opencl_config.h"
 #include "scorep_opencl_regions.h"
-#ifdef SCOREP_LIBWRAP_SHARED
 #include "scorep_opencl_function_pointers.h"
-#endif
 
 #include "scorep_opencl_confvars.inc.c"
 
@@ -72,11 +70,6 @@ static SCOREP_ErrorCode
 opencl_subsystem_init( void )
 {
     UTILS_DEBUG( "Selected options: %llu", scorep_opencl_features );
-
-#ifdef SCOREP_LIBWRAP_SHARED
-    /* need to resolve the function pointers, also when no recording was requested */
-    scorep_opencl_register_function_pointers();
-#endif
 
     if ( scorep_opencl_features > 0 )
     {

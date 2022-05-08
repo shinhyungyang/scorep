@@ -28,17 +28,12 @@
 
 #include <SCOREP_Definitions.h>
 
-#ifdef SCOREP_LIBWRAP_SHARED
-
 #define SCOREP_LIBWRAP_FUNC_REAL_NAME( func ) \
     scorep_opencl_funcptr__ ## func
-
-#endif
 
 #include <scorep/SCOREP_Libwrap_Macros.h>
 
 /*
- * In shared mode:
  * - Declaration of Score-P region handles for wrapped OpenCL functions
  */
 #define SCOREP_OPENCL_PROCESS_FUNC( TYPE, return_type, func, func_args ) \

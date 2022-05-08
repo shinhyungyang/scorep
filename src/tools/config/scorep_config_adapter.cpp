@@ -592,87 +592,15 @@ SCOREP_Config_OpenaccAdapter::SCOREP_Config_OpenaccAdapter()
  * *************************************************************************************/
 SCOREP_Config_OpenclAdapter::SCOREP_Config_OpenclAdapter()
     : SCOREP_Config_Adapter( "opencl", "scorep_adapter_opencl", false )
-    , m_wrapmode( SCOREP_LIBWRAP_DEFAULT_MODE )
 {
 }
 
 void
 SCOREP_Config_OpenclAdapter::printHelp( void )
 {
-    std::cout << "   --opencl[:<wrapping mode>]|--noopencl\n"
+    std::cout << "   --opencl|--noopencl\n"
               << "              Specifies whether opencl instrumentation is used.\n"
-              << "              On default opencl instrumentation is enabled.\n"
-              << "              Available values for <wrap-mode> are:\n"
-#if HAVE_BACKEND( LIBWRAP_LINKTIME_SUPPORT )
-        << "               linktime (default)\n"
-#if HAVE_BACKEND( LIBWRAP_RUNTIME_SUPPORT )
-        << "               runtime\n"
-#endif
-#elif HAVE_BACKEND( LIBWRAP_RUNTIME_SUPPORT )
-        << "               runtime (default)\n"
-#endif
-    ;
-}
-
-bool
-SCOREP_Config_OpenclAdapter::checkArgument( const std::string& arg )
-{
-    if ( arg == "--opencl" )
-    {
-        m_is_enabled = true;
-        return true;
-    }
-
-    if ( arg.substr( 0, 9 ) == ( "--opencl:" ) )
-    {
-        m_is_enabled = true;
-        m_wrapmode   = arg.substr( 9 );
-
-#if HAVE_BACKEND( LIBWRAP_LINKTIME_SUPPORT )
-        if ( m_wrapmode == "linktime" )
-        {
-            return true;
-        }
-#endif
-#if HAVE_BACKEND( LIBWRAP_RUNTIME_SUPPORT )
-        if ( m_wrapmode == "runtime" )
-        {
-            return true;
-        }
-#endif
-
-        std::cerr << "[Score-P] ERROR: Invalid or unsupported wrapping mode for OpenCL: " << m_wrapmode << std::endl;
-        exit( EXIT_FAILURE );
-
-        return true;
-    }
-
-    if ( arg == "--noopencl" )
-    {
-        m_is_enabled = false;
-        return true;
-    }
-    return false;
-}
-
-void
-SCOREP_Config_OpenclAdapter::addLibs( std::deque<std::string>&           libs,
-                                      SCOREP_Config_LibraryDependencies& deps )
-{
-    libs.push_back( "lib" + m_library + "_event_" + m_wrapmode );
-    deps.addDependency( libs.back(), "libscorep_measurement" );
-    deps.addDependency( "libscorep_measurement", "lib" + m_library + "_mgmt_" + m_wrapmode );
-}
-
-void
-SCOREP_Config_OpenclAdapter::addLdFlags( std::string& ldflags,
-                                         bool         buildCheck,
-                                         bool         nvcc )
-{
-    if ( m_wrapmode == "linktime" )
-    {
-        ldflags += get_ld_wrap_flag( "opencl", buildCheck, nvcc );
-    }
+              << "              On default opencl instrumentation is disabled.\n";
 }
 
 void

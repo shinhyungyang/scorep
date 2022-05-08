@@ -1,7 +1,7 @@
 /*
  * This file is part of the Score-P software (http://www.score-p.org)
  *
- * Copyright (c) 2014-2015, 2017,
+ * Copyright (c) 2014-2015, 2017, 2025,
  * Technische Universitaet Dresden, Germany
  *
  * This software may be modified and distributed under the terms of
@@ -29,9 +29,7 @@
 #include "scorep_opencl.h"
 #include "scorep_opencl_config.h"
 #include "scorep_opencl_regions.h"
-#ifdef SCOREP_LIBWRAP_SHARED
 #include "scorep_opencl_function_pointers.h"
-#endif
 
 #include <stdio.h>
 

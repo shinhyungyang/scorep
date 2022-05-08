@@ -1,7 +1,7 @@
 /*
  * This file is part of the Score-P software (http://www.score-p.org)
  *
- * Copyright (c) 2014-2015, 2017, 2022,
+ * Copyright (c) 2014-2015, 2017, 2022, 2025,
  * Technische Universitaet Dresden, Germany
  *
  * This software may be modified and distributed under the terms of
@@ -41,9 +41,6 @@ public:
                        const std::string&           inputFile ) override;
 
     bool
-    checkOption( const std::string& arg ) override;
-
-    bool
     checkCommand( const std::string& current,
                   const std::string& next ) override;
 
@@ -53,8 +50,6 @@ public:
 private:
     bool
     is_opencl_library( const std::string& libraryName );
-
-    std::string m_wrapmode;
 };
 
 #endif // SCOREP_INSTRUMENTER_OPENCL_HPP
