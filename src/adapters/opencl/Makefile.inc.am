@@ -18,18 +18,11 @@
 
 if HAVE_OPENCL_SUPPORT
 
-pkgdata_DATA += ../share/opencl.wrap \
-                ../share/opencl.nvcc.wrap
-
-DISTCLEANFILES += ../share/opencl.nvcc.wrap
-
-opencl_libwrap_linktime_cppflags = -DSCOREP_LIBWRAP_STATIC
-opencl_libwrap_runtime_cppflags = -DSCOREP_LIBWRAP_SHARED
-
-
 # runtime management library for the OpenCL adapter
 
-libscorep_adapter_opencl_mgmt_common_sources  = \
+lib_LTLIBRARIES += libscorep_adapter_opencl_mgmt.la
+
+libscorep_adapter_opencl_mgmt_la_SOURCES = \
     $(SRC_ROOT)src/adapters/opencl/SCOREP_Opencl_Init.c \
     $(SRC_ROOT)src/adapters/opencl/SCOREP_Opencl_Init.h \
     $(SRC_ROOT)src/adapters/opencl/scorep_opencl_config.c \
@@ -43,123 +36,52 @@ libscorep_adapter_opencl_mgmt_common_sources  = \
     $(SRC_ROOT)src/adapters/opencl/scorep_opencl_function_pointers.h \
     $(SRC_ROOT)src/measurement/paradigm/opencl/scorep_opencl_unify.c
 
-libscorep_adapter_opencl_mgmt_common_cppflags = \
-    $(AM_CPPFLAGS)                        \
-    -I$(PUBLIC_INC_DIR)                   \
-    -I$(INC_ROOT)src/measurement          \
-    -I$(INC_ROOT)src/measurement/include  \
-    -I$(INC_ROOT)src/adapters/opencl      \
-    -I$(INC_ROOT)src/adapters/include     \
-    -I$(INC_ROOT)src/services/include     \
-    $(UTILS_CPPFLAGS)                     \
-    -I$(INC_DIR_COMMON_HASH)              \
-    -I$(INC_DIR_DEFINITIONS)              \
-    @OPENCL_CPPFLAGS@                     \
+libscorep_adapter_opencl_mgmt_la_CPPFLAGS = \
+    $(AM_CPPFLAGS) \
+    -I$(PUBLIC_INC_DIR) \
+    -I$(INC_ROOT)src/measurement \
+    -I$(INC_ROOT)src/measurement/include \
+    -I$(INC_ROOT)src/adapters/opencl \
+    -I$(INC_ROOT)src/adapters/include \
+    -I$(INC_ROOT)src/services/include \
+    $(UTILS_CPPFLAGS) \
+    -I$(INC_DIR_COMMON_HASH) \
+    -I$(INC_DIR_DEFINITIONS) \
+    -DSCOREP_LIBWRAP_SHARED \
+    @OPENCL_CPPFLAGS@ \
     @SCOREP_TIMER_CPPFLAGS@
 
-libscorep_adapter_opencl_mgmt_common_libadd = \
+libscorep_adapter_opencl_mgmt_la_LIBADD = \
     @OPENCL_LIBS@
 
-libscorep_adapter_opencl_mgmt_common_ldflags = \
-    @OPENCL_LDFLAGS@                           \
+libscorep_adapter_opencl_mgmt_la_LDFLAGS = \
+    @OPENCL_LDFLAGS@ \
     $(library_api_version_ldflags)
-
-
-if HAVE_LIBWRAP_LINKTIME_SUPPORT
-
-lib_LTLIBRARIES += libscorep_adapter_opencl_mgmt_linktime.la
-
-libscorep_adapter_opencl_mgmt_linktime_la_SOURCES  = \
-    $(libscorep_adapter_opencl_mgmt_common_sources)
-
-libscorep_adapter_opencl_mgmt_linktime_la_CPPFLAGS = \
-    $(libscorep_adapter_opencl_mgmt_common_cppflags) \
-    $(opencl_libwrap_linktime_cppflags)
-
-libscorep_adapter_opencl_mgmt_linktime_la_LIBADD = \
-    $(libscorep_adapter_opencl_mgmt_common_libadd)
-
-libscorep_adapter_opencl_mgmt_linktime_la_LDFLAGS = \
-    $(libscorep_adapter_opencl_mgmt_common_ldflags) \
-    -Wl,@../share/opencl.wrap
-
-endif
-
-if HAVE_LIBWRAP_RUNTIME_SUPPORT
-
-lib_LTLIBRARIES += libscorep_adapter_opencl_mgmt_runtime.la
-
-libscorep_adapter_opencl_mgmt_runtime_la_SOURCES  = \
-    $(libscorep_adapter_opencl_mgmt_common_sources) \
-    $(SRC_ROOT)src/adapters/opencl/scorep_opencl_function_pointers.c
-
-libscorep_adapter_opencl_mgmt_runtime_la_CPPFLAGS = \
-    $(libscorep_adapter_opencl_mgmt_common_cppflags) \
-    $(opencl_libwrap_runtime_cppflags)
-
-libscorep_adapter_opencl_mgmt_runtime_la_LIBADD = \
-    $(libscorep_adapter_opencl_mgmt_common_libadd)
-
-libscorep_adapter_opencl_mgmt_runtime_la_LDFLAGS = \
-    $(libscorep_adapter_opencl_mgmt_common_ldflags)
-
-endif
 
 # event library for the OpenCL adapter
 
-libscorep_adapter_opencl_event_common_sources = \
+lib_LTLIBRARIES += libscorep_adapter_opencl_event.la
+
+libscorep_adapter_opencl_event_la_SOURCES = \
     $(SRC_ROOT)src/adapters/opencl/scorep_opencl_wrap.c
 
-libscorep_adapter_opencl_event_common_cppflags = \
-    $(AM_CPPFLAGS)                           \
-    -I$(PUBLIC_INC_DIR)                      \
-    $(UTILS_CPPFLAGS)                        \
-    -I$(INC_ROOT)src/adapters/include        \
-    -I$(INC_ROOT)src/measurement             \
-    -I$(INC_ROOT)src/measurement/include     \
-    -I$(INC_ROOT)src/services/include        \
-    -I$(INC_ROOT)src/adapters/opencl         \
-    -I$(INC_DIR_COMMON_HASH)                 \
-    -I$(INC_DIR_DEFINITIONS)                 \
+libscorep_adapter_opencl_event_la_CPPFLAGS = \
+    $(AM_CPPFLAGS) \
+    -I$(PUBLIC_INC_DIR) \
+    $(UTILS_CPPFLAGS) \
+    -I$(INC_ROOT)src/adapters/include \
+    -I$(INC_ROOT)src/measurement \
+    -I$(INC_ROOT)src/measurement/include \
+    -I$(INC_ROOT)src/services/include \
+    -I$(INC_ROOT)src/adapters/opencl \
+    -I$(INC_DIR_COMMON_HASH) \
+    -I$(INC_DIR_DEFINITIONS) \
+    -DSCOREP_LIBWRAP_SHARED \
     @OPENCL_CPPFLAGS@
 
-libscorep_adapter_opencl_event_common_ldflags = \
-    @OPENCL_LDFLAGS@                            \
+libscorep_adapter_opencl_event_la_LDFLAGS = \
+    @OPENCL_LDFLAGS@ \
     $(library_api_version_ldflags)
-
-
-if HAVE_LIBWRAP_LINKTIME_SUPPORT
-
-lib_LTLIBRARIES += libscorep_adapter_opencl_event_linktime.la
-
-libscorep_adapter_opencl_event_linktime_la_SOURCES = \
-    $(libscorep_adapter_opencl_event_common_sources)
-
-libscorep_adapter_opencl_event_linktime_la_CPPFLAGS = \
-    $(libscorep_adapter_opencl_event_common_cppflags) \
-    $(opencl_libwrap_linktime_cppflags)
-
-libscorep_adapter_opencl_event_linktime_la_LDFLAGS = \
-    $(libscorep_adapter_opencl_event_common_ldflags) \
-    -Wl,@../share/opencl.wrap
-
-endif
-
-if HAVE_LIBWRAP_RUNTIME_SUPPORT
-
-lib_LTLIBRARIES += libscorep_adapter_opencl_event_runtime.la
-
-libscorep_adapter_opencl_event_runtime_la_SOURCES = \
-    $(libscorep_adapter_opencl_event_common_sources)
-
-libscorep_adapter_opencl_event_runtime_la_CPPFLAGS = \
-    $(libscorep_adapter_opencl_event_common_cppflags) \
-    $(opencl_libwrap_runtime_cppflags)
-
-libscorep_adapter_opencl_event_runtime_la_LDFLAGS = \
-    $(libscorep_adapter_opencl_event_common_ldflags)
-
-endif
 
 endif HAVE_OPENCL_SUPPORT
 

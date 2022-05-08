@@ -402,21 +402,8 @@ public:
     SCOREP_Config_OpenclAdapter();
     void
     printHelp( void ) override;
-    bool
-    checkArgument( const std::string& arg ) override;
-    void
-    addLibs( std::deque<std::string>&           libs,
-             SCOREP_Config_LibraryDependencies& deps ) override;
-    void
-    addLdFlags( std::string& ldflags,
-                bool         build_check,
-                bool         nvcc ) override;
-
     void
     appendInitStructName( std::deque<std::string>& init_structs ) override;
-
-private:
-    std::string m_wrapmode;
 };
 
 /* **************************************************************************************

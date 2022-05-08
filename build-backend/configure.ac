@@ -426,9 +426,6 @@ AS_CASE([${ac_scorep_platform}],
                libtool > libtool.fix && mv libtool.fix libtool])
          ])
 
-AM_COND_IF([HAVE_OPENCL_SUPPORT],
-    [SCOREP_LD_WRAP_FILE([opencl])])
-
 dnl Linux
 SCOREP_CHECK_SYSCALL([SYS_gettid],
                      [],
