@@ -26,7 +26,6 @@
 #include <scorep_config_tool_backend.h>
 #include <scorep_config_tool_mpi.h>
 #include "scorep_config_mpp.hpp"
-#include "scorep_config_utils.hpp"
 #include <iostream>
 
 /* **************************************************************************************

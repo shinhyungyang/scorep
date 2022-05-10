@@ -7,7 +7,7 @@
  * Copyright (c) 2009-2013,
  * Gesellschaft fuer numerische Simulation mbH Braunschweig, Germany
  *
- * Copyright (c) 2009-2014, 2017,
+ * Copyright (c) 2009-2014, 2017, 2025,
  * Technische Universitaet Dresden, Germany
  *
  * Copyright (c) 2009-2013,
@@ -165,13 +165,6 @@ public:
     static bool
     isCompositeArg( const std::string& current,
                     const std::string& next );
-
-    /**
-       Checks whether the current @a arg parameter conflicts with linktime wrapping.
-       @param arg   The current parameter.
-     */
-    static bool
-    conflictsWithLinktimeWrapping( const std::string& arg );
 
     /* ***************************************************** Private members */
 private:

@@ -25,13 +25,9 @@
 #
 # LW_INIT_FLAGS
 #
-# ALL_LIBWRAP_LINKTIME
 # ALL_LIBWRAP_RUNTIME
-# INSTALL_LIBWRAP_LINKTIME
 # INSTALL_LIBWRAP_RUNTIME
-# INSTALLCHECK_LIBWRAP_LINKTIME
 # INSTALLCHECK_LIBWRAP_RUNTIME
-# UNINSTALL_LIBWRAP_LINKTIME
 # UNINSTALL_LIBWRAP_RUNTIME
 
 # Add symbols to this variable, if they have no arguments, but `()` in their decl
@@ -43,8 +39,6 @@ LIBWRAP_ELLIPSIS_MAPPING_SYMBOLS =
 
 CPPFLAGS_PGI_WORKAROUND = -D__builtin_va_arg=__pgi_builtin_va_arg # workaround because clang thinks __builtin_va_arg is a keyword not a function and throws an error
 
-LIBWRAP_LINKTIME        = libscorep_libwrap_$(LW_NAME)_linktime.la
-LIBWRAP_LINKTIME_OBJECT = $(LIBWRAP_LINKTIME:.la=.lo)
 LIBWRAP_RUNTIME         = libscorep_libwrap_$(LW_NAME)_runtime.la
 LIBWRAP_RUNTIME_OBJECT  = $(LIBWRAP_RUNTIME:.la=.lo)
 
@@ -52,8 +46,7 @@ WRAP_LIB_SOURCE         = scorep_libwrap_$(LW_NAME).$(LW_SRCEXT)
 WRAP_LIST_INC           = scorep_libwrap_$(LW_NAME).inc.c
 LIBWRAP_ANCHOR_FILE     = $(LW_NAME).libwrap
 LIBWRAP_SUMMARY_FILE    = $(LW_NAME).summary
-WRAP_LD_FLAGS_FILE      = $(LW_NAME).wrap
-NVCC_WRAP_LD_FLAGS_FILE = $(LW_NAME).nvcc.wrap
+SYMBOLS_FILE            = $(LW_NAME).symbols
 WRAP_FILTER_FILE        = $(LW_NAME).filter
 
 ### silent rules ###
@@ -119,10 +112,7 @@ lw__v_lw_gen_ =
 
 ### all ###
 .PHONY: all
-all: main quick-check $(ALL_LIBWRAP_LINKTIME) $(ALL_LIBWRAP_RUNTIME)
-
-.PHONY: all-libwrap-linktime
-all-libwrap-linktime: $(LIBWRAP_LINKTIME)
+all: main quick-check $(ALL_LIBWRAP_RUNTIME)
 
 .PHONY: all-libwrap-runtime
 all-libwrap-runtime: $(LIBWRAP_RUNTIME)
@@ -147,10 +137,9 @@ quick-check: $(WRAP_LIB_SOURCE)
             echo "extern \"C\" {"; \
             echo "#endif"; \
             echo ""; \
-            while read flag symbol; do \
-                test "$$flag" != -wrap && continue; \
+            while read symbol; do \
                 echo "char $$symbol();"; \
-            done <$(WRAP_LD_FLAGS_FILE); \
+            done <$(SYMBOLS_FILE); \
             echo ""; \
             echo "#ifdef __cplusplus"; \
             echo "}"; \
@@ -159,10 +148,9 @@ quick-check: $(WRAP_LIB_SOURCE)
             echo "int main() {"; \
             echo "    char a = 0;"; \
             echo ""; \
-            while read flag symbol; do \
-                test "$$flag" != -wrap && continue; \
+            while read symbol; do \
                 echo "    a += $$symbol();"; \
-            done <$(WRAP_LD_FLAGS_FILE); \
+            done <$(SYMBOLS_FILE); \
             echo ""; \
             echo "    return a;"; \
             echo "}"; \
@@ -183,13 +171,6 @@ quick-check: $(WRAP_LIB_SOURCE)
         else \
             rm -f symbol_quick_check symbol_quick_check.$(LW_SRCEXT); \
         fi
-
-### libwrap linktime ###
-$(LIBWRAP_LINKTIME_OBJECT): $(WRAP_LIB_SOURCE) $(WRAP_LIST_INC)
-	$(LW_V_CC)$(LIBTOOL) $(LW_V_libtool) --tag=$(LW_LIBTOOL_TAG) --mode=compile $(SCOREP_CC) $(SCOREP_CPPFLAGS) $(CPPFLAGS) -DSCOREP_LIBWRAP_STATIC -c -o $@ $<
-
-$(LIBWRAP_LINKTIME): $(LIBWRAP_LINKTIME_OBJECT)
-	$(LW_V_CCLD)$(LIBTOOL) $(LW_V_libtool) --tag=$(LW_LIBTOOL_TAG) --mode=link $(SCOREP_CC) -avoid-version -rpath $(LW_PREFIX)/lib$(LW_BACKEND_SUFFIX) $(LIBTOOL_LDFLAGS) $(LDFLAGS) -Wl,@$(WRAP_LD_FLAGS_FILE) -o $@ $< $(LIBS)
 
 ### libwrap runtime ###
 $(LIBWRAP_RUNTIME_OBJECT): $(WRAP_LIB_SOURCE) $(WRAP_LIST_INC)
@@ -281,15 +262,14 @@ $(LIBWRAP_SUMMARY_FILE): Makefile
 .PHONY: check
 check: $(WRAP_LIB_SOURCE)
 	@$(lw__tty_colors); \
-        wrap_count=$$(cat $(WRAP_LD_FLAGS_FILE) | wc -l); \
+        wrap_count=$$(cat $(SYMBOLS_FILE) | wc -l); \
         if test $$wrap_count -ge 1000; then \
             echo >&2 "[Score-P] $${yel}Warning: Checking $$wrap_count symbols. This may take a while.$$std"; \
         fi; \
         missing_symbols=""; \
         uncertain_symbols=""; \
         rm -f missing.filter uncertain.filter; \
-        while read flag symbol; do \
-            test "$$flag" != -wrap && continue; \
+        while read symbol; do \
             ( \
                 echo "#ifdef __cplusplus"; \
                 echo 'extern "C"'; \
@@ -311,7 +291,7 @@ check: $(WRAP_LIB_SOURCE)
                 missing_symbols="$$missing_symbols $$symbol"; \
             fi; \
             rm -f symbol_check symbol_check.$(LW_SRCEXT); \
-        done <$(WRAP_LD_FLAGS_FILE); \
+        done <$(SYMBOLS_FILE); \
         if test -n "$$uncertain_symbols"; then \
             echo >&2 "[Score-P] $${yel}Warning: Symbols that are present without linking against the target$$std"; \
             echo >&2 "[Score-P]          $${yel}library and its dependencies have been wrapped. It is uncertain$$std"; \
@@ -342,25 +322,16 @@ check: $(WRAP_LIB_SOURCE)
 
 ### install ###
 .PHONY: install
-install: quick-check $(LIBWRAP_ANCHOR_FILE) $(LIBWRAP_SUMMARY_FILE) $(WRAP_FILTER_FILE) $(INSTALL_LIBWRAP_LINKTIME) $(INSTALL_LIBWRAP_RUNTIME)
+install: quick-check $(LIBWRAP_ANCHOR_FILE) $(LIBWRAP_SUMMARY_FILE) $(WRAP_FILTER_FILE) $(INSTALL_LIBWRAP_RUNTIME)
 	@mkdir -p $(LW_PREFIX)/share/scorep
 	@$(lw__tty_colors); \
-	data_files='$(LIBWRAP_ANCHOR_FILE) $(LIBWRAP_SUMMARY_FILE) $(WRAP_LD_FLAGS_FILE) $(NVCC_WRAP_LD_FLAGS_FILE) $(WRAP_FILTER_FILE)'; \
+	data_files='$(LIBWRAP_ANCHOR_FILE) $(LIBWRAP_SUMMARY_FILE) $(WRAP_FILTER_FILE)'; \
 	for data_file in $$data_files; do \
 	    if $(LW_V_P); then echo $(INSTALL) -m 644 "$$data_file" "$(LW_PREFIX)/share/scorep/$$data_file"; \
 	                  else echo "  INSTALL   $${blu}$(LW_PREFIX)/share/scorep/$$data_file$$std"; \
 	    fi; \
 	    $(INSTALL) -m 644 "$$data_file" "$(LW_PREFIX)/share/scorep/$$data_file"; \
 	done
-
-.PHONY: install-libwrap-linktime
-install-libwrap-linktime: $(LIBWRAP_LINKTIME)
-	@mkdir -p $(LW_PREFIX)/lib$(LW_BACKEND_SUFFIX)
-	@$(lw__tty_colors); \
-	if $(LW_V_P); then echo $(LIBTOOL) --mode=install $(INSTALL) $(LIBWRAP_LINKTIME) $(LW_PREFIX)/lib$(LW_BACKEND_SUFFIX)/$(LIBWRAP_LINKTIME); \
-	              else echo "  INSTALL   $${grn}$(LW_PREFIX)/lib$(LW_BACKEND_SUFFIX)/$(LIBWRAP_LINKTIME)$$std"; \
-	fi; \
-	$(LIBTOOL) $(LW_V_libtool) --mode=install $(INSTALL) $(LIBWRAP_LINKTIME) $(LW_PREFIX)/lib$(LW_BACKEND_SUFFIX)/$(LIBWRAP_LINKTIME)
 
 .PHONY: install-libwrap-runtime
 install-libwrap-runtime: $(LIBWRAP_RUNTIME)
@@ -388,12 +359,6 @@ install-libwrap-runtime: $(LIBWRAP_RUNTIME)
 
 ### installcheck ###
 
-main_linktime_wrapped: main.$(LW_SRCEXT) $(LW_PREFIX)/lib$(LW_BACKEND_SUFFIX)/$(LIBWRAP_LINKTIME)
-	$(LW_V_SCOREP)( \
-	    export SCOREP_LIBWRAP_PATH=$(LW_PREFIX); \
-	    $(LW_SCOREP) $(LW_V_scorep) --libwrap=linktime:$(LW_NAME) $(SCOREP_CC) $(CPPFLAGS) $< $(LDFLAGS) $(LIBS) -o $@; \
-	)
-
 main_runtime_wrapped: main.$(LW_SRCEXT) $(LW_PREFIX)/lib$(LW_BACKEND_SUFFIX)/$(LIBWRAP_RUNTIME)
 	$(LW_V_SCOREP)( \
 	    export SCOREP_LIBWRAP_PATH=$(LW_PREFIX); \
@@ -401,7 +366,7 @@ main_runtime_wrapped: main.$(LW_SRCEXT) $(LW_PREFIX)/lib$(LW_BACKEND_SUFFIX)/$(L
 	)
 
 .PHONY: installcheck
-installcheck: $(INSTALLCHECK_LIBWRAP_LINKTIME) $(INSTALLCHECK_LIBWRAP_RUNTIME)
+installcheck: $(INSTALLCHECK_LIBWRAP_RUNTIME)
 	@echo "[Score-P] To further check, please execute the generated binaries:"
 	@echo "[Score-P]"
 	@for binary in $^; do \
@@ -417,16 +382,10 @@ installcheck: $(INSTALLCHECK_LIBWRAP_LINKTIME) $(INSTALLCHECK_LIBWRAP_RUNTIME)
 
 ### uninstall ###
 .PHONY: uninstall
-uninstall: $(UNINSTALL_LIBWRAP_LINKTIME) $(UNINSTALL_LIBWRAP_RUNTIME)
+uninstall: $(UNINSTALL_LIBWRAP_RUNTIME)
 	@rm -f $(LW_PREFIX)/share/scorep/$(LIBWRAP_ANCHOR_FILE)
 	@rm -f $(LW_PREFIX)/share/scorep/$(LIBWRAP_SUMMARY_FILE)
-	@rm -f $(LW_PREFIX)/share/scorep/$(WRAP_LD_FLAGS_FILE)
-	@rm -f $(LW_PREFIX)/share/scorep/$(NVCC_WRAP_LD_FLAGS_FILE)
 	@rm -f $(LW_PREFIX)/share/scorep/$(WRAP_FILTER_FILE)
-
-.PHONY: uninstall-libwrap-linktime
-uninstall-libwrap-linktime:
-	@$(LIBTOOL) $(LW_V_libtool) --mode=uninstall rm -f $(LW_PREFIX)/lib$(LW_BACKEND_SUFFIX)/$(LIBWRAP_LINKTIME)
 
 .PHONY: uninstall-libwrap-runtime
 uninstall-libwrap-runtime:
@@ -435,8 +394,8 @@ uninstall-libwrap-runtime:
 ### clean ###
 .PHONY: clean
 clean:
-	@rm -f main libwrap.i $(WRAP_LIB_SOURCE) $(WRAP_LIST_INC) $(LIBWRAP_ANCHOR_FILE) $(LIBWRAP_SUMMARY_FILE) $(WRAP_LD_FLAGS_FILE) $(NVCC_WRAP_LD_FLAGS_FILE) $(INSTALLCHECK_LIBWRAP_LINKTIME) $(INSTALLCHECK_LIBWRAP_RUNTIME)
-	@$(LIBTOOL) $(LW_V_libtool) --mode=clean rm -f $(LIBWRAP_LINKTIME) $(LIBWRAP_LINKTIME_OBJECT) $(LIBWRAP_RUNTIME) $(LIBWRAP_RUNTIME_OBJECT)
+	@rm -f main libwrap.i $(WRAP_LIB_SOURCE) $(WRAP_LIST_INC) $(LIBWRAP_ANCHOR_FILE) $(LIBWRAP_SUMMARY_FILE) $(WRAP_LD_FLAGS_FILE) $(NVCC_WRAP_LD_FLAGS_FILE) $(INSTALLCHECK_LIBWRAP_RUNTIME)
+	@$(LIBTOOL) $(LW_V_libtool) --mode=clean rm -f $(LIBWRAP_RUNTIME) $(LIBWRAP_RUNTIME_OBJECT)
 
 ### show libwrap-init command ###
 .PHONY: show-summary

@@ -7,7 +7,7 @@
  * Copyright (c) 2009-2013,
  * Gesellschaft fuer numerische Simulation mbH Braunschweig, Germany
  *
- * Copyright (c) 2009-2017, 2019, 2021, 2024,
+ * Copyright (c) 2009-2017, 2019, 2021, 2024-2025,
  * Technische Universitaet Dresden, Germany
  *
  * Copyright (c) 2009-2013,
@@ -76,7 +76,6 @@ enum
     ACTION_MPILIBTOOL,
     ACTION_SHMEMLIBTOOL,
     ACTION_ADAPTER_INIT,
-    ACTION_LIBWRAP_LINKTIME,
     ACTION_LIBWRAP_RUNTIME,
     ACTION_LDAUDIT,
     ACTION_TARGETS,
@@ -141,8 +140,6 @@ enum
     "              Prints the path to the remapper specification file.\n" \
     "   --adapter-init\n" \
     "              Prints the code for adapter initialization.\n" \
-    "   --libwrap-support=linktime\n" \
-    "              Prints true if link-time library wrapping is supported.\n" \
     "   --libwrap-support=runtime\n" \
     "              Prints true if run-time library wrapping is supported.\n" \
     "   --ldaudit  Prints the linker auditing LD_AUDIT value if supported.\n" \
@@ -405,10 +402,6 @@ main( int    argc,
         else if ( strcmp( argv[ i ], "--adapter-init" ) == 0 )
         {
             action = ACTION_ADAPTER_INIT;
-        }
-        else if ( strcmp( argv[ i ], "--libwrap-support=linktime" ) == 0 )
-        {
-            action = ACTION_LIBWRAP_LINKTIME;
         }
         else if ( strcmp( argv[ i ], "--libwrap-support=runtime" ) == 0 )
         {
@@ -763,14 +756,6 @@ main( int    argc,
                     std::cout << path_to_binary + "../build-backend/scorep_constructor." OBJEXT << std::endl;
                 }
             }
-#endif
-            break;
-
-        case ACTION_LIBWRAP_LINKTIME:
-#if HAVE_BACKEND( LIBWRAP_LINKTIME_SUPPORT )
-            std::cout << "true" << std::endl;
-#else
-            std::cout << "false" << std::endl;
 #endif
             break;
 

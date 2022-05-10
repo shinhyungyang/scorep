@@ -145,100 +145,10 @@
  */
 #define _SCOREP_LIBWRAP_RETTYPE( ... ) __VA_ARGS__
 
-/* ********************************************************************
-* STATIC MODE
-* ********************************************************************/
-#if defined( SCOREP_LIBWRAP_STATIC )
-
-/**
- * @def SCOREP_LIBWRAP_MODE
- * Define static library wrapper mode
- */
-#define SCOREP_LIBWRAP_MODE SCOREP_LIBWRAP_MODE_STATIC
-
-/**
- * @def SCOREP_LIBWRAP_FUNC_NAME
- * Macro for parameter expansion
- *
- * @param func              Function name
- */
-#define SCOREP_LIBWRAP_FUNC_NAME( func ) __wrap_##func
-
-#ifndef SCOREP_LIBWRAP_FUNC_REAL_NAME
-
-/**
- * @def SCOREP_LIBWRAP_FUNC_REAL_NAME
- * The symbol name of the original function. For static wrapping, this defaults
- * to the `__real_`-symbol.
- *
- * @param func              Function name
- */
-#define SCOREP_LIBWRAP_FUNC_REAL_NAME( func ) __real_##func
-
-#endif
-
-/**
- * @def SCOREP_LIBWRAP_DECLARE_REAL_FUNC
- * Declares the symbol name of the original function. For static wrapping, this defaults
- * to the `__real_`-symbol.
- *
- * @param rettype           Function return type in parentheses.
- * @param func              Function name
- * @param argtypes          Function arguments in parentheses
- */
-#define SCOREP_LIBWRAP_DECLARE_REAL_FUNC( rettype, func, argtypes ) \
-    _SCOREP_LIBWRAP_RETTYPE rettype SCOREP_LIBWRAP_FUNC_REAL_NAME( func )argtypes
-
-/**
- * @def SCOREP_LIBWRAP_DEFINE_REAL_FUNC
- * Defines the symbol name of the original function. For static wrapping,
- * this is not needed, thus empty.
- *
- * @param rettype           Function return type in parentheses.
- * @param func              Function name
- * @param argtypes          Function arguments in parentheses
- */
-#define SCOREP_LIBWRAP_DEFINE_REAL_FUNC( rettype, func, argtypes )
-
-/**
- * @def SCOREP_LIBWRAP_FUNC_CALL
- * Call real function symbol
- *
- * @param func             Function name
- * @param args             Function arguments
- */
-#define SCOREP_LIBWRAP_FUNC_CALL( func, args ) \
-    SCOREP_LIBWRAP_FUNC_REAL_NAME( func )args
-
-/**
- * @def SCOREP_LIBWRAP_FUNC_INIT
- * Prepare wrapping of requested function
- *
- * @param handle            Library wrapper handle
- * @param func              Function symbol
- * @param prettyname        The pretty name of the function (i.e., demangled; as `const char*`)
- * @param file              Source code location (file as `const char*`)
- * @param line              Source code location (line as `int`)
- */
-#define SCOREP_LIBWRAP_FUNC_INIT( handle, func, prettyname, file, line )        \
-    do                                                                          \
-    {                                                                           \
-        SCOREP_Libwrap_DefineRegion( handle,                                    \
-                                     &SCOREP_LIBWRAP_REGION_HANDLE( func ),     \
-                                     &SCOREP_LIBWRAP_REGION_FILTERED( func ),   \
-                                     prettyname, #func, file, line );           \
-    }                                                                           \
-    while ( 0 )
-
-/* *********************************************************************
- * end of static mode
- * ********************************************************************/
-
-
 /* *********************************************************************
  *  SHARED MODE
  * ********************************************************************/
-#elif defined( SCOREP_LIBWRAP_SHARED )
+#if defined( SCOREP_LIBWRAP_SHARED )
 
 /** @def SCOREP_LIBWRAP_MODE
  *  Define shared library wrapper mode

@@ -1,7 +1,7 @@
 /*
  * This file is part of the Score-P software (http://www.score-p.org)
  *
- * Copyright (c) 2017,
+ * Copyright (c) 2017, 2025,
  * Technische Universitaet Dresden, Germany
  *
  * Copyright (c) 2023,
@@ -177,10 +177,6 @@ SCOREP_Instrumenter_LibwrapAdapter::add_libwrap( const std::string& wrapmode,
                                                  const std::string& anchor )
 {
     Wrapper wrapper( anchor );
-    if ( wrapmode == "linktime" )
-    {
-        m_requires.push_back( SCOREP_INSTRUMENTER_ADAPTER_LINKTIME_WRAPPING );
-    }
     if ( wrapmode == "runtime" && wrapper.m_dlopen_libs.empty() )
     {
         std::cerr << "[Score-P] ERROR: Library wrapper '" << arg << "' does not support runtime wrapping. Use linktime wrapping instead." << std::endl;
@@ -204,14 +200,9 @@ SCOREP_Instrumenter_LibwrapAdapter::checkOption( const std::string& arg )
             exit( EXIT_SUCCESS );
         }
 
-        std::string wrapmode = SCOREP_LIBWRAP_DEFAULT_MODE;
+        std::string wrapmode = "runtime";
         std::string anchor;
-        if ( libwrap.compare( 0, 9, "linktime:" ) == 0 )
-        {
-            wrapmode = "linktime";
-            libwrap.erase( 0, 9 );
-        }
-        else if ( libwrap.compare( 0, 8, "runtime:" ) == 0 )
+        if ( libwrap.compare( 0, 8, "runtime:" ) == 0 )
         {
             wrapmode = "runtime";
             libwrap.erase( 0, 8 );

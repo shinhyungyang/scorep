@@ -1,7 +1,7 @@
 /*
  * This file is part of the Score-P software (http://www.score-p.org)
  *
- * Copyright (c) 2013, 2015-2017, 2019, 2022,
+ * Copyright (c) 2013, 2015-2017, 2019, 2022, 2025,
  * Technische Universitaet Dresden, Germany
  *
  * This software may be modified and distributed under the terms of
@@ -65,13 +65,9 @@ SCOREP_Libwrap_Generator::generate_source_code_files()
     set_outputfile_name( m_config.function_list_file_name );
     output( OUTPUT_FUNCTION_LIST );
 
-    // Write file with GNU ld wrap flags
-    set_outputfile_name( m_config.wrap_flags_file_name );
-    output( OUTPUT_WRAP_FLAGS );
-
-    // Write file with GNU ld wrap flags for the nvcc compiler
-    set_outputfile_name( m_config.nvcc_wrap_flags_file_name );
-    output( OUTPUT_NVCC_WRAP_FLAGS );
+    // Write file with symbols
+    set_outputfile_name( m_config.symbols_file_name );
+    output( OUTPUT_SYMBOLS );
 
     // Write wrapper skeleton file
     set_outputfile_name( m_config.wrap_file_name );
@@ -344,59 +340,24 @@ public:
     }
 };
 
-class macro_writer_wrap_flags
+class macro_writer_symbols
     : public SCOREP_Libwrap_IterateNamespaceCb
 {
 public:
-    macro_writer_wrap_flags( SCOREP_Libwrap_Generator& generator,
-                             ostream&                  out )
+    macro_writer_symbols( SCOREP_Libwrap_Generator& generator,
+                          ostream&                  out )
         : generator( generator )
         , out( out )
-        , first( true )
     {
     }
 
     SCOREP_Libwrap_Generator& generator;
     ostream&                  out;
-    bool                      first;
 
     void
     operator()( const macro_information& decl ) override
     {
-        if ( first )
-        {
-            out << "--undefined __wrap_" << decl.symbolname << "\n";
-            first = false;
-        }
-        out << "-wrap " << decl.symbolname << "\n";
-    }
-};
-
-class macro_writer_nvcc_wrap_flags
-    : public SCOREP_Libwrap_IterateNamespaceCb
-{
-public:
-    macro_writer_nvcc_wrap_flags( SCOREP_Libwrap_Generator& generator,
-                                  ostream&                  out )
-        : generator( generator )
-        , out( out )
-        , first( true )
-    {
-    }
-
-    SCOREP_Libwrap_Generator& generator;
-    ostream&                  out;
-    bool                      first;
-
-    void
-    operator()( const macro_information& decl ) override
-    {
-        if ( first )
-        {
-            out << "-Xlinker --undefined -Xlinker __wrap_" << decl.symbolname << "\n";
-            first = false;
-        }
-        out << "-Xlinker -wrap -Xlinker " << decl.symbolname << "\n";
+        out << decl.symbolname << "\n";
     }
 };
 
@@ -430,11 +391,8 @@ SCOREP_Libwrap_Generator::output( output_mode mode )
         case OUTPUT_FUNCTION_LIST:
             cb = new macro_writer_function_list( *this, out );
             break;
-        case OUTPUT_WRAP_FLAGS:
-            cb = new macro_writer_wrap_flags( *this, out );
-            break;
-        case OUTPUT_NVCC_WRAP_FLAGS:
-            cb = new macro_writer_nvcc_wrap_flags( *this, out );
+        case OUTPUT_SYMBOLS:
+            cb = new macro_writer_symbols( *this, out );
             break;
     }
 

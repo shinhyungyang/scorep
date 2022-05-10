@@ -36,8 +36,6 @@ check_PROGRAMS +=                                          \
     self_contained_public_header_pomp_lib_c                \
     self_contained_public_header_SCOREP_Libwrap_c          \
     self_contained_public_header_SCOREP_Libwrap_cpp        \
-    self_contained_public_header_SCOREP_Libwrap_Macros_STATIC_c   \
-    self_contained_public_header_SCOREP_Libwrap_Macros_STATIC_cpp \
     self_contained_public_header_SCOREP_Libwrap_Macros_SHARED_c   \
     self_contained_public_header_SCOREP_Libwrap_Macros_SHARED_cpp \
     self_contained_public_header_SCOREP_MetricPlugins_c      \
@@ -74,12 +72,6 @@ self_contained_public_header_SCOREP_Libwrap_c_CPPFLAGS = $(self_contained_public
 
 self_contained_public_header_SCOREP_Libwrap_cpp_SOURCES = $(SRC_ROOT)test/public_headers/self_contained_public_header_SCOREP_Libwrap.cpp
 self_contained_public_header_SCOREP_Libwrap_cpp_CPPFLAGS = $(self_contained_public_headers_cppflags)
-
-self_contained_public_header_SCOREP_Libwrap_Macros_STATIC_c_SOURCES = $(SRC_ROOT)test/public_headers/self_contained_public_header_SCOREP_Libwrap_Macros.c
-self_contained_public_header_SCOREP_Libwrap_Macros_STATIC_c_CPPFLAGS = $(self_contained_public_headers_cppflags) -DSCOREP_LIBWRAP_STATIC
-
-self_contained_public_header_SCOREP_Libwrap_Macros_STATIC_cpp_SOURCES = $(SRC_ROOT)test/public_headers/self_contained_public_header_SCOREP_Libwrap_Macros.cpp
-self_contained_public_header_SCOREP_Libwrap_Macros_STATIC_cpp_CPPFLAGS = $(self_contained_public_headers_cppflags) -DSCOREP_LIBWRAP_STATIC
 
 self_contained_public_header_SCOREP_Libwrap_Macros_SHARED_c_SOURCES = $(SRC_ROOT)test/public_headers/self_contained_public_header_SCOREP_Libwrap_Macros.c
 self_contained_public_header_SCOREP_Libwrap_Macros_SHARED_c_CPPFLAGS = $(self_contained_public_headers_cppflags) -DSCOREP_LIBWRAP_SHARED
@@ -162,8 +154,6 @@ installcheck_public_header_CXXCOMPILE=$(CXX) $(installcheck_public_header_cflags
 installcheck_public_headers = \
     installcheck_public_header_SCOREP_Libwrap_c.$(OBJEXT)          \
     installcheck_public_header_SCOREP_Libwrap_cpp.$(OBJEXT)        \
-    installcheck_public_header_SCOREP_Libwrap_Macros_STATIC_c.$(OBJEXT)   \
-    installcheck_public_header_SCOREP_Libwrap_Macros_STATIC_cpp.$(OBJEXT) \
     installcheck_public_header_SCOREP_Libwrap_Macros_SHARED_c.$(OBJEXT)   \
     installcheck_public_header_SCOREP_Libwrap_Macros_SHARED_cpp.$(OBJEXT) \
     installcheck_public_header_SCOREP_MetricPlugins_c.$(OBJEXT)      \
@@ -207,12 +197,6 @@ installcheck_public_header_SCOREP_Libwrap_c.$(OBJEXT): $(SRC_ROOT)test/public_he
 
 installcheck_public_header_SCOREP_Libwrap_cpp.$(OBJEXT): $(SRC_ROOT)test/public_headers/self_contained_public_header_SCOREP_Libwrap.cpp
 	$(AM_V_CXX)$(installcheck_public_header_CXXCOMPILE)
-
-installcheck_public_header_SCOREP_Libwrap_Macros_STATIC_c.$(OBJEXT): $(SRC_ROOT)test/public_headers/self_contained_public_header_SCOREP_Libwrap_Macros.c
-	$(AM_V_CC)$(installcheck_public_header_COMPILE) -DSCOREP_LIBWRAP_STATIC
-
-installcheck_public_header_SCOREP_Libwrap_Macros_STATIC_cpp.$(OBJEXT): $(SRC_ROOT)test/public_headers/self_contained_public_header_SCOREP_Libwrap_Macros.cpp
-	$(AM_V_CXX)$(installcheck_public_header_CXXCOMPILE) -DSCOREP_LIBWRAP_STATIC
 
 installcheck_public_header_SCOREP_Libwrap_Macros_SHARED_c.$(OBJEXT): $(SRC_ROOT)test/public_headers/self_contained_public_header_SCOREP_Libwrap_Macros.c
 	$(AM_V_CC)$(installcheck_public_header_COMPILE) -DSCOREP_LIBWRAP_SHARED

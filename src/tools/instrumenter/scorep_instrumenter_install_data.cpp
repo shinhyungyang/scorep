@@ -7,7 +7,7 @@
  * Copyright (c) 2009-2013,
  * Gesellschaft fuer numerische Simulation mbH Braunschweig, Germany
  *
- * Copyright (c) 2009-2014, 2017, 2019,
+ * Copyright (c) 2009-2014, 2017, 2019, 2025,
  * Technische Universitaet Dresden, Germany
  *
  * Copyright (c) 2009-2013,
@@ -334,18 +334,4 @@ SCOREP_Instrumenter_InstallData::isCompositeArg( const std::string& current,
     }
     return false;
 #endif
-}
-
-bool
-SCOREP_Instrumenter_InstallData::conflictsWithLinktimeWrapping( const std::string& arg )
-{
-    // Assumption: it is likely that if the IBM compiler is used, then it is
-    // used for all languages.
-#if SCOREP_BACKEND_COMPILER_CC_IBM && SCOREP_BACKEND_COMPILER_CXX_IBM && SCOREP_BACKEND_COMPILER_FC_IBM
-    return arg == "-O4" ||
-           arg == "-O5" ||
-           arg == "-qipa" ||
-           arg.substr( 0, 6 ) == "-qipa=";
-#endif
-    return false;
 }

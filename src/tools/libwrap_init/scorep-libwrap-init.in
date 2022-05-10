@@ -86,7 +86,6 @@ fi
 @HAVE_SHMEM_SUPPORT_FALSE@shmem_support=false
 @HAVE_SHMEM_SUPPORT_TRUE@shmem_support=true
 
-if [ "$($scorep_config --libwrap-support=linktime)" = true ]; then lw_linktime_support=true; else lw_linktime_support=false; fi
 if [ "$($scorep_config --libwrap-support=runtime)"  = true ]; then lw_runtime_support=true;  else lw_runtime_support=false;  fi
 
 @BUILD_SHARED_LIBRARIES_TRUE@enable_shared=true
@@ -480,18 +479,6 @@ fi
     echo
 
     echo "# proxy targets to enable/disable making/installing/uninstalling linktime and runtime wrappers according to what score-p supports"
-    if [ "$lw_linktime_support" = true ]; then
-        echo "ALL_LIBWRAP_LINKTIME          = all-libwrap-linktime"
-        echo "INSTALL_LIBWRAP_LINKTIME      = install-libwrap-linktime"
-        echo "INSTALLCHECK_LIBWRAP_LINKTIME = main_linktime_wrapped"
-        echo "UNINSTALL_LIBWRAP_LINKTIME    = uninstall-libwrap-linktime"
-    else
-        echo "ALL_LIBWRAP_LINKTIME          ="
-        echo "INSTALL_LIBWRAP_LINKTIME      ="
-        echo "INSTALLCHECK_LIBWRAP_LINKTIME ="
-        echo "UNINSTALL_LIBWRAP_LINKTIME    ="
-    fi
-
     if [ "$lw_runtime_support" = true ]; then
         echo "ALL_LIBWRAP_RUNTIME          = all-libwrap-runtime"
         echo "INSTALL_LIBWRAP_RUNTIME      = install-libwrap-runtime"

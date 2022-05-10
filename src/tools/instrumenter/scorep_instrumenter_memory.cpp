@@ -47,7 +47,6 @@
 SCOREP_Instrumenter_MemoryAdapter::SCOREP_Instrumenter_MemoryAdapter( void )
     : SCOREP_Instrumenter_Adapter( SCOREP_INSTRUMENTER_ADAPTER_MEMORY, "memory" )
 {
-    m_requires.push_back( SCOREP_INSTRUMENTER_ADAPTER_LINKTIME_WRAPPING );
 #if !HAVE_BACKEND( MEMORY_SUPPORT )
     unsupported();
 #endif

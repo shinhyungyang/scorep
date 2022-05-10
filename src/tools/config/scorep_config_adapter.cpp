@@ -28,7 +28,6 @@
 #include <scorep_config_tool_llvm_plugin.h>
 #include "scorep_config_adapter.hpp"
 #include "scorep_config_thread.hpp"
-#include "scorep_config_utils.hpp"
 
 #include <scorep_tools_utils.hpp>
 
@@ -901,26 +900,9 @@ SCOREP_Config_LibwrapAdapter::checkArgument( const std::string& arg )
 {
     if ( arg.substr( 0, 10 ) == "--libwrap=" )
     {
-        std::string libwrap = arg.substr( 10 );
-
-        std::string wrapmode;
-        if ( libwrap.compare( 0, 9, "linktime:" ) == 0 )
-        {
-            wrapmode = "linktime";
-            libwrap.erase( 0, 9 );
-        }
-        else if ( libwrap.compare( 0, 8, "runtime:" ) == 0 )
-        {
-            wrapmode = "runtime";
-            libwrap.erase( 0, 8 );
-        }
-        else
-        {
-            std::cerr << "[Score-P] ERROR: Missing libwrap mode in: '" << arg << "'" << std::endl;
-            exit( EXIT_FAILURE );
-        }
-
-        std::string name = remove_extension( remove_path( libwrap ) );
+        std::string libwrap  = arg.substr( 10 );
+        std::string wrapmode = "runtime";
+        std::string name     = remove_extension( remove_path( libwrap ) );
 
         if ( m_wrappers.count( name ) != 0 )
         {
@@ -947,19 +929,6 @@ SCOREP_Config_LibwrapAdapter::addLibs( std::deque<std::string>&           libs,
         /* we point to <prefix>/share/scorep/<name>.libwrap */
         std::string libdir = join_path( extract_path( extract_path( extract_path( libwrap ) ) ), "lib" SCOREP_BACKEND_SUFFIX );
 
-#if HAVE_BACKEND( LIBWRAP_LINKTIME_SUPPORT )
-        if ( exists_file( join_path( libdir, "libscorep_libwrap_" + name + "_linktime.la" ) ) )
-        {
-            deps.insert( "libscorep_libwrap_" + name + "_linktime", libdir );
-        }
-        else
-#endif
-        if ( wrapmode == "linktime" )
-        {
-            std::cerr << "[Score-P] ERROR: Library wrapping mode 'linktime' not supported by this installation." << std::endl;
-            exit( EXIT_FAILURE );
-        }
-
 #if HAVE_BACKEND( LIBWRAP_RUNTIME_SUPPORT )
         if ( exists_file( join_path( libdir, "libscorep_libwrap_" + name + "_runtime.la" ) ) )
         {
@@ -975,25 +944,6 @@ SCOREP_Config_LibwrapAdapter::addLibs( std::deque<std::string>&           libs,
 
         libs.push_back( "libscorep_libwrap_" + name + "_" + wrapmode );
         deps.addDependency( libs.back(), "libscorep_measurement" );
-    }
-}
-
-void
-SCOREP_Config_LibwrapAdapter::addLdFlags( std::string& ldflags,
-                                          bool /* buildCheck */,
-                                          bool         nvcc )
-{
-    for ( std::map<std::string, std::pair<std::string, std::string> >::const_iterator it = m_wrappers.begin(); it != m_wrappers.end(); ++it )
-    {
-        const std::string& name     = it->first;
-        const std::string& wrapmode = it->second.first;
-        const std::string& libwrap  = it->second.second;
-
-        if ( wrapmode == "linktime" )
-        {
-            /* libwrap points to the .libwrap file */
-            ldflags += get_ld_wrap_flag( remove_extension( libwrap ), nvcc );
-        }
     }
 }
 

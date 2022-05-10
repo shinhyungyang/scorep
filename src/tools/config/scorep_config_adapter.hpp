@@ -512,11 +512,6 @@ public:
     checkArgument( const std::string& arg ) override;
 
     void
-    addLdFlags( std::string& ldflags,
-                bool         build_check,
-                bool         nvcc ) override;
-
-    void
     addLibs( std::deque<std::string>&           libs,
              SCOREP_Config_LibraryDependencies& deps ) override;
 

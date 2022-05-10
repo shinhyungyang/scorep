@@ -1,7 +1,7 @@
 /*
  * This file is part of the Score-P software (http://www.score-p.org)
  *
- * Copyright (c) 2013, 2015-2017,
+ * Copyright (c) 2013, 2015-2017, 2025,
  * Technische Universitaet Dresden, Germany
  *
  * This software may be modified and distributed under the terms of
@@ -89,8 +89,7 @@ enum generation_mode
 {
     MODE_FUNCTION_LIST,
     MODE_ADAPTER_CODE,
-    MODE_WRAP_FLAGS,
-    MODE_NVCC_WRAP_FLAGS
+    MODE_SYMBOLS
 };
 
 static string
@@ -310,29 +309,16 @@ main( int   argc,
         return EXIT_FAILURE;
     }
 
-    config.wrap_flags_file_name = join_path(
+    config.symbols_file_name = join_path(
         config.output_directory,
         create_result_file_name( config.wrapper_name,
                                  config.language,
-                                 MODE_WRAP_FLAGS ) );
-    if ( exists_file( config.wrap_flags_file_name )
+                                 MODE_SYMBOLS ) );
+    if ( exists_file( config.symbols_file_name )
          && !config.overwrite
-         && !ask_user( config.wrap_flags_file_name ) )
+         && !ask_user( config.symbols_file_name ) )
     {
-        cerr << "ERROR: Output file already exists: '" << config.wrap_flags_file_name << "'" << endl;
-        return EXIT_FAILURE;
-    }
-
-    config.nvcc_wrap_flags_file_name = join_path(
-        config.output_directory,
-        create_result_file_name( config.wrapper_name,
-                                 config.language,
-                                 MODE_NVCC_WRAP_FLAGS ) );
-    if ( exists_file( config.nvcc_wrap_flags_file_name )
-         && !config.overwrite
-         && !ask_user( config.nvcc_wrap_flags_file_name ) )
-    {
-        cerr << "ERROR: Output file already exists: '" << config.nvcc_wrap_flags_file_name << "'" << endl;
+        cerr << "ERROR: Output file already exists: '" << config.symbols_file_name << "'" << endl;
         return EXIT_FAILURE;
     }
 
@@ -387,13 +373,9 @@ main( int   argc,
         {
             remove( config.function_list_file_name.c_str() );
         }
-        if ( exists_file( config.wrap_flags_file_name ) )
+        if ( exists_file( config.symbols_file_name ) )
         {
-            remove( config.wrap_flags_file_name.c_str() );
-        }
-        if ( exists_file( config.nvcc_wrap_flags_file_name ) )
-        {
-            remove( config.nvcc_wrap_flags_file_name.c_str() );
+            remove( config.symbols_file_name.c_str() );
         }
         if ( exists_file( config.wrap_file_name ) )
         {
@@ -419,21 +401,16 @@ create_result_file_name( const string&   name,
         case MODE_FUNCTION_LIST:
             tmp = "scorep_libwrap_";
             break;
-        case MODE_WRAP_FLAGS:
-        case MODE_NVCC_WRAP_FLAGS:
+        case MODE_SYMBOLS:
             break;
     }
 
     tmp.append( name );
 
     /* append new endings */
-    if ( mode == MODE_WRAP_FLAGS )
+    if ( mode == MODE_SYMBOLS )
     {
-        tmp.append( ".wrap" );
-    }
-    else if ( mode == MODE_NVCC_WRAP_FLAGS )
-    {
-        tmp.append( ".nvcc.wrap" );
+        tmp.append( ".symbols" );
     }
     else if ( mode == MODE_FUNCTION_LIST )
     {

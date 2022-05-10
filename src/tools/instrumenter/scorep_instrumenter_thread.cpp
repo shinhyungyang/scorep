@@ -223,7 +223,6 @@ SCOREP_Instrumenter_Pthread::SCOREP_Instrumenter_Pthread(
     m_pthread_lib( SCOREP_BACKEND_PTHREAD_LIBS )
 {
     m_conflicts.push_back( SCOREP_INSTRUMENTER_ADAPTER_OPARI );
-    m_requires.push_back( SCOREP_INSTRUMENTER_ADAPTER_LINKTIME_WRAPPING );
 #if !SCOREP_BACKEND_HAVE_PTHREAD_SUPPORT
     unsupported();
 #endif
