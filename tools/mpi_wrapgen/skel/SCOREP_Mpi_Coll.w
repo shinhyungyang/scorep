@@ -41,12 +41,16 @@ ${proto:c}
       if (event_gen_active_for_group)
         {
           ${ltimer:comm}
+          SCOREP_Timer_Subsystem_Logic_Event_Sync = true;
+
           SCOREP_MpiCollectiveEnd(SCOREP_MPI_COMM_HANDLE(comm),
                                   root_loc,
                                   SCOREP_MPI_COLLECTIVE__${name|uppercase},
                                   ${mpi:sendcount},
                                   ${mpi:recvcount});
           SCOREP_ExitRegion(scorep_mpi_regions[SCOREP_MPI_REGION__${name|uppercase}]);
+
+          SCOREP_Timer_Subsystem_Logic_Event_Sync = false;
         }
       else if ( SCOREP_IsUnwindingEnabled() )
         {

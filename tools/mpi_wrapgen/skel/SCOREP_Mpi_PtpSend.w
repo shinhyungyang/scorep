@@ -59,7 +59,9 @@ ${proto:c}
          * when an MPI_Send is used in combination with an MPI_Irecv
          */
       }
+      SCOREP_Timer_Subsystem_Logic_Event_Sync = true;
       SCOREP_ExitRegion(scorep_mpi_regions[SCOREP_MPI_REGION__${name|uppercase}]);
+      SCOREP_Timer_Subsystem_Logic_Event_Sync = false;
     }
     else if ( SCOREP_IsUnwindingEnabled() )
     {

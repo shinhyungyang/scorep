@@ -111,7 +111,7 @@ MPI_Accumulate( SCOREP_MPI_CONST_DECL void* origin_addr, int origin_count, MPI_D
                  *    <attribute id="rma_explicit_handle">true</attribute>
                  */
         #if false // is explicit request?
-                  // Explicit request always get a new matching id
+                // Explicit request always get a new matching id
                 matching_id = scorep_mpi_get_request_id();
         #else
                 // Implicit request may already have a valid matching id
@@ -157,7 +157,7 @@ MPI_Accumulate( SCOREP_MPI_CONST_DECL void* origin_addr, int origin_count, MPI_D
                  *    <attribute id="rma_explicit_handle">true</attribute>
                  */
         #if false // rma_explicit_handle
-                  // Both implicit _and_ explicit request tracking needed.
+                // Both implicit _and_ explicit request tracking needed.
 
                 // Start implicit request tracking
                 rma_request =
@@ -233,7 +233,7 @@ MPI_Compare_and_swap SCOREP_MPI_COMPARE_AND_SWAP_PROTO_ARGS
                  *    <attribute id="rma_explicit_handle">true</attribute>
                  */
         #if false // is explicit request?
-                  // Explicit request always get a new matching id
+                // Explicit request always get a new matching id
                 matching_id = scorep_mpi_get_request_id();
         #else
                 // Implicit request may already have a valid matching id
@@ -279,7 +279,7 @@ MPI_Compare_and_swap SCOREP_MPI_COMPARE_AND_SWAP_PROTO_ARGS
                  *    <attribute id="rma_explicit_handle">true</attribute>
                  */
         #if false // rma_explicit_handle
-                  // Both implicit _and_ explicit request tracking needed.
+                // Both implicit _and_ explicit request tracking needed.
 
                 // Start implicit request tracking
                 rma_request =
@@ -353,7 +353,7 @@ MPI_Fetch_and_op SCOREP_MPI_FETCH_AND_OP_PROTO_ARGS
                  *    <attribute id="rma_explicit_handle">true</attribute>
                  */
         #if false // is explicit request?
-                  // Explicit request always get a new matching id
+                // Explicit request always get a new matching id
                 matching_id = scorep_mpi_get_request_id();
         #else
                 // Implicit request may already have a valid matching id
@@ -399,7 +399,7 @@ MPI_Fetch_and_op SCOREP_MPI_FETCH_AND_OP_PROTO_ARGS
                  *    <attribute id="rma_explicit_handle">true</attribute>
                  */
         #if false // rma_explicit_handle
-                  // Both implicit _and_ explicit request tracking needed.
+                // Both implicit _and_ explicit request tracking needed.
 
                 // Start implicit request tracking
                 rma_request =
@@ -473,7 +473,7 @@ MPI_Get( void* origin_addr, int origin_count, MPI_Datatype origin_datatype, int 
                  *    <attribute id="rma_explicit_handle">true</attribute>
                  */
         #if false // is explicit request?
-                  // Explicit request always get a new matching id
+                // Explicit request always get a new matching id
                 matching_id = scorep_mpi_get_request_id();
         #else
                 // Implicit request may already have a valid matching id
@@ -519,7 +519,7 @@ MPI_Get( void* origin_addr, int origin_count, MPI_Datatype origin_datatype, int 
                  *    <attribute id="rma_explicit_handle">true</attribute>
                  */
         #if false // rma_explicit_handle
-                  // Both implicit _and_ explicit request tracking needed.
+                // Both implicit _and_ explicit request tracking needed.
 
                 // Start implicit request tracking
                 rma_request =
@@ -593,7 +593,7 @@ MPI_Get_accumulate( SCOREP_MPI_CONST_DECL void* origin_addr, int origin_count, M
                  *    <attribute id="rma_explicit_handle">true</attribute>
                  */
         #if false // is explicit request?
-                  // Explicit request always get a new matching id
+                // Explicit request always get a new matching id
                 matching_id = scorep_mpi_get_request_id();
         #else
                 // Implicit request may already have a valid matching id
@@ -639,7 +639,7 @@ MPI_Get_accumulate( SCOREP_MPI_CONST_DECL void* origin_addr, int origin_count, M
                  *    <attribute id="rma_explicit_handle">true</attribute>
                  */
         #if false // rma_explicit_handle
-                  // Both implicit _and_ explicit request tracking needed.
+                // Both implicit _and_ explicit request tracking needed.
 
                 // Start implicit request tracking
                 rma_request =
@@ -716,7 +716,7 @@ MPI_Put( SCOREP_MPI_CONST_DECL void* origin_addr, int origin_count, MPI_Datatype
                  *    <attribute id="rma_explicit_handle">true</attribute>
                  */
         #if false // is explicit request?
-                  // Explicit request always get a new matching id
+                // Explicit request always get a new matching id
                 matching_id = scorep_mpi_get_request_id();
         #else
                 // Implicit request may already have a valid matching id
@@ -762,7 +762,7 @@ MPI_Put( SCOREP_MPI_CONST_DECL void* origin_addr, int origin_count, MPI_Datatype
                  *    <attribute id="rma_explicit_handle">true</attribute>
                  */
         #if false // rma_explicit_handle
-                  // Both implicit _and_ explicit request tracking needed.
+                // Both implicit _and_ explicit request tracking needed.
 
                 // Start implicit request tracking
                 rma_request =
@@ -837,7 +837,7 @@ MPI_Raccumulate SCOREP_MPI_RACCUMULATE_PROTO_ARGS
                  *    <attribute id="rma_explicit_handle">true</attribute>
                  */
         #if true // is explicit request?
-                 // Explicit request always get a new matching id
+                // Explicit request always get a new matching id
                 matching_id = scorep_mpi_get_request_id();
         #else
                 // Implicit request may already have a valid matching id
@@ -883,7 +883,7 @@ MPI_Raccumulate SCOREP_MPI_RACCUMULATE_PROTO_ARGS
                  *    <attribute id="rma_explicit_handle">true</attribute>
                  */
         #if true // rma_explicit_handle
-                 // Both implicit _and_ explicit request tracking needed.
+                // Both implicit _and_ explicit request tracking needed.
 
                 // Start implicit request tracking
                 rma_request =
@@ -957,7 +957,7 @@ MPI_Rget( void* origin_addr, int origin_count, MPI_Datatype origin_datatype, int
                  *    <attribute id="rma_explicit_handle">true</attribute>
                  */
         #if true // is explicit request?
-                 // Explicit request always get a new matching id
+                // Explicit request always get a new matching id
                 matching_id = scorep_mpi_get_request_id();
         #else
                 // Implicit request may already have a valid matching id
@@ -1003,7 +1003,7 @@ MPI_Rget( void* origin_addr, int origin_count, MPI_Datatype origin_datatype, int
                  *    <attribute id="rma_explicit_handle">true</attribute>
                  */
         #if true // rma_explicit_handle
-                 // Both implicit _and_ explicit request tracking needed.
+                // Both implicit _and_ explicit request tracking needed.
 
                 // Start implicit request tracking
                 rma_request =
@@ -1077,7 +1077,7 @@ MPI_Rget_accumulate( SCOREP_MPI_CONST_DECL void* origin_addr, int origin_count, 
                  *    <attribute id="rma_explicit_handle">true</attribute>
                  */
         #if true // is explicit request?
-                 // Explicit request always get a new matching id
+                // Explicit request always get a new matching id
                 matching_id = scorep_mpi_get_request_id();
         #else
                 // Implicit request may already have a valid matching id
@@ -1123,7 +1123,7 @@ MPI_Rget_accumulate( SCOREP_MPI_CONST_DECL void* origin_addr, int origin_count, 
                  *    <attribute id="rma_explicit_handle">true</attribute>
                  */
         #if true // rma_explicit_handle
-                 // Both implicit _and_ explicit request tracking needed.
+                // Both implicit _and_ explicit request tracking needed.
 
                 // Start implicit request tracking
                 rma_request =
@@ -1200,7 +1200,7 @@ MPI_Rput( SCOREP_MPI_CONST_DECL void* origin_addr, int origin_count, MPI_Datatyp
                  *    <attribute id="rma_explicit_handle">true</attribute>
                  */
         #if true // is explicit request?
-                 // Explicit request always get a new matching id
+                // Explicit request always get a new matching id
                 matching_id = scorep_mpi_get_request_id();
         #else
                 // Implicit request may already have a valid matching id
@@ -1246,7 +1246,7 @@ MPI_Rput( SCOREP_MPI_CONST_DECL void* origin_addr, int origin_count, MPI_Datatyp
                  *    <attribute id="rma_explicit_handle">true</attribute>
                  */
         #if true // rma_explicit_handle
-                 // Both implicit _and_ explicit request tracking needed.
+                // Both implicit _and_ explicit request tracking needed.
 
                 // Start implicit request tracking
                 rma_request =

@@ -58,10 +58,11 @@ ${proto:c}
          if ( scorep_mpi_ltimer_enabled() )
          {
            scorep_mpi_ltimer_isend( dest, comm, scorep_req );
+           SCOREP_Timer_Subsystem_Logic_Event_Sync = true;
          }
       }
-
       SCOREP_ExitRegion(scorep_mpi_regions[SCOREP_MPI_REGION__${name|uppercase}]);
+      SCOREP_Timer_Subsystem_Logic_Event_Sync = false;
     }
     else if ( SCOREP_IsUnwindingEnabled() )
     {

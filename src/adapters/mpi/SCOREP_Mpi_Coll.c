@@ -136,13 +136,16 @@ MPI_Allgather( SCOREP_MPI_CONST_DECL void* sendbuf, int sendcount, MPI_Datatype 
             {
                 scorep_mpi_ltimer_allreduce( comm );
             }
+
             SCOREP_Timer_Subsystem_Logic_Event_Sync = true;
+
             SCOREP_MpiCollectiveEnd( SCOREP_MPI_COMM_HANDLE( comm ),
                                      root_loc,
                                      SCOREP_MPI_COLLECTIVE__MPI_ALLGATHER,
                                      sendbytes,
                                      recvbytes );
             SCOREP_ExitRegion( scorep_mpi_regions[ SCOREP_MPI_REGION__MPI_ALLGATHER ] );
+
             SCOREP_Timer_Subsystem_Logic_Event_Sync = false;
         }
         else if ( SCOREP_IsUnwindingEnabled() )
@@ -233,13 +236,16 @@ MPI_Allgatherv( SCOREP_MPI_CONST_DECL void* sendbuf, int sendcount, MPI_Datatype
             {
                 scorep_mpi_ltimer_allreduce( comm );
             }
+
             SCOREP_Timer_Subsystem_Logic_Event_Sync = true;
+
             SCOREP_MpiCollectiveEnd( SCOREP_MPI_COMM_HANDLE( comm ),
                                      root_loc,
                                      SCOREP_MPI_COLLECTIVE__MPI_ALLGATHERV,
                                      sendbytes,
                                      recvbytes );
             SCOREP_ExitRegion( scorep_mpi_regions[ SCOREP_MPI_REGION__MPI_ALLGATHERV ] );
+
             SCOREP_Timer_Subsystem_Logic_Event_Sync = false;
         }
         else if ( SCOREP_IsUnwindingEnabled() )
@@ -316,13 +322,16 @@ MPI_Allreduce( SCOREP_MPI_CONST_DECL void* sendbuf, void* recvbuf, int count, MP
             {
                 scorep_mpi_ltimer_allreduce( comm );
             }
+
             SCOREP_Timer_Subsystem_Logic_Event_Sync = true;
+
             SCOREP_MpiCollectiveEnd( SCOREP_MPI_COMM_HANDLE( comm ),
                                      root_loc,
                                      SCOREP_MPI_COLLECTIVE__MPI_ALLREDUCE,
                                      sendbytes,
                                      recvbytes );
             SCOREP_ExitRegion( scorep_mpi_regions[ SCOREP_MPI_REGION__MPI_ALLREDUCE ] );
+
             SCOREP_Timer_Subsystem_Logic_Event_Sync = false;
         }
         else if ( SCOREP_IsUnwindingEnabled() )
@@ -398,13 +407,16 @@ MPI_Alltoall( SCOREP_MPI_CONST_DECL void* sendbuf, int sendcount, MPI_Datatype s
             {
                 scorep_mpi_ltimer_allreduce( comm );
             }
+
             SCOREP_Timer_Subsystem_Logic_Event_Sync = true;
+
             SCOREP_MpiCollectiveEnd( SCOREP_MPI_COMM_HANDLE( comm ),
                                      root_loc,
                                      SCOREP_MPI_COLLECTIVE__MPI_ALLTOALL,
                                      sendbytes,
                                      recvbytes );
             SCOREP_ExitRegion( scorep_mpi_regions[ SCOREP_MPI_REGION__MPI_ALLTOALL ] );
+
             SCOREP_Timer_Subsystem_Logic_Event_Sync = false;
         }
         else if ( SCOREP_IsUnwindingEnabled() )
@@ -494,13 +506,16 @@ MPI_Alltoallv( SCOREP_MPI_CONST_DECL void* sendbuf, SCOREP_MPI_CONST_DECL int* s
             {
                 scorep_mpi_ltimer_allreduce( comm );
             }
+
             SCOREP_Timer_Subsystem_Logic_Event_Sync = true;
+
             SCOREP_MpiCollectiveEnd( SCOREP_MPI_COMM_HANDLE( comm ),
                                      root_loc,
                                      SCOREP_MPI_COLLECTIVE__MPI_ALLTOALLV,
                                      sendbytes,
                                      recvbytes );
             SCOREP_ExitRegion( scorep_mpi_regions[ SCOREP_MPI_REGION__MPI_ALLTOALLV ] );
+
             SCOREP_Timer_Subsystem_Logic_Event_Sync = false;
         }
         else if ( SCOREP_IsUnwindingEnabled() )
@@ -594,13 +609,16 @@ MPI_Alltoallw( SCOREP_MPI_CONST_DECL void* sendbuf, SCOREP_MPI_CONST_DECL int se
             {
                 scorep_mpi_ltimer_allreduce( comm );
             }
+
             SCOREP_Timer_Subsystem_Logic_Event_Sync = true;
+
             SCOREP_MpiCollectiveEnd( SCOREP_MPI_COMM_HANDLE( comm ),
                                      root_loc,
                                      SCOREP_MPI_COLLECTIVE__MPI_ALLTOALLW,
                                      sendbytes,
                                      recvbytes );
             SCOREP_ExitRegion( scorep_mpi_regions[ SCOREP_MPI_REGION__MPI_ALLTOALLW ] );
+
             SCOREP_Timer_Subsystem_Logic_Event_Sync = false;
         }
         else if ( SCOREP_IsUnwindingEnabled() )
@@ -660,16 +678,17 @@ MPI_Barrier( MPI_Comm comm )
             {
                 scorep_mpi_ltimer_allreduce( comm );
             }
+
             SCOREP_Timer_Subsystem_Logic_Event_Sync = true;
+
             SCOREP_MpiCollectiveEnd( SCOREP_MPI_COMM_HANDLE( comm ),
                                      root_loc,
                                      SCOREP_MPI_COLLECTIVE__MPI_BARRIER,
                                      0,
                                      0 );
-
             SCOREP_ExitRegion( scorep_mpi_regions[ SCOREP_MPI_REGION__MPI_BARRIER ] );
-            SCOREP_Timer_Subsystem_Logic_Event_Sync = false;
 
+            SCOREP_Timer_Subsystem_Logic_Event_Sync = false;
         }
         else if ( SCOREP_IsUnwindingEnabled() )
         {
@@ -747,13 +766,16 @@ MPI_Bcast( void* buffer, int count, MPI_Datatype datatype, int root, MPI_Comm co
             {
                 scorep_mpi_ltimer_bcast( root, comm );
             }
+
             SCOREP_Timer_Subsystem_Logic_Event_Sync = true;
+
             SCOREP_MpiCollectiveEnd( SCOREP_MPI_COMM_HANDLE( comm ),
                                      root_loc,
                                      SCOREP_MPI_COLLECTIVE__MPI_BCAST,
                                      sendbytes,
                                      recvbytes );
             SCOREP_ExitRegion( scorep_mpi_regions[ SCOREP_MPI_REGION__MPI_BCAST ] );
+
             SCOREP_Timer_Subsystem_Logic_Event_Sync = false;
         }
         else if ( SCOREP_IsUnwindingEnabled() )
@@ -821,12 +843,16 @@ MPI_Exscan( SCOREP_MPI_CONST_DECL void* sendbuf, void* recvbuf, int count, MPI_D
     {
         if ( event_gen_active_for_group )
         {
+            SCOREP_Timer_Subsystem_Logic_Event_Sync = true;
+
             SCOREP_MpiCollectiveEnd( SCOREP_MPI_COMM_HANDLE( comm ),
                                      root_loc,
                                      SCOREP_MPI_COLLECTIVE__MPI_EXSCAN,
                                      sendbytes,
                                      recvbytes );
             SCOREP_ExitRegion( scorep_mpi_regions[ SCOREP_MPI_REGION__MPI_EXSCAN ] );
+
+            SCOREP_Timer_Subsystem_Logic_Event_Sync = false;
         }
         else if ( SCOREP_IsUnwindingEnabled() )
         {
@@ -909,13 +935,16 @@ MPI_Gather( SCOREP_MPI_CONST_DECL void* sendbuf, int sendcount, MPI_Datatype sen
             {
                 scorep_mpi_ltimer_reduce( root, comm );
             }
+
             SCOREP_Timer_Subsystem_Logic_Event_Sync = true;
+
             SCOREP_MpiCollectiveEnd( SCOREP_MPI_COMM_HANDLE( comm ),
                                      root_loc,
                                      SCOREP_MPI_COLLECTIVE__MPI_GATHER,
                                      sendbytes,
                                      recvbytes );
             SCOREP_ExitRegion( scorep_mpi_regions[ SCOREP_MPI_REGION__MPI_GATHER ] );
+
             SCOREP_Timer_Subsystem_Logic_Event_Sync = false;
         }
         else if ( SCOREP_IsUnwindingEnabled() )
@@ -1004,13 +1033,16 @@ MPI_Gatherv( SCOREP_MPI_CONST_DECL void* sendbuf, int sendcount, MPI_Datatype se
             {
                 scorep_mpi_ltimer_reduce( root, comm );
             }
+
             SCOREP_Timer_Subsystem_Logic_Event_Sync = true;
+
             SCOREP_MpiCollectiveEnd( SCOREP_MPI_COMM_HANDLE( comm ),
                                      root_loc,
                                      SCOREP_MPI_COLLECTIVE__MPI_GATHERV,
                                      sendbytes,
                                      recvbytes );
             SCOREP_ExitRegion( scorep_mpi_regions[ SCOREP_MPI_REGION__MPI_GATHERV ] );
+
             SCOREP_Timer_Subsystem_Logic_Event_Sync = false;
         }
         else if ( SCOREP_IsUnwindingEnabled() )
@@ -1093,13 +1125,16 @@ MPI_Reduce( SCOREP_MPI_CONST_DECL void* sendbuf, void* recvbuf, int count, MPI_D
             {
                 scorep_mpi_ltimer_reduce( root, comm );
             }
+
             SCOREP_Timer_Subsystem_Logic_Event_Sync = true;
+
             SCOREP_MpiCollectiveEnd( SCOREP_MPI_COMM_HANDLE( comm ),
                                      root_loc,
                                      SCOREP_MPI_COLLECTIVE__MPI_REDUCE,
                                      sendbytes,
                                      recvbytes );
             SCOREP_ExitRegion( scorep_mpi_regions[ SCOREP_MPI_REGION__MPI_REDUCE ] );
+
             SCOREP_Timer_Subsystem_Logic_Event_Sync = false;
         }
         else if ( SCOREP_IsUnwindingEnabled() )
@@ -1184,13 +1219,16 @@ MPI_Reduce_scatter( SCOREP_MPI_CONST_DECL void* sendbuf, void* recvbuf, SCOREP_M
             {
                 scorep_mpi_ltimer_allreduce( comm );
             }
+
             SCOREP_Timer_Subsystem_Logic_Event_Sync = true;
+
             SCOREP_MpiCollectiveEnd( SCOREP_MPI_COMM_HANDLE( comm ),
                                      root_loc,
                                      SCOREP_MPI_COLLECTIVE__MPI_REDUCE_SCATTER,
                                      sendbytes,
                                      recvbytes );
             SCOREP_ExitRegion( scorep_mpi_regions[ SCOREP_MPI_REGION__MPI_REDUCE_SCATTER ] );
+
             SCOREP_Timer_Subsystem_Logic_Event_Sync = false;
         }
         else if ( SCOREP_IsUnwindingEnabled() )
@@ -1266,13 +1304,16 @@ MPI_Reduce_scatter_block( SCOREP_MPI_CONST_DECL void* sendbuf, void* recvbuf, in
             {
                 scorep_mpi_ltimer_allreduce( comm );
             }
+
             SCOREP_Timer_Subsystem_Logic_Event_Sync = true;
+
             SCOREP_MpiCollectiveEnd( SCOREP_MPI_COMM_HANDLE( comm ),
                                      root_loc,
                                      SCOREP_MPI_COLLECTIVE__MPI_REDUCE_SCATTER_BLOCK,
                                      sendbytes,
                                      recvbytes );
             SCOREP_ExitRegion( scorep_mpi_regions[ SCOREP_MPI_REGION__MPI_REDUCE_SCATTER_BLOCK ] );
+
             SCOREP_Timer_Subsystem_Logic_Event_Sync = false;
         }
         else if ( SCOREP_IsUnwindingEnabled() )
@@ -1348,12 +1389,16 @@ MPI_Scan( SCOREP_MPI_CONST_DECL void* sendbuf, void* recvbuf, int count, MPI_Dat
     {
         if ( event_gen_active_for_group )
         {
+            SCOREP_Timer_Subsystem_Logic_Event_Sync = true;
+
             SCOREP_MpiCollectiveEnd( SCOREP_MPI_COMM_HANDLE( comm ),
                                      root_loc,
                                      SCOREP_MPI_COLLECTIVE__MPI_SCAN,
                                      sendbytes,
                                      recvbytes );
             SCOREP_ExitRegion( scorep_mpi_regions[ SCOREP_MPI_REGION__MPI_SCAN ] );
+
+            SCOREP_Timer_Subsystem_Logic_Event_Sync = false;
         }
         else if ( SCOREP_IsUnwindingEnabled() )
         {
@@ -1439,13 +1484,16 @@ MPI_Scatter( SCOREP_MPI_CONST_DECL void* sendbuf, int sendcount, MPI_Datatype se
             {
                 scorep_mpi_ltimer_bcast( root, comm );
             }
+
             SCOREP_Timer_Subsystem_Logic_Event_Sync = true;
+
             SCOREP_MpiCollectiveEnd( SCOREP_MPI_COMM_HANDLE( comm ),
                                      root_loc,
                                      SCOREP_MPI_COLLECTIVE__MPI_SCATTER,
                                      sendbytes,
                                      recvbytes );
             SCOREP_ExitRegion( scorep_mpi_regions[ SCOREP_MPI_REGION__MPI_SCATTER ] );
+
             SCOREP_Timer_Subsystem_Logic_Event_Sync = false;
         }
         else if ( SCOREP_IsUnwindingEnabled() )
@@ -1535,13 +1583,16 @@ MPI_Scatterv( SCOREP_MPI_CONST_DECL void* sendbuf, SCOREP_MPI_CONST_DECL int* se
             {
                 scorep_mpi_ltimer_bcast( root, comm );
             }
+
             SCOREP_Timer_Subsystem_Logic_Event_Sync = true;
+
             SCOREP_MpiCollectiveEnd( SCOREP_MPI_COMM_HANDLE( comm ),
                                      root_loc,
                                      SCOREP_MPI_COLLECTIVE__MPI_SCATTERV,
                                      sendbytes,
                                      recvbytes );
             SCOREP_ExitRegion( scorep_mpi_regions[ SCOREP_MPI_REGION__MPI_SCATTERV ] );
+
             SCOREP_Timer_Subsystem_Logic_Event_Sync = false;
         }
         else if ( SCOREP_IsUnwindingEnabled() )

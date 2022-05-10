@@ -65,6 +65,9 @@
 #include <SCOREP_InMeasurement.h>
 #include <SCOREP_Events.h>
 
+
+extern bool SCOREP_Timer_Subsystem_Logic_Event_Sync;
+
 /**
  * @name Blocking
  * @{
@@ -135,6 +138,7 @@ int MPI_Recv( void* buf,
          * This currently leads to a deadlock/indefinetly waiting program
          * when an MPI_Recv is used in combination with an MPI_Isend
          */
+        SCOREP_Timer_Subsystem_Logic_Event_Sync = true;
       }
       if (source != MPI_PROC_NULL && return_val == MPI_SUCCESS)
       {
@@ -145,6 +149,7 @@ int MPI_Recv( void* buf,
       }
 
       SCOREP_ExitRegion(scorep_mpi_regions[SCOREP_MPI_REGION__MPI_RECV]);
+      SCOREP_Timer_Subsystem_Logic_Event_Sync = false;
     }
     else if ( SCOREP_IsUnwindingEnabled() )
     {
@@ -237,6 +242,7 @@ int MPI_Irecv(void* buf,
     if ( scorep_mpi_ltimer_enabled() )
     {
       scorep_mpi_ltimer_irecv( source, comm, scorep_req );
+      SCOREP_Timer_Subsystem_Logic_Event_Sync = true;
     }
   }
 
@@ -245,6 +251,7 @@ int MPI_Irecv(void* buf,
     if (event_gen_active_for_group)
     {
       SCOREP_ExitRegion(scorep_mpi_regions[SCOREP_MPI_REGION__MPI_IRECV]);
+      SCOREP_Timer_Subsystem_Logic_Event_Sync = false;
     }
     else if ( SCOREP_IsUnwindingEnabled() )
     {
