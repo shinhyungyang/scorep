@@ -3,7 +3,7 @@ dnl -*- mode: autoconf -*-
 dnl
 dnl This file is part of the Score-P software (http://www.score-p.org)
 dnl
-dnl Copyright (c) 2016-2017, 2023,
+dnl Copyright (c) 2016-2017, 2023, 2025,
 dnl Technische Universitaet Dresden, Germany
 dnl
 dnl Copyright (c) 2022,
@@ -30,11 +30,11 @@ AFS_SUMMARY_PUSH
 scorep_memory_support="yes"
 scorep_memory_summary_reason=
 
-# check linktime wrapping support
-AM_COND_IF([HAVE_LIBWRAP_LINKTIME_SUPPORT],
+# check runtime wrapping support
+AM_COND_IF([HAVE_LIBWRAP_RUNTIME_SUPPORT],
            [],
            [scorep_memory_support="no"
-            AS_VAR_APPEND([scorep_memory_summary_reason], [", missing linktime library wrapping support"])])
+            AS_VAR_APPEND([scorep_memory_summary_reason], [", missing runtime library wrapping support"])])
 
 # check result of TLS
 AS_IF([test "x${scorep_memory_support}" = "xyes"],

@@ -1,7 +1,7 @@
 /**
  * This file is part of the Score-P software (http://www.score-p.org)
  *
- * Copyright (c) 2016-2017,
+ * Copyright (c) 2016-2017, 2025,
  * Technische Universitaet Dresden, Germany
  *
  * Copyright (c) 2016,
@@ -32,6 +32,7 @@
 #include <SCOREP_Paradigms.h>
 #include <SCOREP_Definitions.h>
 #include <SCOREP_AllocMetric.h>
+#include <scorep/SCOREP_Libwrap.h>
 
 #define SCOREP_DEBUG_MODULE_NAME MEMORY
 #include <UTILS_Debug.h>
@@ -43,15 +44,37 @@
 
 #include "scorep_memory_confvars.inc.c"
 
+/* This symbol is used in the instrumentation checker */
+SCOREP_RegionHandle scorep_memory_regions[ SCOREP_MEMORY_REGION_SENTINEL ];
+
+#define SCOREP_MEMORY_WRAPPER( RET, NAME, ARGS ) \
+    SCOREP_LIBWRAP_DEFINE_REAL_FUNC( ( RET ), NAME, ARGS );
+#include "scorep_memory_wrappers.inc.c"
 
 /* *INDENT-OFF* */
-static void register_memory_regions( void );
+static void enable_memory_wrappers( void );
 /* *INDENT-ON* */
 
 static size_t memory_subsystem_id;
 
-SCOREP_AllocMetric* scorep_memory_metric = NULL;
+static const char* wrapped_lib_name[] =
+{
+    "libc.so",
+    "memkind.so"
+};
+static SCOREP_LibwrapHandle*          memory_libwrap_handle;
+static const SCOREP_LibwrapAttributes memory_libwrap_attributes =
+{
+    SCOREP_LIBWRAP_VERSION,
+    "memory",                                                     /* name of the library wrapper */
+    "Memory Tracking",
+    SCOREP_LIBWRAP_MODE,                                          /* libwrap mode */
+    NULL,
+    sizeof( wrapped_lib_name ) / sizeof( wrapped_lib_name[ 0 ] ), /* number of wrapped libraries */
+    wrapped_lib_name                                              /* name of wrapped library */
+};
 
+SCOREP_AllocMetric* scorep_memory_metric = NULL;
 
 static SCOREP_ErrorCode
 memory_subsystem_register( size_t subsystemId )
@@ -71,7 +94,7 @@ memory_subsystem_init( void )
 
     if ( scorep_memory_recording || SCOREP_IsUnwindingEnabled() )
     {
-        register_memory_regions();
+        enable_memory_wrappers();
     }
 
     if ( scorep_memory_recording )
@@ -112,12 +135,12 @@ memory_subsystem_finalize( void )
 }
 
 
-/* this symbol is used in the instrumentation checker */
-SCOREP_RegionHandle scorep_memory_regions[ SCOREP_MEMORY_REGION_SENTINEL ];
-
-static void
-register_memory_regions( void )
+void
+enable_memory_wrappers( void )
 {
+    SCOREP_Libwrap_Create( &memory_libwrap_handle,
+                           &memory_libwrap_attributes );
+
 #define SCOREP_MEMORY_REGION( NAME, TYPE, name ) \
     scorep_memory_regions[ SCOREP_MEMORY_ ## NAME ] = \
         SCOREP_Definitions_NewRegion( name, \
@@ -128,6 +151,12 @@ register_memory_regions( void )
                                       SCOREP_PARADIGM_MEMORY, \
                                       SCOREP_REGION_ ## TYPE );
     SCOREP_MEMORY_REGIONS
+
+#define SCOREP_MEMORY_WRAPPER( RET, NAME, ARGS ) \
+    SCOREP_Libwrap_SharedPtrInit( memory_libwrap_handle, \
+                                  #NAME, \
+                                  ( void** )( &SCOREP_LIBWRAP_FUNC_REAL_NAME( NAME ) ) );
+#include "scorep_memory_wrappers.inc.c"
 }
 
 

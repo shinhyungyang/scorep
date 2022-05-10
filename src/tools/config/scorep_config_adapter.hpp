@@ -491,18 +491,6 @@ public:
 
     bool
     checkArgument( const std::string& arg ) override;
-
-    void
-    addLibs( std::deque<std::string>&           libs,
-             SCOREP_Config_LibraryDependencies& deps ) override;
-
-    void
-    addLdFlags( std::string& ldflags,
-                bool         build_check,
-                bool         nvcc ) override;
-
-private:
-    std::set<std::string> m_categories;
 };
 
 /* **************************************************************************************

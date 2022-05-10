@@ -1,7 +1,7 @@
 /*
  * This file is part of the Score-P software (http://www.score-p.org)
  *
- * Copyright (c) 2016, 2019,
+ * Copyright (c) 2016, 2019, 2025,
  * Technische Universitaet Dresden, Germany
  *
  * Copyright (c) 2017,
@@ -28,7 +28,14 @@
 #include <stdlib.h>
 #include <stdbool.h>
 
-#define SCOREP_MEMORY_REGIONS                            \
+
+#define SCOREP_LIBWRAP_FUNC_REAL_NAME( func ) \
+    scorep_memory_funcptr__ ## func
+
+#include <scorep/SCOREP_Libwrap_Macros.h>
+
+
+#define SCOREP_MEMORY_REGIONS \
     SCOREP_MEMORY_REGION( MALLOC,                   ALLOCATE,   "malloc" ) \
     SCOREP_MEMORY_REGION( REALLOC,                  REALLOCATE, "realloc" ) \
     SCOREP_MEMORY_REGION( CALLOC,                   ALLOCATE,   "calloc" ) \
@@ -63,11 +70,19 @@ typedef enum scorep_memory_region_types
 
 extern SCOREP_RegionHandle scorep_memory_regions[ SCOREP_MEMORY_REGION_SENTINEL ];
 
+
+#define SCOREP_MEMORY_WRAPPER( RET, NAME, ARGS ) \
+    SCOREP_LIBWRAP_DECLARE_REAL_FUNC( ( RET ), NAME, ARGS );
+#include "scorep_memory_wrappers.inc.c"
+
+
 /**
  * Recording requested by the user.
  */
 extern bool scorep_memory_recording;
 
+
 extern SCOREP_AllocMetric* scorep_memory_metric;
+
 
 #endif /* SCOREP_MEMORY_MGMT_H */

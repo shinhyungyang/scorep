@@ -31,6 +31,7 @@
 /src/adapters/io/posix/scorep_posix_io_function_list.inc.c -hook-config
 /src/adapters/kokkos/scorep_kokkos_confvars.inc.c -hook-config
 /src/adapters/memory/scorep_memory_confvars.inc.c -hook-config
+/src/adapters/memory/scorep_memory_wrappers.inc.c -hook-beautifier -hook-config
 /src/adapters/mpi/scorep_mpi_confvars.inc.c -hook-config
 /src/adapters/ompt/scorep_ompt_debug.inc.c -hook-config
 /src/adapters/ompt/scorep_ompt_events_device.inc.c -hook-config

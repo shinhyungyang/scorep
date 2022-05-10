@@ -1,7 +1,7 @@
 /*
  * This file is part of the Score-P software (http://www.score-p.org)
  *
- * Copyright (c) 2016-2017, 2022,
+ * Copyright (c) 2016-2017, 2022, 2025,
  * Technische Universitaet Dresden, Germany
  *
  * This software may be modified and distributed under the terms of
@@ -42,14 +42,8 @@ public:
     getConfigToolFlag( SCOREP_Instrumenter_CmdLine& cmdLine,
                        const std::string&           inputFile ) override;
 
-    void
-    checkObjects( SCOREP_Instrumenter& instrumenter ) override;
-
     bool
     isInterpositionLibrary( const std::string& libraryName ) override;
-
-private:
-    std::set<std::string> m_categories;
 };
 
 #endif // SCOREP_INSTRUMENTER_MEMORY_HPP

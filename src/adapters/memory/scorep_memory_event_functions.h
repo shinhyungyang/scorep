@@ -1,7 +1,7 @@
 /**
  * This file is part of the Score-P software (http://www.score-p.org)
  *
- * Copyright (c) 2016-2017, 2019,
+ * Copyright (c) 2016-2017, 2019, 2025,
  * Technische Universitaet Dresden, Germany
  *
  * Copyright (c) 2016-2017,
@@ -23,126 +23,12 @@
 
 #include "scorep_memory_mgmt.h"
 #include "scorep_memory_attributes.h"
-#include <scorep/SCOREP_Libwrap_Macros.h>
+
 #include <SCOREP_InMeasurement.h>
 #include <SCOREP_RuntimeManagement.h>
 
 #define SCOREP_DEBUG_MODULE_NAME MEMORY
 #include <UTILS_Debug.h>
-
-void*
-__real_malloc( size_t size );
-
-void
-__real_free( void* ptr );
-
-void*
-__real_calloc( size_t nmemb,
-               size_t size );
-
-void*
-__real_realloc( void*  ptr,
-                size_t size );
-
-void*
-__real_memalign( size_t alignment,
-                 size_t size );
-
-int
-__real_posix_memalign( void** ptr,
-                       size_t alignment,
-                       size_t size );
-
-void*
-__real_valloc( size_t size );
-
-void*
-__real_aligned_alloc( size_t alignment,
-                      size_t size );
-
-/* allocation functions of hbwmalloc hbw_* */
-void*
-__real_hbw_malloc( size_t size );
-
-void
-__real_hbw_free( void* ptr );
-
-void*
-__real_hbw_calloc( size_t nmemb,
-                   size_t size );
-
-void*
-__real_hbw_realloc( void*  ptr,
-                    size_t size );
-
-int
-__real_hbw_posix_memalign( void** ptr,
-                           size_t alignment,
-                           size_t size );
-
-int
-__real_hbw_posix_memalign_psize( void** ptr,
-                                 size_t alignment,
-                                 size_t size,
-                                 int    pagesize );
-
-/* Declaration of the mangled real functions new and delete */
-
-void*
-__real__Znwm( size_t size );
-
-void*
-__real__Znwj( size_t size );
-
-void
-__real__ZdlPv( void* ptr );
-
-void
-__real__ZdlPvm( void*  ptr,
-                size_t size );
-
-void
-__real__ZdlPvj( void*  ptr,
-                size_t size );
-
-void*
-__real__Znam( size_t size );
-
-void*
-__real__Znaj( size_t size );
-
-void
-__real__ZdaPv( void* ptr );
-
-void
-__real__ZdaPvm( void*  ptr,
-                size_t size );
-
-void
-__real__ZdaPvj( void*  ptr,
-                size_t size );
-
-
-/* Declaration of the mangled real functions new and delete (old PGI/EDG C++ ABI) */
-
-void*
-__real___nw__FUi( size_t size );
-
-void*
-__real___nw__FUl( size_t size );
-
-void
-__real___dl__FPv( void* ptr );
-
-void*
-__real___nwa__FUi( size_t size );
-
-void*
-__real___nwa__FUl( size_t size );
-
-void
-__real___dla__FPv( void* ptr );
-
 
 /* *INDENT-OFF* */
 #define SCOREP_MEMORY_WRAP_MALLOC( FUNCTION, REGION ) \
