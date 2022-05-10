@@ -1,7 +1,7 @@
 /*
  * This file is part of the Score-P software (http://www.score-p.org)
  *
- * Copyright (c) 2016,
+ * Copyright (c) 2016, 2025,
  * Technische Universitaet Dresden, Germany
  *
  * This software may be modified and distributed under the terms of
@@ -24,8 +24,6 @@
 
 #include <SCOREP_Config.h>
 #include <SCOREP_Subsystem.h>
-
-#include "scorep_memory_mgmt.h"
 
 #include "scorep_memory_confvars.inc.c"
 

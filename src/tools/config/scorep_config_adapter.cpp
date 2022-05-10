@@ -850,22 +850,18 @@ SCOREP_Config_MemoryAdapter::SCOREP_Config_MemoryAdapter()
 void
 SCOREP_Config_MemoryAdapter::printHelp( void )
 {
-    std::cout << "   --" << m_name << "=<api list>|--no" << m_name << "\n"
+    std::cout << "   --" << m_name << "|--no" << m_name << "\n"
               << "              Specifies whether memory usage recording is used.\n"
-              << "              On default memory usage recording is " \
-              << ( m_is_enabled ? "enabled" : "disabled" ) << ".\n"
+              << "              On default memory instrumentation is enabled.\n"
               << "              The following memory interfaces may be recorded:\n"
-              << "               libc:\n"
-              << "                malloc,realloc,calloc,free,memalign,posix_memalign,valloc\n"
-              << "               libc11:\n"
+              << "               ISO C:\n"
+              << "                malloc,realloc,calloc,free,memalign,posix_memalign,valloc,\n"
               << "                aligned_alloc\n"
-              << "               c++L32|c++L64:\n"
-              << "                new,new[],delete,delete[] (IA-64 C++ ABI)\n"
-              << "               pgCCL32|pgCCL64:\n"
-              << "                new,new[],delete,delete[] (old PGI/EDG C++ ABI)\n"
-              << "               hbwmalloc:\n"
+              << "               ISO C++:\n"
+              << "                new,new[],delete,delete[]\n"
+              << "               Intel KNL MCDRAM API:\n"
               << "                hbw_malloc,hbw_realloc,hbw_calloc,hbw_free,hbw_posix_memalign,\n"
-              << "                hbw_posix_memalign_psize (Intel KNL MCDRAM API)\n";
+              << "                hbw_posix_memalign_psize\n";
 }
 
 bool
@@ -877,189 +873,12 @@ SCOREP_Config_MemoryAdapter::checkArgument( const std::string& arg )
         return true;
     }
 
-    if ( arg.substr( 0, 9 ) == ( "--" + m_name + "=" ) )
-    {
-        m_is_enabled = true;
-        std::deque<std::string> categories = string_to_deque( arg.substr( 9 ), "," );
-        m_categories.insert( categories.begin(), categories.end() );
-        return true;
-    }
-
     if ( arg == "--no" + m_name )
     {
         m_is_enabled = false;
         return true;
     }
     return false;
-}
-
-void
-SCOREP_Config_MemoryAdapter::addLibs( std::deque<std::string>&           libs,
-                                      SCOREP_Config_LibraryDependencies& deps )
-{
-    size_t n_libs = libs.size();
-    if ( m_categories.count( "libc" ) )
-    {
-        libs.push_back( "lib" + m_library + "_event_libc" );
-    }
-
-    if ( m_categories.count( "libc11" ) )
-    {
-        libs.push_back( "lib" + m_library + "_event_libc11" );
-    }
-
-    if ( m_categories.count( "c++L32" ) || m_categories.count( "c++L64" ) )
-    {
-        libs.push_back( "lib" + m_library + "_event_cxx" );
-    }
-
-    if ( m_categories.count( "c++L32" ) )
-    {
-        libs.push_back( "lib" + m_library + "_event_cxx_L32" );
-    }
-
-    if ( m_categories.count( "c++L64" ) )
-    {
-        libs.push_back( "lib" + m_library + "_event_cxx_L64" );
-    }
-
-    if ( m_categories.count( "c++14L32" ) )
-    {
-        libs.push_back( "lib" + m_library + "_event_cxx14_L32" );
-    }
-
-    if ( m_categories.count( "c++14L64" ) )
-    {
-        libs.push_back( "lib" + m_library + "_event_cxx14_L64" );
-    }
-
-    if ( m_categories.count( "pgCCL32" ) || m_categories.count( "pgCCL64" ) )
-    {
-        libs.push_back( "lib" + m_library + "_event_pgCC" );
-    }
-
-    if ( m_categories.count( "pgCCL32" ) )
-    {
-        libs.push_back( "lib" + m_library + "_event_pgCC_L32" );
-    }
-
-    if ( m_categories.count( "pgCCL64" ) )
-    {
-        libs.push_back( "lib" + m_library + "_event_pgCC_L64" );
-    }
-
-    if ( m_categories.count( "hbwmalloc" ) )
-    {
-        libs.push_back( "lib" + m_library + "_event_hbwmalloc" );
-    }
-
-    if ( libs.size() > n_libs )
-    {
-        deps.addDependency( libs.back(), "libscorep_measurement" );
-        deps.addDependency( "libscorep_measurement", "lib" + m_library + "_mgmt" );
-    }
-}
-
-void
-SCOREP_Config_MemoryAdapter::addLdFlags( std::string& ldflags,
-                                         bool         build_check,
-                                         bool         nvcc )
-{
-    if ( m_categories.count( "libc" ) )
-    {
-        ldflags += " -Wl,"
-                   "--undefined,__wrap_malloc,"
-                   "-wrap,malloc,"
-                   "-wrap,realloc,"
-                   "-wrap,calloc,"
-                   "-wrap,free,"
-                   "-wrap,memalign,"
-                   "-wrap,posix_memalign,"
-                   "-wrap,valloc";
-    }
-
-    if ( m_categories.count( "libc11" ) )
-    {
-        ldflags += " -Wl,"
-                   "--undefined,__wrap_aligned_alloc,"
-                   "-wrap,aligned_alloc";
-    }
-
-    if ( m_categories.count( "c++L32" ) || m_categories.count( "c++L64" ) )
-    {
-        ldflags += " -Wl,"
-                   "--undefined,__wrap__ZdlPv,"
-                   "-wrap,_ZdlPv,"
-                   "-wrap,_ZdaPv";
-    }
-
-    if ( m_categories.count( "c++L32" ) )
-    {
-        ldflags += " -Wl,"
-                   "--undefined,__wrap__Znwj,"
-                   "-wrap,_Znwj,"
-                   "-wrap,_Znaj";
-    }
-
-    if ( m_categories.count( "c++L64" ) )
-    {
-        ldflags += " -Wl,"
-                   "--undefined,__wrap__Znwm,"
-                   "-wrap,_Znwm,"
-                   "-wrap,_Znam";
-    }
-
-    if ( m_categories.count( "c++14L32" ) )
-    {
-        ldflags += " -Wl,"
-                   "--undefined,__wrap__ZdlPvj,"
-                   "-wrap,_ZdlPvj,"
-                   "-wrap,_ZdaPvj";
-    }
-
-    if ( m_categories.count( "c++14L64" ) )
-    {
-        ldflags += " -Wl,"
-                   "--undefined,__wrap__ZdlPvm,"
-                   "-wrap,_ZdlPvm,"
-                   "-wrap,_ZdaPvm";
-    }
-
-    if ( m_categories.count( "pgCCL32" ) || m_categories.count( "pgCCL64" ) )
-    {
-        ldflags += " -Wl,"
-                   "--undefined,__wrap___dl__FPv,"
-                   "-wrap,__dl__FPv,"
-                   "-wrap,__dla__FPv";
-    }
-
-    if ( m_categories.count( "pgCCL32" ) )
-    {
-        ldflags += " -Wl,"
-                   "--undefined,__wrap___nw__FUi,"
-                   "-wrap,__nw__FUi,"
-                   "-wrap,__nwa__FUi";
-    }
-
-    if ( m_categories.count( "pgCCL64" ) )
-    {
-        ldflags += " -Wl,"
-                   "--undefined,__wrap___nw__FUl,"
-                   "-wrap,__nw__FUl,"
-                   "-wrap,__nwa__FUl";
-    }
-
-    if ( m_categories.count( "hbwmalloc" ) )
-    {
-        ldflags += " -Wl,"
-                   "--undefined,__wrap_hbw_malloc,"
-                   "-wrap,hbw_malloc,"
-                   "-wrap,hbw_realloc,"
-                   "-wrap,hbw_calloc,"
-                   "-wrap,hbw_free,"
-                   "-wrap,hbw_posix_memalign,"
-                   "-wrap,hbw_posix_memalign_psize";
-    }
 }
 
 /* **************************************************************************************

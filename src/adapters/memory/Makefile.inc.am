@@ -1,7 +1,7 @@
 ##
 ## This file is part of the Score-P software (http://www.score-p.org)
 ##
-## Copyright (c) 2016, 2019,
+## Copyright (c) 2016, 2019, 2025,
 ## Technische Universitaet Dresden, Germany
 ##
 ## Copyright (c) 2016-2017, 2023,
@@ -31,13 +31,15 @@ libscorep_adapter_memory_mgmt_la_CFLAGS = \
     $(AM_CFLAGS)
 
 libscorep_adapter_memory_mgmt_la_CPPFLAGS = \
-    $(AM_CPPFLAGS)                           \
-    -I$(PUBLIC_INC_DIR)                      \
-    -I$(INC_ROOT)src/measurement/include     \
-    -I$(INC_DIR_COMMON_HASH)                 \
-    $(UTILS_CPPFLAGS)                        \
-    -I$(INC_DIR_DEFINITIONS)                 \
-    -I$(INC_DIR_SUBSTRATES)
+    $(AM_CPPFLAGS)                          \
+    -I$(PUBLIC_INC_DIR)                     \
+    -I$(INC_DIR_MEASUREMENT)                \
+    -I$(INC_DIR_COMMON_HASH)                \
+    $(UTILS_CPPFLAGS)                       \
+    -DSCOREP_LIBWRAP_SHARED                 \
+    -I$(INC_DIR_DEFINITIONS)                \
+    -I$(INC_DIR_SUBSTRATES)                 \
+    -I$(INC_DIR_SERVICES)
 
 libscorep_adapter_memory_mgmt_la_LIBADD = \
     libscorep_alloc_metric.la
@@ -45,257 +47,35 @@ libscorep_adapter_memory_mgmt_la_LIBADD = \
 libscorep_adapter_memory_mgmt_la_LDFLAGS = \
     $(library_api_version_ldflags)
 
-# event library for hbwmalloc.h (INTEL KNL) allocation routines
+# event library for the memory adapter
 
-lib_LTLIBRARIES += libscorep_adapter_memory_event_hbwmalloc.la
+lib_LTLIBRARIES += libscorep_adapter_memory_event.la
 
-libscorep_adapter_memory_event_hbwmalloc_la_SOURCES = \
+libscorep_adapter_memory_event_la_SOURCES = \
+    $(SRC_ROOT)src/adapters/memory/scorep_memory_event_libc.c \
+    $(SRC_ROOT)src/adapters/memory/scorep_memory_event_libc11.c \
+    $(SRC_ROOT)src/adapters/memory/scorep_memory_event_cxx.c \
+    $(SRC_ROOT)src/adapters/memory/scorep_memory_event_cxx_L32.c \
+    $(SRC_ROOT)src/adapters/memory/scorep_memory_event_cxx_L64.c \
+    $(SRC_ROOT)src/adapters/memory/scorep_memory_event_cxx14_L32.c \
+    $(SRC_ROOT)src/adapters/memory/scorep_memory_event_cxx14_L64.c \
+    $(SRC_ROOT)src/adapters/memory/scorep_memory_event_pgCC.c \
+    $(SRC_ROOT)src/adapters/memory/scorep_memory_event_pgCC_L32.c \
+    $(SRC_ROOT)src/adapters/memory/scorep_memory_event_pgCC_L64.c \
     $(SRC_ROOT)src/adapters/memory/scorep_memory_event_hbwmalloc.c
 
-libscorep_adapter_memory_event_hbwmalloc_la_CPPFLAGS =  \
+libscorep_adapter_memory_event_la_CPPFLAGS =  \
     $(AM_CPPFLAGS)                            \
     -I$(PUBLIC_INC_DIR)                       \
     -I$(INC_ROOT)src/measurement/include      \
     $(UTILS_CPPFLAGS)                         \
-    -DSCOREP_LIBWRAP_STATIC                   \
+    -DSCOREP_LIBWRAP_SHARED                   \
     -I$(INC_DIR_DEFINITIONS)
 
-libscorep_adapter_memory_event_hbwmalloc_la_LIBADD = \
-    libscorep_alloc_metric.la
-
-libscorep_adapter_memory_event_hbwmalloc_la_LDFLAGS = \
-    $(library_api_version_ldflags) \
-    -Wl,-wrap,hbw_malloc,-wrap,hbw_realloc,-wrap,hbw_calloc \
-    -Wl,-wrap,hbw_free,-wrap,hbw_posix_memalign,-wrap,hbw_posix_memalign_psize
-
-
-
-# event library for libc allocation routines
-
-lib_LTLIBRARIES += libscorep_adapter_memory_event_libc.la
-
-libscorep_adapter_memory_event_libc_la_SOURCES = \
-    $(SRC_ROOT)src/adapters/memory/scorep_memory_event_libc.c
-
-libscorep_adapter_memory_event_libc_la_CPPFLAGS =  \
-    $(AM_CPPFLAGS)                            \
-    -I$(PUBLIC_INC_DIR)                       \
-    -I$(INC_ROOT)src/measurement/include      \
-    $(UTILS_CPPFLAGS)                         \
-    -DSCOREP_LIBWRAP_STATIC                   \
-    -I$(INC_DIR_DEFINITIONS)
-
-libscorep_adapter_memory_event_libc_la_LIBADD = \
-    libscorep_alloc_metric.la
-
-libscorep_adapter_memory_event_libc_la_LDFLAGS = \
-    $(library_api_version_ldflags) \
-    -Wl,-wrap,malloc,-wrap,realloc,-wrap,calloc,-wrap,free,-wrap,memalign,-wrap,posix_memalign,-wrap,valloc
-
-# event library for C11 allocation routines
-
-lib_LTLIBRARIES += libscorep_adapter_memory_event_libc11.la
-
-libscorep_adapter_memory_event_libc11_la_SOURCES = \
-    $(SRC_ROOT)src/adapters/memory/scorep_memory_event_libc11.c
-
-libscorep_adapter_memory_event_libc11_la_CPPFLAGS =  \
-    $(AM_CPPFLAGS)                            \
-    -I$(PUBLIC_INC_DIR)                       \
-    -I$(INC_ROOT)src/measurement/include      \
-    $(UTILS_CPPFLAGS)                         \
-    -DSCOREP_LIBWRAP_STATIC                   \
-    -I$(INC_DIR_DEFINITIONS)
-
-libscorep_adapter_memory_event_libc11_la_LIBADD = \
-    libscorep_alloc_metric.la
-
-libscorep_adapter_memory_event_libc11_la_LDFLAGS = \
-    $(library_api_version_ldflags) \
-    -Wl,-wrap,aligned_alloc
-
-# event library for common C++ de-allocation routines
-
-lib_LTLIBRARIES += libscorep_adapter_memory_event_cxx.la
-
-libscorep_adapter_memory_event_cxx_la_SOURCES = \
-    $(SRC_ROOT)src/adapters/memory/scorep_memory_event_cxx.c
-nodist_EXTRA_libscorep_adapter_memory_event_cxx_la_SOURCES = force_link_with_CXXLD.cc
-
-libscorep_adapter_memory_event_cxx_la_CPPFLAGS = \
-    $(AM_CPPFLAGS)                            \
-    -I$(PUBLIC_INC_DIR)                       \
-    -I$(INC_ROOT)src/measurement/include      \
-    $(UTILS_CPPFLAGS)                         \
-    -DSCOREP_LIBWRAP_STATIC                   \
-    -I$(INC_DIR_DEFINITIONS)
-
-libscorep_adapter_memory_event_cxx_la_LIBADD = \
-    libscorep_alloc_metric.la
-
-libscorep_adapter_memory_event_cxx_la_LDFLAGS = \
-    $(library_api_version_ldflags) \
-    -Wl,-wrap,_ZdlPv,-wrap,_ZdaPv
-
-# event library for C++ allocation routines in L32 mode
-
-lib_LTLIBRARIES += libscorep_adapter_memory_event_cxx_L32.la
-
-libscorep_adapter_memory_event_cxx_L32_la_SOURCES = \
-    $(SRC_ROOT)src/adapters/memory/scorep_memory_event_cxx_L32.c
-nodist_EXTRA_libscorep_adapter_memory_event_cxx_L32_la_SOURCES = force_link_with_CXXLD.cc
-
-libscorep_adapter_memory_event_cxx_L32_la_CPPFLAGS =  \
-    $(AM_CPPFLAGS)                            \
-    -I$(PUBLIC_INC_DIR)                       \
-    -I$(INC_ROOT)src/measurement/include      \
-    $(UTILS_CPPFLAGS)                         \
-    -DSCOREP_LIBWRAP_STATIC                   \
-    -I$(INC_DIR_DEFINITIONS)
-
-libscorep_adapter_memory_event_cxx_L32_la_LIBADD = \
-    libscorep_alloc_metric.la
-
-libscorep_adapter_memory_event_cxx_L32_la_LDFLAGS = \
-    $(library_api_version_ldflags) \
-    -Wl,-wrap,_Znwj,-wrap,_Znaj
-
-# event library for C++ allocation routines in L64 mode
-
-lib_LTLIBRARIES += libscorep_adapter_memory_event_cxx_L64.la
-
-libscorep_adapter_memory_event_cxx_L64_la_SOURCES = \
-    $(SRC_ROOT)src/adapters/memory/scorep_memory_event_cxx_L64.c
-nodist_EXTRA_libscorep_adapter_memory_event_cxx_L64_la_SOURCES = force_link_with_CXXLD.cc
-
-libscorep_adapter_memory_event_cxx_L64_la_CPPFLAGS =  \
-    $(AM_CPPFLAGS)                            \
-    -I$(PUBLIC_INC_DIR)                       \
-    -I$(INC_ROOT)src/measurement/include      \
-    $(UTILS_CPPFLAGS)                         \
-    -DSCOREP_LIBWRAP_STATIC                   \
-    -I$(INC_DIR_DEFINITIONS)
-
-libscorep_adapter_memory_event_cxx_L64_la_LIBADD = \
-    libscorep_alloc_metric.la
-
-libscorep_adapter_memory_event_cxx_L64_la_LDFLAGS = \
-    $(library_api_version_ldflags) \
-    -Wl,-wrap,_Znwm,-wrap,_Znam
-
-# event library for C++14 de-allocation routines in L32 mode
-
-lib_LTLIBRARIES += libscorep_adapter_memory_event_cxx14_L32.la
-
-libscorep_adapter_memory_event_cxx14_L32_la_SOURCES = \
-    $(SRC_ROOT)src/adapters/memory/scorep_memory_event_cxx14_L32.c
-nodist_EXTRA_libscorep_adapter_memory_event_cxx14_L32_la_SOURCES = force_link_with_CXXLD.cc
-
-libscorep_adapter_memory_event_cxx14_L32_la_CPPFLAGS = \
-    $(AM_CPPFLAGS)                       \
-    -I$(PUBLIC_INC_DIR)                  \
-    -I$(INC_ROOT)src/measurement/include \
-    $(UTILS_CPPFLAGS)                    \
-    -DSCOREP_LIBWRAP_STATIC              \
-    -I$(INC_DIR_DEFINITIONS)
-
-libscorep_adapter_memory_event_cxx14_L32_la_LIBADD = \
-    libscorep_alloc_metric.la
-
-libscorep_adapter_memory_event_cxx14_L32_la_LDFLAGS = \
-    $(library_api_version_ldflags) \
-    -Wl,-wrap,_ZdlPvj,-wrap,_ZdaPvj
-
-# event library for C++14 de-allocation routines in L64 mode
-
-lib_LTLIBRARIES += libscorep_adapter_memory_event_cxx14_L64.la
-
-libscorep_adapter_memory_event_cxx14_L64_la_SOURCES = \
-    $(SRC_ROOT)src/adapters/memory/scorep_memory_event_cxx14_L64.c
-nodist_EXTRA_libscorep_adapter_memory_event_cxx14_L64_la_SOURCES = force_link_with_CXXLD.cc
-
-libscorep_adapter_memory_event_cxx14_L64_la_CPPFLAGS = \
-    $(AM_CPPFLAGS)                       \
-    -I$(PUBLIC_INC_DIR)                  \
-    -I$(INC_ROOT)src/measurement/include \
-    $(UTILS_CPPFLAGS)                    \
-    -DSCOREP_LIBWRAP_STATIC              \
-    -I$(INC_DIR_DEFINITIONS)
-
-libscorep_adapter_memory_event_cxx14_L64_la_LIBADD = \
-    libscorep_alloc_metric.la
-
-libscorep_adapter_memory_event_cxx14_L64_la_LDFLAGS = \
-    $(library_api_version_ldflags) \
-    -Wl,-wrap,_ZdlPvm,-wrap,_ZdaPvm
-
-# event library for common C++ de-allocation routines (old PGI C++ ABI)
-
-lib_LTLIBRARIES += libscorep_adapter_memory_event_pgCC.la
-
-libscorep_adapter_memory_event_pgCC_la_SOURCES = \
-    $(SRC_ROOT)src/adapters/memory/scorep_memory_event_pgCC.c
-nodist_EXTRA_libscorep_adapter_memory_event_pgCC_la_SOURCES = force_link_with_CXXLD.cc
-
-libscorep_adapter_memory_event_pgCC_la_CPPFLAGS = \
-    $(AM_CPPFLAGS)                            \
-    -I$(PUBLIC_INC_DIR)                       \
-    -I$(INC_ROOT)src/measurement/include      \
-    $(UTILS_CPPFLAGS)                         \
-    -DSCOREP_LIBWRAP_STATIC                   \
-    -I$(INC_DIR_DEFINITIONS)
-
-libscorep_adapter_memory_event_pgCC_la_LIBADD = \
-    libscorep_alloc_metric.la
-
-libscorep_adapter_memory_event_pgCC_la_LDFLAGS = \
-    $(library_api_version_ldflags) \
-    -Wl,-wrap,__dl__FPv,-wrap,__dla__FPv
-
-# event library for C++ allocation routines in L32 mode (old PGI C++ ABI)
-
-lib_LTLIBRARIES += libscorep_adapter_memory_event_pgCC_L32.la
-
-libscorep_adapter_memory_event_pgCC_L32_la_SOURCES = \
-    $(SRC_ROOT)src/adapters/memory/scorep_memory_event_pgCC_L32.c
-nodist_EXTRA_libscorep_adapter_memory_event_pgCC_L32_la_SOURCES = force_link_with_CXXLD.cc
-
-libscorep_adapter_memory_event_pgCC_L32_la_CPPFLAGS =  \
-    $(AM_CPPFLAGS)                            \
-    -I$(PUBLIC_INC_DIR)                       \
-    -I$(INC_ROOT)src/measurement/include      \
-    $(UTILS_CPPFLAGS)                         \
-    -DSCOREP_LIBWRAP_STATIC                   \
-    -I$(INC_DIR_DEFINITIONS)
-
-libscorep_adapter_memory_event_pgCC_L32_la_LIBADD = \
-    libscorep_alloc_metric.la
-
-libscorep_adapter_memory_event_pgCC_L32_la_LDFLAGS = \
-    $(library_api_version_ldflags) \
-    -Wl,-wrap,__nw__FUi,-wrap,__nwa__FUi
-
-# event library for C++ allocation routines in L64 mode (old PGI C++ ABI)
-
-lib_LTLIBRARIES += libscorep_adapter_memory_event_pgCC_L64.la
-
-libscorep_adapter_memory_event_pgCC_L64_la_SOURCES = \
-    $(SRC_ROOT)src/adapters/memory/scorep_memory_event_pgCC_L64.c
-nodist_EXTRA_libscorep_adapter_memory_event_pgCC_L64_la_SOURCES = force_link_with_CXXLD.cc
-
-libscorep_adapter_memory_event_pgCC_L64_la_CPPFLAGS =  \
-    $(AM_CPPFLAGS)                            \
-    -I$(PUBLIC_INC_DIR)                       \
-    -I$(INC_ROOT)src/measurement/include      \
-    $(UTILS_CPPFLAGS)                         \
-    -DSCOREP_LIBWRAP_STATIC                   \
-    -I$(INC_DIR_DEFINITIONS)
-
-libscorep_adapter_memory_event_pgCC_L64_la_LIBADD = \
-    libscorep_alloc_metric.la
-
-libscorep_adapter_memory_event_pgCC_L64_la_LDFLAGS = \
-    $(library_api_version_ldflags) \
-    -Wl,-wrap,__nw__FUl,-wrap,__nwa__FUl
+libscorep_adapter_memory_event_la_LDFLAGS = \
+    $(library_api_version_ldflags)
 
 endif HAVE_MEMORY_SUPPORT
+
+EXTRA_DIST += \
+    $(SRC_ROOT)src/adapters/memory/scorep_memory_wrappers.inc.c
