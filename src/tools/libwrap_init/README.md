@@ -62,37 +62,6 @@ You can find out whether user library wrapping is enabled in the configure
 summary or via `scorep-info config-summary` in Section "Score-P (libwrap)".
 
 
-Linktime vs. runtime wrapping:
-------------------------------
-
-There exist two ways to wrap calls to the to-be-wrapped (or target-)
-library. The main difference lies in when the actual wrapping takes place -
-at linktime or runtime. While they are in essence the same, they differ in
-which function calls can be intercepted. Specifically:
-
-  - linktime: Wraps calls originating from object files that are part of the
-              linker command line. In addition, calls originating from static
-              libraries are wrapped as well.
-              The actual technique used is the `-wrap` linker flag.
-
-  - runtime:  Wraps all calls that linktime wrapping would, plus those which
-              originate from already linked shared objects.
-              The actual technique used is replacing the original function
-              of the target library and using `dlopen` and `dlsym` in the
-              wrapper to open the target library plus finding and calling the
-              original function.
-
-You can choose linktime or runtime wrapping manually via the `--libwrap` flag
-by prefixing the wrapper name with either `linktime:` or `runtime:`.
-
-When creating a wrapper, the build infrastructure automatically builds all
-wrapper libraries supported by your Score-P installation. If the target library
-only provides a static library, the runtime wrapper and the shared wrapper
-library of the linktime wrapper will not work.
-In this case you should reinitialize the workspace by appending
-`--update --static-only-target-library` to your `scorep-libwrap-init`
-command line.
-
 Workflow for wrapping a library
 ===============================
 

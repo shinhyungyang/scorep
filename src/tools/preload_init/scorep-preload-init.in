@@ -137,7 +137,6 @@ do
         (runtime:*)
             libwrap=${libwrap#runtime:}
         ;;
-        (linktime:*) die "linktime wrap mode does not work when preloading: '%s'" "${1}" ;;
         (*) : no wrap-mode ;;
         esac
 
@@ -178,9 +177,6 @@ do
         case ${io} in
         (runtime:*)
             : already with runtime wrap mode prefix
-        ;;
-        (linktime:*)
-            die "linktime wrap mode does not work when preloading: '%s'" "${1}"
         ;;
         (*)
             io="runtime:${io}"

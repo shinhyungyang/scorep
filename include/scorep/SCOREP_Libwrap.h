@@ -38,7 +38,6 @@ typedef struct SCOREP_LibwrapHandle SCOREP_LibwrapHandle;
 typedef enum SCOREP_LibwrapMode
 {
     SCOREP_LIBWRAP_MODE_SHARED,  /**< wrapping dynamically linked library */
-    SCOREP_LIBWRAP_MODE_STATIC,  /**< wrapping statically linked library */
 } SCOREP_LibwrapMode;
 
 /** Data structure for library wrapper attributes */

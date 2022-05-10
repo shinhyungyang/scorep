@@ -54,8 +54,6 @@ scorep-config <command> [<options>]
               Prints the path to the remapper specification file.
    --adapter-init
               Prints the code for adapter initialization.
-   --libwrap-support=linktime
-              Prints true if link-time library wrapping is supported.
    --libwrap-support=runtime
               Prints true if run-time library wrapping is supported.
   Options:
@@ -108,7 +106,7 @@ scorep-config <command> [<options>]
               The following I/O paradigms may be recorded:
                none
                posix
-   --libwrap=<wrap-mode>:<libwrap-anchor-file>
+   --libwrap=<libwrap-anchor-file>
               Uses the specified library wrapper.
    --thread=<threading system>
               Available threading systems are:
