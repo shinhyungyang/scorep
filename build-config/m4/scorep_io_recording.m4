@@ -3,7 +3,7 @@
 ##
 ## This file is part of the Score-P software (http://www.score-p.org)
 ##
-## Copyright (c) 2015-2017, 2020, 2023,
+## Copyright (c) 2015-2017, 2020, 2023, 2025,
 ## Technische Universitaet Dresden, Germany
 ##
 ## Copyright (c) 2022,
@@ -24,9 +24,9 @@ AFS_SUMMARY_SECTION_END
 
 dnl ----------------------------------------------------------------------------
 
-## _SCOREP_IO_RECORDING_POSIX_CHECK_SYMBOLS( FOUND-SYMBOL-VARIABLE )
+## _SCOREP_IO_RECORDING_POSIX_CHECK_SYMBOLS
 AC_DEFUN([_SCOREP_IO_RECORDING_POSIX_CHECK_SYMBOLS], [
-SCOREP_CHECK_SYMBOLS([POSIX I/O], [], $1,
+SCOREP_CHECK_SYMBOLS([POSIX I/O], [], [],
            [close,
             closedir,
             creat,
@@ -101,9 +101,9 @@ SCOREP_CHECK_SYMBOLS([POSIX I/O], [], $1,
             writev])
 ])
 
-## _SCOREP_IO_RECORDING_POSIX_AIO_CHECK_SYMBOLS( FOUND-SYMBOL-VARIABLE )
+## _SCOREP_IO_RECORDING_POSIX_AIO_CHECK_SYMBOLS
 AC_DEFUN([_SCOREP_IO_RECORDING_POSIX_AIO_CHECK_SYMBOLS], [
-SCOREP_CHECK_SYMBOLS([POSIX I/O], [], $1,
+SCOREP_CHECK_SYMBOLS([POSIX I/O], [], [],
            [aio_cancel,
             aio_error,
             aio_fsync,
@@ -120,9 +120,6 @@ AC_DEFUN([_SCOREP_IO_RECORDING_POSIX], [
 AC_REQUIRE([AFS_CHECK_THREAD_LOCAL_STORAGE])dnl
 AC_REQUIRE([SCOREP_LIBRARY_WRAPPING])dnl
 
-# will be used for IO and AIO
-scorep_posix_io_wrap_symbols=""
-
 dnl Check for POSIX synchronous I/O
 
 AFS_SUMMARY_PUSH
@@ -131,10 +128,10 @@ scorep_posix_io_support="yes"
 scorep_posix_io_summary_reason=
 
 # check for library wrapping support
-AS_IF([test x"${scorep_libwrap_linktime_support}" != x"yes" &&
-       test x"${scorep_libwrap_runtime_support}" != x"yes"],
-      [scorep_posix_io_support="no"
-       AS_VAR_APPEND([scorep_posix_io_summary_reason], [", missing library wrapping support"])])
+AM_COND_IF([HAVE_LIBWRAP_RUNTIME_SUPPORT],
+           [],
+           [scorep_posix_io_support="no"
+            AS_VAR_APPEND([scorep_posix_io_summary_reason], [", missing library runtime wrapping support"])])
 
 # check result of TLS
 AS_IF([test x"${scorep_posix_io_support}" = x"yes"],
@@ -145,13 +142,13 @@ AS_IF([test x"${scorep_posix_io_support}" = x"yes"],
 AC_SCOREP_COND_HAVE([POSIX_IO_SUPPORT],
                     [test x"${scorep_posix_io_support}" = x"yes"],
                     [Defined if recording calls to POSIX I/O is possible.],
-                    [_SCOREP_IO_RECORDING_POSIX_CHECK_SYMBOLS([scorep_posix_io_wrap_symbols])
+                    [_SCOREP_IO_RECORDING_POSIX_CHECK_SYMBOLS
                      # do not wrap 'vfprintf' on Cray platform
                      AS_CASE([${ac_scorep_platform}],
                              [cray*], [# as we do not check for vfprintf corresponding symbol should not be defined
                                      AC_DEFINE([HAVE_POSIX_IO_SYMBOL_VFPRINTF], [0])
                                      AC_DEFINE([HAVE_POSIX_IO_SYMBOL_FPRINTF], [0])],
-                             [SCOREP_CHECK_SYMBOLS([POSIX I/O], [], [scorep_posix_io_wrap_symbols], [vfprintf,fprintf])])])
+                             [SCOREP_CHECK_SYMBOLS([POSIX I/O], [], [], [vfprintf,fprintf])])])
 
 AFS_SUMMARY_POP([POSIX I/O support], [${scorep_posix_io_support}${scorep_posix_io_summary_reason}])
 
@@ -195,7 +192,7 @@ AC_SCOREP_COND_HAVE([POSIX_AIO_SUPPORT],
                     [Defined if recording calls to POSIX asynchronous I/O is possible.],
                     [libs_save=${LIBS}
                      LIBS="$LIBS ${with_posix_aio_libs}"
-                     _SCOREP_IO_RECORDING_POSIX_AIO_CHECK_SYMBOLS([scorep_posix_io_wrap_symbols])
+                     _SCOREP_IO_RECORDING_POSIX_AIO_CHECK_SYMBOLS
                      LIBS="$libs_save"
                      AC_SUBST([SCOREP_POSIX_AIO_LIBS],    ["${with_posix_aio_libs}"])
                      scorep_posix_aio_summary_reason="${with_posix_aio_libs:+, using ${with_posix_aio_libs}}"],

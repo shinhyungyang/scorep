@@ -1,7 +1,7 @@
 /*
  * This file is part of the Score-P software (http://www.score-p.org)
  *
- * Copyright (c) 2015-2018,
+ * Copyright (c) 2015-2018, 2025,
  * Technische Universitaet Dresden, Germany
  *
  * This software may be modified and distributed under the terms of
@@ -43,56 +43,13 @@ SCOREP_Instrumenter_IoParadigm::SCOREP_Instrumenter_IoParadigm(
     const std::string&            variant,
     const std::string&            description )
     : SCOREP_Instrumenter_Paradigm( selector, name, variant, description )
-    , m_wrapmode( SCOREP_LIBWRAP_DEFAULT_MODE )
 {
 }
 
 std::string
 SCOREP_Instrumenter_IoParadigm::getConfigName( void )
 {
-    if ( m_wrapmode.size() )
-    {
-        return m_wrapmode + ":" + getName();
-    }
     return getName();
-}
-
-bool
-SCOREP_Instrumenter_IoParadigm::checkOption( const std::string& _arg )
-{
-    std::string arg( _arg );
-    std::string wrapmode = SCOREP_LIBWRAP_DEFAULT_MODE;
-
-    if ( arg.compare( 0, 9, "linktime:" ) == 0 )
-    {
-#if !HAVE_BACKEND( LIBWRAP_LINKTIME_SUPPORT )
-        std::cerr << "[Score-P] ERROR: Linktime wrapping not support in '--" << _arg << "'" << std::endl;
-        exit( EXIT_FAILURE );
-#endif
-        wrapmode = "linktime";
-        arg.erase( 0, 9 );
-    }
-    else if ( arg.compare( 0, 8, "runtime:" ) == 0 )
-    {
-#if !HAVE_BACKEND( LIBWRAP_RUNTIME_SUPPORT )
-        std::cerr << "[Score-P] ERROR: Runtime wrapping not support in '--" << _arg << "'" << std::endl;
-        exit( EXIT_FAILURE );
-#endif
-        wrapmode = "runtime";
-        arg.erase( 0, 8 );
-    }
-
-    bool result = SCOREP_Instrumenter_Paradigm::checkOption( arg );
-    if ( result )
-    {
-        m_requires.erase( std::remove( m_requires.begin(), m_requires.end(), SCOREP_INSTRUMENTER_ADAPTER_LINKTIME_WRAPPING ), m_requires.end() );
-        if ( wrapmode == "linktime" )
-        {
-            m_requires.push_back( SCOREP_INSTRUMENTER_ADAPTER_LINKTIME_WRAPPING );
-        }
-        m_wrapmode = wrapmode;
-    }
-    return result;
 }
 
 /* **************************************************************************************
@@ -142,13 +99,8 @@ SCOREP_Instrumenter_Io::SCOREP_Instrumenter_Io()
 void
 SCOREP_Instrumenter_Io::printHelp( void )
 {
-    std::cout << "  --" << m_name << "=[<wrap-mode>:]<paradigm>[:<variant>]";
-    if ( m_mode == MULTI_SELECTION )
-    {
-        std::cout << "(,[<wrap-mode>:]<paradigm>[:<variant>])*";
-    }
+    std::cout << "  --" << m_name << "=<paradigm>(,<paradigm>)*";
     std::cout << "\n";
-    std::cout << "                  <wrap-mode> may be 'linktime' or 'runtime'.\n";
     std::cout << "                  The default is the first supported mode in the above order.\n";
     std::cout << "                  Possible paradigms and variants are:\n";
 

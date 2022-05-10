@@ -1,7 +1,7 @@
 /*
  * This file is part of the Score-P software (http://www.score-p.org)
  *
- * Copyright (c) 2016,
+ * Copyright (c) 2016, 2025,
  * Technische Universitaet Dresden, Germany
  *
  * This software may be modified and distributed under the terms of
@@ -28,10 +28,6 @@
 #include <UTILS_Debug.h>
 
 #include "scorep_posix_io.h"
-#include "scorep_posix_io_regions.h"
-#ifdef SCOREP_LIBWRAP_SHARED
-#include "scorep_posix_io_function_pointers.h"
-#endif
 
 static size_t subsystem_id = 0;
 
@@ -47,6 +43,8 @@ static size_t subsystem_id = 0;
 static SCOREP_ErrorCode
 posix_io_subsystem_register( size_t subsystemId )
 {
+    scorep_posix_io_early_init_function_pointers();
+
     subsystem_id = subsystemId;
 
     UTILS_DEBUG( "Register environment variables" );
@@ -64,13 +62,10 @@ posix_io_subsystem_register( size_t subsystemId )
 static SCOREP_ErrorCode
 posix_io_subsystem_init( void )
 {
-#ifdef SCOREP_LIBWRAP_SHARED
-    scorep_posix_io_register_function_pointers();
-#endif
+    scorep_posix_io_libwrap_init();
 
     scorep_posix_io_init();
     scorep_posix_io_isoc_init();
-    scorep_posix_io_register_regions();
 
     return SCOREP_SUCCESS;
 }

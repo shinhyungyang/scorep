@@ -105,7 +105,7 @@ scorep-config <command> [<options>]
                 new,new[],delete,delete[] (IA-64 C++ ABI)
                pgCCL32|pgCCL64:
                 new,new[],delete,delete[] (old PGI/EDG C++ ABI)
-   --io=[<wrap-mode>:]<paradigm,...>|--noio
+   --io=<paradigm,...>|--noio
               Specifies whether I/O recording is used.
               On default I/O recording is disabled.
               The following I/O paradigms may be recorded:
