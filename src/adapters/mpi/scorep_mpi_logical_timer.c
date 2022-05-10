@@ -73,7 +73,9 @@ bool
 scorep_mpi_ltimer_enabled()
 {
     extern timer_type scorep_timer;
-    if ( scorep_timer == TIMER_LOGICAL )
+
+    if (  scorep_timer == TIMER_LOGICAL
+       || scorep_timer == TIMER_LOGICAL_HWCTR_INSTR )
     {
         return true;
     }
@@ -114,7 +116,7 @@ scorep_mpi_forward_ltimer_cached( scorep_mpi_ltimer remote_time,
 scorep_mpi_ltimer
 scorep_mpi_forward_ltimer( scorep_mpi_ltimer remote_time )
 {
-    const scorep_mpi_ltimer local_timer = SCOREP_Timer_GetLogical();
+    const scorep_mpi_ltimer local_timer = scorep_mpi_get_ltimer();
     return scorep_mpi_forward_ltimer_cached( remote_time, local_timer );
 }
 

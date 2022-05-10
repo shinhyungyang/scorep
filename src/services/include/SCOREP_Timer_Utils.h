@@ -101,4 +101,14 @@ SCOREP_Timer_IncrementLogical( int increment );
 uint64_t
 SCOREP_Timer_GetLogical( void );
 
+
+#define SCOREP_LOGIC_SYNC_EVENT_ENABLE() \
+    extern bool SCOREP_Timer_Subsystem_Logic_Event_Sync;  \
+    SCOREP_Timer_Subsystem_Logic_Event_Sync = true;
+
+#define SCOREP_LOGIC_SYNC_EVENT_DISABLE() \
+    extern bool SCOREP_Timer_Subsystem_Logic_Event_Sync;  \
+    SCOREP_Timer_Subsystem_Logic_Event_Sync = false;
+
+
 #endif /* SCOREP_TIMER_UTILS_H */

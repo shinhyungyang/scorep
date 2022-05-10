@@ -65,6 +65,9 @@
 #include <SCOREP_InMeasurement.h>
 #include <SCOREP_Events.h>
 
+
+extern bool SCOREP_Timer_Subsystem_Logic_Event_Sync;
+
 /**
  * @name Blocking
  * @{
@@ -131,7 +134,10 @@ MPI_Bsend( SCOREP_MPI_CONST_DECL void* buf, int count, MPI_Datatype datatype, in
                  * when an MPI_Send is used in combination with an MPI_Irecv
                  */
             }
+            /* This could be inside the previous if, but won't matter alot anyway */
+            SCOREP_Timer_Subsystem_Logic_Event_Sync = true;
             SCOREP_ExitRegion( scorep_mpi_regions[ SCOREP_MPI_REGION__MPI_BSEND ] );
+            SCOREP_Timer_Subsystem_Logic_Event_Sync = false;
         }
         else if ( SCOREP_IsUnwindingEnabled() )
         {
@@ -206,7 +212,9 @@ MPI_Rsend( SCOREP_MPI_CONST_DECL void* buf, int count, MPI_Datatype datatype, in
                  * when an MPI_Send is used in combination with an MPI_Irecv
                  */
             }
+            SCOREP_Timer_Subsystem_Logic_Event_Sync = true;
             SCOREP_ExitRegion( scorep_mpi_regions[ SCOREP_MPI_REGION__MPI_RSEND ] );
+            SCOREP_Timer_Subsystem_Logic_Event_Sync = false;
         }
         else if ( SCOREP_IsUnwindingEnabled() )
         {
@@ -281,7 +289,9 @@ MPI_Send( SCOREP_MPI_CONST_DECL void* buf, int count, MPI_Datatype datatype, int
                  * when an MPI_Send is used in combination with an MPI_Irecv
                  */
             }
+            SCOREP_Timer_Subsystem_Logic_Event_Sync = true;
             SCOREP_ExitRegion( scorep_mpi_regions[ SCOREP_MPI_REGION__MPI_SEND ] );
+            SCOREP_Timer_Subsystem_Logic_Event_Sync = false;
         }
         else if ( SCOREP_IsUnwindingEnabled() )
         {
@@ -356,7 +366,10 @@ MPI_Ssend( SCOREP_MPI_CONST_DECL void* buf, int count, MPI_Datatype datatype, in
                  * when an MPI_Send is used in combination with an MPI_Irecv
                  */
             }
+            SCOREP_Timer_Subsystem_Logic_Event_Sync = true;
             SCOREP_ExitRegion( scorep_mpi_regions[ SCOREP_MPI_REGION__MPI_SSEND ] );
+            SCOREP_Timer_Subsystem_Logic_Event_Sync = false;
+
         }
         else if ( SCOREP_IsUnwindingEnabled() )
         {
@@ -437,6 +450,7 @@ MPI_Recv( void* buf,
                  * This currently leads to a deadlock/indefinetly waiting program
                  * when an MPI_Recv is used in combination with an MPI_Isend
                  */
+                SCOREP_Timer_Subsystem_Logic_Event_Sync = true;
             }
             if ( source != MPI_PROC_NULL && return_val == MPI_SUCCESS )
             {
@@ -445,8 +459,8 @@ MPI_Recv( void* buf,
                 SCOREP_MpiRecv( status->MPI_SOURCE, SCOREP_MPI_COMM_HANDLE( comm ),
                                 status->MPI_TAG, ( uint64_t )count * sz );
             }
-
             SCOREP_ExitRegion( scorep_mpi_regions[ SCOREP_MPI_REGION__MPI_RECV ] );
+            SCOREP_Timer_Subsystem_Logic_Event_Sync = false;
         }
         else if ( SCOREP_IsUnwindingEnabled() )
         {
@@ -957,8 +971,9 @@ MPI_Ibsend( SCOREP_MPI_CONST_DECL void* buf, int count, MPI_Datatype datatype, i
                     scorep_mpi_ltimer_isend( dest, comm, scorep_req );
                 }
             }
-
+            SCOREP_Timer_Subsystem_Logic_Event_Sync = true;
             SCOREP_ExitRegion( scorep_mpi_regions[ SCOREP_MPI_REGION__MPI_IBSEND ] );
+            SCOREP_Timer_Subsystem_Logic_Event_Sync = false;
         }
         else if ( SCOREP_IsUnwindingEnabled() )
         {
@@ -1037,8 +1052,9 @@ MPI_Irsend( SCOREP_MPI_CONST_DECL void* buf, int count, MPI_Datatype datatype, i
                     scorep_mpi_ltimer_isend( dest, comm, scorep_req );
                 }
             }
-
+            SCOREP_Timer_Subsystem_Logic_Event_Sync = true;
             SCOREP_ExitRegion( scorep_mpi_regions[ SCOREP_MPI_REGION__MPI_IRSEND ] );
+            SCOREP_Timer_Subsystem_Logic_Event_Sync = false;
         }
         else if ( SCOREP_IsUnwindingEnabled() )
         {
@@ -1115,10 +1131,12 @@ MPI_Isend( SCOREP_MPI_CONST_DECL void* buf, int count, MPI_Datatype datatype, in
                 if ( scorep_mpi_ltimer_enabled() )
                 {
                     scorep_mpi_ltimer_isend( dest, comm, scorep_req );
+                    SCOREP_Timer_Subsystem_Logic_Event_Sync = true;
                 }
             }
-
             SCOREP_ExitRegion( scorep_mpi_regions[ SCOREP_MPI_REGION__MPI_ISEND ] );
+            SCOREP_Timer_Subsystem_Logic_Event_Sync = false;
+
         }
         else if ( SCOREP_IsUnwindingEnabled() )
         {
@@ -1197,8 +1215,9 @@ MPI_Issend( SCOREP_MPI_CONST_DECL void* buf, int count, MPI_Datatype datatype, i
                     scorep_mpi_ltimer_isend( dest, comm, scorep_req );
                 }
             }
-
+            SCOREP_Timer_Subsystem_Logic_Event_Sync = true;
             SCOREP_ExitRegion( scorep_mpi_regions[ SCOREP_MPI_REGION__MPI_ISSEND ] );
+            SCOREP_Timer_Subsystem_Logic_Event_Sync = false;
         }
         else if ( SCOREP_IsUnwindingEnabled() )
         {
@@ -1272,6 +1291,7 @@ MPI_Irecv( void*        buf,
         if ( scorep_mpi_ltimer_enabled() )
         {
             scorep_mpi_ltimer_irecv( source, comm, scorep_req );
+            SCOREP_Timer_Subsystem_Logic_Event_Sync = true;
         }
     }
 
@@ -1280,6 +1300,7 @@ MPI_Irecv( void*        buf,
         if ( event_gen_active_for_group )
         {
             SCOREP_ExitRegion( scorep_mpi_regions[ SCOREP_MPI_REGION__MPI_IRECV ] );
+            SCOREP_Timer_Subsystem_Logic_Event_Sync = false;
         }
         else if ( SCOREP_IsUnwindingEnabled() )
         {
