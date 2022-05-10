@@ -1,7 +1,7 @@
 /*
  * This file is part of the Score-P software (http://www.score-p.org)
  *
- * Copyright (c) 2016-2020, 2023,
+ * Copyright (c) 2016-2020, 2023, 2025,
  * Technische Universitaet Dresden, Germany
  *
  * Copyright (c) 2022,
@@ -38,9 +38,6 @@
 
 #define SCOREP_DEBUG_MODULE_NAME IO
 #include <UTILS_Debug.h>
-
-#include "scorep_posix_io_regions.h"
-#include "scorep_posix_io_function_pointers.h"
 
 /* *INDENT-OFF* */
 #ifdef SCOREP_LIBWRAP_SHARED

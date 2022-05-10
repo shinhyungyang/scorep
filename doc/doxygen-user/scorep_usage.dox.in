@@ -53,8 +53,7 @@ Common options are:
                   MPI support using library wrapping
               shmem
                   SHMEM support using library wrapping
-  --io=[<wrap-mode>:]<paradigm>[:<variant>](,[<wrap-mode>:]<paradigm>[:<variant>])*
-                  <wrap-mode> may be 'linktime' or 'runtime'.
+  --io=<paradigm>[:<variant>](,<paradigm>[:<variant>])*
                   The default is the first supported mode in the above order.
                   Possible paradigms and variants are:
               none

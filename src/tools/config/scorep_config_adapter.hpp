@@ -4,7 +4,7 @@
  * Copyright (c) 2013-2014, 2019-2020, 2023-2025,
  * Forschungszentrum Juelich GmbH, Germany
  *
- * Copyright (c) 2014-2017, 2020, 2022,
+ * Copyright (c) 2014-2017, 2020, 2022, 2025,
  * Technische Universitaet Dresden, Germany
  *
  * Copyright (c) 2014,
@@ -586,50 +586,26 @@ private:
     struct SCOREP_Config_SupportedIo
     {
         SCOREP_Config_SupportedIo( const std::string& subsystem,
-                                   const std::string& lib,
-                                   const std::string& wrap )
-            :   m_subsystem_name( subsystem )
-            ,   m_lib_name( lib )
-        {
-            m_wrap_names.push_back( wrap );
-        }
-
-        SCOREP_Config_SupportedIo( const std::string& subsystem,
                                    const std::string& lib )
             :   m_subsystem_name( subsystem )
             ,   m_lib_name( lib )
         {
-            m_wrap_names.push_back( lib );
         }
 
         SCOREP_Config_SupportedIo( const SCOREP_Config_SupportedIo& other )
             :   m_subsystem_name( other.m_subsystem_name )
             ,   m_lib_name( other.m_lib_name )
-            ,   m_wrap_names( other.m_wrap_names )
         {
         }
 
-        SCOREP_Config_SupportedIo()
-        {
-        }
+        SCOREP_Config_SupportedIo() = default;
 
-        void
-        add_wrap_name( const std::string& wrap )
-        {
-            m_wrap_names.push_back( wrap );
-        }
-
-        std::string              m_subsystem_name;
-        std::string              m_lib_name;
-        std::vector<std::string> m_wrap_names;
+        std::string m_subsystem_name;
+        std::string m_lib_name;
     };
 
-    typedef std::map<std::string, SCOREP_Config_SupportedIo> SCOREP_Config_SupportedIosT;
-    typedef SCOREP_Config_SupportedIosT::const_iterator      SCOREP_Config_SupportedIosCIT;
-    typedef SCOREP_Config_SupportedIosT::value_type          SCOREP_Config_SupportedIosV;
-
-    SCOREP_Config_SupportedIosT        m_supported_ios;
-    std::map<std::string, std::string> m_selected_ios;
+    std::map<std::string, SCOREP_Config_SupportedIo> m_supported_ios;
+    std::set<std::string>                            m_selected_ios;
 };
 
 #endif // SCOREP_CONFIG_ADAPTER_HPP

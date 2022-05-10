@@ -4,7 +4,7 @@
  * Copyright (c) 2013-2014, 2017, 2019-2025,
  * Forschungszentrum Juelich GmbH, Germany
  *
- * Copyright (c) 2014-2020, 2022,
+ * Copyright (c) 2014-2020, 2022, 2025,
  * Technische Universitaet Dresden, Germany
  *
  * Copyright (c) 2014,
@@ -374,7 +374,7 @@ SCOREP_Config_CompilerAdapter::addCFlags( std::string&           cflags,
 #elif HAVE_BACKEND( SCOREP_COMPILER_INSTRUMENTATION_CC_LLVM_PLUGIN )
             llvm_plugin_instrumentation_available = true;
             llvm_compiler_backend_flag_arg        = SCOREP_LLVM_PLUGIN_COMPILER_BACKEND_FLAG_CC;
-#endif /* HAVE_BACKEND(SCOREP_COMPILER_INSTRUMENTATION_CC_[...]) */
+#endif  /* HAVE_BACKEND(SCOREP_COMPILER_INSTRUMENTATION_CC_[...]) */
             break;
         case SCOREP_CONFIG_LANGUAGE_CXX:
             cflags += SCOREP_COMPILER_INSTRUMENTATION_CXXFLAGS;
@@ -385,7 +385,7 @@ SCOREP_Config_CompilerAdapter::addCFlags( std::string&           cflags,
 #elif HAVE_BACKEND( SCOREP_COMPILER_INSTRUMENTATION_CXX_LLVM_PLUGIN )
             llvm_plugin_instrumentation_available = true;
             llvm_compiler_backend_flag_arg        = SCOREP_LLVM_PLUGIN_COMPILER_BACKEND_FLAG_CXX;
-#endif /* HAVE_BACKEND(SCOREP_COMPILER_INSTRUMENTATION_CXX_[...]) */
+#endif  /* HAVE_BACKEND(SCOREP_COMPILER_INSTRUMENTATION_CXX_[...]) */
             break;
         case SCOREP_CONFIG_LANGUAGE_FORTRAN:
             cflags += SCOREP_COMPILER_INSTRUMENTATION_FCFLAGS;
@@ -396,7 +396,7 @@ SCOREP_Config_CompilerAdapter::addCFlags( std::string&           cflags,
 #elif HAVE_BACKEND( SCOREP_COMPILER_INSTRUMENTATION_FC_LLVM_PLUGIN )
             llvm_plugin_instrumentation_available = true;
             llvm_compiler_backend_flag_arg        = SCOREP_LLVM_PLUGIN_COMPILER_BACKEND_FLAG_FC;
-#endif /* HAVE_BACKEND(SCOREP_COMPILER_INSTRUMENTATION_FC_[...]) */
+#endif  /* HAVE_BACKEND(SCOREP_COMPILER_INSTRUMENTATION_FC_[...]) */
             break;
         default:
             break;
@@ -1262,23 +1262,22 @@ SCOREP_Config_IoAdapter::SCOREP_Config_IoAdapter()
     : SCOREP_Config_Adapter( "io", "", false )
 {
 #if HAVE_BACKEND( POSIX_IO_SUPPORT )
-    m_supported_ios.insert( SCOREP_Config_SupportedIosV(
-                                "posix",
-                                SCOREP_Config_SupportedIo( "Posix", "posix_io", "posix_io" ) ) );
+    m_supported_ios.emplace( "posix",
+                             SCOREP_Config_SupportedIo( "Posix", "posix_io" ) );
 #endif
 }
 
 void
 SCOREP_Config_IoAdapter::printHelp( void )
 {
-    std::cout << "   --io=[<wrap-mode>:]<paradigm,...>|--noio\n"
+    std::cout << "   --io=<paradigm,...>|--noio\n"
               << "              Specifies whether I/O recording is used.\n"
               << "              On default I/O recording is disabled.\n"
               << "              The following I/O paradigms may be recorded:\n"
               << "               none\n";
-    for ( SCOREP_Config_SupportedIosCIT it = m_supported_ios.begin(); it != m_supported_ios.end(); ++it )
+    for ( const auto& pair : m_supported_ios )
     {
-        std::cout << "               " << it->first << "\n";
+        std::cout << "               " << pair.first << "\n";
     }
 }
 
@@ -1287,36 +1286,20 @@ SCOREP_Config_IoAdapter::checkArgument( const std::string& arg )
 {
     if ( arg.substr( 0, 5 ) == ( "--io=" ) )
     {
-        std::string io = arg.substr( 5 );
-
-        std::string wrapmode = "linktime";
-        if ( io.compare( 0, 9, "linktime:" ) == 0 )
+        for ( const auto& ioParadigm : string_to_deque( arg.substr( 5 ), "," ) )
         {
-            wrapmode = "linktime";
-            io.erase( 0, 9 );
-        }
-        else if ( io.compare( 0, 8, "runtime:" ) == 0 )
-        {
-            wrapmode = "runtime";
-            io.erase( 0, 8 );
-        }
-
-        std::deque<std::string> ios = string_to_deque( io, "," );
-
-        for ( std::deque<std::string>::const_iterator it = ios.begin(); it != ios.end(); ++it )
-        {
-            if ( *it == "none" )
+            if ( ioParadigm == "none" )
             {
                 m_selected_ios.clear();
                 continue;
             }
 
-            if ( !m_supported_ios.count( *it ) )
+            if ( !m_supported_ios.count( ioParadigm ) )
             {
-                std::cerr << "ERROR: I/O paradigm " << *it << " not supported by this Score-P installation." << std::endl;
+                std::cerr << "ERROR: I/O paradigm " << ioParadigm << " not supported by this Score-P installation." << std::endl;
                 exit( EXIT_FAILURE );
             }
-            m_selected_ios[ *it ] = wrapmode;
+            m_selected_ios.insert( ioParadigm );
         }
 
         m_is_enabled = m_selected_ios.size() != 0;
@@ -1340,16 +1323,12 @@ SCOREP_Config_IoAdapter::addLibs( std::deque<std::string>&           libs,
         return;
     }
 
-    for ( SCOREP_Config_SupportedIosCIT it = m_supported_ios.begin(); it != m_supported_ios.end(); ++it )
+    for ( const auto& ioParadigm : m_selected_ios )
     {
-        if ( !m_selected_ios.count( it->first ) )
-        {
-            continue;
-        }
-
-        libs.push_back( "libscorep_adapter_" + it->second.m_lib_name + "_event_" + m_selected_ios[ it->first ] );
+        const auto& io = m_supported_ios[ ioParadigm ];
+        libs.push_back( "libscorep_adapter_" + io.m_lib_name + "_event" );
         deps.addDependency( libs.back(), "libscorep_measurement" );
-        deps.addDependency( "libscorep_measurement", "libscorep_adapter_" + it->second.m_lib_name + "_mgmt_" + m_selected_ios[ it->first ] );
+        deps.addDependency( "libscorep_measurement", "libscorep_adapter_" + io.m_lib_name + "_mgmt" );
     }
 }
 
@@ -1361,19 +1340,6 @@ SCOREP_Config_IoAdapter::addLdFlags( std::string& ldflags,
     if ( !m_is_enabled )
     {
         return;
-    }
-
-    for ( SCOREP_Config_SupportedIosCIT it = m_supported_ios.begin(); it != m_supported_ios.end(); ++it )
-    {
-        if ( m_selected_ios.count( it->first ) && m_selected_ios[ it->first ] == "linktime" )
-        {
-            for ( std::vector<std::string>::const_iterator iter = it->second.m_wrap_names.begin();
-                  iter != it->second.m_wrap_names.end();
-                  ++iter )
-            {
-                ldflags += get_ld_wrap_flag( *iter, buildCheck, nvcc );
-            }
-        }
     }
 }
 
@@ -1387,11 +1353,9 @@ SCOREP_Config_IoAdapter::appendInitStructName( std::deque<std::string>& initStru
 
     initStructs.push_back( "SCOREP_Subsystem_IoManagement" );
 
-    for ( SCOREP_Config_SupportedIosCIT it = m_supported_ios.begin(); it != m_supported_ios.end(); ++it )
+    for ( const auto& ioParadigm : m_selected_ios )
     {
-        if ( m_selected_ios.count( it->first ) )
-        {
-            initStructs.push_back( "SCOREP_Subsystem_" + it->second.m_subsystem_name + "IoAdapter" );
-        }
+        const auto& io = m_supported_ios[ ioParadigm ];
+        initStructs.push_back( "SCOREP_Subsystem_" + io.m_subsystem_name + "IoAdapter" );
     }
 }

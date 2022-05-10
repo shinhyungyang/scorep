@@ -1,7 +1,7 @@
 /*
  * This file is part of the Score-P software (http://www.score-p.org)
  *
- * Copyright (c) 2015-2018,
+ * Copyright (c) 2015-2018, 2025,
  * Technische Universitaet Dresden, Germany
  *
  * This software may be modified and distributed under the terms of
@@ -47,20 +47,6 @@ public:
      */
     std::string
     getConfigName( void ) override;
-
-    /**
-     * Evaluates an scorep option for this paradigm.
-     * Overwrite this function if you need to process different or more parameters.
-     * Handles also the 'linktime:' and 'runtime:' prefixes.
-     * @param arg  The option that is evaluated.
-     * @returns true, if this argument selects this paradigm.
-     */
-    bool
-    checkOption( const std::string& arg ) override;
-
-    /* ----------------------------------------------------------------------- members */
-private:
-    std::string m_wrapmode;
 };
 
 /* **************************************************************************************
@@ -94,7 +80,7 @@ public:
     SCOREP_Instrumenter_Io();
 
     void
-    printHelp( void );
+    printHelp( void ) override;
 };
 
 #endif

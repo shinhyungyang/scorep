@@ -7,7 +7,7 @@ dnl
 dnl Copyright (c) 2009-2013,
 dnl Gesellschaft fuer numerische Simulation mbH Braunschweig, Germany
 dnl
-dnl Copyright (c) 2009-2022, 2024,
+dnl Copyright (c) 2009-2022, 2024-2025,
 dnl Technische Universitaet Dresden, Germany
 dnl
 dnl Copyright (c) 2009-2013,
@@ -428,9 +428,6 @@ AS_CASE([${ac_scorep_platform}],
 
 AM_COND_IF([HAVE_OPENCL_SUPPORT],
     [SCOREP_LD_WRAP_FILE([opencl])])
-
-AM_COND_IF([HAVE_POSIX_IO_SUPPORT],
-    [SCOREP_LD_WRAP_FILE([posix_io])])
 
 dnl Linux
 SCOREP_CHECK_SYSCALL([SYS_gettid],
