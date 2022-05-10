@@ -1,7 +1,7 @@
 /*
  * This file is part of the Score-P software (http://www.score-p.org)
  *
- * Copyright (c) 2013-2015, 2017, 2020,
+ * Copyright (c) 2013-2015, 2017, 2020, 2025,
  * Technische Universitaet Dresden, Germany
  *
  * This software may be modified and distributed under the terms of
@@ -39,7 +39,6 @@ typedef enum SCOREP_LibwrapMode
 {
     SCOREP_LIBWRAP_MODE_SHARED,  /**< wrapping dynamically linked library */
     SCOREP_LIBWRAP_MODE_STATIC,  /**< wrapping statically linked library */
-    SCOREP_LIBWRAP_MODE_WEAK,    /**< wrapping a library that provides weak symbols */
 } SCOREP_LibwrapMode;
 
 /** Data structure for library wrapper attributes */

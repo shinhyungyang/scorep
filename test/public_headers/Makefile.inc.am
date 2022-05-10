@@ -9,7 +9,7 @@
 ## Copyright (c) 2009-2011, 2015,
 ## Gesellschaft fuer numerische Simulation mbH Braunschweig, Germany
 ##
-## Copyright (c) 2009-2017,
+## Copyright (c) 2009-2017, 2025,
 ## Technische Universitaet Dresden, Germany
 ##
 ## Copyright (c) 2009-2011,
@@ -40,8 +40,6 @@ check_PROGRAMS +=                                          \
     self_contained_public_header_SCOREP_Libwrap_Macros_STATIC_cpp \
     self_contained_public_header_SCOREP_Libwrap_Macros_SHARED_c   \
     self_contained_public_header_SCOREP_Libwrap_Macros_SHARED_cpp \
-    self_contained_public_header_SCOREP_Libwrap_Macros_WEAK_c     \
-    self_contained_public_header_SCOREP_Libwrap_Macros_WEAK_cpp   \
     self_contained_public_header_SCOREP_MetricPlugins_c      \
     self_contained_public_header_SCOREP_MetricPlugins_cpp    \
     self_contained_public_header_SCOREP_MetricTypes_c        \
@@ -88,12 +86,6 @@ self_contained_public_header_SCOREP_Libwrap_Macros_SHARED_c_CPPFLAGS = $(self_co
 
 self_contained_public_header_SCOREP_Libwrap_Macros_SHARED_cpp_SOURCES = $(SRC_ROOT)test/public_headers/self_contained_public_header_SCOREP_Libwrap_Macros.cpp
 self_contained_public_header_SCOREP_Libwrap_Macros_SHARED_cpp_CPPFLAGS = $(self_contained_public_headers_cppflags) -DSCOREP_LIBWRAP_SHARED
-
-self_contained_public_header_SCOREP_Libwrap_Macros_WEAK_c_SOURCES = $(SRC_ROOT)test/public_headers/self_contained_public_header_SCOREP_Libwrap_Macros.c
-self_contained_public_header_SCOREP_Libwrap_Macros_WEAK_c_CPPFLAGS = $(self_contained_public_headers_cppflags) -DSCOREP_LIBWRAP_WEAK
-
-self_contained_public_header_SCOREP_Libwrap_Macros_WEAK_cpp_SOURCES = $(SRC_ROOT)test/public_headers/self_contained_public_header_SCOREP_Libwrap_Macros.cpp
-self_contained_public_header_SCOREP_Libwrap_Macros_WEAK_cpp_CPPFLAGS = $(self_contained_public_headers_cppflags) -DSCOREP_LIBWRAP_WEAK
 
 self_contained_public_header_SCOREP_MetricPlugins_c_SOURCES = $(SRC_ROOT)test/public_headers/self_contained_public_header_SCOREP_MetricPlugins.c
 self_contained_public_header_SCOREP_MetricPlugins_c_CPPFLAGS = $(self_contained_public_headers_cppflags)
@@ -174,8 +166,6 @@ installcheck_public_headers = \
     installcheck_public_header_SCOREP_Libwrap_Macros_STATIC_cpp.$(OBJEXT) \
     installcheck_public_header_SCOREP_Libwrap_Macros_SHARED_c.$(OBJEXT)   \
     installcheck_public_header_SCOREP_Libwrap_Macros_SHARED_cpp.$(OBJEXT) \
-    installcheck_public_header_SCOREP_Libwrap_Macros_WEAK_c.$(OBJEXT)     \
-    installcheck_public_header_SCOREP_Libwrap_Macros_WEAK_cpp.$(OBJEXT)   \
     installcheck_public_header_SCOREP_MetricPlugins_c.$(OBJEXT)      \
     installcheck_public_header_SCOREP_MetricPlugins_cpp.$(OBJEXT)    \
     installcheck_public_header_SCOREP_MetricTypes_c.$(OBJEXT)        \
@@ -229,12 +219,6 @@ installcheck_public_header_SCOREP_Libwrap_Macros_SHARED_c.$(OBJEXT): $(SRC_ROOT)
 
 installcheck_public_header_SCOREP_Libwrap_Macros_SHARED_cpp.$(OBJEXT): $(SRC_ROOT)test/public_headers/self_contained_public_header_SCOREP_Libwrap_Macros.cpp
 	$(AM_V_CXX)$(installcheck_public_header_CXXCOMPILE) -DSCOREP_LIBWRAP_SHARED
-
-installcheck_public_header_SCOREP_Libwrap_Macros_WEAK_c.$(OBJEXT): $(SRC_ROOT)test/public_headers/self_contained_public_header_SCOREP_Libwrap_Macros.c
-	$(AM_V_CC)$(installcheck_public_header_COMPILE) -DSCOREP_LIBWRAP_WEAK
-
-installcheck_public_header_SCOREP_Libwrap_Macros_WEAK_cpp.$(OBJEXT): $(SRC_ROOT)test/public_headers/self_contained_public_header_SCOREP_Libwrap_Macros.cpp
-	$(AM_V_CXX)$(installcheck_public_header_CXXCOMPILE) -DSCOREP_LIBWRAP_WEAK
 
 installcheck_public_header_SCOREP_MetricPlugins_c.$(OBJEXT): $(SRC_ROOT)test/public_headers/self_contained_public_header_SCOREP_MetricPlugins.c
 	$(AM_V_CC)$(installcheck_public_header_COMPILE)
