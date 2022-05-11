@@ -43,10 +43,10 @@ SCOREP_POSIX_IO_PROCESS_FUNC( POSIX_IO, FILE_IO_METADATA, off_t,   lseek,       
 SCOREP_POSIX_IO_PROCESS_FUNC( POSIX_IO, FILE_IO_METADATA, scorep_off64_t, lseek64,      ( int fd, scorep_off64_t offset, int whence ) )
 #endif
 #if HAVE( POSIX_IO_SYMBOL_OPEN )
-SCOREP_POSIX_IO_PROCESS_FUNC( POSIX_IO, FILE_IO_METADATA, int,     open,         ( const char *pathname, int flags, ... ) )
+SCOREP_POSIX_IO_PROCESS_FUNC( POSIX_IO, FILE_IO_METADATA, int,     open,         ( const char* pathname, int flags, ... ) )
 #endif
 #if HAVE( POSIX_IO_SYMBOL_OPEN64 )
-SCOREP_POSIX_IO_PROCESS_FUNC( POSIX_IO, FILE_IO_METADATA, int,     open64,       ( const char *pathname, int flags, ... ) )
+SCOREP_POSIX_IO_PROCESS_FUNC( POSIX_IO, FILE_IO_METADATA, int,     open64,       ( const char* pathname, int flags, ... ) )
 #endif
 #if HAVE( POSIX_IO_SYMBOL_OPENAT )
 SCOREP_POSIX_IO_PROCESS_FUNC( POSIX_IO, FILE_IO_METADATA, int,     openat,       ( int dirfd, const char* pathname, int flags, ... ) )
@@ -70,13 +70,13 @@ SCOREP_POSIX_IO_PROCESS_FUNC( POSIX_IO, FILE_IO,          ssize_t, preadv64,    
 SCOREP_POSIX_IO_PROCESS_FUNC( POSIX_IO, FILE_IO,          ssize_t, preadv64v2,       ( int fd, const struct iovec* iov, int iovcnt, scorep_off64_t offset, int flags ) )
 #endif
 #if HAVE( POSIX_IO_SYMBOL_PSELECT )
-SCOREP_POSIX_IO_PROCESS_FUNC( POSIX_IO, WRAPPER,     int,     pselect,      ( int nfds, fd_set *readfds, fd_set *writefds, fd_set *exceptfds, const struct timespec *timeout, const sigset_t *sigmask ) )
+SCOREP_POSIX_IO_PROCESS_FUNC( POSIX_IO, WRAPPER,     int,     pselect,      ( int nfds, fd_set * readfds, fd_set * writefds, fd_set * exceptfds, const struct timespec* timeout, const sigset_t* sigmask ) )
 #endif
 #if HAVE( POSIX_IO_SYMBOL_PWRITE )
 SCOREP_POSIX_IO_PROCESS_FUNC( POSIX_IO, FILE_IO,          ssize_t, pwrite,       ( int fd, const void* buf, size_t count, off_t offset ) )
 #endif
 #if HAVE( POSIX_IO_SYMBOL_PWRITE64 )
-SCOREP_POSIX_IO_PROCESS_FUNC( POSIX_IO, FILE_IO,          ssize_t, pwrite64,     ( int fd, const void *buf, size_t count, scorep_off64_t offset ) )
+SCOREP_POSIX_IO_PROCESS_FUNC( POSIX_IO, FILE_IO,          ssize_t, pwrite64,     ( int fd, const void* buf, size_t count, scorep_off64_t offset ) )
 #endif
 #if HAVE( POSIX_IO_SYMBOL_PWRITEV )
 SCOREP_POSIX_IO_PROCESS_FUNC( POSIX_IO, FILE_IO,          ssize_t, pwritev,      ( int fd, const struct iovec* iov, int iovcnt, off_t offset ) )
@@ -91,16 +91,16 @@ SCOREP_POSIX_IO_PROCESS_FUNC( POSIX_IO, FILE_IO,          ssize_t, pwritev64,   
 SCOREP_POSIX_IO_PROCESS_FUNC( POSIX_IO, FILE_IO,          ssize_t, pwritev64v2,      ( int fd, const struct iovec* iov, int iovcnt, scorep_off64_t offset, int flags ) )
 #endif
 #if HAVE( POSIX_IO_SYMBOL_READ )
-SCOREP_POSIX_IO_PROCESS_FUNC( POSIX_IO, FILE_IO,          ssize_t, read,         ( int fd, void *buf, size_t count ) )
+SCOREP_POSIX_IO_PROCESS_FUNC( POSIX_IO, FILE_IO,          ssize_t, read,         ( int fd, void* buf, size_t count ) )
 #endif
 #if HAVE( POSIX_IO_SYMBOL_READV )
 SCOREP_POSIX_IO_PROCESS_FUNC( POSIX_IO, FILE_IO,          ssize_t, readv,        ( int fd, const struct iovec* iov, int iovcnt ) )
 #endif
 #if HAVE( POSIX_IO_SYMBOL_SELECT )
-SCOREP_POSIX_IO_PROCESS_FUNC( POSIX_IO, WRAPPER,     int,     select,       ( int nfds, fd_set *readfds, fd_set *writefds, fd_set *exceptfds, struct timeval *timeout ) )
+SCOREP_POSIX_IO_PROCESS_FUNC( POSIX_IO, WRAPPER,     int,     select,       ( int nfds, fd_set * readfds, fd_set * writefds, fd_set * exceptfds, struct timeval* timeout ) )
 #endif
 #if HAVE( POSIX_IO_SYMBOL_SYNC )
-SCOREP_POSIX_IO_PROCESS_FUNC( POSIX_IO, FILE_IO,          void,    sync,         () )
+SCOREP_POSIX_IO_PROCESS_FUNC( POSIX_IO, FILE_IO,          void,    sync,         ( ) )
 #endif
 #if HAVE( POSIX_IO_SYMBOL_SYNCFS )
 SCOREP_POSIX_IO_PROCESS_FUNC( POSIX_IO, FILE_IO,          int,     syncfs,       ( int fd ) )
@@ -112,41 +112,41 @@ SCOREP_POSIX_IO_PROCESS_FUNC( POSIX_IO, FILE_IO_METADATA, int,     unlink,      
 SCOREP_POSIX_IO_PROCESS_FUNC( POSIX_IO, FILE_IO_METADATA, int,     unlinkat,     ( int dirfd, const char* pathname, int flags ) )
 #endif
 #if HAVE( POSIX_IO_SYMBOL_WRITE )
-SCOREP_POSIX_IO_PROCESS_FUNC( POSIX_IO, FILE_IO,          ssize_t, write,        ( int fd, const void *buf, size_t count ) )
+SCOREP_POSIX_IO_PROCESS_FUNC( POSIX_IO, FILE_IO,          ssize_t, write,        ( int fd, const void* buf, size_t count ) )
 #endif
 #if HAVE( POSIX_IO_SYMBOL_WRITEV )
 SCOREP_POSIX_IO_PROCESS_FUNC( POSIX_IO, FILE_IO,          ssize_t, writev,       ( int fd, const struct iovec* iov, int iovcnt ) )
 #endif
 #if HAVE( POSIX_IO_SYMBOL_CLOSEDIR )
-SCOREP_POSIX_IO_PROCESS_FUNC( POSIX_IO, FILE_IO_METADATA, int, closedir,        ( DIR * dirp ) )
+SCOREP_POSIX_IO_PROCESS_FUNC( POSIX_IO, FILE_IO_METADATA, int, closedir,        ( DIR* dirp ) )
 #endif
 /*
  * POSIX Async I/O routines
  */
 
 #if HAVE( POSIX_IO_SYMBOL_AIO_CANCEL )
-SCOREP_POSIX_IO_PROCESS_FUNC( POSIX_IO, FILE_IO,          int,     aio_cancel,   ( int fd, struct aiocb *aiocbp ) )
+SCOREP_POSIX_IO_PROCESS_FUNC( POSIX_IO, FILE_IO,          int,     aio_cancel,   ( int fd, struct aiocb* aiocbp ) )
 #endif
 #if HAVE( POSIX_IO_SYMBOL_AIO_ERROR )
-SCOREP_POSIX_IO_PROCESS_FUNC( POSIX_IO, FILE_IO,          int,     aio_error,    ( const struct aiocb *aiocbp ) )
+SCOREP_POSIX_IO_PROCESS_FUNC( POSIX_IO, FILE_IO,          int,     aio_error,    ( const struct aiocb* aiocbp ) )
 #endif
 #if HAVE( POSIX_IO_SYMBOL_AIO_FSYNC )
-SCOREP_POSIX_IO_PROCESS_FUNC( POSIX_IO, FILE_IO,          int,     aio_fsync,    ( int op, struct aiocb *aiocbp ) )
+SCOREP_POSIX_IO_PROCESS_FUNC( POSIX_IO, FILE_IO,          int,     aio_fsync,    ( int op, struct aiocb* aiocbp ) )
 #endif
 #if HAVE( POSIX_IO_SYMBOL_AIO_READ )
-SCOREP_POSIX_IO_PROCESS_FUNC( POSIX_IO, FILE_IO,          int,     aio_read,     ( struct aiocb *aiocbp ) )
+SCOREP_POSIX_IO_PROCESS_FUNC( POSIX_IO, FILE_IO,          int,     aio_read,     ( struct aiocb* aiocbp ) )
 #endif
 #if HAVE( POSIX_IO_SYMBOL_AIO_RETURN )
-SCOREP_POSIX_IO_PROCESS_FUNC( POSIX_IO, WRAPPER,     ssize_t, aio_return,   ( struct aiocb *aiocbp ) )
+SCOREP_POSIX_IO_PROCESS_FUNC( POSIX_IO, WRAPPER,     ssize_t, aio_return,   ( struct aiocb* aiocbp ) )
 #endif
 #if HAVE( POSIX_IO_SYMBOL_AIO_SUSPEND )
-SCOREP_POSIX_IO_PROCESS_FUNC( POSIX_IO, WRAPPER,     int,     aio_suspend,  ( const struct aiocb * const aiocb_list[], int nitems, const struct timespec *timeout ) )
+SCOREP_POSIX_IO_PROCESS_FUNC( POSIX_IO, WRAPPER,     int,     aio_suspend,  ( const struct aiocb* const aiocb_list[], int nitems, const struct timespec* timeout ) )
 #endif
 #if HAVE( POSIX_IO_SYMBOL_AIO_WRITE )
-SCOREP_POSIX_IO_PROCESS_FUNC( POSIX_IO, FILE_IO,          int,     aio_write,    ( struct aiocb *aiocbp ) )
+SCOREP_POSIX_IO_PROCESS_FUNC( POSIX_IO, FILE_IO,          int,     aio_write,    ( struct aiocb* aiocbp ) )
 #endif
 #if HAVE( POSIX_IO_SYMBOL_LIO_LISTIO )
-SCOREP_POSIX_IO_PROCESS_FUNC( POSIX_IO, FILE_IO,          int,     lio_listio,   ( int mode, struct aiocb *const aiocb_list[], int nitems, struct sigevent *sevp ) )
+SCOREP_POSIX_IO_PROCESS_FUNC( POSIX_IO, FILE_IO,          int,     lio_listio,   ( int mode, struct aiocb* const aiocb_list[], int nitems, struct sigevent* sevp ) )
 #endif
 
 /*
@@ -157,7 +157,7 @@ SCOREP_POSIX_IO_PROCESS_FUNC( POSIX_IO, FILE_IO,          int,     lio_listio,  
 SCOREP_POSIX_IO_PROCESS_FUNC( ISOC,     FILE_IO_METADATA, int,     fclose,       ( FILE* fp ) )
 #endif
 #if HAVE( POSIX_IO_SYMBOL_FDOPEN )
-SCOREP_POSIX_IO_PROCESS_FUNC( ISOC,     FILE_IO_METADATA, FILE*,   fdopen,       ( int fd, const char *mode ) )
+SCOREP_POSIX_IO_PROCESS_FUNC( ISOC,     FILE_IO_METADATA, FILE*,   fdopen,       ( int fd, const char* mode ) )
 #endif
 #if HAVE( POSIX_IO_SYMBOL_FFLUSH )
 SCOREP_POSIX_IO_PROCESS_FUNC( ISOC,     FILE_IO,          int,     fflush,       ( FILE* stream ) )
@@ -166,7 +166,7 @@ SCOREP_POSIX_IO_PROCESS_FUNC( ISOC,     FILE_IO,          int,     fflush,      
 SCOREP_POSIX_IO_PROCESS_FUNC( ISOC,     FILE_IO,          int,     fgetc,        ( FILE* stream ) )
 #endif
 #if HAVE( POSIX_IO_SYMBOL_FGETPOS )
-SCOREP_POSIX_IO_PROCESS_FUNC( ISOC,     WRAPPER,     int,     fgetpos,      ( FILE *stream, fpos_t *pos ) )
+SCOREP_POSIX_IO_PROCESS_FUNC( ISOC,     WRAPPER,     int,     fgetpos,      ( FILE* stream, fpos_t* pos ) )
 #endif
 #if HAVE( POSIX_IO_SYMBOL_FGETS )
 SCOREP_POSIX_IO_PROCESS_FUNC( ISOC,     FILE_IO,          char*,   fgets,        ( char* s, int size, FILE* steam ) )
@@ -232,13 +232,13 @@ SCOREP_POSIX_IO_PROCESS_FUNC( ISOC,     FILE_IO,          size_t,  fwrite,      
 SCOREP_POSIX_IO_PROCESS_FUNC( ISOC,     FILE_IO,          int,     getc,         ( FILE* stream ) )
 #endif
 #if HAVE( POSIX_IO_SYMBOL_GETCHAR )
-SCOREP_POSIX_IO_PROCESS_FUNC( ISOC,     FILE_IO,          int,     getchar,      () )
+SCOREP_POSIX_IO_PROCESS_FUNC( ISOC,     FILE_IO,          int,     getchar,      ( ) )
 #endif
 #if HAVE( POSIX_IO_SYMBOL_GETS )
 SCOREP_POSIX_IO_PROCESS_FUNC( ISOC,     FILE_IO,          char*,   gets,         ( char* s ) )
 #endif
 #if HAVE( POSIX_IO_SYMBOL_PRINTF ) && HAVE( POSIX_IO_SYMBOL_VPRINTF )
-SCOREP_POSIX_IO_PROCESS_FUNC( ISOC,     FILE_IO,          int,     printf,       ( const char *format, ... ) )
+SCOREP_POSIX_IO_PROCESS_FUNC( ISOC,     FILE_IO,          int,     printf,       ( const char* format, ... ) )
 #endif
 #if HAVE( POSIX_IO_SYMBOL_PUTCHAR )
 SCOREP_POSIX_IO_PROCESS_FUNC( ISOC,     FILE_IO,          int,     putchar,      ( int c ) )
@@ -265,7 +265,7 @@ SCOREP_POSIX_IO_PROCESS_FUNC( ISOC,     FILE_IO,          int,     vfprintf,    
 SCOREP_POSIX_IO_PROCESS_FUNC( ISOC,     FILE_IO,          int,     vfscanf,      ( FILE* stream, const char* format, va_list ap ) )
 #endif
 #if HAVE( POSIX_IO_SYMBOL_VPRINTF )
-SCOREP_POSIX_IO_PROCESS_FUNC( ISOC,     FILE_IO,          int,     vprintf,      ( const char *format, va_list ap ) )
+SCOREP_POSIX_IO_PROCESS_FUNC( ISOC,     FILE_IO,          int,     vprintf,      ( const char* format, va_list ap ) )
 #endif
 #if HAVE( POSIX_IO_SYMBOL_VSCANF )
 SCOREP_POSIX_IO_PROCESS_FUNC( ISOC,     FILE_IO,          int,     vscanf,       ( const char* format, va_list ap ) )

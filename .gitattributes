@@ -28,6 +28,7 @@
 /src/adapters/compiler/scorep_compiler_mgmt_gcc_plugin.inc.c -hook-config
 /src/adapters/cuda/scorep_cuda_confvars.inc.c -hook-config
 /src/adapters/hip/scorep_hip_confvars.inc.c -hook-config
+/src/adapters/io/posix/scorep_posix_io_function_list.inc.c -hook-config
 /src/adapters/kokkos/scorep_kokkos_confvars.inc.c -hook-config
 /src/adapters/memory/scorep_memory_confvars.inc.c -hook-config
 /src/adapters/mpi/scorep_mpi_confvars.inc.c -hook-config
