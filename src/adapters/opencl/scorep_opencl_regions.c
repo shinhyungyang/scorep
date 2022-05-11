@@ -1,7 +1,7 @@
 /*
  * This file is part of the Score-P software (http://www.score-p.org)
  *
- * Copyright (c) 2014,
+ * Copyright (c) 2014, 2025,
  * Technische Universitaet Dresden, Germany
  *
  * This software may be modified and distributed under the terms of
@@ -27,7 +27,7 @@
 #define SCOREP_OPENCL_PROCESS_FUNC( TYPE, return_type, func, func_args ) \
     SCOREP_RegionHandle scorep_opencl_region__ ##func;
 
-#include "scorep_opencl_function_list.inc"
+#include "scorep_opencl_function_list.inc.c"
 
 
 /**
@@ -45,5 +45,5 @@ scorep_opencl_register_regions( void )
                                                                   SCOREP_PARADIGM_OPENCL,                        \
                                                                   SCOREP_REGION_ ## TYPE );
 
-#include "scorep_opencl_function_list.inc"
+#include "scorep_opencl_function_list.inc.c"
 }

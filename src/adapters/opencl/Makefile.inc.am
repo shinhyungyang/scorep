@@ -3,7 +3,7 @@
 ##
 ## This file is part of the Score-P software (http://www.score-p.org)
 ##
-## Copyright (c) 2014-2017, 2019,
+## Copyright (c) 2014-2017, 2019, 2025,
 ## Technische Universitaet Dresden, Germany
 ##
 ## Copyright (c) 2015, 2023,
@@ -164,7 +164,7 @@ endif
 endif HAVE_OPENCL_SUPPORT
 
 EXTRA_DIST += \
-    $(SRC_ROOT)src/adapters/opencl/scorep_opencl_function_list.inc      \
+    $(SRC_ROOT)src/adapters/opencl/scorep_opencl_function_list.inc.c \
     $(SRC_ROOT)src/adapters/opencl/scorep_opencl_wrap_version_1_0.inc.c \
     $(SRC_ROOT)src/adapters/opencl/scorep_opencl_wrap_version_1_1.inc.c \
     $(SRC_ROOT)src/adapters/opencl/scorep_opencl_wrap_version_1_2.inc.c \

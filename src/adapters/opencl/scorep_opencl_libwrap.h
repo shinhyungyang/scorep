@@ -1,7 +1,7 @@
 /*
  * This file is part of the Score-P software (http://www.score-p.org)
  *
- * Copyright (c) 2016, 2017,
+ * Copyright (c) 2016, 2017, 2025,
  * Technische Universitaet Dresden, Germany
  *
  * This software may be modified and distributed under the terms of
@@ -44,6 +44,6 @@
 #define SCOREP_OPENCL_PROCESS_FUNC( TYPE, return_type, func, func_args ) \
     SCOREP_LIBWRAP_DECLARE_REAL_FUNC( ( return_type ), func, func_args );
 
-#include "scorep_opencl_function_list.inc"
+#include "scorep_opencl_function_list.inc.c"
 
 #endif /* SCOREP_OPENCL_LIBWRAP_H */

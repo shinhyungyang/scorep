@@ -1,7 +1,7 @@
 /*
  * This file is part of the Score-P software (http://www.score-p.org)
  *
- * Copyright (c) 2014,
+ * Copyright (c) 2014, 2025,
  * Technische Universitaet Dresden, Germany
  *
  * This software may be modified and distributed under the terms of
@@ -58,7 +58,7 @@
 #endif /* link modes */
 
 
-#include "scorep_opencl_function_list.inc"
+#include "scorep_opencl_function_list.inc.c"
 
 /**
  * Register OpenCL functions and initialize data structures
