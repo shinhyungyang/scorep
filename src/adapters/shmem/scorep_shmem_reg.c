@@ -1,7 +1,7 @@
 /*
  * This file is part of the Score-P software (http://www.score-p.org)
  *
- * Copyright (c) 2013-2014, 2016,
+ * Copyright (c) 2013-2014, 2016, 2025,
  * Technische Universitaet Dresden, Germany
  *
  * This software may be modified and distributed under the terms of
@@ -29,7 +29,7 @@
 #define SCOREP_SHMEM_PROCESS_FUNC( type, return_type, func, func_args ) \
     SCOREP_RegionHandle scorep_shmem_region__ ##func;
 
-#include "scorep_shmem_function_list.inc"
+#include "scorep_shmem_function_list.inc.c"
 
 
 /**
@@ -51,5 +51,5 @@ scorep_shmem_register_regions( void )
                                                                  SCOREP_REGION_ ## type );
 
 
-#include "scorep_shmem_function_list.inc"
+#include "scorep_shmem_function_list.inc.c"
 }

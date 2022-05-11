@@ -1,7 +1,7 @@
 /*
  * This file is part of the Score-P software (http://www.score-p.org)
  *
- * Copyright (c) 2013-2014, 2016, 2018,
+ * Copyright (c) 2013-2014, 2016, 2018, 2025,
  * Technische Universitaet Dresden, Germany
  *
  * Copyright (c) 2017,
@@ -102,7 +102,7 @@
 #define SCOREP_SHMEM_MY_PE _my_pe
 #endif
 
-#include "scorep_shmem_function_list.inc"
+#include "scorep_shmem_function_list.inc.c"
 
 /**
  * Register SHMEM functions and initialize data structures
