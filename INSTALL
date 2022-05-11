@@ -509,6 +509,23 @@ be used to build Score-P are as follows:
   --with-libbfd-lib=<Path to libbfd libraries>
   Please note that if a Score-P installation uses libbfd, the Score-P
   instrumented binaries may only be distributed under GPLv3 licensing.
+  --with-libgotcha[=yes|no|download|<path to libgotcha installation>]
+               Try to use libgotcha. Defaults to [yes] on
+               non-cross-compile systems and expects library and
+               headers to be found in system locations. Defaults to
+               [no] on cross-compile systems. Provide libgotcha's
+               installation prefix [path] to override the defaults.
+               --with-libgotcha=<path> is a shorthand for
+               --with-libgotcha-include=<path/include> and
+               --with-libgotcha-lib=<path/(lib64|lib)>. If this is
+               not the case, use the explicit options directly or
+               provide paths via LIBGOTCHA_LIB and
+               LIBGOTCHA_INCLUDE. Use [download] to automatically
+               obtain and use libgotcha via an external package. See
+               --with-package-cache=<path> how to provide the tarball
+               for an offline installation.
+  --with-libgotcha-include=<Path to libgotcha headers: gotcha/gotcha.h>
+  --with-libgotcha-lib=<Path to libgotcha libraries>
   --with-llvm[=<llvm-bindir>]
                Use an already installed LLVM, in particular
                llvm-config. Auto-detected if already in $PATH.
@@ -731,6 +748,7 @@ variables:
   BACKEND_TEST_RUNS_NON_RECURSIVE
               Whether to prevent passing --enable-backend-test-runs to
               sub-packages. Activation values are '1', 'yes', and 'true'.
+  CMAKE       CMake to use for building external dependencies
 
 Building & Installing
 =====================

@@ -118,7 +118,7 @@ dnl ----------------------------------------------------------------------------
 
 AC_DEFUN([_SCOREP_IO_RECORDING_POSIX], [
 AC_REQUIRE([AFS_CHECK_THREAD_LOCAL_STORAGE])dnl
-AC_REQUIRE([SCOREP_LIBRARY_WRAPPING])dnl
+AC_REQUIRE([SCOREP_CHECK_LIBRARY_WRAPPING])dnl
 
 dnl Check for POSIX synchronous I/O
 

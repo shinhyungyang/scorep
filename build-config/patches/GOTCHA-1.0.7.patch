@@ -1,0 +1,9 @@
+diff -urp GOTCHA-1.0.7.orig/src/CMakeLists.txt GOTCHA-1.0.7/src/CMakeLists.txt
+--- GOTCHA-1.0.6.orig/src/CMakeLists.txt	2023-11-09 04:19:45.000000000 +0100
++++ GOTCHA-1.0.6/src/CMakeLists.txt	2024-03-17 11:38:02.159432777 +0100
+@@ -38,5 +38,3 @@ include_directories(${CMAKE_CURRENT_SOUR
+ 
+ install(TARGETS gotcha EXPORT gotcha-targets DESTINATION ${CMAKE_INSTALL_LIBDIR})
+ install(EXPORT gotcha-targets DESTINATION ${CMAKE_INSTALL_LIBDIR}/cmake/gotcha)
+-
+-add_subdirectory(example)

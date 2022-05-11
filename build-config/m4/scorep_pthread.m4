@@ -39,7 +39,7 @@ AX_PTHREAD([scorep_have_pthread=1], [scorep_have_pthread=0])
 # Checks Pthread recording requirements
 AC_DEFUN([SCOREP_PTHREAD], [
 AC_REQUIRE([SCOREP_CHECK_PTHREAD])dnl
-AC_REQUIRE([SCOREP_LIBRARY_WRAPPING])dnl
+AC_REQUIRE([SCOREP_CHECK_LIBRARY_WRAPPING])dnl
 AC_REQUIRE([AFS_CHECK_THREAD_LOCAL_STORAGE])dnl
 
 scorep_pthread_support=${scorep_have_pthread}
