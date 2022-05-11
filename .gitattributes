@@ -37,8 +37,8 @@
 /src/adapters/ompt/scorep_ompt_events_host.inc.c -hook-config
 /src/adapters/ompt/scorep_ompt_mutex.inc.c -hook-config
 /src/adapters/ompt/scorep_ompt_regions.inc.c -hook-config
-/src/adapters/opencl/scorep_opencl_function_list.inc -hook-beautifier -hook-config
 /src/adapters/opencl/scorep_opencl_confvars.inc.c -hook-config
+/src/adapters/opencl/scorep_opencl_function_list.inc.c -hook-beautifier -hook-config
 /src/adapters/opencl/scorep_opencl_wrap_version_1_0.inc.c -hook-config
 /src/adapters/opencl/scorep_opencl_wrap_version_1_1.inc.c -hook-config
 /src/adapters/opencl/scorep_opencl_wrap_version_1_2.inc.c -hook-config
