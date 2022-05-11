@@ -309,9 +309,6 @@ public:
     addLibs( std::deque<std::string>&           libs,
              SCOREP_Config_LibraryDependencies& deps ) override;
     void
-    addLdFlags( std::string& ldflags,
-                bool         nvcc ) override;
-    void
     getInitStructName( std::deque<std::string>& init_structs ) override;
 };
 

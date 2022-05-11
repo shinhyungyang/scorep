@@ -4,7 +4,7 @@
 ## Copyright (c) 2014, 2023,
 ## Forschungszentrum Juelich GmbH, Germany
 ##
-## Copyright (c) 2015, 2017,
+## Copyright (c) 2015, 2017, 2025,
 ## Technische Universitaet Dresden, Germany
 ##
 ## This software may be modified and distributed under the terms of
@@ -36,6 +36,7 @@ libscorep_adapter_pthread_mgmt_la_CPPFLAGS = \
     -I$(INC_ROOT)src/measurement/include     \
     -I$(INC_DIR_COMMON_HASH)                 \
     $(UTILS_CPPFLAGS)                        \
+    -DSCOREP_LIBWRAP_SHARED                  \
     -I$(INC_DIR_DEFINITIONS)
 
 libscorep_adapter_pthread_mgmt_la_LIBADD = \
@@ -50,7 +51,6 @@ libscorep_adapter_pthread_mgmt_la_LDFLAGS = \
 lib_LTLIBRARIES += libscorep_adapter_pthread_event.la
 
 libscorep_adapter_pthread_event_la_SOURCES = \
-    $(SRC_ROOT)src/adapters/pthread/scorep_pthread_event_functions.h \
     $(SRC_ROOT)src/adapters/pthread/scorep_pthread_event.c
 
 libscorep_adapter_pthread_event_la_CFLAGS = \
@@ -64,7 +64,7 @@ libscorep_adapter_pthread_event_la_CPPFLAGS = \
     -I$(INC_DIR_THREAD_CREATE_WAIT)           \
     -D_XOPEN_SOURCE=500                       \
     $(UTILS_CPPFLAGS)                         \
-    -DSCOREP_LIBWRAP_STATIC                   \
+    -DSCOREP_LIBWRAP_SHARED                   \
     -I$(INC_DIR_DEFINITIONS)
 
 
@@ -72,7 +72,6 @@ libscorep_adapter_pthread_event_la_LIBADD = \
     @PTHREAD_LIBS@
 
 libscorep_adapter_pthread_event_la_LDFLAGS = \
-    $(library_api_version_ldflags)           \
-    -Wl,-wrap,pthread_create,-wrap,pthread_join,-wrap,pthread_mutex_init,-wrap,pthread_mutex_destroy,-wrap,pthread_mutex_lock,-wrap,pthread_mutex_unlock,-wrap,pthread_mutex_trylock,-wrap,pthread_exit,-wrap,pthread_cancel,-wrap,pthread_detach,-wrap,pthread_cond_init,-wrap,pthread_cond_signal,-wrap,pthread_cond_broadcast,-wrap,pthread_cond_wait,-wrap,pthread_cond_timedwait,-wrap,pthread_cond_destroy
+    $(library_api_version_ldflags)
 
 endif HAVE_PTHREAD_SUPPORT

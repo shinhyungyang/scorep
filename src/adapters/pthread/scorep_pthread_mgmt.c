@@ -30,6 +30,7 @@
 #include <SCOREP_Definitions.h>
 #include <SCOREP_Paradigms.h>
 #include <SCOREP_Memory.h>
+#include <scorep/SCOREP_Libwrap.h>
 
 #define SCOREP_DEBUG_MODULE_NAME PTHREAD
 #include <UTILS_Debug.h>
@@ -38,8 +39,17 @@
 #include <stdbool.h>
 
 
+// function pointers
+
+#define SCOREP_PTHREAD_REGION( rettype, name, NAME, TYPE, ARGS ) \
+    SCOREP_LIBWRAP_DEFINE_REAL_FUNC( ( rettype ), name, ARGS );
+
+SCOREP_PTHREAD_REGIONS
+
+#undef SCOREP_PTHREAD_REGION
+
 /* *INDENT-OFF* */
-static void register_pthread_regions( void );
+static void enable_pthread_wrapper( void );
 /* *INDENT-ON* */
 
 
@@ -49,6 +59,22 @@ struct SCOREP_Location;
 size_t    scorep_pthread_subsystem_id;
 pthread_t scorep_pthread_main_thread;
 
+
+static const char* wrapped_lib_name[] =
+{
+    "pthread.so"
+};
+static SCOREP_LibwrapHandle*          pthread_libwrap_handle;
+static const SCOREP_LibwrapAttributes pthread_libwrap_attributes =
+{
+    SCOREP_LIBWRAP_VERSION,
+    "pthread",                                                    /* name of the library wrapper */
+    "POSIX Threads",
+    SCOREP_LIBWRAP_MODE,                                          /* libwrap mode */
+    NULL,
+    sizeof( wrapped_lib_name ) / sizeof( wrapped_lib_name[ 0 ] ), /* number of wrapped libraries */
+    wrapped_lib_name
+};
 
 static SCOREP_ErrorCode
 pthread_subsystem_register( size_t subsystemId )
@@ -72,7 +98,8 @@ pthread_subsystem_init( void )
         "Pthread",
         SCOREP_PARADIGM_FLAG_NONE );
 
-    register_pthread_regions();
+    enable_pthread_wrapper();
+
     scorep_pthread_main_thread = pthread_self();
 
     UTILS_DEBUG_EXIT();
@@ -84,8 +111,11 @@ SCOREP_RegionHandle scorep_pthread_regions[ SCOREP_PTHREAD_REGION_SENTINEL ];
 
 
 static void
-register_pthread_regions( void )
+enable_pthread_wrapper( void )
 {
+    SCOREP_Libwrap_Create( &pthread_libwrap_handle,
+                           &pthread_libwrap_attributes );
+
     SCOREP_SourceFileHandle file = SCOREP_Definitions_NewSourceFile( "PTHREAD" );
 
 #define SCOREP_PTHREAD_REGION( rettype, name, NAME, TYPE, ARGS ) \
@@ -96,7 +126,10 @@ register_pthread_regions( void )
                                       SCOREP_INVALID_LINE_NO, \
                                       SCOREP_INVALID_LINE_NO, \
                                       SCOREP_PARADIGM_PTHREAD, \
-                                      SCOREP_REGION_ ## TYPE );
+                                      SCOREP_REGION_ ## TYPE ); \
+    SCOREP_Libwrap_SharedPtrInit( pthread_libwrap_handle, \
+                                  #name, \
+                                  ( void** )( &SCOREP_LIBWRAP_FUNC_REAL_NAME( name ) ) );
 
     SCOREP_PTHREAD_REGIONS
 

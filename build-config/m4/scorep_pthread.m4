@@ -6,7 +6,7 @@ dnl
 dnl Copyright (c) 2013-2014, 2022-2024,
 dnl Forschungszentrum Juelich GmbH, Germany
 dnl
-dnl Copyright (c) 2013, 2017, 2023,
+dnl Copyright (c) 2013, 2017, 2023, 2025,
 dnl Technische Universitaet Dresden, Germany
 dnl
 dnl This software may be modified and distributed under the terms of
@@ -46,10 +46,10 @@ scorep_pthread_support=${scorep_have_pthread}
 scorep_pthread_summary_reason=
 
 AS_IF([test "x${scorep_pthread_support}" = x1],
-    [AM_COND_IF([HAVE_LIBWRAP_LINKTIME_SUPPORT],
+    [AM_COND_IF([HAVE_LIBWRAP_RUNTIME_SUPPORT],
         [],
         [scorep_pthread_support=0
-         AS_VAR_APPEND([scorep_pthread_summary_reason], [", missing linktime library wrapping support"])])],
+         AS_VAR_APPEND([scorep_pthread_summary_reason], [", missing runtime library wrapping support"])])],
     [scorep_pthread_support=0
      AS_VAR_APPEND([scorep_pthread_summary_reason], [", missing pthread header or library"])])
 

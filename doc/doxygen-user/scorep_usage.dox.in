@@ -40,9 +40,7 @@ Common options are:
               omp:ompt
                   OpenMP support using thread tracking via OMPT.
               pthread
-                  Pthread support using thread tracking via library wrapping.
-                  It requires and, thus, automatically enables linktime-wrapping
-                  instrumentation.
+                  Pthread support.
                   It conflicts and, thus, automatically disables OPARI2
                   instrumentation.
   --mpp=<paradigm>[:<variant>]
