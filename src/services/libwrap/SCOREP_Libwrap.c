@@ -41,8 +41,8 @@
 #include <SCOREP_Filtering.h>
 #include <SCOREP_Types.h>
 #include <SCOREP_Events.h>
+#include <SCOREP_Subsystem.h>
 #include <scorep/SCOREP_Libwrap.h>
-#include <scorep_libwrap_management.h>
 
 #include <UTILS_Error.h>
 #include <UTILS_CStr.h>
@@ -76,20 +76,6 @@ static bool active;
 #if HAVE( GNU_LIB_NAMES_H )
 static SCOREP_Hashtab* lib_names_mapping;
 #endif
-
-/* ****************************************************************** */
-/* Prototypes                                                         */
-/* ****************************************************************** */
-
-/**
- * This function will free the allocated memory and delete the wrapper
- * handle.
- *
- * @param handle            Library wrapper handle
- */
-static void
-scorep_libwrap_delete( SCOREP_LibwrapHandle* handle );
-
 
 /* ****************************************************************** */
 /* Implementations                                                    */
@@ -309,7 +295,7 @@ SCOREP_Libwrap_SharedPtrInit( SCOREP_LibwrapHandle* handle,
 }
 
 static void
-scorep_libwrap_delete( SCOREP_LibwrapHandle* handle )
+delete_libwrap_handle( SCOREP_LibwrapHandle* handle )
 {
     UTILS_ASSERT( handle );
 
@@ -338,8 +324,8 @@ scorep_libwrap_delete( SCOREP_LibwrapHandle* handle )
 }
 
 
-void
-SCOREP_Libwrap_Initialize( void )
+static SCOREP_ErrorCode
+libwrap_subsystem_initialize( void )
 {
 #if HAVE( GNU_LIB_NAMES_H )
     lib_names_mapping = SCOREP_Hashtab_CreateSize( 16,
@@ -434,10 +420,12 @@ SCOREP_Libwrap_Initialize( void )
 #endif
 
     active = true;
+
+    return SCOREP_SUCCESS;
 }
 
-void
-SCOREP_Libwrap_Finalize( void )
+static void
+libwrap_subsystem_finalize( void )
 {
     SCOREP_LibwrapHandle* temp;
 
@@ -446,7 +434,7 @@ SCOREP_Libwrap_Finalize( void )
         temp            = libwrap_handles;
         libwrap_handles = temp->next;
 
-        scorep_libwrap_delete( temp );
+        delete_libwrap_handle( temp );
         free( temp );
     }
 
@@ -537,3 +525,10 @@ SCOREP_Libwrap_ExitWrappedRegion( int previous )
 #endif
     SCOREP_EXIT_WRAPPED_REGION();
 }
+
+const SCOREP_Subsystem SCOREP_Subsystem_LibwrapService =
+{
+    .subsystem_name     = "Libwrap",
+    .subsystem_init     = libwrap_subsystem_initialize,
+    .subsystem_finalize = libwrap_subsystem_finalize
+};

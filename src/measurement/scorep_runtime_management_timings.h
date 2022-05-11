@@ -7,7 +7,7 @@
  * Copyright (c) 2009-2013,
  * Gesellschaft fuer numerische Simulation mbH Braunschweig, Germany
  *
- * Copyright (c) 2009-2014, 2016-2017, 2020,
+ * Copyright (c) 2009-2014, 2016-2017, 2020, 2025,
  * Technische Universitaet Dresden, Germany
  *
  * Copyright (c) 2009-2013,
@@ -59,7 +59,6 @@
     SCOREP_TIMING_TRANSFORM_OP( SCOREP_Definitions_Initialize )         \
     SCOREP_TIMING_TRANSFORM_OP( SCOREP_Filtering_Initialize )           \
     SCOREP_TIMING_TRANSFORM_OP( SCOREP_Thread_Initialize )              \
-    SCOREP_TIMING_TRANSFORM_OP( SCOREP_Libwrap_Initialize )             \
     SCOREP_TIMING_TRANSFORM_OP( scorep_subsystems_initialize )          \
     SCOREP_TIMING_TRANSFORM_OP( SCOREP_Location_ActivateInitLocations ) \
     SCOREP_TIMING_TRANSFORM_OP( SCOREP_Addr2line_Initialize )           \
@@ -71,7 +70,6 @@
     SCOREP_TIMING_TRANSFORM_OP( trigger_exit_callbacks )                \
     SCOREP_TIMING_TRANSFORM_OP( SCOREP_EndEpoch )                       \
     SCOREP_TIMING_TRANSFORM_OP( MeasurementDuration )                   \
-    SCOREP_TIMING_TRANSFORM_OP( SCOREP_Libwrap_Finalize )               \
     SCOREP_TIMING_TRANSFORM_OP( SCOREP_Filtering_Finalize )             \
     SCOREP_TIMING_TRANSFORM_OP( SCOREP_Location_FinalizeDefinitions )   \
     SCOREP_TIMING_TRANSFORM_OP( SCOREP_FinalizeLocationGroup )          \

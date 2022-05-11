@@ -7,7 +7,7 @@
  * Copyright (c) 2009-2013,
  * Gesellschaft fuer numerische Simulation mbH Braunschweig, Germany
  *
- * Copyright (c) 2009-2017, 2019-2020, 2022,
+ * Copyright (c) 2009-2017, 2019-2020, 2022, 2025,
  * Technische Universitaet Dresden, Germany
  *
  * Copyright (c) 2009-2013,
@@ -96,7 +96,6 @@
 #include "scorep_paradigms_management.h"
 #include "scorep_properties_management.h"
 #include "scorep_runtime_management_timings.h"
-#include "scorep_libwrap_management.h"
 
 /** @brief Measurement system initialized? */
 static bool initialized = false;
@@ -581,15 +580,9 @@ SCOREP_InitMeasurementWithArgs( int argc, char* argv[] )
     SCOREP_TIME( SCOREP_Thread_Initialize, ( ) );
 
     /*
-     * @dependsOn Definitions
-     */
-    SCOREP_TIME( SCOREP_Libwrap_Initialize, ( ) );
-
-    /*
      * @dependsOn Filter
      * @dependsOn Thread (PAPI needs current location, but does not
      *            need to be activated yet)
-     * @dependsOn Libwrap
      * @dependsOn measurement_regions
      */
     SCOREP_TIME( scorep_subsystems_initialize, ( ) );
@@ -980,8 +973,6 @@ scorep_finalize( void )
         SCOREP_IN_MEASUREMENT_DECREMENT();
         return;
     }
-
-    SCOREP_TIME( SCOREP_Libwrap_Finalize, ( ) );
 
     SCOREP_TIME( SCOREP_Filtering_Finalize, ( ) );
     SCOREP_TIME( SCOREP_Location_FinalizeDefinitions, ( ) );
