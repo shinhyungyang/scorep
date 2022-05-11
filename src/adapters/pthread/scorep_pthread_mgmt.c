@@ -42,7 +42,7 @@
 // function pointers
 
 #define SCOREP_PTHREAD_REGION( rettype, name, NAME, TYPE, ARGS ) \
-    SCOREP_LIBWRAP_DEFINE_REAL_FUNC( ( rettype ), name, ARGS );
+    SCOREP_LIBWRAP_DEFINE_ORIGINAL( ( rettype ), name, ARGS );
 
 SCOREP_PTHREAD_REGIONS
 
@@ -116,8 +116,8 @@ enable_pthread_wrapper( void )
                                             SCOREP_INVALID_LINE_NO, \
                                             SCOREP_PARADIGM_PTHREAD, \
                                             SCOREP_REGION_ ## TYPE, \
-                                            ( void* )SCOREP_LIBWRAP_FUNC_NAME( name ), \
-                                            ( void** )&SCOREP_LIBWRAP_FUNC_REAL_NAME( name ), \
+                                            ( void* )SCOREP_LIBWRAP_WRAPPER( name ), \
+                                            ( void** )&SCOREP_LIBWRAP_ORIGINAL( name ), \
                                             &scorep_pthread_regions[ SCOREP_PTHREAD_ ## NAME ] ) ) \
     { \
         UTILS_FATAL( "Could not enable wrapping for function '" #name "'" ); \

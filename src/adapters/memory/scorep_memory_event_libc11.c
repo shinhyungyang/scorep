@@ -21,15 +21,15 @@
 #include "scorep_memory_event_functions.h"
 
 void*
-SCOREP_LIBWRAP_FUNC_NAME( aligned_alloc )( size_t alignment,
-                                           size_t size )
+SCOREP_LIBWRAP_WRAPPER( aligned_alloc )( size_t alignment,
+                                         size_t size )
 {
     bool trigger = SCOREP_IN_MEASUREMENT_TEST_AND_INCREMENT();
     if ( !trigger ||
          !SCOREP_IS_MEASUREMENT_PHASE( WITHIN ) )
     {
         SCOREP_IN_MEASUREMENT_DECREMENT();
-        return SCOREP_LIBWRAP_FUNC_CALL( aligned_alloc, ( alignment, size ) );
+        return SCOREP_LIBWRAP_ORIGINAL( aligned_alloc )( alignment, size );
     }
 
     UTILS_DEBUG_ENTRY( "%zu, %zu", alignment, size );
@@ -38,7 +38,7 @@ SCOREP_LIBWRAP_FUNC_NAME( aligned_alloc )( size_t alignment,
     SCOREP_EnterWrappedRegion( scorep_memory_regions[ SCOREP_MEMORY_ALIGNED_ALLOC ] );
 
     SCOREP_ENTER_WRAPPED_REGION();
-    void* result = SCOREP_LIBWRAP_FUNC_CALL( aligned_alloc, ( alignment, size ) );
+    void* result = SCOREP_LIBWRAP_ORIGINAL( aligned_alloc )( alignment, size );
     SCOREP_EXIT_WRAPPED_REGION();
 
     if ( result )

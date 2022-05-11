@@ -33,14 +33,14 @@
 /* *INDENT-OFF* */
 #define SCOREP_MEMORY_WRAP_MALLOC( FUNCTION, REGION ) \
 void* \
-SCOREP_LIBWRAP_FUNC_NAME( FUNCTION )( size_t size ) \
+SCOREP_LIBWRAP_WRAPPER( FUNCTION )( size_t size ) \
 { \
     bool trigger = SCOREP_IN_MEASUREMENT_TEST_AND_INCREMENT(); \
     if ( !trigger || \
          !SCOREP_IS_MEASUREMENT_PHASE( WITHIN ) ) \
     { \
         SCOREP_IN_MEASUREMENT_DECREMENT(); \
-        return SCOREP_LIBWRAP_FUNC_CALL( FUNCTION, ( size ) ); \
+        return SCOREP_LIBWRAP_ORIGINAL( FUNCTION )( size ); \
     } \
  \
     UTILS_DEBUG_ENTRY( "%zu", size ); \
@@ -49,7 +49,7 @@ SCOREP_LIBWRAP_FUNC_NAME( FUNCTION )( size_t size ) \
     SCOREP_EnterWrappedRegion( scorep_memory_regions[ SCOREP_MEMORY_##REGION ] ); \
  \
     SCOREP_ENTER_WRAPPED_REGION(); \
-    void* result = SCOREP_LIBWRAP_FUNC_CALL( FUNCTION, ( size ) ); \
+    void* result = SCOREP_LIBWRAP_ORIGINAL( FUNCTION )( size ); \
     SCOREP_EXIT_WRAPPED_REGION(); \
  \
     if ( result ) \
@@ -71,14 +71,14 @@ SCOREP_LIBWRAP_FUNC_NAME( FUNCTION )( size_t size ) \
 /* *INDENT-OFF* */
 #define SCOREP_MEMORY_WRAP_FREE( FUNCTION, REGION ) \
 void \
-SCOREP_LIBWRAP_FUNC_NAME( FUNCTION )( void* ptr ) \
+SCOREP_LIBWRAP_WRAPPER( FUNCTION )( void* ptr ) \
 { \
     bool trigger = SCOREP_IN_MEASUREMENT_TEST_AND_INCREMENT(); \
     if ( !trigger || \
          !SCOREP_IS_MEASUREMENT_PHASE( WITHIN ) ) \
     { \
         SCOREP_IN_MEASUREMENT_DECREMENT(); \
-        SCOREP_LIBWRAP_FUNC_CALL( FUNCTION, ( ptr ) ); \
+        SCOREP_LIBWRAP_ORIGINAL( FUNCTION )( ptr ); \
         return; \
     } \
  \
@@ -95,7 +95,7 @@ SCOREP_LIBWRAP_FUNC_NAME( FUNCTION )( void* ptr ) \
     } \
  \
     SCOREP_ENTER_WRAPPED_REGION(); \
-    SCOREP_LIBWRAP_FUNC_CALL( FUNCTION, ( ptr ) ); \
+    SCOREP_LIBWRAP_ORIGINAL( FUNCTION )( ptr ); \
     SCOREP_EXIT_WRAPPED_REGION(); \
  \
     uint64_t dealloc_size = 0; \
@@ -117,14 +117,15 @@ SCOREP_LIBWRAP_FUNC_NAME( FUNCTION )( void* ptr ) \
 /* *INDENT-OFF* */
 #define SCOREP_MEMORY_WRAP_FREE_SIZE( FUNCTION, REGION ) \
 void \
-SCOREP_LIBWRAP_FUNC_NAME( FUNCTION )( void* ptr, size_t size ) \
+SCOREP_LIBWRAP_WRAPPER( FUNCTION )( void*  ptr, \
+                                    size_t size ) \
 { \
     bool trigger = SCOREP_IN_MEASUREMENT_TEST_AND_INCREMENT(); \
     if ( !trigger || \
          !SCOREP_IS_MEASUREMENT_PHASE( WITHIN ) ) \
     { \
         SCOREP_IN_MEASUREMENT_DECREMENT(); \
-        SCOREP_LIBWRAP_FUNC_CALL( FUNCTION, ( ptr, size ) ); \
+        SCOREP_LIBWRAP_ORIGINAL( FUNCTION )( ptr, size ); \
         return; \
     } \
  \
@@ -142,7 +143,7 @@ SCOREP_LIBWRAP_FUNC_NAME( FUNCTION )( void* ptr, size_t size ) \
     } \
  \
     SCOREP_ENTER_WRAPPED_REGION(); \
-    SCOREP_LIBWRAP_FUNC_CALL( FUNCTION, ( ptr, size ) ); \
+    SCOREP_LIBWRAP_ORIGINAL( FUNCTION )( ptr, size ); \
     SCOREP_EXIT_WRAPPED_REGION(); \
  \
     uint64_t dealloc_size = 0; \
@@ -164,15 +165,15 @@ SCOREP_LIBWRAP_FUNC_NAME( FUNCTION )( void* ptr, size_t size ) \
 /* *INDENT-OFF* */
 #define SCOREP_MEMORY_WRAP_CALLOC( FUNCTION, REGION ) \
 void* \
-SCOREP_LIBWRAP_FUNC_NAME( FUNCTION )( size_t nmemb, \
-                                      size_t size ) \
+SCOREP_LIBWRAP_WRAPPER( FUNCTION )( size_t nmemb, \
+                                    size_t size ) \
 { \
     bool trigger = SCOREP_IN_MEASUREMENT_TEST_AND_INCREMENT(); \
     if ( !trigger || \
          !SCOREP_IS_MEASUREMENT_PHASE( WITHIN ) ) \
     { \
         SCOREP_IN_MEASUREMENT_DECREMENT(); \
-        return SCOREP_LIBWRAP_FUNC_CALL( FUNCTION, ( nmemb, size ) ); \
+        return SCOREP_LIBWRAP_ORIGINAL( FUNCTION )( nmemb, size ); \
     } \
  \
     UTILS_DEBUG_ENTRY( "%zu, %zu", nmemb, size ); \
@@ -181,7 +182,7 @@ SCOREP_LIBWRAP_FUNC_NAME( FUNCTION )( size_t nmemb, \
     SCOREP_EnterWrappedRegion( scorep_memory_regions[ SCOREP_MEMORY_##REGION ] ); \
  \
     SCOREP_ENTER_WRAPPED_REGION(); \
-    void* result = SCOREP_LIBWRAP_FUNC_CALL( FUNCTION, ( nmemb, size ) ); \
+    void* result = SCOREP_LIBWRAP_ORIGINAL( FUNCTION )( nmemb, size ); \
     SCOREP_EXIT_WRAPPED_REGION(); \
  \
     if ( result ) \
@@ -204,15 +205,15 @@ SCOREP_LIBWRAP_FUNC_NAME( FUNCTION )( size_t nmemb, \
 /* *INDENT-OFF* */
 #define SCOREP_MEMORY_WRAP_REALLOC( FUNCTION, REGION ) \
 void* \
-SCOREP_LIBWRAP_FUNC_NAME( FUNCTION )( void*  ptr, \
-                                      size_t size ) \
+SCOREP_LIBWRAP_WRAPPER( FUNCTION )( void*  ptr, \
+                                    size_t size ) \
 { \
     bool trigger = SCOREP_IN_MEASUREMENT_TEST_AND_INCREMENT(); \
     if ( !trigger || \
          !SCOREP_IS_MEASUREMENT_PHASE( WITHIN ) ) \
     { \
         SCOREP_IN_MEASUREMENT_DECREMENT(); \
-        return SCOREP_LIBWRAP_FUNC_CALL( FUNCTION, ( ptr, size ) ); \
+        return SCOREP_LIBWRAP_ORIGINAL( FUNCTION )( ptr, size ); \
     } \
  \
     UTILS_DEBUG_ENTRY( "%p, %zu", ptr, size ); \
@@ -233,7 +234,7 @@ SCOREP_LIBWRAP_FUNC_NAME( FUNCTION )( void*  ptr, \
     } \
  \
     SCOREP_ENTER_WRAPPED_REGION(); \
-    void* result = SCOREP_LIBWRAP_FUNC_CALL( FUNCTION, ( ptr, size ) ); \
+    void* result = SCOREP_LIBWRAP_ORIGINAL( FUNCTION )( ptr, size ); \
     SCOREP_EXIT_WRAPPED_REGION(); \
  \
     /* \
@@ -286,16 +287,16 @@ SCOREP_LIBWRAP_FUNC_NAME( FUNCTION )( void*  ptr, \
 /* *INDENT-OFF* */
 #define SCOREP_MEMORY_WRAP_POSIX_MEMALIGN( FUNCTION, REGION ) \
 int \
-SCOREP_LIBWRAP_FUNC_NAME( FUNCTION )( void** ptr, \
-                                      size_t alignment, \
-                                      size_t size ) \
+SCOREP_LIBWRAP_WRAPPER( FUNCTION )( void** ptr, \
+                                    size_t alignment, \
+                                    size_t size ) \
 { \
     bool trigger = SCOREP_IN_MEASUREMENT_TEST_AND_INCREMENT(); \
     if ( !trigger || \
          !SCOREP_IS_MEASUREMENT_PHASE( WITHIN ) ) \
     { \
         SCOREP_IN_MEASUREMENT_DECREMENT(); \
-        return SCOREP_LIBWRAP_FUNC_CALL( FUNCTION, ( ptr, alignment, size ) ); \
+        return SCOREP_LIBWRAP_ORIGINAL( FUNCTION )( ptr, alignment, size ); \
     } \
  \
     UTILS_DEBUG_ENTRY( "%zu, %zu", alignment, size ); \
@@ -304,7 +305,7 @@ SCOREP_LIBWRAP_FUNC_NAME( FUNCTION )( void** ptr, \
     SCOREP_EnterWrappedRegion( scorep_memory_regions[ SCOREP_MEMORY_##REGION ] ); \
  \
     SCOREP_ENTER_WRAPPED_REGION(); \
-    int result = SCOREP_LIBWRAP_FUNC_CALL( FUNCTION, ( ptr, alignment, size ) ); \
+    int result = SCOREP_LIBWRAP_ORIGINAL( FUNCTION )( ptr, alignment, size ); \
     SCOREP_EXIT_WRAPPED_REGION(); \
  \
     if ( result == 0 && *ptr ) \

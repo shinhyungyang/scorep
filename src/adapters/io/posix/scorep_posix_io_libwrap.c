@@ -33,8 +33,8 @@
 
 #define SCOREP_POSIX_IO_PROCESS_FUNC( PARADIGM, TYPE, return_type, func, func_args ) \
     SCOREP_RegionHandle SCOREP_LIBWRAP_REGION_HANDLE( func ) = SCOREP_INVALID_REGION; \
-    return_type SCOREP_LIBWRAP_FUNC_NAME( func )func_args; \
-    SCOREP_LIBWRAP_DEFINE_REAL_FUNC( ( return_type ), func, func_args );
+    return_type SCOREP_LIBWRAP_WRAPPER( func )func_args; \
+    SCOREP_LIBWRAP_DEFINE_ORIGINAL( ( return_type ), func, func_args );
 
 #include "scorep_posix_io_function_list.inc.c"
 
@@ -68,8 +68,8 @@ scorep_posix_io_libwrap_init( void )
                                   SCOREP_INVALID_LINE_NO, \
                                   SCOREP_PARADIGM_IO, \
                                   SCOREP_REGION_ ## TYPE, \
-                                  ( void* )SCOREP_LIBWRAP_FUNC_NAME( func ), \
-                                  ( void** )&SCOREP_LIBWRAP_FUNC_REAL_NAME( func ), \
+                                  ( void* )SCOREP_LIBWRAP_WRAPPER( func ), \
+                                  ( void** )&SCOREP_LIBWRAP_ORIGINAL( func ), \
                                   &SCOREP_LIBWRAP_REGION_HANDLE( func ) );
 
 #include "scorep_posix_io_function_list.inc.c"

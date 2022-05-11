@@ -23,14 +23,14 @@ class EventWrapper:
 
 
 def libwrap_get_func_name(line: str) -> str:
-    ret = re.search('SCOREP_LIBWRAP_FUNC_NAME.*', line)
+    ret = re.search('SCOREP_LIBWRAP_WRAPPER.*', line)
     assert(ret is not None)
     assert(ret.group() is not None)
     return ret.group().replace('(', ',').split(" ")[1]
 
 
 def libwrap_is_wrapper_func(line: str) -> bool:
-    return "=SCOREP_LIBWRAP_FUNC_NAME" in line
+    return "=SCOREP_LIBWRAP_WRAPPER" in line
 
 
 def mpi_is_wrapper_func(line: str) -> bool:
