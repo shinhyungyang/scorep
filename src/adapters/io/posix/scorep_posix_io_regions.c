@@ -1,7 +1,7 @@
 /*
  * This file is part of the Score-P software (http://www.score-p.org)
  *
- * Copyright (c) 2016,
+ * Copyright (c) 2016, 2025,
  * Technische Universitaet Dresden, Germany
  *
  * This software may be modified and distributed under the terms of
@@ -31,7 +31,7 @@
 #define SCOREP_POSIX_IO_PROCESS_FUNC( PARADIGM, TYPE, return_type, func, func_args ) \
     SCOREP_RegionHandle scorep_posix_io_region_ ##func;
 
-#include "scorep_posix_io_function_list.inc"
+#include "scorep_posix_io_function_list.inc.c"
 
 
 /**
@@ -49,5 +49,5 @@ scorep_posix_io_register_regions( void )
                                                                    SCOREP_PARADIGM_IO,                              \
                                                                    SCOREP_REGION_##TYPE );
 
-#include "scorep_posix_io_function_list.inc"
+#include "scorep_posix_io_function_list.inc.c"
 }

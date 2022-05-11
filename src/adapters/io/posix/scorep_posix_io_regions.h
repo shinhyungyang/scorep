@@ -1,7 +1,7 @@
 /*
  * This file is part of the Score-P software (http://www.score-p.org)
  *
- * Copyright (c) 2016,
+ * Copyright (c) 2016, 2025,
  * Technische Universitaet Dresden, Germany
  *
  * This software may be modified and distributed under the terms of
@@ -54,7 +54,7 @@
 #endif /* link modes */
 
 
-#include "scorep_posix_io_function_list.inc"
+#include "scorep_posix_io_function_list.inc.c"
 
 /**
  * Register POSIX I/O functions and initialize data structures

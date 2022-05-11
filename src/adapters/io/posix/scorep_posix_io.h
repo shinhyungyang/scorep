@@ -1,7 +1,7 @@
 /*
  * This file is part of the Score-P software (http://www.score-p.org)
  *
- * Copyright (c) 2016-2019,
+ * Copyright (c) 2016-2019, 2025,
  * Technische Universitaet Dresden, Germany
  *
  * Copyright (c) 2022,
@@ -57,7 +57,7 @@ typedef int64_t scorep_off64_t;
 #define SCOREP_POSIX_IO_PROCESS_FUNC( PARADIGM, TYPE, return_type, func, func_args ) \
     SCOREP_LIBWRAP_DECLARE_REAL_FUNC( ( return_type ), func, func_args );
 
-#include "scorep_posix_io_function_list.inc"
+#include "scorep_posix_io_function_list.inc.c"
 
 /** Artificial POSIX I/O handle representing all currently active I/O handles */
 extern SCOREP_IoHandleHandle scorep_posix_io_sync_all_handle;
