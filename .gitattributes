@@ -45,6 +45,7 @@
 /src/adapters/opencl/scorep_opencl_wrap_version_2_1.inc.c -hook-config
 /src/adapters/opencl/scorep_opencl_wrap_version_2_2.inc.c -hook-config
 /src/adapters/shmem/scorep_shmem_confvars.inc.c -hook-config
+/src/adapters/shmem/scorep_shmem_function_list.inc.c -hook-config
 /src/adapters/shmem/fortran_common/scorep_fshmem_atomic.inc.c -hook-config
 /src/adapters/shmem/fortran_common/scorep_fshmem_broadcast.inc.c -hook-config
 /src/adapters/shmem/fortran_common/scorep_fshmem_cache.inc.c -hook-config

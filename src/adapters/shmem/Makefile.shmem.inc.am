@@ -3,7 +3,7 @@
 ##
 ## This file is part of the Score-P software (http://www.score-p.org)
 ##
-## Copyright (c) 2013-2015, 2017, 2019,
+## Copyright (c) 2013-2015, 2017, 2019, 2025,
 ## Technische Universitaet Dresden, Germany
 ##
 ## Copyright (c) 2014, 2017, 2023-2024,
@@ -152,7 +152,7 @@ libscorep_adapter_shmem_c_event_la_CPPFLAGS = \
 endif HAVE_SHMEM_SUPPORT
 
 EXTRA_DIST += \
-    $(SRC_ROOT)src/adapters/shmem/scorep_shmem_function_list.inc                    \
+    $(SRC_ROOT)src/adapters/shmem/scorep_shmem_function_list.inc.c                  \
     $(SRC_ROOT)src/adapters/shmem/fortran_common/scorep_fshmem_atomic.inc.c         \
     $(SRC_ROOT)src/adapters/shmem/fortran_common/scorep_fshmem_broadcast.inc.c      \
     $(SRC_ROOT)src/adapters/shmem/fortran_common/scorep_fshmem_cache.inc.c          \
