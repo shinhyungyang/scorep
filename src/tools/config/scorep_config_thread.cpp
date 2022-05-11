@@ -23,10 +23,12 @@
  */
 
 #include <config.h>
+
 #include <scorep_config_tool_backend.h>
 #include <scorep_config_tool_mpi.h>
 #include "scorep_config_thread.hpp"
 #include "scorep_config_adapter.hpp"
+
 #include <iostream>
 
 /* **************************************************************************************
@@ -317,30 +319,6 @@ SCOREP_Config_PthreadThreadSystem::addLibs( std::deque<std::string>&           l
     deps.addDependency( "libscorep_measurement", "libscorep_adapter_pthread_mgmt" );
     SCOREP_Config_ThreadSystem::addLibs( libs, deps );
     deps.addDependency( "libscorep_thread_create_wait_pthread", "libscorep_adapter_pthread_mgmt" );
-}
-
-void
-SCOREP_Config_PthreadThreadSystem::addLdFlags( std::string& ldflags,
-                                               bool         nvcc )
-{
-    ldflags += " -Wl,"
-               "--undefined,__wrap_pthread_create,"
-               "-wrap,pthread_create,"
-               "-wrap,pthread_join,"
-               "-wrap,pthread_exit,"
-               "-wrap,pthread_cancel,"
-               "-wrap,pthread_detach,"
-               "-wrap,pthread_mutex_init,"
-               "-wrap,pthread_mutex_destroy,"
-               "-wrap,pthread_mutex_lock,"
-               "-wrap,pthread_mutex_unlock,"
-               "-wrap,pthread_mutex_trylock,"
-               "-wrap,pthread_cond_init,"
-               "-wrap,pthread_cond_signal,"
-               "-wrap,pthread_cond_broadcast,"
-               "-wrap,pthread_cond_wait,"
-               "-wrap,pthread_cond_timedwait,"
-               "-wrap,pthread_cond_destroy";
 }
 
 void

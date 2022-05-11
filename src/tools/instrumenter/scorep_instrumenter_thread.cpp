@@ -7,7 +7,7 @@
  * Copyright (c) 2014,
  * German Research School for Simulation Sciences GmbH, Juelich/Aachen, Germany
  *
- * Copyright (c) 2015, 2017, 2024,
+ * Copyright (c) 2015, 2017, 2024, 2025,
  * Technische Universitaet Dresden, Germany
  *
  * Copyright (c) 2017,
@@ -218,8 +218,7 @@ SCOREP_Instrumenter_Pthread::SCOREP_Instrumenter_Pthread(
     SCOREP_Instrumenter_Paradigm( selector,
                                   "pthread",
                                   "",
-                                  "Pthread support using thread tracking via "
-                                  "library wrapping." ),
+                                  "Pthread support." ),
     m_pthread_cflag( SCOREP_BACKEND_PTHREAD_CFLAGS ),
     m_pthread_lib( SCOREP_BACKEND_PTHREAD_LIBS )
 {

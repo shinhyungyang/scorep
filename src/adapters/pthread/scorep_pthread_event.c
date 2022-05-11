@@ -4,7 +4,7 @@
  * Copyright (c) 2014, 2016, 2018,
  * Forschungszentrum Juelich GmbH, Germany
  *
- * Copyright (c) 2014-2018, 2023,
+ * Copyright (c) 2014-2018, 2023, 2025,
  * Technische Universitaet Dresden, Germany
  *
  * This software may be modified and distributed under the terms of
@@ -19,7 +19,6 @@
 #include <config.h>
 
 #include "scorep_pthread.h"
-#include "scorep_pthread_event_functions.h"
 #include "scorep_pthread_mutex.h"
 
 #include <SCOREP_Events.h>
@@ -28,7 +27,6 @@
 #include <SCOREP_RuntimeManagement.h>
 #include <SCOREP_InMeasurement.h>
 #include <SCOREP_Memory.h>
-#include <scorep/SCOREP_Libwrap_Macros.h>
 #include <SCOREP_Task.h>
 
 #define SCOREP_DEBUG_MODULE_NAME PTHREAD
@@ -450,6 +448,7 @@ SCOREP_LIBWRAP_FUNC_NAME( pthread_mutex_init )( pthread_mutex_t*           pthre
     {
         SCOREP_InitMeasurement();
     }
+
     if ( !trigger || !SCOREP_IS_MEASUREMENT_PHASE( WITHIN ) )
     {
         SCOREP_IN_MEASUREMENT_DECREMENT();
