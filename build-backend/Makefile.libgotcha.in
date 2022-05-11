@@ -1,0 +1,82 @@
+# @configure_input@
+
+# Executing 'make -f @SCOREP_LIBGOTCHA_MAKEFILE@' downloads a libgotcha
+# package and installs a shared libgotcha into @SCOREP_LIBGOTCHA_PREFIX@
+# using CC=gcc that was found in PATH.
+#
+# Usually, this process is triggered during Score-P's build-backend
+# make. If libgotcha's configure or make fail, or if there are
+# failures in the subsequent build process of Score-P, consider
+# modifying CC below to point to a compiler (gcc recommended) that is
+# compatible with the compute node compiler that you are using for
+# Score-P (i.e., gcc) and try (manually) again. Note that PGI/NVIDIA
+# and well as non-clang-based Cray compilers fail to build
+# libgotcha.
+#
+# You can also modify the installation prefix if, e.g., you want to
+# share the libgotcha installation between several Score-P
+# installations (which then need to be configured using
+# --with-libgotcha=<prefix>).
+#
+# Please report bugs to @PACKAGE_BUGREPORT@.
+#
+
+THIS_FILE = build-backend/@SCOREP_LIBGOTCHA_MAKEFILE@
+
+CC = gcc
+CMAKE = @CMAKE@
+MKDIR_P = @MKDIR_P@
+
+srcdir = @afs_srcdir@
+PACKAGE_CACHE = @AFS_LIB_PACKAGE_CACHE@
+
+URL = @libgotcha_url@
+PACKAGE = @libgotcha_package@
+
+exec_prefix = @exec_prefix@
+prefix = @prefix@
+PREFIX = @SCOREP_LIBGOTCHA_PREFIX@
+
+AM_DEFAULT_VERBOSITY = @AM_DEFAULT_VERBOSITY@
+
+AM_V_at = $(am__v_at_@AM_V@)
+am__v_at_ = $(am__v_at_@AM_DEFAULT_V@)
+am__v_at_0 = @
+am__v_at_1 =
+
+BUILD_V_SILENT = $(build__v_SILENT_@AM_V@)
+build__v_SILENT_ = $(build__v_SILENT_@AM_DEFAULT_V@)
+build__v_SILENT_0 = --silent
+
+BUILD_V_QUIET = $(build__v_QUIET_@AM_V@)
+build__v_QUIET_ = $(build__v_QUIET_@AM_DEFAULT_V@)
+build__v_QUIET_0 = --quiet
+
+all:
+	$(AM_V_at)if [ -r $(PACKAGE_CACHE)/$(PACKAGE).tar.gz ]; then \
+	    PACKAGE="$(PACKAGE_CACHE)/$(PACKAGE)"; \
+	else \
+	    PACKAGE="$(PACKAGE)"; \
+	    @AFS_LIB_DOWNLOAD_CMD@ $(URL); \
+	fi && \
+	tar xf "$$PACKAGE.tar.gz"
+	$(AM_V_at)if test -r $(srcdir)/build-config/patches/$(PACKAGE).patch; then \
+	    ( cd $(PACKAGE); @AFS_LIB_PATCH_CMD@ -p 1 ) <$(srcdir)/build-config/patches/$(PACKAGE).patch; \
+	fi
+	$(AM_V_at)$(MKDIR_P) $(PACKAGE)/_build
+	$(AM_V_at)cd $(PACKAGE)/_build && \
+	    $(CMAKE) \
+	        -G"Unix Makefiles" \
+	        -DCMAKE_BUILD_TYPE=RelWithDebInfo \
+	        -DCMAKE_INSTALL_PREFIX=$(PREFIX) \
+	        -DCMAKE_INSTALL_LIBDIR=lib \
+	        -DCMAKE_C_COMPILER=$(CC) \
+	        -DGOTCHA_ENABLE_TESTS=OFF \
+	        ..
+	$(AM_V_at)cd $(PACKAGE)/_build && $(MAKE) $(BUILD_V_SILENT)
+	$(AM_V_at)cd $(PACKAGE)/_build && $(MAKE) $(BUILD_V_SILENT) install
+	$(AM_V_at)touch $(PREFIX)/include/gotcha/gotcha.h
+clean: uninstall
+	$(AM_V_at)rm -rf $(PACKAGE).tar.gz $(PACKAGE)
+uninstall:
+	$(AM_V_at)rm -rf $(PREFIX)

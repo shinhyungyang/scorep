@@ -192,7 +192,7 @@ _SCOREP_OPENCL_ADD_SYMBOLS([2.2],
 dnl ----------------------------------------------------------------------------
 
 AC_DEFUN([SCOREP_OPENCL], [
-AC_REQUIRE([SCOREP_LIBRARY_WRAPPING])dnl
+AC_REQUIRE([SCOREP_CHECK_LIBRARY_WRAPPING])dnl
 
 AC_DEFINE([CL_USE_DEPRECATED_OPENCL_1_0_APIS],
           [1], [Enable declarations for deprecated OpenCL 1.0 APIs])
