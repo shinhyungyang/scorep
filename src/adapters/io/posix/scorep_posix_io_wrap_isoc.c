@@ -39,23 +39,6 @@
 #define SCOREP_DEBUG_MODULE_NAME IO
 #include <UTILS_Debug.h>
 
-/* *INDENT-OFF* */
-#ifdef SCOREP_LIBWRAP_SHARED
-#define INITIALIZE_FUNCTION_POINTER( func )                                \
-    do                                                                     \
-    {                                                                      \
-        if ( !SCOREP_LIBWRAP_FUNC_REAL_NAME( func ) )                      \
-        {                                                                  \
-            scorep_posix_io_early_init_function_pointers();                \
-            UTILS_BUG_ON( SCOREP_LIBWRAP_FUNC_REAL_NAME( func ) == NULL,   \
-                          "Cannot obtain address of symbol: " #func "." ); \
-        }                                                                  \
-    } while ( 0 )
-#else
-#define INITIALIZE_FUNCTION_POINTER( func ) do { } while ( 0 )
-#endif
-/* *INDENT-ON* */
-
 /*
  * Annex K of the C11 standard specifies bounds-checking interfaces.
  * Only a few implementations exist, e.g. Microsoft Visual Studio.
@@ -203,8 +186,7 @@ SCOREP_LIBWRAP_FUNC_NAME( fclose )( FILE* fp )
      * the underlying file descriptor.
      */
     bool trigger = SCOREP_IN_MEASUREMENT_TEST_AND_INCREMENT();
-    INITIALIZE_FUNCTION_POINTER( fclose );
-    int ret;
+    int  ret;
 
     if ( trigger && SCOREP_IS_MEASUREMENT_PHASE( WITHIN ) )
     {
@@ -273,8 +255,7 @@ SCOREP_LIBWRAP_FUNC_NAME( fclose )( FILE* fp )
 FILE*
 SCOREP_LIBWRAP_FUNC_NAME( fdopen )( int fd, const char* mode )
 {
-    bool trigger = SCOREP_IN_MEASUREMENT_TEST_AND_INCREMENT();
-    INITIALIZE_FUNCTION_POINTER( fdopen );
+    bool  trigger = SCOREP_IN_MEASUREMENT_TEST_AND_INCREMENT();
     FILE* ret;
 
     if ( trigger && SCOREP_IS_MEASUREMENT_PHASE( WITHIN ) )
@@ -328,8 +309,7 @@ int
 SCOREP_LIBWRAP_FUNC_NAME( fflush )( FILE* stream )
 {
     bool trigger = SCOREP_IN_MEASUREMENT_TEST_AND_INCREMENT();
-    INITIALIZE_FUNCTION_POINTER( fflush );
-    int ret;
+    int  ret;
 
     if ( trigger && SCOREP_IS_MEASUREMENT_PHASE( WITHIN ) )
     {
@@ -388,8 +368,7 @@ int
 SCOREP_LIBWRAP_FUNC_NAME( fgetc )( FILE* stream )
 {
     bool trigger = SCOREP_IN_MEASUREMENT_TEST_AND_INCREMENT();
-    INITIALIZE_FUNCTION_POINTER( fgetc );
-    int ret;
+    int  ret;
 
     if ( trigger && SCOREP_IS_MEASUREMENT_PHASE( WITHIN ) )
     {
@@ -438,8 +417,7 @@ int
 SCOREP_LIBWRAP_FUNC_NAME( fgetpos )( FILE* stream, fpos_t* pos )
 {
     bool trigger = SCOREP_IN_MEASUREMENT_TEST_AND_INCREMENT();
-    INITIALIZE_FUNCTION_POINTER( fgetpos );
-    int ret;
+    int  ret;
 
     if ( trigger && SCOREP_IS_MEASUREMENT_PHASE( WITHIN ) )
     {
@@ -466,8 +444,7 @@ SCOREP_LIBWRAP_FUNC_NAME( fgetpos )( FILE* stream, fpos_t* pos )
 char*
 SCOREP_LIBWRAP_FUNC_NAME( fgets )( char* s, int size, FILE* stream )
 {
-    bool trigger = SCOREP_IN_MEASUREMENT_TEST_AND_INCREMENT();
-    INITIALIZE_FUNCTION_POINTER( fgets );
+    bool  trigger = SCOREP_IN_MEASUREMENT_TEST_AND_INCREMENT();
     char* ret;
 
     if ( trigger && SCOREP_IS_MEASUREMENT_PHASE( WITHIN ) )
@@ -517,7 +494,6 @@ void
 SCOREP_LIBWRAP_FUNC_NAME( flockfile )( FILE* filehandle )
 {
     bool trigger = SCOREP_IN_MEASUREMENT_TEST_AND_INCREMENT();
-    INITIALIZE_FUNCTION_POINTER( flockfile );
 
     if ( trigger && SCOREP_IS_MEASUREMENT_PHASE( WITHIN ) )
     {
@@ -573,8 +549,7 @@ create_posix_handle( int fd, const char* path, SCOREP_IoAccessMode access_mode )
 FILE*
 SCOREP_LIBWRAP_FUNC_NAME( fopen )( const char* path, const char* mode )
 {
-    bool trigger = SCOREP_IN_MEASUREMENT_TEST_AND_INCREMENT();
-    INITIALIZE_FUNCTION_POINTER( fopen );
+    bool  trigger = SCOREP_IN_MEASUREMENT_TEST_AND_INCREMENT();
     FILE* ret;
 
     if ( trigger && SCOREP_IS_MEASUREMENT_PHASE( WITHIN ) )
@@ -670,8 +645,7 @@ SCOREP_LIBWRAP_FUNC_NAME( fopen )( const char* path, const char* mode )
 FILE*
 SCOREP_LIBWRAP_FUNC_NAME( fopen64 )( const char* path, const char* mode )
 {
-    bool trigger = SCOREP_IN_MEASUREMENT_TEST_AND_INCREMENT();
-    INITIALIZE_FUNCTION_POINTER( fopen64 );
+    bool  trigger = SCOREP_IN_MEASUREMENT_TEST_AND_INCREMENT();
     FILE* ret;
 
     if ( trigger && SCOREP_IS_MEASUREMENT_PHASE( WITHIN ) )
@@ -740,8 +714,7 @@ int
 SCOREP_LIBWRAP_FUNC_NAME( fputc )( int c, FILE* stream )
 {
     bool trigger = SCOREP_IN_MEASUREMENT_TEST_AND_INCREMENT();
-    INITIALIZE_FUNCTION_POINTER( fputc );
-    int ret;
+    int  ret;
 
     if ( trigger && SCOREP_IS_MEASUREMENT_PHASE( WITHIN ) )
     {
@@ -790,8 +763,7 @@ int
 SCOREP_LIBWRAP_FUNC_NAME( fprintf )( FILE* stream, const char* format, ... )
 {
     bool trigger = SCOREP_IN_MEASUREMENT_TEST_AND_INCREMENT();
-    INITIALIZE_FUNCTION_POINTER( vfprintf );
-    int ret;
+    int  ret;
 
     if ( trigger && SCOREP_IS_MEASUREMENT_PHASE( WITHIN ) )
     {
@@ -846,7 +818,6 @@ int
 SCOREP_LIBWRAP_FUNC_NAME( fputs )( const char* s, FILE* stream )
 {
     bool trigger = SCOREP_IN_MEASUREMENT_TEST_AND_INCREMENT();
-    INITIALIZE_FUNCTION_POINTER( fputs );
     /* fputs() writes the string s to stream, WITHOUT its terminating null byte ('\0'). */
 
     int ret;
@@ -898,8 +869,7 @@ SCOREP_LIBWRAP_FUNC_NAME( fputs )( const char* s, FILE* stream )
 size_t
 SCOREP_LIBWRAP_FUNC_NAME( fread )( void* ptr, size_t size, size_t nmemb, FILE* stream )
 {
-    bool trigger = SCOREP_IN_MEASUREMENT_TEST_AND_INCREMENT();
-    INITIALIZE_FUNCTION_POINTER( fread );
+    bool   trigger = SCOREP_IN_MEASUREMENT_TEST_AND_INCREMENT();
     size_t ret;
 
     if ( trigger && SCOREP_IS_MEASUREMENT_PHASE( WITHIN ) )
@@ -948,8 +918,7 @@ SCOREP_LIBWRAP_FUNC_NAME( fread )( void* ptr, size_t size, size_t nmemb, FILE* s
 FILE*
 SCOREP_LIBWRAP_FUNC_NAME( freopen )( const char* path, const char* mode, FILE* stream )
 {
-    bool trigger = SCOREP_IN_MEASUREMENT_TEST_AND_INCREMENT();
-    INITIALIZE_FUNCTION_POINTER( freopen );
+    bool  trigger = SCOREP_IN_MEASUREMENT_TEST_AND_INCREMENT();
     FILE* ret;
 
     if ( trigger && SCOREP_IS_MEASUREMENT_PHASE( WITHIN ) )
@@ -1027,8 +996,7 @@ int
 SCOREP_LIBWRAP_FUNC_NAME( fscanf )( FILE* stream, const char* format, ... )
 {
     bool trigger = SCOREP_IN_MEASUREMENT_TEST_AND_INCREMENT();
-    INITIALIZE_FUNCTION_POINTER( vfscanf );
-    int ret;
+    int  ret;
 
     if ( trigger && SCOREP_IS_MEASUREMENT_PHASE( WITHIN ) )
     {
@@ -1086,9 +1054,7 @@ int
 SCOREP_LIBWRAP_FUNC_NAME( fseek )( FILE* stream, long offset, int whence )
 {
     bool trigger = SCOREP_IN_MEASUREMENT_TEST_AND_INCREMENT();
-    INITIALIZE_FUNCTION_POINTER( fseek );
-    INITIALIZE_FUNCTION_POINTER( ftell );
-    int ret;
+    int  ret;
 
     if ( trigger && SCOREP_IS_MEASUREMENT_PHASE( WITHIN ) )
     {
@@ -1130,9 +1096,7 @@ int
 SCOREP_LIBWRAP_FUNC_NAME( fseeko )( FILE* stream, off_t offset, int whence )
 {
     bool trigger = SCOREP_IN_MEASUREMENT_TEST_AND_INCREMENT();
-    INITIALIZE_FUNCTION_POINTER( fseeko );
-    INITIALIZE_FUNCTION_POINTER( ftello );
-    int ret;
+    int  ret;
 
     if ( trigger && SCOREP_IS_MEASUREMENT_PHASE( WITHIN ) )
     {
@@ -1172,9 +1136,7 @@ int
 SCOREP_LIBWRAP_FUNC_NAME( fseeko64 )( FILE* stream, scorep_off64_t offset, int whence )
 {
     bool trigger = SCOREP_IN_MEASUREMENT_TEST_AND_INCREMENT();
-    INITIALIZE_FUNCTION_POINTER( fseeko64 );
-    INITIALIZE_FUNCTION_POINTER( ftello );
-    int ret;
+    int  ret;
 
     if ( trigger && SCOREP_IS_MEASUREMENT_PHASE( WITHIN ) )
     {
@@ -1214,9 +1176,7 @@ int
 SCOREP_LIBWRAP_FUNC_NAME( fsetpos )( FILE* stream, const fpos_t* pos )
 {
     bool trigger = SCOREP_IN_MEASUREMENT_TEST_AND_INCREMENT();
-    INITIALIZE_FUNCTION_POINTER( fsetpos );
-    INITIALIZE_FUNCTION_POINTER( ftell );
-    int ret;
+    int  ret;
 
     if ( trigger && SCOREP_IS_MEASUREMENT_PHASE( WITHIN ) )
     {
@@ -1257,7 +1217,6 @@ long
 SCOREP_LIBWRAP_FUNC_NAME( ftell )( FILE* stream )
 {
     bool trigger = SCOREP_IN_MEASUREMENT_TEST_AND_INCREMENT();
-    INITIALIZE_FUNCTION_POINTER( ftell );
     long ret;
 
     if ( trigger && SCOREP_IS_MEASUREMENT_PHASE( WITHIN ) )
@@ -1289,8 +1248,7 @@ SCOREP_LIBWRAP_FUNC_NAME( ftell )( FILE* stream )
 off_t
 SCOREP_LIBWRAP_FUNC_NAME( ftello )( FILE* stream )
 {
-    bool trigger = SCOREP_IN_MEASUREMENT_TEST_AND_INCREMENT();
-    INITIALIZE_FUNCTION_POINTER( ftello );
+    bool  trigger = SCOREP_IN_MEASUREMENT_TEST_AND_INCREMENT();
     off_t ret;
 
     if ( trigger && SCOREP_IS_MEASUREMENT_PHASE( WITHIN ) )
@@ -1323,8 +1281,7 @@ int
 SCOREP_LIBWRAP_FUNC_NAME( ftrylockfile )( FILE* filehandle )
 {
     bool trigger = SCOREP_IN_MEASUREMENT_TEST_AND_INCREMENT();
-    INITIALIZE_FUNCTION_POINTER( ftrylockfile );
-    int ret;
+    int  ret;
 
     if ( trigger && SCOREP_IS_MEASUREMENT_PHASE( WITHIN ) )
     {
@@ -1368,7 +1325,6 @@ void
 SCOREP_LIBWRAP_FUNC_NAME( funlockfile )( FILE* filehandle )
 {
     bool trigger = SCOREP_IN_MEASUREMENT_TEST_AND_INCREMENT();
-    INITIALIZE_FUNCTION_POINTER( funlockfile );
 
     if ( trigger && SCOREP_IS_MEASUREMENT_PHASE( WITHIN ) )
     {
@@ -1402,8 +1358,7 @@ SCOREP_LIBWRAP_FUNC_NAME( funlockfile )( FILE* filehandle )
 size_t
 SCOREP_LIBWRAP_FUNC_NAME( fwrite )( const void* ptr, size_t size, size_t nmemb, FILE* stream )
 {
-    bool trigger = SCOREP_IN_MEASUREMENT_TEST_AND_INCREMENT();
-    INITIALIZE_FUNCTION_POINTER( fwrite );
+    bool   trigger = SCOREP_IN_MEASUREMENT_TEST_AND_INCREMENT();
     size_t ret;
 
     if ( trigger && SCOREP_IS_MEASUREMENT_PHASE( WITHIN ) )
@@ -1454,8 +1409,7 @@ int
 SCOREP_LIBWRAP_FUNC_NAME( getc )( FILE* stream )
 {
     bool trigger = SCOREP_IN_MEASUREMENT_TEST_AND_INCREMENT();
-    INITIALIZE_FUNCTION_POINTER( getc );
-    int ret;
+    int  ret;
 
     if ( trigger && SCOREP_IS_MEASUREMENT_PHASE( WITHIN ) )
     {
@@ -1504,8 +1458,7 @@ int
 SCOREP_LIBWRAP_FUNC_NAME( getchar )( void )
 {
     bool trigger = SCOREP_IN_MEASUREMENT_TEST_AND_INCREMENT();
-    INITIALIZE_FUNCTION_POINTER( getchar );
-    int ret;
+    int  ret;
 
     if ( trigger && SCOREP_IS_MEASUREMENT_PHASE( WITHIN ) )
     {
@@ -1553,8 +1506,7 @@ SCOREP_LIBWRAP_FUNC_NAME( getchar )( void )
 char*
 SCOREP_LIBWRAP_FUNC_NAME( gets )( char* s )
 {
-    bool trigger = SCOREP_IN_MEASUREMENT_TEST_AND_INCREMENT();
-    INITIALIZE_FUNCTION_POINTER( gets );
+    bool  trigger = SCOREP_IN_MEASUREMENT_TEST_AND_INCREMENT();
     char* ret;
 
     if ( trigger && SCOREP_IS_MEASUREMENT_PHASE( WITHIN ) )
@@ -1604,8 +1556,7 @@ int
 SCOREP_LIBWRAP_FUNC_NAME( printf )( const char* format, ... )
 {
     bool trigger = SCOREP_IN_MEASUREMENT_TEST_AND_INCREMENT();
-    INITIALIZE_FUNCTION_POINTER( vprintf );
-    int ret;
+    int  ret;
 
     if ( trigger && SCOREP_IS_MEASUREMENT_PHASE( WITHIN ) )
     {
@@ -1660,8 +1611,7 @@ int
 SCOREP_LIBWRAP_FUNC_NAME( putchar )( int c )
 {
     bool trigger = SCOREP_IN_MEASUREMENT_TEST_AND_INCREMENT();
-    INITIALIZE_FUNCTION_POINTER( putchar );
-    int ret;
+    int  ret;
 
     if ( trigger && SCOREP_IS_MEASUREMENT_PHASE( WITHIN ) )
     {
@@ -1710,10 +1660,7 @@ int
 SCOREP_LIBWRAP_FUNC_NAME( puts )( const char* s )
 {
     bool trigger = SCOREP_IN_MEASUREMENT_TEST_AND_INCREMENT();
-    INITIALIZE_FUNCTION_POINTER( puts );
-    /* puts() writes the string s and a trailing newline to stdout. */
-
-    int ret;
+    int  ret;
 
     if ( trigger && SCOREP_IS_MEASUREMENT_PHASE( WITHIN ) )
     {
@@ -1763,8 +1710,7 @@ int
 SCOREP_LIBWRAP_FUNC_NAME( remove )( const char* pathname )
 {
     bool trigger = SCOREP_IN_MEASUREMENT_TEST_AND_INCREMENT();
-    INITIALIZE_FUNCTION_POINTER( remove );
-    int ret;
+    int  ret;
 
     if ( trigger && SCOREP_IS_MEASUREMENT_PHASE( WITHIN ) )
     {
@@ -1798,7 +1744,6 @@ void
 SCOREP_LIBWRAP_FUNC_NAME( rewind )( FILE* stream )
 {
     bool trigger = SCOREP_IN_MEASUREMENT_TEST_AND_INCREMENT();
-    INITIALIZE_FUNCTION_POINTER( rewind );
 
     if ( trigger && SCOREP_IS_MEASUREMENT_PHASE( WITHIN ) )
     {
@@ -1837,8 +1782,7 @@ int
 SCOREP_LIBWRAP_FUNC_NAME( scanf )( const char* format, ... )
 {
     bool trigger = SCOREP_IN_MEASUREMENT_TEST_AND_INCREMENT();
-    INITIALIZE_FUNCTION_POINTER( vscanf );
-    int ret;
+    int  ret;
 
     if ( trigger && SCOREP_IS_MEASUREMENT_PHASE( WITHIN ) )
     {
@@ -1896,8 +1840,7 @@ int
 SCOREP_LIBWRAP_FUNC_NAME( ungetc )( int c, FILE* stream )
 {
     bool trigger = SCOREP_IN_MEASUREMENT_TEST_AND_INCREMENT();
-    INITIALIZE_FUNCTION_POINTER( ungetc );
-    int ret;
+    int  ret;
 
     if ( trigger && SCOREP_IS_MEASUREMENT_PHASE( WITHIN ) )
     {
@@ -1929,8 +1872,7 @@ int
 SCOREP_LIBWRAP_FUNC_NAME( vfprintf )( FILE* stream, const char* format, va_list ap )
 {
     bool trigger = SCOREP_IN_MEASUREMENT_TEST_AND_INCREMENT();
-    INITIALIZE_FUNCTION_POINTER( vfprintf );
-    int ret;
+    int  ret;
 
     if ( trigger && SCOREP_IS_MEASUREMENT_PHASE( WITHIN ) )
     {
@@ -1980,8 +1922,7 @@ int
 SCOREP_LIBWRAP_FUNC_NAME( vfscanf )( FILE* stream, const char* format, va_list ap )
 {
     bool trigger = SCOREP_IN_MEASUREMENT_TEST_AND_INCREMENT();
-    INITIALIZE_FUNCTION_POINTER( vfscanf );
-    int ret;
+    int  ret;
 
     if ( trigger && SCOREP_IS_MEASUREMENT_PHASE( WITHIN ) )
     {
@@ -2031,8 +1972,7 @@ int
 SCOREP_LIBWRAP_FUNC_NAME( vscanf )( const char* format, va_list ap )
 {
     bool trigger = SCOREP_IN_MEASUREMENT_TEST_AND_INCREMENT();
-    INITIALIZE_FUNCTION_POINTER( vscanf );
-    int ret;
+    int  ret;
 
     if ( trigger && SCOREP_IS_MEASUREMENT_PHASE( WITHIN ) )
     {
@@ -2082,8 +2022,7 @@ int
 SCOREP_LIBWRAP_FUNC_NAME( vprintf )( const char* format, va_list ap )
 {
     bool trigger = SCOREP_IN_MEASUREMENT_TEST_AND_INCREMENT();
-    INITIALIZE_FUNCTION_POINTER( vprintf );
-    int ret;
+    int  ret;
 
     if ( trigger && SCOREP_IS_MEASUREMENT_PHASE( WITHIN ) )
     {

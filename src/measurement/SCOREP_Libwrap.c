@@ -1,7 +1,7 @@
 /*
  * This file is part of the Score-P software (http://www.score-p.org)
  *
- * Copyright (c) 2014, 2017, 2020,
+ * Copyright (c) 2014, 2017, 2020, 2025,
  * Technische Universitaet Dresden, Germany
  *
  * Copyright (c) 2022,
@@ -305,16 +305,6 @@ SCOREP_Libwrap_SharedPtrInit( SCOREP_LibwrapHandle* handle,
 
     UTILS_BUG( "This Score-P installation does not support dynamic linking via dlfcn.h" );
 
-#endif
-}
-
-void
-SCOREP_Libwrap_EarlySharedPtrInit( const char* func,
-                                   void**      funcPtr )
-{
-#if HAVE( LIBWRAP_RUNTIME_SUPPORT ) && HAVE( DLFCN_RTLD_NEXT )
-    /* No locking, pointer assignment should be atomic, and the result always the same */
-    *funcPtr = dlsym( RTLD_NEXT, func );
 #endif
 }
 

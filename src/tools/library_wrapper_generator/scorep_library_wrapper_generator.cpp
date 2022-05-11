@@ -182,43 +182,7 @@ public:
             << "\n"
             << "#include \"" << remove_path( generator.m_config.function_list_file_name ) << "\"\n"
             << "}\n"
-            << "\n"
-            << "#if defined( SCOREP_LIBWRAP_SHARED )\n"
-            << "\n"
-            << "#define LIBWRAP_EARLY_INIT( func ) \\\n"
-            << "    do \\\n"
-            << "    { \\\n"
-            << "        if ( !SCOREP_LIBWRAP_FUNC_REAL_NAME( func ) ) \\\n"
-            << "        { \\\n"
-            << "            libwrap_" << generator.m_config.wrapper_name << "_early_init(); \\\n"
-            << "        } \\\n"
-            << "    } while ( 0 )\n"
-            << "\n"
-            << "/* region early init functions */\n"
-            << "\n"
-            << "#define SCOREP_LIBWRAP_PROCESS_FUNC( rettype, func, args, prettyname, file, line, ns ) \\\n"
-            << "    static void libwrap_" << generator.m_config.wrapper_name << "_early_init__##func() \\\n"
-            << "    { \\\n"
-            << "        SCOREP_Libwrap_EarlySharedPtrInit( #func, ( void** )&SCOREP_LIBWRAP_FUNC_REAL_NAME( func ) ); \\\n"
-            << "    }\n"
-            << "\n"
-            << "#define SCOREP_LIBWRAP_PROCESS_FUNC_WITH_NAMESPACE\n"
-            << "#include \"" << remove_path( generator.m_config.function_list_file_name ) << "\"\n"
-            << "\n"
-            << "static void\n"
-            << "libwrap_" << generator.m_config.wrapper_name << "_early_init( void )\n"
-            << "{\n"
-            << "#define SCOREP_LIBWRAP_PROCESS_FUNC( rettype, func, args, prettyname, file, line, ns ) \\\n"
-            << "    ns libwrap_" << generator.m_config.wrapper_name << "_early_init__##func();\n"
-            << "\n"
-            << "#include \"" << remove_path( generator.m_config.function_list_file_name ) << "\"\n"
-            << "}\n"
-            << "\n"
-            << "#else\n"
-            << "\n"
-            << "#define LIBWRAP_EARLY_INIT( func ) do { } while ( 0 )\n"
-            << "\n"
-            << "#endif\n" << endl;
+            << "\n" << endl;
 
         out << "static const char* libwrap_" << generator.m_config.wrapper_name << "_libnames[" << generator.m_config.library_names.size() << " + 1] = {\n";
         for ( vector<string>::size_type i = 0; i < generator.m_config.library_names.size(); ++i )
@@ -486,8 +450,6 @@ SCOREP_Libwrap_Generator::write_wrapper_code( const macro_information& data,
     }
 
     /* SCOREP_LIBWRAP_ENTER_MEASUREMENT declares variables */
-    out << "    LIBWRAP_EARLY_INIT( " << data.symbolname << " );\n";
-
     out << "    SCOREP_LIBWRAP_ENTER_MEASUREMENT();\n";
 
     out << "    SCOREP_LIBWRAP_INIT( libwrap_" << m_config.wrapper_name << "_handle,\n"
@@ -570,7 +532,6 @@ SCOREP_Libwrap_Generator::write_internal_wrapper_code( const macro_information& 
         << "SCOREP_LIBWRAP_FUNC_NAME( " << data.symbolname << " )( " << argdecls_iterate( data ) << " )\n"
         << "{\n"
         << "    bool trigger = SCOREP_IN_MEASUREMENT_TEST_AND_INCREMENT();\n"
-        << "    LIBWRAP_EARLY_INIT( " << data.symbolname << " );\n"
         << "    if ( !trigger || !SCOREP_IS_MEASUREMENT_PHASE( WITHIN ) )\n"
         << "    {\n"
         << "        SCOREP_IN_MEASUREMENT_DECREMENT();\n"
