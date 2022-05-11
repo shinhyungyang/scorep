@@ -39,23 +39,6 @@
 #define SCOREP_DEBUG_MODULE_NAME IO
 #include <UTILS_Debug.h>
 
-/* *INDENT-OFF* */
-#ifdef SCOREP_LIBWRAP_SHARED
-#define INITIALIZE_FUNCTION_POINTER( func )                                \
-    do                                                                     \
-    {                                                                      \
-        if ( !SCOREP_LIBWRAP_FUNC_REAL_NAME( func ))                       \
-        {                                                                  \
-            scorep_posix_io_early_init_function_pointers();                \
-            UTILS_BUG_ON( SCOREP_LIBWRAP_FUNC_REAL_NAME( func )== NULL,    \
-                          "Cannot obtain address of symbol: " #func "." ); \
-        }                                                                  \
-    } while ( 0 )
-#else
-#define INITIALIZE_FUNCTION_POINTER( func ) do { } while ( 0 )
-#endif
-/* *INDENT-ON* */
-
 /**
  * @brief Issues one IoOperationBegin event per vector entry.
  */
@@ -125,8 +108,7 @@ int
 SCOREP_LIBWRAP_FUNC_NAME( close )( int fd )
 {
     bool trigger = SCOREP_IN_MEASUREMENT_TEST_AND_INCREMENT();
-    INITIALIZE_FUNCTION_POINTER( close );
-    int ret;
+    int  ret;
 
     if ( trigger && SCOREP_IS_MEASUREMENT_PHASE( WITHIN ) )
     {
@@ -178,8 +160,7 @@ int
 SCOREP_LIBWRAP_FUNC_NAME( closedir )( DIR* dirp )
 {
     bool trigger = SCOREP_IN_MEASUREMENT_TEST_AND_INCREMENT();
-    INITIALIZE_FUNCTION_POINTER( closedir );
-    int ret;
+    int  ret;
 
     if ( trigger && SCOREP_IS_MEASUREMENT_PHASE( WITHIN ) )
     {
@@ -237,8 +218,7 @@ int
 SCOREP_LIBWRAP_FUNC_NAME( creat )( const char* pathname, mode_t mode )
 {
     bool trigger = SCOREP_IN_MEASUREMENT_TEST_AND_INCREMENT();
-    INITIALIZE_FUNCTION_POINTER( creat );
-    int ret;
+    int  ret;
 
     if ( trigger && SCOREP_IS_MEASUREMENT_PHASE( WITHIN ) )
     {
@@ -296,8 +276,7 @@ int
 SCOREP_LIBWRAP_FUNC_NAME( creat64 )( const char* pathname, mode_t mode )
 {
     bool trigger = SCOREP_IN_MEASUREMENT_TEST_AND_INCREMENT();
-    INITIALIZE_FUNCTION_POINTER( creat64 );
-    int ret;
+    int  ret;
 
     if ( trigger && SCOREP_IS_MEASUREMENT_PHASE( WITHIN ) )
     {
@@ -354,8 +333,7 @@ int
 SCOREP_LIBWRAP_FUNC_NAME( dup )( int oldfd )
 {
     bool trigger = SCOREP_IN_MEASUREMENT_TEST_AND_INCREMENT();
-    INITIALIZE_FUNCTION_POINTER( dup );
-    int ret;
+    int  ret;
 
     if ( trigger && SCOREP_IS_MEASUREMENT_PHASE( WITHIN ) )
     {
@@ -418,8 +396,7 @@ int
 SCOREP_LIBWRAP_FUNC_NAME( dup2 )( int oldfd, int newfd )
 {
     bool trigger = SCOREP_IN_MEASUREMENT_TEST_AND_INCREMENT();
-    INITIALIZE_FUNCTION_POINTER( dup2 );
-    int ret;
+    int  ret;
 
     if ( trigger && SCOREP_IS_MEASUREMENT_PHASE( WITHIN ) )
     {
@@ -502,8 +479,7 @@ int
 SCOREP_LIBWRAP_FUNC_NAME( dup3 )( int oldfd, int newfd, int flags )
 {
     bool trigger = SCOREP_IN_MEASUREMENT_TEST_AND_INCREMENT();
-    INITIALIZE_FUNCTION_POINTER( dup3 );
-    int ret;
+    int  ret;
 
     if ( trigger && SCOREP_IS_MEASUREMENT_PHASE( WITHIN ) )
     {
@@ -573,8 +549,7 @@ int
 SCOREP_LIBWRAP_FUNC_NAME( fcntl )( int fd, int cmd, ... )
 {
     bool trigger = SCOREP_IN_MEASUREMENT_TEST_AND_INCREMENT();
-    INITIALIZE_FUNCTION_POINTER( fcntl );
-    int ret;
+    int  ret;
 
     if ( trigger && SCOREP_IS_MEASUREMENT_PHASE( WITHIN ) )
     {
@@ -810,8 +785,7 @@ int
 SCOREP_LIBWRAP_FUNC_NAME( fdatasync )( int fd )
 {
     bool trigger = SCOREP_IN_MEASUREMENT_TEST_AND_INCREMENT();
-    INITIALIZE_FUNCTION_POINTER( fdatasync );
-    int ret;
+    int  ret;
 
     if ( trigger && SCOREP_IS_MEASUREMENT_PHASE( WITHIN ) )
     {
@@ -859,8 +833,7 @@ int
 SCOREP_LIBWRAP_FUNC_NAME( fsync )( int fd )
 {
     bool trigger = SCOREP_IN_MEASUREMENT_TEST_AND_INCREMENT();
-    INITIALIZE_FUNCTION_POINTER( fsync );
-    int ret;
+    int  ret;
 
     if ( trigger && SCOREP_IS_MEASUREMENT_PHASE( WITHIN ) )
     {
@@ -909,8 +882,7 @@ int
 SCOREP_LIBWRAP_FUNC_NAME( lockf )( int fd, int cmd, off_t len )
 {
     bool trigger = SCOREP_IN_MEASUREMENT_TEST_AND_INCREMENT();
-    INITIALIZE_FUNCTION_POINTER( lockf );
-    int ret;
+    int  ret;
 
     if ( trigger && SCOREP_IS_MEASUREMENT_PHASE( WITHIN ) )
     {
@@ -965,8 +937,7 @@ SCOREP_LIBWRAP_FUNC_NAME( lockf )( int fd, int cmd, off_t len )
 off_t
 SCOREP_LIBWRAP_FUNC_NAME( lseek )( int fd, off_t offset, int whence )
 {
-    bool trigger = SCOREP_IN_MEASUREMENT_TEST_AND_INCREMENT();
-    INITIALIZE_FUNCTION_POINTER( lseek );
+    bool  trigger = SCOREP_IN_MEASUREMENT_TEST_AND_INCREMENT();
     off_t ret;
 
     if ( trigger && SCOREP_IS_MEASUREMENT_PHASE( WITHIN ) )
@@ -1006,8 +977,7 @@ SCOREP_LIBWRAP_FUNC_NAME( lseek )( int fd, off_t offset, int whence )
 scorep_off64_t
 SCOREP_LIBWRAP_FUNC_NAME( lseek64 )( int fd, scorep_off64_t offset, int whence )
 {
-    bool trigger = SCOREP_IN_MEASUREMENT_TEST_AND_INCREMENT();
-    INITIALIZE_FUNCTION_POINTER( lseek64 );
+    bool           trigger = SCOREP_IN_MEASUREMENT_TEST_AND_INCREMENT();
     scorep_off64_t ret;
 
     if ( trigger && SCOREP_IS_MEASUREMENT_PHASE( WITHIN ) )
@@ -1048,8 +1018,7 @@ int
 SCOREP_LIBWRAP_FUNC_NAME( open )( const char* pathname, int flags, ... /* mode_t mode */ )
 {
     bool trigger = SCOREP_IN_MEASUREMENT_TEST_AND_INCREMENT();
-    INITIALIZE_FUNCTION_POINTER( open );
-    int ret;
+    int  ret;
 
     if ( trigger && SCOREP_IS_MEASUREMENT_PHASE( WITHIN ) )
     {
@@ -1130,8 +1099,7 @@ int
 SCOREP_LIBWRAP_FUNC_NAME( open64 )( const char* pathname, int flags, ... )
 {
     bool trigger = SCOREP_IN_MEASUREMENT_TEST_AND_INCREMENT();
-    INITIALIZE_FUNCTION_POINTER( open64 );
-    int ret;
+    int  ret;
 
     if ( trigger && SCOREP_IS_MEASUREMENT_PHASE( WITHIN ) )
     {
@@ -1210,8 +1178,7 @@ int
 SCOREP_LIBWRAP_FUNC_NAME( openat )( int dirfd, const char* pathname, int flags, ... )
 {
     bool trigger = SCOREP_IN_MEASUREMENT_TEST_AND_INCREMENT();
-    INITIALIZE_FUNCTION_POINTER( openat );
-    int ret;
+    int  ret;
 
     if ( trigger && SCOREP_IS_MEASUREMENT_PHASE( WITHIN ) )
     {
@@ -1304,8 +1271,7 @@ SCOREP_LIBWRAP_FUNC_NAME( openat )( int dirfd, const char* pathname, int flags, 
 ssize_t
 SCOREP_LIBWRAP_FUNC_NAME( pread )( int fd, void* buf, size_t count, off_t offset )
 {
-    bool trigger = SCOREP_IN_MEASUREMENT_TEST_AND_INCREMENT();
-    INITIALIZE_FUNCTION_POINTER( pread );
+    bool    trigger = SCOREP_IN_MEASUREMENT_TEST_AND_INCREMENT();
     ssize_t ret;
 
     if ( trigger && SCOREP_IS_MEASUREMENT_PHASE( WITHIN ) )
@@ -1361,8 +1327,7 @@ SCOREP_LIBWRAP_FUNC_NAME( pread )( int fd, void* buf, size_t count, off_t offset
 ssize_t
 SCOREP_LIBWRAP_FUNC_NAME( pread64 )( int fd, void* buf, size_t count, scorep_off64_t offset )
 {
-    bool trigger = SCOREP_IN_MEASUREMENT_TEST_AND_INCREMENT();
-    INITIALIZE_FUNCTION_POINTER( pread64 );
+    bool    trigger = SCOREP_IN_MEASUREMENT_TEST_AND_INCREMENT();
     ssize_t ret;
 
     if ( trigger && SCOREP_IS_MEASUREMENT_PHASE( WITHIN ) )
@@ -1418,8 +1383,7 @@ SCOREP_LIBWRAP_FUNC_NAME( pread64 )( int fd, void* buf, size_t count, scorep_off
 ssize_t
 SCOREP_LIBWRAP_FUNC_NAME( preadv )( int fd, const struct iovec* iov, int iovcnt, off_t offset )
 {
-    bool trigger = SCOREP_IN_MEASUREMENT_TEST_AND_INCREMENT();
-    INITIALIZE_FUNCTION_POINTER( preadv );
+    bool    trigger = SCOREP_IN_MEASUREMENT_TEST_AND_INCREMENT();
     ssize_t ret;
 
     if ( trigger && SCOREP_IS_MEASUREMENT_PHASE( WITHIN ) )
@@ -1469,8 +1433,7 @@ SCOREP_LIBWRAP_FUNC_NAME( preadv )( int fd, const struct iovec* iov, int iovcnt,
 ssize_t
 SCOREP_LIBWRAP_FUNC_NAME( preadv2 )( int fd, const struct iovec* iov, int iovcnt, off_t offset, int flags )
 {
-    bool trigger = SCOREP_IN_MEASUREMENT_TEST_AND_INCREMENT();
-    INITIALIZE_FUNCTION_POINTER( preadv2 );
+    bool    trigger = SCOREP_IN_MEASUREMENT_TEST_AND_INCREMENT();
     ssize_t ret;
 
     if ( trigger && SCOREP_IS_MEASUREMENT_PHASE( WITHIN ) )
@@ -1520,8 +1483,7 @@ SCOREP_LIBWRAP_FUNC_NAME( preadv2 )( int fd, const struct iovec* iov, int iovcnt
 ssize_t
 SCOREP_LIBWRAP_FUNC_NAME( preadv64 )( int fd, const struct iovec* iov, int iovcnt, scorep_off64_t offset )
 {
-    bool trigger = SCOREP_IN_MEASUREMENT_TEST_AND_INCREMENT();
-    INITIALIZE_FUNCTION_POINTER( preadv64 );
+    bool    trigger = SCOREP_IN_MEASUREMENT_TEST_AND_INCREMENT();
     ssize_t ret;
 
     if ( trigger && SCOREP_IS_MEASUREMENT_PHASE( WITHIN ) )
@@ -1571,8 +1533,7 @@ SCOREP_LIBWRAP_FUNC_NAME( preadv64 )( int fd, const struct iovec* iov, int iovcn
 ssize_t
 SCOREP_LIBWRAP_FUNC_NAME( preadv64v2 )( int fd, const struct iovec* iov, int iovcnt, scorep_off64_t offset, int flags )
 {
-    bool trigger = SCOREP_IN_MEASUREMENT_TEST_AND_INCREMENT();
-    INITIALIZE_FUNCTION_POINTER( preadv64v2 );
+    bool    trigger = SCOREP_IN_MEASUREMENT_TEST_AND_INCREMENT();
     ssize_t ret;
 
     if ( trigger && SCOREP_IS_MEASUREMENT_PHASE( WITHIN ) )
@@ -1623,8 +1584,7 @@ int
 SCOREP_LIBWRAP_FUNC_NAME( pselect )( int nfds, fd_set* readfds, fd_set* writefds, fd_set* exceptfds, const struct timespec* timeout, const sigset_t* sigmask )
 {
     bool trigger = SCOREP_IN_MEASUREMENT_TEST_AND_INCREMENT();
-    INITIALIZE_FUNCTION_POINTER( pselect );
-    int ret;
+    int  ret;
 
     if ( trigger && SCOREP_IS_MEASUREMENT_PHASE( WITHIN ) )
     {
@@ -1649,8 +1609,7 @@ SCOREP_LIBWRAP_FUNC_NAME( pselect )( int nfds, fd_set* readfds, fd_set* writefds
 ssize_t
 SCOREP_LIBWRAP_FUNC_NAME( pwrite )( int fd, const void* buf, size_t count, off_t offset )
 {
-    bool trigger = SCOREP_IN_MEASUREMENT_TEST_AND_INCREMENT();
-    INITIALIZE_FUNCTION_POINTER( pwrite );
+    bool    trigger = SCOREP_IN_MEASUREMENT_TEST_AND_INCREMENT();
     ssize_t ret;
 
     if ( trigger && SCOREP_IS_MEASUREMENT_PHASE( WITHIN ) )
@@ -1706,8 +1665,7 @@ SCOREP_LIBWRAP_FUNC_NAME( pwrite )( int fd, const void* buf, size_t count, off_t
 ssize_t
 SCOREP_LIBWRAP_FUNC_NAME( pwrite64 )( int fd, const void* buf, size_t count, scorep_off64_t offset )
 {
-    bool trigger = SCOREP_IN_MEASUREMENT_TEST_AND_INCREMENT();
-    INITIALIZE_FUNCTION_POINTER( pwrite64 );
+    bool    trigger = SCOREP_IN_MEASUREMENT_TEST_AND_INCREMENT();
     ssize_t ret;
 
     if ( trigger && SCOREP_IS_MEASUREMENT_PHASE( WITHIN ) )
@@ -1763,8 +1721,7 @@ SCOREP_LIBWRAP_FUNC_NAME( pwrite64 )( int fd, const void* buf, size_t count, sco
 ssize_t
 SCOREP_LIBWRAP_FUNC_NAME( pwritev )( int fd, const struct iovec* iov, int iovcnt, off_t offset )
 {
-    bool trigger = SCOREP_IN_MEASUREMENT_TEST_AND_INCREMENT();
-    INITIALIZE_FUNCTION_POINTER( pwritev );
+    bool    trigger = SCOREP_IN_MEASUREMENT_TEST_AND_INCREMENT();
     ssize_t ret;
 
     if ( trigger && SCOREP_IS_MEASUREMENT_PHASE( WITHIN ) )
@@ -1814,8 +1771,7 @@ SCOREP_LIBWRAP_FUNC_NAME( pwritev )( int fd, const struct iovec* iov, int iovcnt
 ssize_t
 SCOREP_LIBWRAP_FUNC_NAME( pwritev2 )( int fd, const struct iovec* iov, int iovcnt, off_t offset, int flags )
 {
-    bool trigger = SCOREP_IN_MEASUREMENT_TEST_AND_INCREMENT();
-    INITIALIZE_FUNCTION_POINTER( pwritev2 );
+    bool    trigger = SCOREP_IN_MEASUREMENT_TEST_AND_INCREMENT();
     ssize_t ret;
 
     if ( trigger && SCOREP_IS_MEASUREMENT_PHASE( WITHIN ) )
@@ -1873,8 +1829,7 @@ SCOREP_LIBWRAP_FUNC_NAME( pwritev2 )( int fd, const struct iovec* iov, int iovcn
 ssize_t
 SCOREP_LIBWRAP_FUNC_NAME( pwritev64 )( int fd, const struct iovec* iov, int iovcnt, scorep_off64_t offset )
 {
-    bool trigger = SCOREP_IN_MEASUREMENT_TEST_AND_INCREMENT();
-    INITIALIZE_FUNCTION_POINTER( pwritev64 );
+    bool    trigger = SCOREP_IN_MEASUREMENT_TEST_AND_INCREMENT();
     ssize_t ret;
 
     if ( trigger && SCOREP_IS_MEASUREMENT_PHASE( WITHIN ) )
@@ -1924,8 +1879,7 @@ SCOREP_LIBWRAP_FUNC_NAME( pwritev64 )( int fd, const struct iovec* iov, int iovc
 ssize_t
 SCOREP_LIBWRAP_FUNC_NAME( pwritev64v2 )( int fd, const struct iovec* iov, int iovcnt, scorep_off64_t offset, int flags )
 {
-    bool trigger = SCOREP_IN_MEASUREMENT_TEST_AND_INCREMENT();
-    INITIALIZE_FUNCTION_POINTER( pwritev64v2 );
+    bool    trigger = SCOREP_IN_MEASUREMENT_TEST_AND_INCREMENT();
     ssize_t ret;
 
     if ( trigger && SCOREP_IS_MEASUREMENT_PHASE( WITHIN ) )
@@ -1983,8 +1937,7 @@ SCOREP_LIBWRAP_FUNC_NAME( pwritev64v2 )( int fd, const struct iovec* iov, int io
 ssize_t
 SCOREP_LIBWRAP_FUNC_NAME( read )( int fd, void* buf, size_t count )
 {
-    bool trigger = SCOREP_IN_MEASUREMENT_TEST_AND_INCREMENT();
-    INITIALIZE_FUNCTION_POINTER( read );
+    bool    trigger = SCOREP_IN_MEASUREMENT_TEST_AND_INCREMENT();
     ssize_t ret;
 
     if ( trigger && SCOREP_IS_MEASUREMENT_PHASE( WITHIN ) )
@@ -2034,8 +1987,7 @@ SCOREP_LIBWRAP_FUNC_NAME( read )( int fd, void* buf, size_t count )
 ssize_t
 SCOREP_LIBWRAP_FUNC_NAME( readv )( int fd, const struct iovec* iov, int iovcnt )
 {
-    bool trigger = SCOREP_IN_MEASUREMENT_TEST_AND_INCREMENT();
-    INITIALIZE_FUNCTION_POINTER( readv );
+    bool    trigger = SCOREP_IN_MEASUREMENT_TEST_AND_INCREMENT();
     ssize_t ret;
 
     if ( trigger && SCOREP_IS_MEASUREMENT_PHASE( WITHIN ) )
@@ -2086,8 +2038,7 @@ int
 SCOREP_LIBWRAP_FUNC_NAME( select )( int nfds, fd_set* readfds, fd_set* writefds, fd_set* exceptfds, struct timeval* timeout )
 {
     bool trigger = SCOREP_IN_MEASUREMENT_TEST_AND_INCREMENT();
-    INITIALIZE_FUNCTION_POINTER( select );
-    int ret;
+    int  ret;
 
     if ( trigger && SCOREP_IS_MEASUREMENT_PHASE( WITHIN ) )
     {
@@ -2113,7 +2064,6 @@ void
 SCOREP_LIBWRAP_FUNC_NAME( sync )( void )
 {
     bool trigger = SCOREP_IN_MEASUREMENT_TEST_AND_INCREMENT();
-    INITIALIZE_FUNCTION_POINTER( sync );
 
     if ( trigger && SCOREP_IS_MEASUREMENT_PHASE( WITHIN ) )
     {
@@ -2156,8 +2106,7 @@ int
 SCOREP_LIBWRAP_FUNC_NAME( syncfs )( int fd )
 {
     bool trigger = SCOREP_IN_MEASUREMENT_TEST_AND_INCREMENT();
-    INITIALIZE_FUNCTION_POINTER( syncfs );
-    int ret;
+    int  ret;
 
     if ( trigger && SCOREP_IS_MEASUREMENT_PHASE( WITHIN ) )
     {
@@ -2207,8 +2156,7 @@ int
 SCOREP_LIBWRAP_FUNC_NAME( unlink )( const char* pathname )
 {
     bool trigger = SCOREP_IN_MEASUREMENT_TEST_AND_INCREMENT();
-    INITIALIZE_FUNCTION_POINTER( unlink );
-    int ret;
+    int  ret;
 
     if ( trigger && SCOREP_IS_MEASUREMENT_PHASE( WITHIN ) )
     {
@@ -2244,8 +2192,7 @@ int
 SCOREP_LIBWRAP_FUNC_NAME( unlinkat )( int dirfd, const char* pathname, int flags )
 {
     bool trigger = SCOREP_IN_MEASUREMENT_TEST_AND_INCREMENT();
-    INITIALIZE_FUNCTION_POINTER( unlinkat );
-    int ret;
+    int  ret;
 
     if ( trigger && SCOREP_IS_MEASUREMENT_PHASE( WITHIN ) )
     {
@@ -2303,8 +2250,7 @@ SCOREP_LIBWRAP_FUNC_NAME( unlinkat )( int dirfd, const char* pathname, int flags
 ssize_t
 SCOREP_LIBWRAP_FUNC_NAME( write )( int fd, const void* buf, size_t count )
 {
-    bool trigger = SCOREP_IN_MEASUREMENT_TEST_AND_INCREMENT();
-    INITIALIZE_FUNCTION_POINTER( write );
+    bool    trigger = SCOREP_IN_MEASUREMENT_TEST_AND_INCREMENT();
     ssize_t ret;
 
     if ( trigger && SCOREP_IS_MEASUREMENT_PHASE( WITHIN ) )
@@ -2353,8 +2299,7 @@ SCOREP_LIBWRAP_FUNC_NAME( write )( int fd, const void* buf, size_t count )
 ssize_t
 SCOREP_LIBWRAP_FUNC_NAME( writev )( int fd, const struct iovec* iov, int iovcnt )
 {
-    bool trigger = SCOREP_IN_MEASUREMENT_TEST_AND_INCREMENT();
-    INITIALIZE_FUNCTION_POINTER( writev );
+    bool    trigger = SCOREP_IN_MEASUREMENT_TEST_AND_INCREMENT();
     ssize_t ret;
 
     if ( trigger && SCOREP_IS_MEASUREMENT_PHASE( WITHIN ) )

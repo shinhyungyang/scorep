@@ -9,7 +9,7 @@
 ## Copyright (c) 2009-2013,
 ## Gesellschaft fuer numerische Simulation mbH Braunschweig, Germany
 ##
-## Copyright (c) 2009-2017, 2019, 2022,
+## Copyright (c) 2009-2017, 2019, 2022, 2025,
 ## Technische Universitaet Dresden, Germany
 ##
 ## Copyright (c) 2009-2013,
@@ -109,8 +109,7 @@ libscorep_measurement_libwrap_la_SOURCES = \
     $(SRC_ROOT)src/measurement/SCOREP_Libwrap.c
 libscorep_measurement_libwrap_la_CPPFLAGS = \
     $(common_libscorep_cppflags) \
-    -I$(INC_DIR_DEFINITIONS) \
-    $(SCOREP_DLFCN_RTLD_NEXT_CPPFLAGS)
+    -I$(INC_DIR_DEFINITIONS)
 
 if HAVE_COMPILER_CONSTRUCTOR_SUPPORT
 

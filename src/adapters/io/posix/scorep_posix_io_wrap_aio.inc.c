@@ -53,8 +53,7 @@ int
 SCOREP_LIBWRAP_FUNC_NAME( aio_cancel )( int fd, struct aiocb* aiocbp )
 {
     bool trigger = SCOREP_IN_MEASUREMENT_TEST_AND_INCREMENT();
-    INITIALIZE_FUNCTION_POINTER( aio_cancel );
-    int ret;
+    int  ret;
 
     if ( trigger && SCOREP_IS_MEASUREMENT_PHASE( WITHIN ) )
     {
@@ -101,8 +100,7 @@ int
 SCOREP_LIBWRAP_FUNC_NAME( aio_error )( const struct aiocb* aiocbp )
 {
     bool trigger = SCOREP_IN_MEASUREMENT_TEST_AND_INCREMENT();
-    INITIALIZE_FUNCTION_POINTER( aio_error );
-    int ret;
+    int  ret;
 
     if ( trigger && SCOREP_IS_MEASUREMENT_PHASE( WITHIN ) )
     {
@@ -154,8 +152,7 @@ int
 SCOREP_LIBWRAP_FUNC_NAME( aio_fsync )( int op, struct aiocb* aiocbp )
 {
     bool trigger = SCOREP_IN_MEASUREMENT_TEST_AND_INCREMENT();
-    INITIALIZE_FUNCTION_POINTER( aio_fsync );
-    int ret;
+    int  ret;
 
     if ( trigger && SCOREP_IS_MEASUREMENT_PHASE( WITHIN ) )
     {
@@ -192,8 +189,7 @@ SCOREP_LIBWRAP_FUNC_NAME( aio_fsync )( int op, struct aiocb* aiocbp )
 int
 SCOREP_LIBWRAP_FUNC_NAME( aio_read )( struct aiocb* aiocbp )
 {
-    bool trigger = SCOREP_IN_MEASUREMENT_TEST_AND_INCREMENT();
-    INITIALIZE_FUNCTION_POINTER( aio_read );
+    bool    trigger = SCOREP_IN_MEASUREMENT_TEST_AND_INCREMENT();
     ssize_t ret;
 
     if ( trigger && SCOREP_IS_MEASUREMENT_PHASE( WITHIN ) )
@@ -244,8 +240,7 @@ SCOREP_LIBWRAP_FUNC_NAME( aio_read )( struct aiocb* aiocbp )
 ssize_t
 SCOREP_LIBWRAP_FUNC_NAME( aio_return )( struct aiocb* aiocbp )
 {
-    bool trigger = SCOREP_IN_MEASUREMENT_TEST_AND_INCREMENT();
-    INITIALIZE_FUNCTION_POINTER( aio_return );
+    bool    trigger = SCOREP_IN_MEASUREMENT_TEST_AND_INCREMENT();
     ssize_t ret;
 
     if ( trigger && SCOREP_IS_MEASUREMENT_PHASE( WITHIN ) )
@@ -290,8 +285,7 @@ int
 SCOREP_LIBWRAP_FUNC_NAME( aio_suspend )( const struct aiocb* const aiocb_list[], int nitems, const struct timespec* timeout )
 {
     bool trigger = SCOREP_IN_MEASUREMENT_TEST_AND_INCREMENT();
-    INITIALIZE_FUNCTION_POINTER( aio_suspend );
-    int ret;
+    int  ret;
 
     if ( trigger && SCOREP_IS_MEASUREMENT_PHASE( WITHIN ) )
     {
@@ -317,8 +311,7 @@ int
 SCOREP_LIBWRAP_FUNC_NAME( aio_write )( struct aiocb* aiocbp )
 {
     bool trigger = SCOREP_IN_MEASUREMENT_TEST_AND_INCREMENT();
-    INITIALIZE_FUNCTION_POINTER( aio_write );
-    int ret;
+    int  ret;
 
     if ( trigger && SCOREP_IS_MEASUREMENT_PHASE( WITHIN ) )
     {
@@ -369,8 +362,7 @@ int
 SCOREP_LIBWRAP_FUNC_NAME( lio_listio )( int mode, struct aiocb* const aiocb_list[], int nitems, struct sigevent* sevp )
 {
     bool trigger = SCOREP_IN_MEASUREMENT_TEST_AND_INCREMENT();
-    INITIALIZE_FUNCTION_POINTER( lio_listio );
-    int ret;
+    int  ret;
 
     SCOREP_IoOperationFlag io_operation_flags = SCOREP_IO_OPERATION_FLAG_NON_COLLECTIVE;
 

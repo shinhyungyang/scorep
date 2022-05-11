@@ -62,13 +62,3 @@ scorep_posix_io_libwrap_init( void )
 
 #include "scorep_posix_io_function_list.inc.c"
 }
-
-void
-scorep_posix_io_early_init_function_pointers( void )
-{
-#define SCOREP_POSIX_IO_PROCESS_FUNC( PARADIGM, TYPE, return_type, func, func_args ) \
-    SCOREP_Libwrap_EarlySharedPtrInit( #func, \
-                                       ( void** )( &SCOREP_LIBWRAP_FUNC_REAL_NAME( func ) ) );
-
-#include "scorep_posix_io_function_list.inc.c"
-}

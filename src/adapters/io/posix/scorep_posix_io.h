@@ -57,12 +57,6 @@ typedef int64_t scorep_off64_t;
 #include "scorep_posix_io_function_list.inc.c"
 
 /**
- * Early register POSIX I/O functions and initialize data structures
- */
-void
-scorep_posix_io_early_init_function_pointers( void );
-
-/**
  * Register POSIX I/O functions and initialize data structures
  */
 void

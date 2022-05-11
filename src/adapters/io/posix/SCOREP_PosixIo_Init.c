@@ -43,8 +43,6 @@ static size_t subsystem_id = 0;
 static SCOREP_ErrorCode
 posix_io_subsystem_register( size_t subsystemId )
 {
-    scorep_posix_io_early_init_function_pointers();
-
     subsystem_id = subsystemId;
 
     UTILS_DEBUG( "Register environment variables" );

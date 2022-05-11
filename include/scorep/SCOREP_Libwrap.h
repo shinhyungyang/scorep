@@ -104,17 +104,6 @@ SCOREP_Libwrap_SharedPtrInit( SCOREP_LibwrapHandle* handle,
                               void**                funcPtr );
 
 /**
- * Early initialize function pointers for runtime wrapping. Can already be
- * called outside of the measurement.
- *
- * @param func     Name of wrapped function
- * @param funcPtr  Pointer to the actual symbol
- */
-extern void
-SCOREP_Libwrap_EarlySharedPtrInit( const char* func,
-                                   void**      funcPtr );
-
-/**
  * Enter the measurement. First action a wrapper must do.
  *
  * @return Returns true if the wrapper is allowed to call any other measurement
