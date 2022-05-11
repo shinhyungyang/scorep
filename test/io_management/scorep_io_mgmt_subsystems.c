@@ -4,7 +4,7 @@
  * Copyright (c) 2014-2015,
  * Forschungszentrum Juelich GmbH, Germany
  *
- * Copyright (c) 2014-2015, 2019,
+ * Copyright (c) 2014-2015, 2019, 2025,
  * Technische Universitaet Dresden, Germany
  *
  * Copyright (c) 2015,
@@ -28,6 +28,7 @@
 
 extern const SCOREP_Subsystem SCOREP_Subsystem_Substrates;
 extern const SCOREP_Subsystem SCOREP_Subsystem_TaskStack;
+extern const SCOREP_Subsystem SCOREP_Subsystem_LibwrapService;
 extern const SCOREP_Subsystem SCOREP_Subsystem_MetricService;
 extern const SCOREP_Subsystem SCOREP_Subsystem_Topologies;
 extern const SCOREP_Subsystem SCOREP_Subsystem_PlatformTopology;
@@ -37,6 +38,7 @@ extern const SCOREP_Subsystem SCOREP_Subsystem_IoManagement;
 const SCOREP_Subsystem* scorep_subsystems[] = {
     &SCOREP_Subsystem_Substrates,
     &SCOREP_Subsystem_TaskStack,
+    &SCOREP_Subsystem_LibwrapService,
     &SCOREP_Subsystem_MetricService,
     &SCOREP_Subsystem_Topologies,
     &SCOREP_Subsystem_PlatformTopology,
