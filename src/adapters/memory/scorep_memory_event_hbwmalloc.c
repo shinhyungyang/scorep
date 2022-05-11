@@ -28,17 +28,17 @@ SCOREP_MEMORY_WRAP_POSIX_MEMALIGN( hbw_posix_memalign, HBW_POSIX_MEMALIGN )
 
 
 int
-SCOREP_LIBWRAP_FUNC_NAME( hbw_posix_memalign_psize )( void** ptr,
-                                                      size_t alignment,
-                                                      size_t size,
-                                                      int    pagesize )
+SCOREP_LIBWRAP_WRAPPER( hbw_posix_memalign_psize )( void** ptr,
+                                                    size_t alignment,
+                                                    size_t size,
+                                                    int    pagesize )
 {
     bool trigger = SCOREP_IN_MEASUREMENT_TEST_AND_INCREMENT();
     if ( !trigger ||
          !SCOREP_IS_MEASUREMENT_PHASE( WITHIN ) )
     {
         SCOREP_IN_MEASUREMENT_DECREMENT();
-        return SCOREP_LIBWRAP_FUNC_CALL( hbw_posix_memalign_psize, ( ptr, alignment, size, pagesize ) );
+        return SCOREP_LIBWRAP_ORIGINAL( hbw_posix_memalign_psize )( ptr, alignment, size, pagesize );
     }
 
     UTILS_DEBUG_ENTRY( "%zu, %zu, %d", alignment, size, pagesize );
@@ -47,7 +47,7 @@ SCOREP_LIBWRAP_FUNC_NAME( hbw_posix_memalign_psize )( void** ptr,
     SCOREP_EnterWrappedRegion( scorep_memory_regions[ SCOREP_MEMORY_HBW_POSIX_MEMALIGN_PSIZE ] );
 
     SCOREP_ENTER_WRAPPED_REGION();
-    int result = SCOREP_LIBWRAP_FUNC_CALL( hbw_posix_memalign_psize, ( ptr, alignment, size, pagesize ) );
+    int result = SCOREP_LIBWRAP_ORIGINAL( hbw_posix_memalign_psize )( ptr, alignment, size, pagesize );
     SCOREP_EXIT_WRAPPED_REGION();
 
     if ( result == 0 && *ptr )

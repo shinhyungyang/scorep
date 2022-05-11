@@ -82,7 +82,7 @@ static opencl_kernel_hash_node* opencl_kernel_hashtab[ KERNEL_HASHTABLE_SIZE ];
  *
  * @param func OpenCL API function call
  */
-#define OPENCL_CALL( func, args ) SCOREP_LIBWRAP_FUNC_CALL( func, args )
+#define OPENCL_CALL( func, args ) SCOREP_LIBWRAP_ORIGINAL( func )args
 
 /*
  * Checks if OpenCL API call returns successful and respectively prints

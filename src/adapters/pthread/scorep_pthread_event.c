@@ -64,10 +64,10 @@ struct scorep_pthread_wrapped_arg
 
 
 int
-SCOREP_LIBWRAP_FUNC_NAME( pthread_create )( pthread_t*            thread,
-                                            const pthread_attr_t* attr,
-                                            void* ( *start_routine )( void* ),
-                                            void*                 arg )
+SCOREP_LIBWRAP_WRAPPER( pthread_create )( pthread_t*            thread,
+                                          const pthread_attr_t* attr,
+                                          void* ( *start_routine )( void* ),
+                                          void*                 arg )
 {
     bool trigger = SCOREP_IN_MEASUREMENT_TEST_AND_INCREMENT();
     if ( SCOREP_IS_MEASUREMENT_PHASE( PRE ) )
@@ -77,7 +77,7 @@ SCOREP_LIBWRAP_FUNC_NAME( pthread_create )( pthread_t*            thread,
     if ( !trigger || !SCOREP_IS_MEASUREMENT_PHASE( WITHIN ) )
     {
         SCOREP_IN_MEASUREMENT_DECREMENT();
-        return SCOREP_LIBWRAP_FUNC_CALL( pthread_create, ( thread, attr, start_routine, arg ) );
+        return SCOREP_LIBWRAP_ORIGINAL( pthread_create )( thread, attr, start_routine, arg );
     }
 
     UTILS_DEBUG_ENTRY();
@@ -118,11 +118,10 @@ SCOREP_LIBWRAP_FUNC_NAME( pthread_create )( pthread_t*            thread,
      * and join.
      */
     SCOREP_ENTER_WRAPPED_REGION();
-    int result = SCOREP_LIBWRAP_FUNC_CALL(
-        pthread_create, ( thread,
-                          attr,
-                          &scorep_pthread_wrapped_start_routine,
-                          ( void* )wrapped_arg ) );
+    int result = SCOREP_LIBWRAP_ORIGINAL( pthread_create )( thread,
+                                                            attr,
+                                                            &scorep_pthread_wrapped_start_routine,
+                                                            ( void* )wrapped_arg );
     SCOREP_EXIT_WRAPPED_REGION();
     UTILS_BUG_ON( result != 0 );
     SCOREP_ExitRegion( scorep_pthread_regions[ SCOREP_PTHREAD_CREATE ] );
@@ -258,14 +257,14 @@ cleanup_handler( void* arg )
 
 
 int
-SCOREP_LIBWRAP_FUNC_NAME( pthread_join )( pthread_t thread,
-                                          void**    valuePtr )
+SCOREP_LIBWRAP_WRAPPER( pthread_join )( pthread_t thread,
+                                        void**    valuePtr )
 {
     bool trigger = SCOREP_IN_MEASUREMENT_TEST_AND_INCREMENT();
     if ( !trigger || !SCOREP_IS_MEASUREMENT_PHASE( WITHIN ) )
     {
         SCOREP_IN_MEASUREMENT_DECREMENT();
-        return SCOREP_LIBWRAP_FUNC_CALL( pthread_join, ( thread, valuePtr ) );
+        return SCOREP_LIBWRAP_ORIGINAL( pthread_join )( thread, valuePtr );
     }
 
     UTILS_DEBUG_ENTRY();
@@ -280,12 +279,12 @@ SCOREP_LIBWRAP_FUNC_NAME( pthread_join )( pthread_t thread,
          * skip further processing. */
         SCOREP_ExitRegion( scorep_pthread_regions[ SCOREP_PTHREAD_JOIN ] );
         SCOREP_IN_MEASUREMENT_DECREMENT();
-        return SCOREP_LIBWRAP_FUNC_CALL( pthread_join, ( thread, valuePtr ) );
+        return SCOREP_LIBWRAP_ORIGINAL( pthread_join )( thread, valuePtr );
     }
 
     void* result;
     SCOREP_ENTER_WRAPPED_REGION();
-    int status = SCOREP_LIBWRAP_FUNC_CALL( pthread_join, ( thread, &result ) );
+    int status = SCOREP_LIBWRAP_ORIGINAL( pthread_join )( thread, &result );
     SCOREP_EXIT_WRAPPED_REGION();
     UTILS_BUG_ON( status != 0, "pthread_join failed." );
 
@@ -336,13 +335,13 @@ SCOREP_LIBWRAP_FUNC_NAME( pthread_join )( pthread_t thread,
 
 
 void
-SCOREP_LIBWRAP_FUNC_NAME( pthread_exit )( void* valuePtr )
+SCOREP_LIBWRAP_WRAPPER( pthread_exit )( void* valuePtr )
 {
     bool trigger = SCOREP_IN_MEASUREMENT_TEST_AND_INCREMENT();
     if ( !trigger || !SCOREP_IS_MEASUREMENT_PHASE( WITHIN ) )
     {
         SCOREP_IN_MEASUREMENT_DECREMENT();
-        SCOREP_LIBWRAP_FUNC_CALL( pthread_exit, ( valuePtr ) );
+        SCOREP_LIBWRAP_ORIGINAL( pthread_exit )( valuePtr );
     }
 
     UTILS_DEBUG_ENTRY();
@@ -364,7 +363,7 @@ SCOREP_LIBWRAP_FUNC_NAME( pthread_exit )( void* valuePtr )
          * processing. */
         SCOREP_ExitRegion( scorep_pthread_regions[ SCOREP_PTHREAD_EXIT ] );
         SCOREP_IN_MEASUREMENT_DECREMENT();
-        SCOREP_LIBWRAP_FUNC_CALL( pthread_exit, ( valuePtr ) );
+        SCOREP_LIBWRAP_ORIGINAL( pthread_exit )( valuePtr );
     }
 
     UTILS_BUG_ON( wrapped_arg->orig_ret_val != 0 );
@@ -381,18 +380,18 @@ SCOREP_LIBWRAP_FUNC_NAME( pthread_exit )( void* valuePtr )
 
     UTILS_DEBUG_EXIT();
     SCOREP_IN_MEASUREMENT_DECREMENT();
-    SCOREP_LIBWRAP_FUNC_CALL( pthread_exit, ( wrapped_arg ) );
+    SCOREP_LIBWRAP_ORIGINAL( pthread_exit )( wrapped_arg );
 }
 
 
 int
-SCOREP_LIBWRAP_FUNC_NAME( pthread_cancel )( pthread_t thread )
+SCOREP_LIBWRAP_WRAPPER( pthread_cancel )( pthread_t thread )
 {
     bool trigger = SCOREP_IN_MEASUREMENT_TEST_AND_INCREMENT();
     if ( !trigger || !SCOREP_IS_MEASUREMENT_PHASE( WITHIN ) )
     {
         SCOREP_IN_MEASUREMENT_DECREMENT();
-        return SCOREP_LIBWRAP_FUNC_CALL( pthread_cancel, ( thread ) );
+        return SCOREP_LIBWRAP_ORIGINAL( pthread_cancel )( thread );
     }
 
     UTILS_DEBUG_ENTRY();
@@ -400,7 +399,7 @@ SCOREP_LIBWRAP_FUNC_NAME( pthread_cancel )( pthread_t thread )
     SCOREP_EnterWrappedRegion( scorep_pthread_regions[ SCOREP_PTHREAD_CANCEL ] );
 
     SCOREP_ENTER_WRAPPED_REGION();
-    int result = SCOREP_LIBWRAP_FUNC_CALL( pthread_cancel, ( thread ) );
+    int result = SCOREP_LIBWRAP_ORIGINAL( pthread_cancel )( thread );
     SCOREP_EXIT_WRAPPED_REGION();
 
     SCOREP_ExitRegion( scorep_pthread_regions[ SCOREP_PTHREAD_CANCEL ] );
@@ -412,13 +411,13 @@ SCOREP_LIBWRAP_FUNC_NAME( pthread_cancel )( pthread_t thread )
 
 
 int
-SCOREP_LIBWRAP_FUNC_NAME( pthread_detach )( pthread_t thread )
+SCOREP_LIBWRAP_WRAPPER( pthread_detach )( pthread_t thread )
 {
     bool trigger = SCOREP_IN_MEASUREMENT_TEST_AND_INCREMENT();
     if ( !trigger || !SCOREP_IS_MEASUREMENT_PHASE( WITHIN ) )
     {
         SCOREP_IN_MEASUREMENT_DECREMENT();
-        return SCOREP_LIBWRAP_FUNC_CALL( pthread_detach, ( thread ) );
+        return SCOREP_LIBWRAP_ORIGINAL( pthread_detach )( thread );
     }
 
     UTILS_DEBUG_ENTRY();
@@ -428,7 +427,7 @@ SCOREP_LIBWRAP_FUNC_NAME( pthread_detach )( pthread_t thread )
     // If detached thread still runs at finalization time, finalization will
     // fail because it requires serial execution.
     SCOREP_ENTER_WRAPPED_REGION();
-    int result = SCOREP_LIBWRAP_FUNC_CALL( pthread_detach, ( thread ) );
+    int result = SCOREP_LIBWRAP_ORIGINAL( pthread_detach )( thread );
     SCOREP_EXIT_WRAPPED_REGION();
 
     SCOREP_ExitRegion( scorep_pthread_regions[ SCOREP_PTHREAD_DETACH ] );
@@ -440,8 +439,8 @@ SCOREP_LIBWRAP_FUNC_NAME( pthread_detach )( pthread_t thread )
 
 
 int
-SCOREP_LIBWRAP_FUNC_NAME( pthread_mutex_init )( pthread_mutex_t*           pthreadMutex,
-                                                const pthread_mutexattr_t* pthreadAttr )
+SCOREP_LIBWRAP_WRAPPER( pthread_mutex_init )( pthread_mutex_t*           pthreadMutex,
+                                              const pthread_mutexattr_t* pthreadAttr )
 {
     bool trigger = SCOREP_IN_MEASUREMENT_TEST_AND_INCREMENT();
     if ( SCOREP_IS_MEASUREMENT_PHASE( PRE ) )
@@ -452,7 +451,7 @@ SCOREP_LIBWRAP_FUNC_NAME( pthread_mutex_init )( pthread_mutex_t*           pthre
     if ( !trigger || !SCOREP_IS_MEASUREMENT_PHASE( WITHIN ) )
     {
         SCOREP_IN_MEASUREMENT_DECREMENT();
-        return SCOREP_LIBWRAP_FUNC_CALL( pthread_mutex_init, ( pthreadMutex, pthreadAttr ) );
+        return SCOREP_LIBWRAP_ORIGINAL( pthread_mutex_init )( pthreadMutex, pthreadAttr );
     }
 
     UTILS_DEBUG_ENTRY();
@@ -467,7 +466,7 @@ SCOREP_LIBWRAP_FUNC_NAME( pthread_mutex_init )( pthread_mutex_t*           pthre
     SCOREP_EnterWrappedRegion( scorep_pthread_regions[ SCOREP_PTHREAD_MUTEX_INIT ] );
 
     SCOREP_ENTER_WRAPPED_REGION();
-    int result = SCOREP_LIBWRAP_FUNC_CALL( pthread_mutex_init, ( pthreadMutex, pthreadAttr ) );
+    int result = SCOREP_LIBWRAP_ORIGINAL( pthread_mutex_init )( pthreadMutex, pthreadAttr );
     SCOREP_EXIT_WRAPPED_REGION();
 
     if ( 0 == result )
@@ -503,13 +502,13 @@ issue_process_shared_mutex_warning( void )
 
 
 int
-SCOREP_LIBWRAP_FUNC_NAME( pthread_mutex_destroy )( pthread_mutex_t* pthreadMutex )
+SCOREP_LIBWRAP_WRAPPER( pthread_mutex_destroy )( pthread_mutex_t* pthreadMutex )
 {
     bool trigger = SCOREP_IN_MEASUREMENT_TEST_AND_INCREMENT();
     if ( !trigger || !SCOREP_IS_MEASUREMENT_PHASE( WITHIN ) )
     {
         SCOREP_IN_MEASUREMENT_DECREMENT();
-        return SCOREP_LIBWRAP_FUNC_CALL( pthread_mutex_destroy, ( pthreadMutex ) );
+        return SCOREP_LIBWRAP_ORIGINAL( pthread_mutex_destroy )( pthreadMutex );
     }
 
     UTILS_DEBUG_ENTRY();
@@ -523,7 +522,7 @@ SCOREP_LIBWRAP_FUNC_NAME( pthread_mutex_destroy )( pthread_mutex_t* pthreadMutex
     }
 
     SCOREP_ENTER_WRAPPED_REGION();
-    int result = SCOREP_LIBWRAP_FUNC_CALL( pthread_mutex_destroy, ( pthreadMutex ) );
+    int result = SCOREP_LIBWRAP_ORIGINAL( pthread_mutex_destroy )( pthreadMutex );
     SCOREP_EXIT_WRAPPED_REGION();
 
     SCOREP_ExitRegion( scorep_pthread_regions[ SCOREP_PTHREAD_MUTEX_DESTROY ] );
@@ -535,13 +534,13 @@ SCOREP_LIBWRAP_FUNC_NAME( pthread_mutex_destroy )( pthread_mutex_t* pthreadMutex
 
 
 int
-SCOREP_LIBWRAP_FUNC_NAME( pthread_mutex_lock )( pthread_mutex_t* pthreadMutex )
+SCOREP_LIBWRAP_WRAPPER( pthread_mutex_lock )( pthread_mutex_t* pthreadMutex )
 {
     bool trigger = SCOREP_IN_MEASUREMENT_TEST_AND_INCREMENT();
     if ( !trigger || !SCOREP_IS_MEASUREMENT_PHASE( WITHIN ) )
     {
         SCOREP_IN_MEASUREMENT_DECREMENT();
-        return SCOREP_LIBWRAP_FUNC_CALL( pthread_mutex_lock, ( pthreadMutex ) );
+        return SCOREP_LIBWRAP_ORIGINAL( pthread_mutex_lock )( pthreadMutex );
     }
 
     UTILS_DEBUG_ENTRY();
@@ -556,7 +555,7 @@ SCOREP_LIBWRAP_FUNC_NAME( pthread_mutex_lock )( pthread_mutex_t* pthreadMutex )
     SCOREP_EnterWrappedRegion( scorep_pthread_regions[ SCOREP_PTHREAD_MUTEX_LOCK ] );
 
     SCOREP_ENTER_WRAPPED_REGION();
-    int result = SCOREP_LIBWRAP_FUNC_CALL( pthread_mutex_lock, ( pthreadMutex ) );
+    int result = SCOREP_LIBWRAP_ORIGINAL( pthread_mutex_lock )( pthreadMutex );
     SCOREP_EXIT_WRAPPED_REGION();
 
     /* Ignore threads that resume execution after scorep_finalize()
@@ -600,13 +599,13 @@ record_acquire_lock_event( scorep_pthread_mutex* scorepMutex )
 
 
 int
-SCOREP_LIBWRAP_FUNC_NAME( pthread_mutex_unlock )( pthread_mutex_t* pthreadMutex )
+SCOREP_LIBWRAP_WRAPPER( pthread_mutex_unlock )( pthread_mutex_t* pthreadMutex )
 {
     bool trigger = SCOREP_IN_MEASUREMENT_TEST_AND_INCREMENT();
     if ( !trigger || !SCOREP_IS_MEASUREMENT_PHASE( WITHIN ) )
     {
         SCOREP_IN_MEASUREMENT_DECREMENT();
-        return SCOREP_LIBWRAP_FUNC_CALL( pthread_mutex_unlock, ( pthreadMutex ) );
+        return SCOREP_LIBWRAP_ORIGINAL( pthread_mutex_unlock )( pthreadMutex );
     }
 
     UTILS_DEBUG_ENTRY();
@@ -616,7 +615,7 @@ SCOREP_LIBWRAP_FUNC_NAME( pthread_mutex_unlock )( pthread_mutex_t* pthreadMutex 
     {
         UTILS_WARNING( "Unknown mutex object %p", pthreadMutex );
         SCOREP_IN_MEASUREMENT_DECREMENT();
-        return SCOREP_LIBWRAP_FUNC_CALL( pthread_mutex_unlock, ( pthreadMutex ) );
+        return SCOREP_LIBWRAP_ORIGINAL( pthread_mutex_unlock )( pthreadMutex );
     }
     if ( scorep_mutex->nesting_level == 0 )
     {
@@ -642,7 +641,7 @@ SCOREP_LIBWRAP_FUNC_NAME( pthread_mutex_unlock )( pthread_mutex_t* pthreadMutex 
     }
 
     SCOREP_ENTER_WRAPPED_REGION();
-    int result = SCOREP_LIBWRAP_FUNC_CALL( pthread_mutex_unlock, ( pthreadMutex ) );
+    int result = SCOREP_LIBWRAP_ORIGINAL( pthread_mutex_unlock )( pthreadMutex );
     SCOREP_EXIT_WRAPPED_REGION();
 
     SCOREP_ExitRegion( scorep_pthread_regions[ SCOREP_PTHREAD_MUTEX_UNLOCK ] );
@@ -654,13 +653,13 @@ SCOREP_LIBWRAP_FUNC_NAME( pthread_mutex_unlock )( pthread_mutex_t* pthreadMutex 
 
 
 int
-SCOREP_LIBWRAP_FUNC_NAME( pthread_mutex_trylock )( pthread_mutex_t* pthreadMutex )
+SCOREP_LIBWRAP_WRAPPER( pthread_mutex_trylock )( pthread_mutex_t* pthreadMutex )
 {
     bool trigger = SCOREP_IN_MEASUREMENT_TEST_AND_INCREMENT();
     if ( !trigger || !SCOREP_IS_MEASUREMENT_PHASE( WITHIN ) )
     {
         SCOREP_IN_MEASUREMENT_DECREMENT();
-        return SCOREP_LIBWRAP_FUNC_CALL( pthread_mutex_trylock, ( pthreadMutex ) );
+        return SCOREP_LIBWRAP_ORIGINAL( pthread_mutex_trylock )( pthreadMutex );
     }
 
     UTILS_DEBUG_ENTRY();
@@ -675,7 +674,7 @@ SCOREP_LIBWRAP_FUNC_NAME( pthread_mutex_trylock )( pthread_mutex_t* pthreadMutex
     SCOREP_EnterWrappedRegion( scorep_pthread_regions[ SCOREP_PTHREAD_MUTEX_TRYLOCK ] );
 
     SCOREP_ENTER_WRAPPED_REGION();
-    int result = SCOREP_LIBWRAP_FUNC_CALL( pthread_mutex_trylock, ( pthreadMutex ) );
+    int result = SCOREP_LIBWRAP_ORIGINAL( pthread_mutex_trylock )( pthreadMutex );
     SCOREP_EXIT_WRAPPED_REGION();
     if ( result == 0 )
     {
@@ -691,8 +690,8 @@ SCOREP_LIBWRAP_FUNC_NAME( pthread_mutex_trylock )( pthread_mutex_t* pthreadMutex
 
 
 int
-SCOREP_LIBWRAP_FUNC_NAME( pthread_cond_init )( pthread_cond_t*           cond,
-                                               const pthread_condattr_t* attr )
+SCOREP_LIBWRAP_WRAPPER( pthread_cond_init )( pthread_cond_t*           cond,
+                                             const pthread_condattr_t* attr )
 {
     bool trigger = SCOREP_IN_MEASUREMENT_TEST_AND_INCREMENT();
     if ( SCOREP_IS_MEASUREMENT_PHASE( PRE ) )
@@ -702,7 +701,7 @@ SCOREP_LIBWRAP_FUNC_NAME( pthread_cond_init )( pthread_cond_t*           cond,
     if ( !trigger || !SCOREP_IS_MEASUREMENT_PHASE( WITHIN ) )
     {
         SCOREP_IN_MEASUREMENT_DECREMENT();
-        return SCOREP_LIBWRAP_FUNC_CALL( pthread_cond_init, ( cond, attr ) );
+        return SCOREP_LIBWRAP_ORIGINAL( pthread_cond_init )( cond, attr );
     }
 
     UTILS_DEBUG_ENTRY();
@@ -710,7 +709,7 @@ SCOREP_LIBWRAP_FUNC_NAME( pthread_cond_init )( pthread_cond_t*           cond,
     SCOREP_EnterWrappedRegion( scorep_pthread_regions[ SCOREP_PTHREAD_COND_INIT ] );
 
     SCOREP_ENTER_WRAPPED_REGION();
-    int result = SCOREP_LIBWRAP_FUNC_CALL( pthread_cond_init, ( cond, attr ) );
+    int result = SCOREP_LIBWRAP_ORIGINAL( pthread_cond_init )( cond, attr );
     SCOREP_EXIT_WRAPPED_REGION();
 
     SCOREP_ExitRegion( scorep_pthread_regions[ SCOREP_PTHREAD_COND_INIT ] );
@@ -722,13 +721,13 @@ SCOREP_LIBWRAP_FUNC_NAME( pthread_cond_init )( pthread_cond_t*           cond,
 
 
 int
-SCOREP_LIBWRAP_FUNC_NAME( pthread_cond_signal )( pthread_cond_t* cond )
+SCOREP_LIBWRAP_WRAPPER( pthread_cond_signal )( pthread_cond_t* cond )
 {
     bool trigger = SCOREP_IN_MEASUREMENT_TEST_AND_INCREMENT();
     if ( !trigger || !SCOREP_IS_MEASUREMENT_PHASE( WITHIN ) )
     {
         SCOREP_IN_MEASUREMENT_DECREMENT();
-        return SCOREP_LIBWRAP_FUNC_CALL( pthread_cond_signal, ( cond ) );
+        return SCOREP_LIBWRAP_ORIGINAL( pthread_cond_signal )( cond );
     }
 
     UTILS_DEBUG_ENTRY();
@@ -736,7 +735,7 @@ SCOREP_LIBWRAP_FUNC_NAME( pthread_cond_signal )( pthread_cond_t* cond )
     SCOREP_EnterWrappedRegion( scorep_pthread_regions[ SCOREP_PTHREAD_COND_SIGNAL ] );
 
     SCOREP_ENTER_WRAPPED_REGION();
-    int result = SCOREP_LIBWRAP_FUNC_CALL( pthread_cond_signal, ( cond ) );
+    int result = SCOREP_LIBWRAP_ORIGINAL( pthread_cond_signal )( cond );
     SCOREP_EXIT_WRAPPED_REGION();
 
     SCOREP_ExitRegion( scorep_pthread_regions[ SCOREP_PTHREAD_COND_SIGNAL ] );
@@ -748,13 +747,13 @@ SCOREP_LIBWRAP_FUNC_NAME( pthread_cond_signal )( pthread_cond_t* cond )
 
 
 int
-SCOREP_LIBWRAP_FUNC_NAME( pthread_cond_broadcast )( pthread_cond_t* cond )
+SCOREP_LIBWRAP_WRAPPER( pthread_cond_broadcast )( pthread_cond_t* cond )
 {
     bool trigger = SCOREP_IN_MEASUREMENT_TEST_AND_INCREMENT();
     if ( !trigger || !SCOREP_IS_MEASUREMENT_PHASE( WITHIN ) )
     {
         SCOREP_IN_MEASUREMENT_DECREMENT();
-        return SCOREP_LIBWRAP_FUNC_CALL( pthread_cond_broadcast, ( cond ) );
+        return SCOREP_LIBWRAP_ORIGINAL( pthread_cond_broadcast )( cond );
     }
 
     UTILS_DEBUG_ENTRY();
@@ -762,7 +761,7 @@ SCOREP_LIBWRAP_FUNC_NAME( pthread_cond_broadcast )( pthread_cond_t* cond )
     SCOREP_EnterWrappedRegion( scorep_pthread_regions[ SCOREP_PTHREAD_COND_BROADCAST ] );
 
     SCOREP_ENTER_WRAPPED_REGION();
-    int result = SCOREP_LIBWRAP_FUNC_CALL( pthread_cond_broadcast, ( cond ) );
+    int result = SCOREP_LIBWRAP_ORIGINAL( pthread_cond_broadcast )( cond );
     SCOREP_EXIT_WRAPPED_REGION();
 
     SCOREP_ExitRegion( scorep_pthread_regions[ SCOREP_PTHREAD_COND_BROADCAST ] );
@@ -774,14 +773,14 @@ SCOREP_LIBWRAP_FUNC_NAME( pthread_cond_broadcast )( pthread_cond_t* cond )
 
 
 int
-SCOREP_LIBWRAP_FUNC_NAME( pthread_cond_wait )( pthread_cond_t*  cond,
-                                               pthread_mutex_t* pthreadMutex )
+SCOREP_LIBWRAP_WRAPPER( pthread_cond_wait )( pthread_cond_t*  cond,
+                                             pthread_mutex_t* pthreadMutex )
 {
     bool trigger = SCOREP_IN_MEASUREMENT_TEST_AND_INCREMENT();
     if ( !trigger || !SCOREP_IS_MEASUREMENT_PHASE( WITHIN ) )
     {
         SCOREP_IN_MEASUREMENT_DECREMENT();
-        return SCOREP_LIBWRAP_FUNC_CALL( pthread_cond_wait, ( cond, pthreadMutex ) );
+        return SCOREP_LIBWRAP_ORIGINAL( pthread_cond_wait )( cond, pthreadMutex );
     }
 
     UTILS_DEBUG_ENTRY();
@@ -800,7 +799,7 @@ SCOREP_LIBWRAP_FUNC_NAME( pthread_cond_wait )( pthread_cond_t*  cond,
             UTILS_WARNING( "Pthread mutex %p is required to be locked", pthreadMutex );
         }
         SCOREP_IN_MEASUREMENT_DECREMENT();
-        return SCOREP_LIBWRAP_FUNC_CALL( pthread_cond_wait, ( cond, pthreadMutex ) );
+        return SCOREP_LIBWRAP_ORIGINAL( pthread_cond_wait )( cond, pthreadMutex );
     }
 
     SCOREP_EnterWrappedRegion( scorep_pthread_regions[ SCOREP_PTHREAD_COND_WAIT ] );
@@ -820,7 +819,7 @@ SCOREP_LIBWRAP_FUNC_NAME( pthread_cond_wait )( pthread_cond_t*  cond,
     /* Will unlock mutex, wait for cond, then lock mutex again.
        Therefore, don't change the nesting level. */
     SCOREP_ENTER_WRAPPED_REGION();
-    int result = SCOREP_LIBWRAP_FUNC_CALL( pthread_cond_wait, ( cond, pthreadMutex ) );
+    int result = SCOREP_LIBWRAP_ORIGINAL( pthread_cond_wait )( cond, pthreadMutex );
     SCOREP_EXIT_WRAPPED_REGION();
 
     /* Ignore threads that resume execution after scorep_finalize()
@@ -852,15 +851,15 @@ SCOREP_LIBWRAP_FUNC_NAME( pthread_cond_wait )( pthread_cond_t*  cond,
 
 
 int
-SCOREP_LIBWRAP_FUNC_NAME( pthread_cond_timedwait )( pthread_cond_t*        cond,
-                                                    pthread_mutex_t*       pthreadMutex,
-                                                    const struct timespec* time )
+SCOREP_LIBWRAP_WRAPPER( pthread_cond_timedwait )( pthread_cond_t*        cond,
+                                                  pthread_mutex_t*       pthreadMutex,
+                                                  const struct timespec* time )
 {
     bool trigger = SCOREP_IN_MEASUREMENT_TEST_AND_INCREMENT();
     if ( !trigger || !SCOREP_IS_MEASUREMENT_PHASE( WITHIN ) )
     {
         SCOREP_IN_MEASUREMENT_DECREMENT();
-        return SCOREP_LIBWRAP_FUNC_CALL( pthread_cond_timedwait, ( cond, pthreadMutex, time ) );
+        return SCOREP_LIBWRAP_ORIGINAL( pthread_cond_timedwait )( cond, pthreadMutex, time );
     }
 
     UTILS_DEBUG_ENTRY();
@@ -879,7 +878,7 @@ SCOREP_LIBWRAP_FUNC_NAME( pthread_cond_timedwait )( pthread_cond_t*        cond,
             UTILS_WARNING( "Pthread mutex %p is required to be locked", pthreadMutex );
         }
         SCOREP_IN_MEASUREMENT_DECREMENT();
-        return SCOREP_LIBWRAP_FUNC_CALL( pthread_cond_timedwait, ( cond, pthreadMutex, time ) );
+        return SCOREP_LIBWRAP_ORIGINAL( pthread_cond_timedwait )( cond, pthreadMutex, time );
     }
 
     SCOREP_EnterWrappedRegion( scorep_pthread_regions[ SCOREP_PTHREAD_COND_TIMEDWAIT ] );
@@ -899,7 +898,7 @@ SCOREP_LIBWRAP_FUNC_NAME( pthread_cond_timedwait )( pthread_cond_t*        cond,
     /* Will unlock mutex, wait for cond, then lock mutex again.
        Therefore, don't change the nesting level. */
     SCOREP_ENTER_WRAPPED_REGION();
-    int result = SCOREP_LIBWRAP_FUNC_CALL( pthread_cond_timedwait, ( cond, pthreadMutex, time ) );
+    int result = SCOREP_LIBWRAP_ORIGINAL( pthread_cond_timedwait )( cond, pthreadMutex, time );
     SCOREP_EXIT_WRAPPED_REGION();
 
     /* Ignore threads that resume execution after scorep_finalize()
@@ -931,13 +930,13 @@ SCOREP_LIBWRAP_FUNC_NAME( pthread_cond_timedwait )( pthread_cond_t*        cond,
 
 
 int
-SCOREP_LIBWRAP_FUNC_NAME( pthread_cond_destroy )( pthread_cond_t* cond )
+SCOREP_LIBWRAP_WRAPPER( pthread_cond_destroy )( pthread_cond_t* cond )
 {
     bool trigger = SCOREP_IN_MEASUREMENT_TEST_AND_INCREMENT();
     if ( !trigger || !SCOREP_IS_MEASUREMENT_PHASE( WITHIN ) )
     {
         SCOREP_IN_MEASUREMENT_DECREMENT();
-        return SCOREP_LIBWRAP_FUNC_CALL( pthread_cond_destroy, ( cond ) );
+        return SCOREP_LIBWRAP_ORIGINAL( pthread_cond_destroy )( cond );
     }
 
     UTILS_DEBUG_ENTRY();
@@ -945,7 +944,7 @@ SCOREP_LIBWRAP_FUNC_NAME( pthread_cond_destroy )( pthread_cond_t* cond )
     SCOREP_EnterWrappedRegion( scorep_pthread_regions[ SCOREP_PTHREAD_COND_DESTROY ] );
 
     SCOREP_ENTER_WRAPPED_REGION();
-    int result = SCOREP_LIBWRAP_FUNC_CALL( pthread_cond_destroy, ( cond ) );
+    int result = SCOREP_LIBWRAP_ORIGINAL( pthread_cond_destroy )( cond );
     SCOREP_EXIT_WRAPPED_REGION();
 
     SCOREP_ExitRegion( scorep_pthread_regions[ SCOREP_PTHREAD_COND_DESTROY ] );

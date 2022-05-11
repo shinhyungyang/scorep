@@ -123,7 +123,7 @@ public:
 
         out << generator.iterate_includes() << endl;
 
-        out << "#define SCOREP_LIBWRAP_FUNC_NAME( func ) \\\n"
+        out << "#define SCOREP_LIBWRAP_WRAPPER( func ) \\\n"
             << "    libwrap_" << generator.m_config.wrapper_name << "_wrapper__ ## func\n"
             << "\n"
             << "#define SCOREP_LIBWRAP_REGION_DESCRIPTOR( func ) \\\n"
@@ -132,8 +132,8 @@ public:
             << "#define SCOREP_LIBWRAP_REGION_HANDLE( func ) \\\n"
             << "    SCOREP_LIBWRAP_REGION_DESCRIPTOR( func ).handle\n"
             << "\n"
-            << "#define SCOREP_LIBWRAP_FUNC_REAL_NAME( func ) \\\n"
-            << "    SCOREP_LIBWRAP_REGION_DESCRIPTOR( func ).wrappee\n"
+            << "#define SCOREP_LIBWRAP_ORIGINAL( func ) \\\n"
+            << "    SCOREP_LIBWRAP_REGION_DESCRIPTOR( func ).original\n"
             << "\n";
 
         if ( !generator.m_config.create_internal_wrapper_code_file )
@@ -163,7 +163,7 @@ public:
             << "/* wrapper declarations */\n"
             << "\n"
             << DEFINE_LIBWRAP_PROCESS_FUNC
-            << "    static _SCOREP_LIBWRAP_RETTYPE rettype SCOREP_LIBWRAP_FUNC_NAME( func )args;\n"
+            << "    static _SCOREP_LIBWRAP_RETTYPE rettype SCOREP_LIBWRAP_WRAPPER( func )args;\n"
             << "\n"
             << "#define SCOREP_LIBWRAP_PROCESS_FUNC_WITH_NAMESPACE\n"
             << "#include \"" << remove_path( generator.m_config.function_list_file_name ) << "\"\n"
@@ -174,7 +174,7 @@ public:
             << "    static struct \\\n"
             << "    { \\\n"
             << "        SCOREP_RegionHandle handle; \\\n"
-            << "        SCOREP_LIBWRAP_FUNC_TYPE( rettype, ( *wrappee ), args ); \\\n"
+            << "        _SCOREP_LIBWRAP_FUNC_TYPE( rettype, ( *original ), args ); \\\n"
             << "    } SCOREP_LIBWRAP_REGION_DESCRIPTOR( func );\n"
             << "\n"
             << "#define SCOREP_LIBWRAP_PROCESS_FUNC_WITH_NAMESPACE\n"
@@ -198,7 +198,7 @@ public:
                 << "                                      SCOREP_PARADIGM_LIBWRAP, \\\n"
                 << "                                      SCOREP_REGION_ ## TYPE, \\\n"
                 << "                                      ( void* )SCOREP_LIBWRAP_WRAPPER( func ), \\\n"
-                << "                                      ( void** )&SCOREP_LIBWRAP_FUNCPTR( func ), \\\n"
+                << "                                      ( void** )&SCOREP_LIBWRAP_ORIGINAL( func ), \\\n"
                 << "                                      &SCOREP_LIBWRAP_REGION_HANDLE( func ) ); \\\n";
         }
 
@@ -487,7 +487,7 @@ SCOREP_Libwrap_Generator::write_wrapper_code( const macro_information& data,
                                               ostream&                 out ) const
 {
     out << data.returntype << "\n"
-        << "SCOREP_LIBWRAP_FUNC_NAME( " << data.symbolname << " )( " << argdecls_iterate( data ) << " )\n"
+        << "SCOREP_LIBWRAP_WRAPPER( " << data.symbolname << " )( " << argdecls_iterate( data ) << " )\n"
         << "{\n";
 
     if ( m_config.language == "c" && data.hasreturn )
@@ -541,7 +541,7 @@ SCOREP_Libwrap_Generator::write_wrapper_code( const macro_information& data,
     }
     if ( !data.va_list_symbol.size() || m_all_wrapped_symbols.count( call_symbol ) != 0 )
     {
-        out << "SCOREP_LIBWRAP_FUNC_CALL( " << call_symbol << ", ( " << argnames_iterate( data ) << " ) );\n";
+        out << "SCOREP_LIBWRAP_ORIGINAL( " << call_symbol << " )( " << argnames_iterate( data ) << " );\n";
     }
     else
     {
@@ -575,13 +575,13 @@ SCOREP_Libwrap_Generator::write_internal_wrapper_code( const macro_information& 
 
     out << endl
         << data.returntype << "\n"
-        << "SCOREP_LIBWRAP_FUNC_NAME( " << data.symbolname << " )( " << argdecls_iterate( data ) << " )\n"
+        << "SCOREP_LIBWRAP_WRAPPER( " << data.symbolname << " )( " << argdecls_iterate( data ) << " )\n"
         << "{\n"
         << "    bool trigger = SCOREP_IN_MEASUREMENT_TEST_AND_INCREMENT();\n"
         << "    if ( !trigger || !SCOREP_IS_MEASUREMENT_PHASE( WITHIN ) )\n"
         << "    {\n"
         << "        SCOREP_IN_MEASUREMENT_DECREMENT();\n"
-        << "        return " << "SCOREP_LIBWRAP_FUNC_CALL( " << data.symbolname << ", ( " << argnames_iterate( data ) << " ) );\n"
+        << "        return " << "SCOREP_LIBWRAP_ORIGINAL( " << data.symbolname << " )( " << argnames_iterate( data ) << " );\n"
         << "    }\n"
         << "\n"
         << "    SCOREP_EnterWrappedRegion( SCOREP_LIBWRAP_REGION_HANDLE( " << data.symbolname << " ) );\n"
@@ -595,7 +595,7 @@ SCOREP_Libwrap_Generator::write_internal_wrapper_code( const macro_information& 
         out << data.returntype << " scorep_libwrap_var_ret = ";
     }
 
-    out << "SCOREP_LIBWRAP_FUNC_CALL( " << data.symbolname << ", ( " << argnames_iterate( data ) << " ) );\n"
+    out << "SCOREP_LIBWRAP_ORIGINAL( " << data.symbolname << " )( " << argnames_iterate( data ) << " );\n"
         << "    SCOREP_EXIT_WRAPPED_REGION();\n"
         << "\n"
         << "    SCOREP_ExitRegion( SCOREP_LIBWRAP_REGION_HANDLE( " << data.symbolname << " ) );\n"

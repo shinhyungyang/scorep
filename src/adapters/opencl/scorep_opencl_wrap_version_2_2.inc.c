@@ -1,15 +1,13 @@
 cl_int
-SCOREP_LIBWRAP_FUNC_NAME( clSetProgramSpecializationConstant )( cl_program  program,
-                                                                cl_uint     specId,
-                                                                size_t      specSize,
-                                                                const void* specValue )
+SCOREP_LIBWRAP_WRAPPER( clSetProgramSpecializationConstant )( cl_program  program,
+                                                              cl_uint     specId,
+                                                              size_t      specSize,
+                                                              const void* specValue )
 {
     SCOREP_OPENCL_FUNC_ENTER( clSetProgramSpecializationConstant );
 
     SCOREP_OPENCL_WRAP_ENTER();
-    cl_int ret = SCOREP_LIBWRAP_FUNC_CALL(
-        clSetProgramSpecializationConstant,
-        ( program, specId, specSize, specValue ) );
+    cl_int ret = SCOREP_LIBWRAP_ORIGINAL( clSetProgramSpecializationConstant )( program, specId, specSize, specValue );
     SCOREP_OPENCL_WRAP_EXIT();
 
     SCOREP_OPENCL_FUNC_EXIT( clSetProgramSpecializationConstant );
@@ -20,16 +18,14 @@ SCOREP_LIBWRAP_FUNC_NAME( clSetProgramSpecializationConstant )( cl_program  prog
 
 
 cl_int
-SCOREP_LIBWRAP_FUNC_NAME( clSetProgramReleaseCallback )( cl_program program,
-                                                         void( CL_CALLBACK * pfn_notify )( cl_program program, void* user_data ),
-                                                         void* userData )
+SCOREP_LIBWRAP_WRAPPER( clSetProgramReleaseCallback )( cl_program program,
+                                                       void( CL_CALLBACK * pfn_notify )( cl_program program, void* user_data ),
+                                                       void* userData )
 {
     SCOREP_OPENCL_FUNC_ENTER( clSetProgramReleaseCallback );
 
     SCOREP_OPENCL_WRAP_ENTER();
-    cl_int ret = SCOREP_LIBWRAP_FUNC_CALL(
-        clSetProgramReleaseCallback,
-        ( program, pfn_notify, userData ) );
+    cl_int ret = SCOREP_LIBWRAP_ORIGINAL( clSetProgramReleaseCallback )( program, pfn_notify, userData );
     SCOREP_OPENCL_WRAP_EXIT();
 
     SCOREP_OPENCL_FUNC_EXIT( clSetProgramReleaseCallback );

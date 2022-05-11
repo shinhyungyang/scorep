@@ -104,7 +104,7 @@ posix_io_vector_complete( SCOREP_IoFileHandle    handle,
  */
 
 int
-SCOREP_LIBWRAP_FUNC_NAME( close )( int fd )
+SCOREP_LIBWRAP_WRAPPER( close )( int fd )
 {
     bool trigger = SCOREP_IN_MEASUREMENT_TEST_AND_INCREMENT();
     int  ret;
@@ -123,8 +123,7 @@ SCOREP_LIBWRAP_FUNC_NAME( close )( int fd )
         }
 
         SCOREP_ENTER_WRAPPED_REGION();
-        ret = SCOREP_LIBWRAP_FUNC_CALL( close,
-                                        ( fd ) );
+        ret = SCOREP_LIBWRAP_ORIGINAL( close )( fd );
         SCOREP_EXIT_WRAPPED_REGION();
 
         if ( handle != SCOREP_INVALID_IO_HANDLE )
@@ -146,15 +145,14 @@ SCOREP_LIBWRAP_FUNC_NAME( close )( int fd )
     }
     else
     {
-        ret = SCOREP_LIBWRAP_FUNC_CALL( close,
-                                        ( fd ) );
+        ret = SCOREP_LIBWRAP_ORIGINAL( close )( fd );
     }
     SCOREP_IN_MEASUREMENT_DECREMENT();
     return ret;
 }
 
 int
-SCOREP_LIBWRAP_FUNC_NAME( closedir )( DIR* dirp )
+SCOREP_LIBWRAP_WRAPPER( closedir )( DIR* dirp )
 {
     bool trigger = SCOREP_IN_MEASUREMENT_TEST_AND_INCREMENT();
     int  ret;
@@ -179,8 +177,7 @@ SCOREP_LIBWRAP_FUNC_NAME( closedir )( DIR* dirp )
         }
 
         SCOREP_ENTER_WRAPPED_REGION();
-        ret = SCOREP_LIBWRAP_FUNC_CALL( closedir,
-                                        ( dirp ) );
+        ret = SCOREP_LIBWRAP_ORIGINAL( closedir )( dirp );
         SCOREP_EXIT_WRAPPED_REGION();
 
         if ( handle != SCOREP_INVALID_IO_HANDLE )
@@ -202,15 +199,14 @@ SCOREP_LIBWRAP_FUNC_NAME( closedir )( DIR* dirp )
     }
     else
     {
-        ret = SCOREP_LIBWRAP_FUNC_CALL( closedir,
-                                        ( dirp ) );
+        ret = SCOREP_LIBWRAP_ORIGINAL( closedir )( dirp );
     }
     SCOREP_IN_MEASUREMENT_DECREMENT();
     return ret;
 }
 
 int
-SCOREP_LIBWRAP_FUNC_NAME( creat )( const char* pathname, mode_t mode )
+SCOREP_LIBWRAP_WRAPPER( creat )( const char* pathname, mode_t mode )
 {
     bool trigger = SCOREP_IN_MEASUREMENT_TEST_AND_INCREMENT();
     int  ret;
@@ -225,8 +221,7 @@ SCOREP_LIBWRAP_FUNC_NAME( creat )( const char* pathname, mode_t mode )
                                            "" );
 
         SCOREP_ENTER_WRAPPED_REGION();
-        ret = SCOREP_LIBWRAP_FUNC_CALL( creat,
-                                        ( pathname, mode ) );
+        ret = SCOREP_LIBWRAP_ORIGINAL( creat )( pathname, mode );
         SCOREP_EXIT_WRAPPED_REGION();
 
         if ( ret != -1 )
@@ -258,15 +253,14 @@ SCOREP_LIBWRAP_FUNC_NAME( creat )( const char* pathname, mode_t mode )
     }
     else
     {
-        ret = SCOREP_LIBWRAP_FUNC_CALL( creat,
-                                        ( pathname, mode ) );
+        ret = SCOREP_LIBWRAP_ORIGINAL( creat )( pathname, mode );
     }
     SCOREP_IN_MEASUREMENT_DECREMENT();
     return ret;
 }
 
 int
-SCOREP_LIBWRAP_FUNC_NAME( creat64 )( const char* pathname, mode_t mode )
+SCOREP_LIBWRAP_WRAPPER( creat64 )( const char* pathname, mode_t mode )
 {
     bool trigger = SCOREP_IN_MEASUREMENT_TEST_AND_INCREMENT();
     int  ret;
@@ -281,8 +275,7 @@ SCOREP_LIBWRAP_FUNC_NAME( creat64 )( const char* pathname, mode_t mode )
                                            "" );
 
         SCOREP_ENTER_WRAPPED_REGION();
-        ret = SCOREP_LIBWRAP_FUNC_CALL( creat64,
-                                        ( pathname, mode ) );
+        ret = SCOREP_LIBWRAP_ORIGINAL( creat64 )( pathname, mode );
         SCOREP_EXIT_WRAPPED_REGION();
 
         if ( ret != -1 )
@@ -313,15 +306,14 @@ SCOREP_LIBWRAP_FUNC_NAME( creat64 )( const char* pathname, mode_t mode )
     }
     else
     {
-        ret = SCOREP_LIBWRAP_FUNC_CALL( creat64,
-                                        ( pathname, mode ) );
+        ret = SCOREP_LIBWRAP_ORIGINAL( creat64 )( pathname, mode );
     }
     SCOREP_IN_MEASUREMENT_DECREMENT();
     return ret;
 }
 
 int
-SCOREP_LIBWRAP_FUNC_NAME( dup )( int oldfd )
+SCOREP_LIBWRAP_WRAPPER( dup )( int oldfd )
 {
     bool trigger = SCOREP_IN_MEASUREMENT_TEST_AND_INCREMENT();
     int  ret;
@@ -339,8 +331,7 @@ SCOREP_LIBWRAP_FUNC_NAME( dup )( int oldfd )
         }
 
         SCOREP_ENTER_WRAPPED_REGION();
-        ret = SCOREP_LIBWRAP_FUNC_CALL( dup,
-                                        ( oldfd ) );
+        ret = SCOREP_LIBWRAP_ORIGINAL( dup )( oldfd );
         SCOREP_EXIT_WRAPPED_REGION();
 
         if ( old_handle != SCOREP_INVALID_IO_HANDLE )
@@ -373,8 +364,7 @@ SCOREP_LIBWRAP_FUNC_NAME( dup )( int oldfd )
     }
     else
     {
-        ret = SCOREP_LIBWRAP_FUNC_CALL( dup,
-                                        ( oldfd ) );
+        ret = SCOREP_LIBWRAP_ORIGINAL( dup )( oldfd );
     }
     SCOREP_IN_MEASUREMENT_DECREMENT();
     return ret;
@@ -382,7 +372,7 @@ SCOREP_LIBWRAP_FUNC_NAME( dup )( int oldfd )
 
 
 int
-SCOREP_LIBWRAP_FUNC_NAME( dup2 )( int oldfd, int newfd )
+SCOREP_LIBWRAP_WRAPPER( dup2 )( int oldfd, int newfd )
 {
     bool trigger = SCOREP_IN_MEASUREMENT_TEST_AND_INCREMENT();
     int  ret;
@@ -418,8 +408,7 @@ SCOREP_LIBWRAP_FUNC_NAME( dup2 )( int oldfd, int newfd )
         }
 
         SCOREP_ENTER_WRAPPED_REGION();
-        ret = SCOREP_LIBWRAP_FUNC_CALL( dup2,
-                                        ( oldfd, newfd ) );
+        ret = SCOREP_LIBWRAP_ORIGINAL( dup2 )( oldfd, newfd );
         SCOREP_EXIT_WRAPPED_REGION();
 
         if ( oldfd != newfd && old_handle != SCOREP_INVALID_IO_HANDLE )
@@ -431,7 +420,7 @@ SCOREP_LIBWRAP_FUNC_NAME( dup2 )( int oldfd, int newfd )
                 if ( new_handle != SCOREP_INVALID_IO_HANDLE )
                 {
                     SCOREP_IoStatusFlag flags       = SCOREP_IO_STATUS_FLAG_NONE;
-                    int                 posix_flags = SCOREP_LIBWRAP_FUNC_CALL( fcntl, ( ret, F_GETFL, 0 ) );
+                    int                 posix_flags = SCOREP_LIBWRAP_ORIGINAL( fcntl )( ret, F_GETFL, 0 );
 
                     if ( posix_flags >= 0 )
                     {
@@ -455,15 +444,14 @@ SCOREP_LIBWRAP_FUNC_NAME( dup2 )( int oldfd, int newfd )
     }
     else
     {
-        ret = SCOREP_LIBWRAP_FUNC_CALL( dup2,
-                                        ( oldfd, newfd ) );
+        ret = SCOREP_LIBWRAP_ORIGINAL( dup2 )( oldfd, newfd );
     }
     SCOREP_IN_MEASUREMENT_DECREMENT();
     return ret;
 }
 
 int
-SCOREP_LIBWRAP_FUNC_NAME( dup3 )( int oldfd, int newfd, int flags )
+SCOREP_LIBWRAP_WRAPPER( dup3 )( int oldfd, int newfd, int flags )
 {
     bool trigger = SCOREP_IN_MEASUREMENT_TEST_AND_INCREMENT();
     int  ret;
@@ -491,8 +479,7 @@ SCOREP_LIBWRAP_FUNC_NAME( dup3 )( int oldfd, int newfd, int flags )
         }
 
         SCOREP_ENTER_WRAPPED_REGION();
-        ret = SCOREP_LIBWRAP_FUNC_CALL( dup3,
-                                        ( oldfd, newfd, flags ) );
+        ret = SCOREP_LIBWRAP_ORIGINAL( dup3 )( oldfd, newfd, flags );
         SCOREP_EXIT_WRAPPED_REGION();
 
         if ( old_handle != SCOREP_INVALID_IO_HANDLE )
@@ -523,15 +510,14 @@ SCOREP_LIBWRAP_FUNC_NAME( dup3 )( int oldfd, int newfd, int flags )
     }
     else
     {
-        ret = SCOREP_LIBWRAP_FUNC_CALL( dup3,
-                                        ( oldfd, newfd, flags ) );
+        ret = SCOREP_LIBWRAP_ORIGINAL( dup3 )( oldfd, newfd, flags );
     }
     SCOREP_IN_MEASUREMENT_DECREMENT();
     return ret;
 }
 
 int
-SCOREP_LIBWRAP_FUNC_NAME( fcntl )( int fd, int cmd, ... )
+SCOREP_LIBWRAP_WRAPPER( fcntl )( int fd, int cmd, ... )
 {
     bool trigger = SCOREP_IN_MEASUREMENT_TEST_AND_INCREMENT();
     int  ret;
@@ -574,15 +560,13 @@ SCOREP_LIBWRAP_FUNC_NAME( fcntl )( int fd, int cmd, ... )
                 {
                     old_handle = SCOREP_IoMgmt_GetAndPushHandle( SCOREP_IO_PARADIGM_POSIX, &fd );
                     SCOREP_ENTER_WRAPPED_REGION();
-                    ret = SCOREP_LIBWRAP_FUNC_CALL( fcntl,
-                                                    ( fd, cmd /* no var arg */ ) );
+                    ret = SCOREP_LIBWRAP_ORIGINAL( fcntl )( fd, cmd /* no var arg */ );
                     SCOREP_EXIT_WRAPPED_REGION();
                     SCOREP_IoMgmt_PopHandle( old_handle );
                 }
                 else
                 {
-                    ret = SCOREP_LIBWRAP_FUNC_CALL( fcntl,
-                                                    ( fd, cmd /* no var arg */ ) );
+                    ret = SCOREP_LIBWRAP_ORIGINAL( fcntl )( fd, cmd /* no var arg */ );
                 }
                 break;
             }
@@ -604,14 +588,12 @@ SCOREP_LIBWRAP_FUNC_NAME( fcntl )( int fd, int cmd, ... )
                         SCOREP_IoMgmt_BeginHandleDuplication( SCOREP_IO_PARADIGM_POSIX, old_handle );
                     }
                     SCOREP_ENTER_WRAPPED_REGION();
-                    ret = SCOREP_LIBWRAP_FUNC_CALL( fcntl,
-                                                    ( fd, cmd, int_arg ) );
+                    ret = SCOREP_LIBWRAP_ORIGINAL( fcntl )( fd, cmd, int_arg );
                     SCOREP_EXIT_WRAPPED_REGION();
                 }
                 else
                 {
-                    ret = SCOREP_LIBWRAP_FUNC_CALL( fcntl,
-                                                    ( fd, cmd, int_arg ) );
+                    ret = SCOREP_LIBWRAP_ORIGINAL( fcntl )( fd, cmd, int_arg );
                 }
                 break;
             }
@@ -639,15 +621,13 @@ SCOREP_LIBWRAP_FUNC_NAME( fcntl )( int fd, int cmd, ... )
                 {
                     old_handle = SCOREP_IoMgmt_GetAndPushHandle( SCOREP_IO_PARADIGM_POSIX, &fd );
                     SCOREP_ENTER_WRAPPED_REGION();
-                    ret = SCOREP_LIBWRAP_FUNC_CALL( fcntl,
-                                                    ( fd, cmd, int_arg ) );
+                    ret = SCOREP_LIBWRAP_ORIGINAL( fcntl )( fd, cmd, int_arg );
                     SCOREP_EXIT_WRAPPED_REGION();
                     SCOREP_IoMgmt_PopHandle( old_handle );
                 }
                 else
                 {
-                    ret = SCOREP_LIBWRAP_FUNC_CALL( fcntl,
-                                                    ( fd, cmd, int_arg ) );
+                    ret = SCOREP_LIBWRAP_ORIGINAL( fcntl )( fd, cmd, int_arg );
                 }
                 break;
             }
@@ -700,15 +680,13 @@ SCOREP_LIBWRAP_FUNC_NAME( fcntl )( int fd, int cmd, ... )
                 {
                     old_handle = SCOREP_IoMgmt_GetAndPushHandle( SCOREP_IO_PARADIGM_POSIX, &fd );
                     SCOREP_ENTER_WRAPPED_REGION();
-                    ret = SCOREP_LIBWRAP_FUNC_CALL( fcntl,
-                                                    ( fd, cmd, pointer_arg ) );
+                    ret = SCOREP_LIBWRAP_ORIGINAL( fcntl )( fd, cmd, pointer_arg );
                     SCOREP_EXIT_WRAPPED_REGION();
                     SCOREP_IoMgmt_PopHandle( old_handle );
                 }
                 else
                 {
-                    ret = SCOREP_LIBWRAP_FUNC_CALL( fcntl,
-                                                    ( fd, cmd, pointer_arg ) );
+                    ret = SCOREP_LIBWRAP_ORIGINAL( fcntl )( fd, cmd, pointer_arg );
                 }
                 break;
             }
@@ -736,7 +714,7 @@ SCOREP_LIBWRAP_FUNC_NAME( fcntl )( int fd, int cmd, ... )
                     if ( new_handle != SCOREP_INVALID_IO_HANDLE )
                     {
                         SCOREP_IoStatusFlag flags     = SCOREP_IO_STATUS_FLAG_NONE;
-                        int                 old_flags = SCOREP_LIBWRAP_FUNC_CALL( fcntl, ( fd, F_GETFL, 0 ) );
+                        int                 old_flags = SCOREP_LIBWRAP_ORIGINAL( fcntl )( fd, F_GETFL, 0 );
 
                         if ( old_flags >= 0 )
                         {
@@ -765,7 +743,7 @@ SCOREP_LIBWRAP_FUNC_NAME( fcntl )( int fd, int cmd, ... )
 }
 
 int
-SCOREP_LIBWRAP_FUNC_NAME( fdatasync )( int fd )
+SCOREP_LIBWRAP_WRAPPER( fdatasync )( int fd )
 {
     bool trigger = SCOREP_IN_MEASUREMENT_TEST_AND_INCREMENT();
     int  ret;
@@ -785,8 +763,7 @@ SCOREP_LIBWRAP_FUNC_NAME( fdatasync )( int fd )
         }
 
         SCOREP_ENTER_WRAPPED_REGION();
-        ret = SCOREP_LIBWRAP_FUNC_CALL( fdatasync,
-                                        ( fd ) );
+        ret = SCOREP_LIBWRAP_ORIGINAL( fdatasync )( fd );
         SCOREP_EXIT_WRAPPED_REGION();
 
         if ( io_handle != SCOREP_INVALID_IO_HANDLE )
@@ -803,15 +780,14 @@ SCOREP_LIBWRAP_FUNC_NAME( fdatasync )( int fd )
     }
     else
     {
-        ret = SCOREP_LIBWRAP_FUNC_CALL( fdatasync,
-                                        ( fd ) );
+        ret = SCOREP_LIBWRAP_ORIGINAL( fdatasync )( fd );
     }
     SCOREP_IN_MEASUREMENT_DECREMENT();
     return ret;
 }
 
 int
-SCOREP_LIBWRAP_FUNC_NAME( fsync )( int fd )
+SCOREP_LIBWRAP_WRAPPER( fsync )( int fd )
 {
     bool trigger = SCOREP_IN_MEASUREMENT_TEST_AND_INCREMENT();
     int  ret;
@@ -832,8 +808,7 @@ SCOREP_LIBWRAP_FUNC_NAME( fsync )( int fd )
         }
 
         SCOREP_ENTER_WRAPPED_REGION();
-        ret = SCOREP_LIBWRAP_FUNC_CALL( fsync,
-                                        ( fd ) );
+        ret = SCOREP_LIBWRAP_ORIGINAL( fsync )( fd );
         SCOREP_EXIT_WRAPPED_REGION();
 
         if ( io_handle != SCOREP_INVALID_IO_HANDLE )
@@ -850,15 +825,14 @@ SCOREP_LIBWRAP_FUNC_NAME( fsync )( int fd )
     }
     else
     {
-        ret = SCOREP_LIBWRAP_FUNC_CALL( fsync,
-                                        ( fd ) );
+        ret = SCOREP_LIBWRAP_ORIGINAL( fsync )( fd );
     }
     SCOREP_IN_MEASUREMENT_DECREMENT();
     return ret;
 }
 
 int
-SCOREP_LIBWRAP_FUNC_NAME( lockf )( int fd, int cmd, off_t len )
+SCOREP_LIBWRAP_WRAPPER( lockf )( int fd, int cmd, off_t len )
 {
     bool trigger = SCOREP_IN_MEASUREMENT_TEST_AND_INCREMENT();
     int  ret;
@@ -874,8 +848,7 @@ SCOREP_LIBWRAP_FUNC_NAME( lockf )( int fd, int cmd, off_t len )
         }
 
         SCOREP_ENTER_WRAPPED_REGION();
-        ret = SCOREP_LIBWRAP_FUNC_CALL( lockf,
-                                        ( fd, cmd, len ) );
+        ret = SCOREP_LIBWRAP_ORIGINAL( lockf )( fd, cmd, len );
         SCOREP_EXIT_WRAPPED_REGION();
 
         if ( handle != SCOREP_INVALID_IO_HANDLE )
@@ -904,15 +877,14 @@ SCOREP_LIBWRAP_FUNC_NAME( lockf )( int fd, int cmd, off_t len )
     }
     else
     {
-        ret = SCOREP_LIBWRAP_FUNC_CALL( lockf,
-                                        ( fd, cmd, len ) );
+        ret = SCOREP_LIBWRAP_ORIGINAL( lockf )( fd, cmd, len );
     }
     SCOREP_IN_MEASUREMENT_DECREMENT();
     return ret;
 }
 
 off_t
-SCOREP_LIBWRAP_FUNC_NAME( lseek )( int fd, off_t offset, int whence )
+SCOREP_LIBWRAP_WRAPPER( lseek )( int fd, off_t offset, int whence )
 {
     bool  trigger = SCOREP_IN_MEASUREMENT_TEST_AND_INCREMENT();
     off_t ret;
@@ -924,8 +896,7 @@ SCOREP_LIBWRAP_FUNC_NAME( lseek )( int fd, off_t offset, int whence )
         SCOREP_IoHandleHandle handle = SCOREP_IoMgmt_GetAndPushHandle( SCOREP_IO_PARADIGM_POSIX, &fd );
 
         SCOREP_ENTER_WRAPPED_REGION();
-        ret = SCOREP_LIBWRAP_FUNC_CALL( lseek,
-                                        ( fd, offset, whence ) );
+        ret = SCOREP_LIBWRAP_ORIGINAL( lseek )( fd, offset, whence );
         SCOREP_EXIT_WRAPPED_REGION();
 
         if ( handle != SCOREP_INVALID_IO_HANDLE )
@@ -942,15 +913,14 @@ SCOREP_LIBWRAP_FUNC_NAME( lseek )( int fd, off_t offset, int whence )
     }
     else
     {
-        ret = SCOREP_LIBWRAP_FUNC_CALL( lseek,
-                                        ( fd, offset, whence ) );
+        ret = SCOREP_LIBWRAP_ORIGINAL( lseek )( fd, offset, whence );
     }
     SCOREP_IN_MEASUREMENT_DECREMENT();
     return ret;
 }
 
 scorep_off64_t
-SCOREP_LIBWRAP_FUNC_NAME( lseek64 )( int fd, scorep_off64_t offset, int whence )
+SCOREP_LIBWRAP_WRAPPER( lseek64 )( int fd, scorep_off64_t offset, int whence )
 {
     bool           trigger = SCOREP_IN_MEASUREMENT_TEST_AND_INCREMENT();
     scorep_off64_t ret;
@@ -962,8 +932,7 @@ SCOREP_LIBWRAP_FUNC_NAME( lseek64 )( int fd, scorep_off64_t offset, int whence )
         SCOREP_IoHandleHandle handle = SCOREP_IoMgmt_GetAndPushHandle( SCOREP_IO_PARADIGM_POSIX, &fd );
 
         SCOREP_ENTER_WRAPPED_REGION();
-        ret = SCOREP_LIBWRAP_FUNC_CALL( lseek64,
-                                        ( fd, offset, whence ) );
+        ret = SCOREP_LIBWRAP_ORIGINAL( lseek64 )( fd, offset, whence );
         SCOREP_EXIT_WRAPPED_REGION();
 
         if ( handle != SCOREP_INVALID_IO_HANDLE )
@@ -980,15 +949,14 @@ SCOREP_LIBWRAP_FUNC_NAME( lseek64 )( int fd, scorep_off64_t offset, int whence )
     }
     else
     {
-        ret = SCOREP_LIBWRAP_FUNC_CALL( lseek64,
-                                        ( fd, offset, whence ) );
+        ret = SCOREP_LIBWRAP_ORIGINAL( lseek64 )( fd, offset, whence );
     }
     SCOREP_IN_MEASUREMENT_DECREMENT();
     return ret;
 }
 
 int
-SCOREP_LIBWRAP_FUNC_NAME( open )( const char* pathname, int flags, ... /* mode_t mode */ )
+SCOREP_LIBWRAP_WRAPPER( open )( const char* pathname, int flags, ... /* mode_t mode */ )
 {
     bool trigger = SCOREP_IN_MEASUREMENT_TEST_AND_INCREMENT();
     int  ret;
@@ -1016,7 +984,7 @@ SCOREP_LIBWRAP_FUNC_NAME( open )( const char* pathname, int flags, ... /* mode_t
         }
 
         SCOREP_ENTER_WRAPPED_REGION();
-        ret = SCOREP_LIBWRAP_FUNC_CALL( open, ( pathname, flags, mode ) );
+        ret = SCOREP_LIBWRAP_ORIGINAL( open )( pathname, flags, mode );
         SCOREP_EXIT_WRAPPED_REGION();
 
         if ( ret != -1 )
@@ -1060,14 +1028,14 @@ SCOREP_LIBWRAP_FUNC_NAME( open )( const char* pathname, int flags, ... /* mode_t
             mode = ( mode_t )va_arg( va, int );
             va_end( va );
         }
-        ret = SCOREP_LIBWRAP_FUNC_CALL( open, ( pathname, flags, mode ) );
+        ret = SCOREP_LIBWRAP_ORIGINAL( open )( pathname, flags, mode );
     }
     SCOREP_IN_MEASUREMENT_DECREMENT();
     return ret;
 }
 
 int
-SCOREP_LIBWRAP_FUNC_NAME( open64 )( const char* pathname, int flags, ... )
+SCOREP_LIBWRAP_WRAPPER( open64 )( const char* pathname, int flags, ... )
 {
     bool trigger = SCOREP_IN_MEASUREMENT_TEST_AND_INCREMENT();
     int  ret;
@@ -1095,7 +1063,7 @@ SCOREP_LIBWRAP_FUNC_NAME( open64 )( const char* pathname, int flags, ... )
         }
 
         SCOREP_ENTER_WRAPPED_REGION();
-        ret = SCOREP_LIBWRAP_FUNC_CALL( open64, ( pathname, flags, mode ) );
+        ret = SCOREP_LIBWRAP_ORIGINAL( open64 )( pathname, flags, mode );
         SCOREP_EXIT_WRAPPED_REGION();
 
         if ( ret != -1 )
@@ -1137,14 +1105,14 @@ SCOREP_LIBWRAP_FUNC_NAME( open64 )( const char* pathname, int flags, ... )
             mode = ( mode_t )va_arg( va, int );
             va_end( va );
         }
-        ret = SCOREP_LIBWRAP_FUNC_CALL( open64, ( pathname, flags, mode ) );
+        ret = SCOREP_LIBWRAP_ORIGINAL( open64 )( pathname, flags, mode );
     }
     SCOREP_IN_MEASUREMENT_DECREMENT();
     return ret;
 }
 
 int
-SCOREP_LIBWRAP_FUNC_NAME( openat )( int dirfd, const char* pathname, int flags, ... )
+SCOREP_LIBWRAP_WRAPPER( openat )( int dirfd, const char* pathname, int flags, ... )
 {
     bool trigger = SCOREP_IN_MEASUREMENT_TEST_AND_INCREMENT();
     int  ret;
@@ -1172,7 +1140,7 @@ SCOREP_LIBWRAP_FUNC_NAME( openat )( int dirfd, const char* pathname, int flags, 
         }
 
         SCOREP_ENTER_WRAPPED_REGION();
-        ret = SCOREP_LIBWRAP_FUNC_CALL( openat, ( dirfd, pathname, flags, mode ) );
+        ret = SCOREP_LIBWRAP_ORIGINAL( openat )( dirfd, pathname, flags, mode );
         SCOREP_EXIT_WRAPPED_REGION();
 
         if ( ret != -1 )
@@ -1229,14 +1197,14 @@ SCOREP_LIBWRAP_FUNC_NAME( openat )( int dirfd, const char* pathname, int flags, 
             mode = ( mode_t )va_arg( va, int );
             va_end( va );
         }
-        ret = SCOREP_LIBWRAP_FUNC_CALL( openat, ( dirfd, pathname, flags, mode ) );
+        ret = SCOREP_LIBWRAP_ORIGINAL( openat )( dirfd, pathname, flags, mode );
     }
     SCOREP_IN_MEASUREMENT_DECREMENT();
     return ret;
 }
 
 ssize_t
-SCOREP_LIBWRAP_FUNC_NAME( pread )( int fd, void* buf, size_t count, off_t offset )
+SCOREP_LIBWRAP_WRAPPER( pread )( int fd, void* buf, size_t count, off_t offset )
 {
     bool    trigger = SCOREP_IN_MEASUREMENT_TEST_AND_INCREMENT();
     ssize_t ret;
@@ -1264,8 +1232,7 @@ SCOREP_LIBWRAP_FUNC_NAME( pread )( int fd, void* buf, size_t count, off_t offset
         }
 
         SCOREP_ENTER_WRAPPED_REGION();
-        ret = SCOREP_LIBWRAP_FUNC_CALL( pread,
-                                        ( fd, buf, count, offset ) );
+        ret = SCOREP_LIBWRAP_ORIGINAL( pread )( fd, buf, count, offset );
         SCOREP_EXIT_WRAPPED_REGION();
 
         if ( io_handle != SCOREP_INVALID_IO_HANDLE )
@@ -1282,15 +1249,14 @@ SCOREP_LIBWRAP_FUNC_NAME( pread )( int fd, void* buf, size_t count, off_t offset
     }
     else
     {
-        ret = SCOREP_LIBWRAP_FUNC_CALL( pread,
-                                        ( fd, buf, count, offset ) );
+        ret = SCOREP_LIBWRAP_ORIGINAL( pread )( fd, buf, count, offset );
     }
     SCOREP_IN_MEASUREMENT_DECREMENT();
     return ret;
 }
 
 ssize_t
-SCOREP_LIBWRAP_FUNC_NAME( pread64 )( int fd, void* buf, size_t count, scorep_off64_t offset )
+SCOREP_LIBWRAP_WRAPPER( pread64 )( int fd, void* buf, size_t count, scorep_off64_t offset )
 {
     bool    trigger = SCOREP_IN_MEASUREMENT_TEST_AND_INCREMENT();
     ssize_t ret;
@@ -1318,8 +1284,7 @@ SCOREP_LIBWRAP_FUNC_NAME( pread64 )( int fd, void* buf, size_t count, scorep_off
         }
 
         SCOREP_ENTER_WRAPPED_REGION();
-        ret = SCOREP_LIBWRAP_FUNC_CALL( pread64,
-                                        ( fd, buf, count, offset ) );
+        ret = SCOREP_LIBWRAP_ORIGINAL( pread64 )( fd, buf, count, offset );
         SCOREP_EXIT_WRAPPED_REGION();
 
         if ( io_handle != SCOREP_INVALID_IO_HANDLE )
@@ -1336,15 +1301,14 @@ SCOREP_LIBWRAP_FUNC_NAME( pread64 )( int fd, void* buf, size_t count, scorep_off
     }
     else
     {
-        ret = SCOREP_LIBWRAP_FUNC_CALL( pread64,
-                                        ( fd, buf, count, offset ) );
+        ret = SCOREP_LIBWRAP_ORIGINAL( pread64 )( fd, buf, count, offset );
     }
     SCOREP_IN_MEASUREMENT_DECREMENT();
     return ret;
 }
 
 ssize_t
-SCOREP_LIBWRAP_FUNC_NAME( preadv )( int fd, const struct iovec* iov, int iovcnt, off_t offset )
+SCOREP_LIBWRAP_WRAPPER( preadv )( int fd, const struct iovec* iov, int iovcnt, off_t offset )
 {
     bool    trigger = SCOREP_IN_MEASUREMENT_TEST_AND_INCREMENT();
     ssize_t ret;
@@ -1365,8 +1329,7 @@ SCOREP_LIBWRAP_FUNC_NAME( preadv )( int fd, const struct iovec* iov, int iovcnt,
         }
 
         SCOREP_ENTER_WRAPPED_REGION();
-        ret = SCOREP_LIBWRAP_FUNC_CALL( preadv,
-                                        ( fd, iov, iovcnt, offset ) );
+        ret = SCOREP_LIBWRAP_ORIGINAL( preadv )( fd, iov, iovcnt, offset );
         SCOREP_EXIT_WRAPPED_REGION();
 
         if ( io_handle != SCOREP_INVALID_IO_HANDLE )
@@ -1384,15 +1347,14 @@ SCOREP_LIBWRAP_FUNC_NAME( preadv )( int fd, const struct iovec* iov, int iovcnt,
     }
     else
     {
-        ret = SCOREP_LIBWRAP_FUNC_CALL( preadv,
-                                        ( fd, iov, iovcnt, offset ) );
+        ret = SCOREP_LIBWRAP_ORIGINAL( preadv )( fd, iov, iovcnt, offset );
     }
     SCOREP_IN_MEASUREMENT_DECREMENT();
     return ret;
 }
 
 ssize_t
-SCOREP_LIBWRAP_FUNC_NAME( preadv2 )( int fd, const struct iovec* iov, int iovcnt, off_t offset, int flags )
+SCOREP_LIBWRAP_WRAPPER( preadv2 )( int fd, const struct iovec* iov, int iovcnt, off_t offset, int flags )
 {
     bool    trigger = SCOREP_IN_MEASUREMENT_TEST_AND_INCREMENT();
     ssize_t ret;
@@ -1413,8 +1375,7 @@ SCOREP_LIBWRAP_FUNC_NAME( preadv2 )( int fd, const struct iovec* iov, int iovcnt
         }
 
         SCOREP_ENTER_WRAPPED_REGION();
-        ret = SCOREP_LIBWRAP_FUNC_CALL( preadv2,
-                                        ( fd, iov, iovcnt, offset, flags ) );
+        ret = SCOREP_LIBWRAP_ORIGINAL( preadv2 )( fd, iov, iovcnt, offset, flags );
         SCOREP_EXIT_WRAPPED_REGION();
 
         if ( io_handle != SCOREP_INVALID_IO_HANDLE )
@@ -1432,15 +1393,14 @@ SCOREP_LIBWRAP_FUNC_NAME( preadv2 )( int fd, const struct iovec* iov, int iovcnt
     }
     else
     {
-        ret = SCOREP_LIBWRAP_FUNC_CALL( preadv2,
-                                        ( fd, iov, iovcnt, offset, flags ) );
+        ret = SCOREP_LIBWRAP_ORIGINAL( preadv2 )( fd, iov, iovcnt, offset, flags );
     }
     SCOREP_IN_MEASUREMENT_DECREMENT();
     return ret;
 }
 
 ssize_t
-SCOREP_LIBWRAP_FUNC_NAME( preadv64 )( int fd, const struct iovec* iov, int iovcnt, scorep_off64_t offset )
+SCOREP_LIBWRAP_WRAPPER( preadv64 )( int fd, const struct iovec* iov, int iovcnt, scorep_off64_t offset )
 {
     bool    trigger = SCOREP_IN_MEASUREMENT_TEST_AND_INCREMENT();
     ssize_t ret;
@@ -1461,8 +1421,7 @@ SCOREP_LIBWRAP_FUNC_NAME( preadv64 )( int fd, const struct iovec* iov, int iovcn
         }
 
         SCOREP_ENTER_WRAPPED_REGION();
-        ret = SCOREP_LIBWRAP_FUNC_CALL( preadv64,
-                                        ( fd, iov, iovcnt, offset ) );
+        ret = SCOREP_LIBWRAP_ORIGINAL( preadv64 )( fd, iov, iovcnt, offset );
         SCOREP_EXIT_WRAPPED_REGION();
 
         if ( io_handle != SCOREP_INVALID_IO_HANDLE )
@@ -1480,15 +1439,14 @@ SCOREP_LIBWRAP_FUNC_NAME( preadv64 )( int fd, const struct iovec* iov, int iovcn
     }
     else
     {
-        ret = SCOREP_LIBWRAP_FUNC_CALL( preadv64,
-                                        ( fd, iov, iovcnt, offset ) );
+        ret = SCOREP_LIBWRAP_ORIGINAL( preadv64 )( fd, iov, iovcnt, offset );
     }
     SCOREP_IN_MEASUREMENT_DECREMENT();
     return ret;
 }
 
 ssize_t
-SCOREP_LIBWRAP_FUNC_NAME( preadv64v2 )( int fd, const struct iovec* iov, int iovcnt, scorep_off64_t offset, int flags )
+SCOREP_LIBWRAP_WRAPPER( preadv64v2 )( int fd, const struct iovec* iov, int iovcnt, scorep_off64_t offset, int flags )
 {
     bool    trigger = SCOREP_IN_MEASUREMENT_TEST_AND_INCREMENT();
     ssize_t ret;
@@ -1509,8 +1467,7 @@ SCOREP_LIBWRAP_FUNC_NAME( preadv64v2 )( int fd, const struct iovec* iov, int iov
         }
 
         SCOREP_ENTER_WRAPPED_REGION();
-        ret = SCOREP_LIBWRAP_FUNC_CALL( preadv64v2,
-                                        ( fd, iov, iovcnt, offset, flags ) );
+        ret = SCOREP_LIBWRAP_ORIGINAL( preadv64v2 )( fd, iov, iovcnt, offset, flags );
         SCOREP_EXIT_WRAPPED_REGION();
 
         if ( io_handle != SCOREP_INVALID_IO_HANDLE )
@@ -1528,15 +1485,14 @@ SCOREP_LIBWRAP_FUNC_NAME( preadv64v2 )( int fd, const struct iovec* iov, int iov
     }
     else
     {
-        ret = SCOREP_LIBWRAP_FUNC_CALL( preadv64v2,
-                                        ( fd, iov, iovcnt, offset, flags ) );
+        ret = SCOREP_LIBWRAP_ORIGINAL( preadv64v2 )( fd, iov, iovcnt, offset, flags );
     }
     SCOREP_IN_MEASUREMENT_DECREMENT();
     return ret;
 }
 
 int
-SCOREP_LIBWRAP_FUNC_NAME( pselect )( int nfds, fd_set* readfds, fd_set* writefds, fd_set* exceptfds, const struct timespec* timeout, const sigset_t* sigmask )
+SCOREP_LIBWRAP_WRAPPER( pselect )( int nfds, fd_set* readfds, fd_set* writefds, fd_set* exceptfds, const struct timespec* timeout, const sigset_t* sigmask )
 {
     bool trigger = SCOREP_IN_MEASUREMENT_TEST_AND_INCREMENT();
     int  ret;
@@ -1545,22 +1501,22 @@ SCOREP_LIBWRAP_FUNC_NAME( pselect )( int nfds, fd_set* readfds, fd_set* writefds
     {
         SCOREP_EnterWrappedRegion( scorep_posix_io_region_pselect );
         SCOREP_ENTER_WRAPPED_REGION();
-        ret = SCOREP_LIBWRAP_FUNC_CALL( pselect,
-                                        ( nfds, readfds, writefds, exceptfds, timeout, sigmask ) );
+        ret = SCOREP_LIBWRAP_ORIGINAL( pselect )(
+            nfds, readfds, writefds, exceptfds, timeout, sigmask );
         SCOREP_EXIT_WRAPPED_REGION();
         SCOREP_ExitRegion( scorep_posix_io_region_pselect );
     }
     else
     {
-        ret = SCOREP_LIBWRAP_FUNC_CALL( pselect,
-                                        ( nfds, readfds, writefds, exceptfds, timeout, sigmask ) );
+        ret = SCOREP_LIBWRAP_ORIGINAL( pselect )(
+            nfds, readfds, writefds, exceptfds, timeout, sigmask );
     }
     SCOREP_IN_MEASUREMENT_DECREMENT();
     return ret;
 }
 
 ssize_t
-SCOREP_LIBWRAP_FUNC_NAME( pwrite )( int fd, const void* buf, size_t count, off_t offset )
+SCOREP_LIBWRAP_WRAPPER( pwrite )( int fd, const void* buf, size_t count, off_t offset )
 {
     bool    trigger = SCOREP_IN_MEASUREMENT_TEST_AND_INCREMENT();
     ssize_t ret;
@@ -1588,8 +1544,7 @@ SCOREP_LIBWRAP_FUNC_NAME( pwrite )( int fd, const void* buf, size_t count, off_t
         }
 
         SCOREP_ENTER_WRAPPED_REGION();
-        ret = SCOREP_LIBWRAP_FUNC_CALL( pwrite,
-                                        ( fd, buf, count, offset ) );
+        ret = SCOREP_LIBWRAP_ORIGINAL( pwrite )( fd, buf, count, offset );
         SCOREP_EXIT_WRAPPED_REGION();
 
         if ( io_handle != SCOREP_INVALID_IO_HANDLE )
@@ -1606,15 +1561,14 @@ SCOREP_LIBWRAP_FUNC_NAME( pwrite )( int fd, const void* buf, size_t count, off_t
     }
     else
     {
-        ret = SCOREP_LIBWRAP_FUNC_CALL( pwrite,
-                                        ( fd, buf, count, offset ) );
+        ret = SCOREP_LIBWRAP_ORIGINAL( pwrite )( fd, buf, count, offset );
     }
     SCOREP_IN_MEASUREMENT_DECREMENT();
     return ret;
 }
 
 ssize_t
-SCOREP_LIBWRAP_FUNC_NAME( pwrite64 )( int fd, const void* buf, size_t count, scorep_off64_t offset )
+SCOREP_LIBWRAP_WRAPPER( pwrite64 )( int fd, const void* buf, size_t count, scorep_off64_t offset )
 {
     bool    trigger = SCOREP_IN_MEASUREMENT_TEST_AND_INCREMENT();
     ssize_t ret;
@@ -1642,8 +1596,7 @@ SCOREP_LIBWRAP_FUNC_NAME( pwrite64 )( int fd, const void* buf, size_t count, sco
         }
 
         SCOREP_ENTER_WRAPPED_REGION();
-        ret = SCOREP_LIBWRAP_FUNC_CALL( pwrite64,
-                                        ( fd, buf, count, offset ) );
+        ret = SCOREP_LIBWRAP_ORIGINAL( pwrite64 )( fd, buf, count, offset );
         SCOREP_EXIT_WRAPPED_REGION();
 
         if ( io_handle != SCOREP_INVALID_IO_HANDLE )
@@ -1660,15 +1613,14 @@ SCOREP_LIBWRAP_FUNC_NAME( pwrite64 )( int fd, const void* buf, size_t count, sco
     }
     else
     {
-        ret = SCOREP_LIBWRAP_FUNC_CALL( pwrite64,
-                                        ( fd, buf, count, offset ) );
+        ret = SCOREP_LIBWRAP_ORIGINAL( pwrite64 )( fd, buf, count, offset );
     }
     SCOREP_IN_MEASUREMENT_DECREMENT();
     return ret;
 }
 
 ssize_t
-SCOREP_LIBWRAP_FUNC_NAME( pwritev )( int fd, const struct iovec* iov, int iovcnt, off_t offset )
+SCOREP_LIBWRAP_WRAPPER( pwritev )( int fd, const struct iovec* iov, int iovcnt, off_t offset )
 {
     bool    trigger = SCOREP_IN_MEASUREMENT_TEST_AND_INCREMENT();
     ssize_t ret;
@@ -1689,8 +1641,7 @@ SCOREP_LIBWRAP_FUNC_NAME( pwritev )( int fd, const struct iovec* iov, int iovcnt
         }
 
         SCOREP_ENTER_WRAPPED_REGION();
-        ret = SCOREP_LIBWRAP_FUNC_CALL( pwritev,
-                                        ( fd, iov, iovcnt, offset ) );
+        ret = SCOREP_LIBWRAP_ORIGINAL( pwritev )( fd, iov, iovcnt, offset );
         SCOREP_EXIT_WRAPPED_REGION();
 
         if ( io_handle != SCOREP_INVALID_IO_HANDLE )
@@ -1708,15 +1659,14 @@ SCOREP_LIBWRAP_FUNC_NAME( pwritev )( int fd, const struct iovec* iov, int iovcnt
     }
     else
     {
-        ret = SCOREP_LIBWRAP_FUNC_CALL( pwritev,
-                                        ( fd, iov, iovcnt, offset ) );
+        ret = SCOREP_LIBWRAP_ORIGINAL( pwritev )( fd, iov, iovcnt, offset );
     }
     SCOREP_IN_MEASUREMENT_DECREMENT();
     return ret;
 }
 
 ssize_t
-SCOREP_LIBWRAP_FUNC_NAME( pwritev2 )( int fd, const struct iovec* iov, int iovcnt, off_t offset, int flags )
+SCOREP_LIBWRAP_WRAPPER( pwritev2 )( int fd, const struct iovec* iov, int iovcnt, off_t offset, int flags )
 {
     bool    trigger = SCOREP_IN_MEASUREMENT_TEST_AND_INCREMENT();
     ssize_t ret;
@@ -1745,8 +1695,7 @@ SCOREP_LIBWRAP_FUNC_NAME( pwritev2 )( int fd, const struct iovec* iov, int iovcn
         }
 
         SCOREP_ENTER_WRAPPED_REGION();
-        ret = SCOREP_LIBWRAP_FUNC_CALL( pwritev2,
-                                        ( fd, iov, iovcnt, offset, flags ) );
+        ret = SCOREP_LIBWRAP_ORIGINAL( pwritev2 )( fd, iov, iovcnt, offset, flags );
         SCOREP_EXIT_WRAPPED_REGION();
 
         if ( io_handle != SCOREP_INVALID_IO_HANDLE )
@@ -1764,15 +1713,14 @@ SCOREP_LIBWRAP_FUNC_NAME( pwritev2 )( int fd, const struct iovec* iov, int iovcn
     }
     else
     {
-        ret = SCOREP_LIBWRAP_FUNC_CALL( pwritev2,
-                                        ( fd, iov, iovcnt, offset, flags ) );
+        ret = SCOREP_LIBWRAP_ORIGINAL( pwritev2 )( fd, iov, iovcnt, offset, flags );
     }
     SCOREP_IN_MEASUREMENT_DECREMENT();
     return ret;
 }
 
 ssize_t
-SCOREP_LIBWRAP_FUNC_NAME( pwritev64 )( int fd, const struct iovec* iov, int iovcnt, scorep_off64_t offset )
+SCOREP_LIBWRAP_WRAPPER( pwritev64 )( int fd, const struct iovec* iov, int iovcnt, scorep_off64_t offset )
 {
     bool    trigger = SCOREP_IN_MEASUREMENT_TEST_AND_INCREMENT();
     ssize_t ret;
@@ -1793,8 +1741,7 @@ SCOREP_LIBWRAP_FUNC_NAME( pwritev64 )( int fd, const struct iovec* iov, int iovc
         }
 
         SCOREP_ENTER_WRAPPED_REGION();
-        ret = SCOREP_LIBWRAP_FUNC_CALL( pwritev64,
-                                        ( fd, iov, iovcnt, offset ) );
+        ret = SCOREP_LIBWRAP_ORIGINAL( pwritev64 )( fd, iov, iovcnt, offset );
         SCOREP_EXIT_WRAPPED_REGION();
 
         if ( io_handle != SCOREP_INVALID_IO_HANDLE )
@@ -1812,15 +1759,14 @@ SCOREP_LIBWRAP_FUNC_NAME( pwritev64 )( int fd, const struct iovec* iov, int iovc
     }
     else
     {
-        ret = SCOREP_LIBWRAP_FUNC_CALL( pwritev64,
-                                        ( fd, iov, iovcnt, offset ) );
+        ret = SCOREP_LIBWRAP_ORIGINAL( pwritev64 )( fd, iov, iovcnt, offset );
     }
     SCOREP_IN_MEASUREMENT_DECREMENT();
     return ret;
 }
 
 ssize_t
-SCOREP_LIBWRAP_FUNC_NAME( pwritev64v2 )( int fd, const struct iovec* iov, int iovcnt, scorep_off64_t offset, int flags )
+SCOREP_LIBWRAP_WRAPPER( pwritev64v2 )( int fd, const struct iovec* iov, int iovcnt, scorep_off64_t offset, int flags )
 {
     bool    trigger = SCOREP_IN_MEASUREMENT_TEST_AND_INCREMENT();
     ssize_t ret;
@@ -1849,8 +1795,7 @@ SCOREP_LIBWRAP_FUNC_NAME( pwritev64v2 )( int fd, const struct iovec* iov, int io
         }
 
         SCOREP_ENTER_WRAPPED_REGION();
-        ret = SCOREP_LIBWRAP_FUNC_CALL( pwritev64v2,
-                                        ( fd, iov, iovcnt, offset, flags ) );
+        ret = SCOREP_LIBWRAP_ORIGINAL( pwritev64v2 )( fd, iov, iovcnt, offset, flags );
         SCOREP_EXIT_WRAPPED_REGION();
 
         if ( io_handle != SCOREP_INVALID_IO_HANDLE )
@@ -1868,15 +1813,14 @@ SCOREP_LIBWRAP_FUNC_NAME( pwritev64v2 )( int fd, const struct iovec* iov, int io
     }
     else
     {
-        ret = SCOREP_LIBWRAP_FUNC_CALL( pwritev64v2,
-                                        ( fd, iov, iovcnt, offset, flags ) );
+        ret = SCOREP_LIBWRAP_ORIGINAL( pwritev64v2 )( fd, iov, iovcnt, offset, flags );
     }
     SCOREP_IN_MEASUREMENT_DECREMENT();
     return ret;
 }
 
 ssize_t
-SCOREP_LIBWRAP_FUNC_NAME( read )( int fd, void* buf, size_t count )
+SCOREP_LIBWRAP_WRAPPER( read )( int fd, void* buf, size_t count )
 {
     bool    trigger = SCOREP_IN_MEASUREMENT_TEST_AND_INCREMENT();
     ssize_t ret;
@@ -1898,8 +1842,7 @@ SCOREP_LIBWRAP_FUNC_NAME( read )( int fd, void* buf, size_t count )
         }
 
         SCOREP_ENTER_WRAPPED_REGION();
-        ret = SCOREP_LIBWRAP_FUNC_CALL( read,
-                                        ( fd, buf, count ) );
+        ret = SCOREP_LIBWRAP_ORIGINAL( read )( fd, buf, count );
         SCOREP_EXIT_WRAPPED_REGION();
 
         if ( io_handle != SCOREP_INVALID_IO_HANDLE )
@@ -1916,15 +1859,14 @@ SCOREP_LIBWRAP_FUNC_NAME( read )( int fd, void* buf, size_t count )
     }
     else
     {
-        ret = SCOREP_LIBWRAP_FUNC_CALL( read,
-                                        ( fd, buf, count ) );
+        ret = SCOREP_LIBWRAP_ORIGINAL( read )( fd, buf, count );
     }
     SCOREP_IN_MEASUREMENT_DECREMENT();
     return ret;
 }
 
 ssize_t
-SCOREP_LIBWRAP_FUNC_NAME( readv )( int fd, const struct iovec* iov, int iovcnt )
+SCOREP_LIBWRAP_WRAPPER( readv )( int fd, const struct iovec* iov, int iovcnt )
 {
     bool    trigger = SCOREP_IN_MEASUREMENT_TEST_AND_INCREMENT();
     ssize_t ret;
@@ -1945,8 +1887,7 @@ SCOREP_LIBWRAP_FUNC_NAME( readv )( int fd, const struct iovec* iov, int iovcnt )
         }
 
         SCOREP_ENTER_WRAPPED_REGION();
-        ret = SCOREP_LIBWRAP_FUNC_CALL( readv,
-                                        ( fd, iov, iovcnt ) );
+        ret = SCOREP_LIBWRAP_ORIGINAL( readv )( fd, iov, iovcnt );
         SCOREP_EXIT_WRAPPED_REGION();
 
         if ( io_handle != SCOREP_INVALID_IO_HANDLE )
@@ -1964,15 +1905,14 @@ SCOREP_LIBWRAP_FUNC_NAME( readv )( int fd, const struct iovec* iov, int iovcnt )
     }
     else
     {
-        ret = SCOREP_LIBWRAP_FUNC_CALL( readv,
-                                        ( fd, iov, iovcnt ) );
+        ret = SCOREP_LIBWRAP_ORIGINAL( readv )( fd, iov, iovcnt );
     }
     SCOREP_IN_MEASUREMENT_DECREMENT();
     return ret;
 }
 
 int
-SCOREP_LIBWRAP_FUNC_NAME( select )( int nfds, fd_set* readfds, fd_set* writefds, fd_set* exceptfds, struct timeval* timeout )
+SCOREP_LIBWRAP_WRAPPER( select )( int nfds, fd_set* readfds, fd_set* writefds, fd_set* exceptfds, struct timeval* timeout )
 {
     bool trigger = SCOREP_IN_MEASUREMENT_TEST_AND_INCREMENT();
     int  ret;
@@ -1981,22 +1921,20 @@ SCOREP_LIBWRAP_FUNC_NAME( select )( int nfds, fd_set* readfds, fd_set* writefds,
     {
         SCOREP_EnterWrappedRegion( scorep_posix_io_region_select );
         SCOREP_ENTER_WRAPPED_REGION();
-        ret = SCOREP_LIBWRAP_FUNC_CALL( select,
-                                        ( nfds, readfds, writefds, exceptfds, timeout ) );
+        ret = SCOREP_LIBWRAP_ORIGINAL( select )( nfds, readfds, writefds, exceptfds, timeout );
         SCOREP_EXIT_WRAPPED_REGION();
         SCOREP_ExitRegion( scorep_posix_io_region_select );
     }
     else
     {
-        ret = SCOREP_LIBWRAP_FUNC_CALL( select,
-                                        ( nfds, readfds, writefds, exceptfds, timeout ) );
+        ret = SCOREP_LIBWRAP_ORIGINAL( select )( nfds, readfds, writefds, exceptfds, timeout );
     }
     SCOREP_IN_MEASUREMENT_DECREMENT();
     return ret;
 }
 
 void
-SCOREP_LIBWRAP_FUNC_NAME( sync )( void )
+SCOREP_LIBWRAP_WRAPPER( sync )( void )
 {
     bool trigger = SCOREP_IN_MEASUREMENT_TEST_AND_INCREMENT();
 
@@ -2014,8 +1952,7 @@ SCOREP_LIBWRAP_FUNC_NAME( sync )( void )
                                  SCOREP_IO_UNKNOWN_OFFSET );
 
         SCOREP_ENTER_WRAPPED_REGION();
-        SCOREP_LIBWRAP_FUNC_CALL( sync,
-                                  ( ) );
+        SCOREP_LIBWRAP_ORIGINAL( sync )();
         SCOREP_EXIT_WRAPPED_REGION();
 
         SCOREP_IoOperationComplete( scorep_posix_io_sync_all_handle,
@@ -2029,14 +1966,13 @@ SCOREP_LIBWRAP_FUNC_NAME( sync )( void )
     }
     else
     {
-        SCOREP_LIBWRAP_FUNC_CALL( sync,
-                                  ( ) );
+        SCOREP_LIBWRAP_ORIGINAL( sync )();
     }
     SCOREP_IN_MEASUREMENT_DECREMENT();
 }
 
 int
-SCOREP_LIBWRAP_FUNC_NAME( syncfs )( int fd )
+SCOREP_LIBWRAP_WRAPPER( syncfs )( int fd )
 {
     bool trigger = SCOREP_IN_MEASUREMENT_TEST_AND_INCREMENT();
     int  ret;
@@ -2058,8 +1994,7 @@ SCOREP_LIBWRAP_FUNC_NAME( syncfs )( int fd )
         }
 
         SCOREP_ENTER_WRAPPED_REGION();
-        ret = SCOREP_LIBWRAP_FUNC_CALL( syncfs,
-                                        ( fd ) );
+        ret = SCOREP_LIBWRAP_ORIGINAL( syncfs )( fd );
         SCOREP_EXIT_WRAPPED_REGION();
 
         if ( io_handle != SCOREP_INVALID_IO_HANDLE )
@@ -2076,15 +2011,14 @@ SCOREP_LIBWRAP_FUNC_NAME( syncfs )( int fd )
     }
     else
     {
-        ret = SCOREP_LIBWRAP_FUNC_CALL( syncfs,
-                                        ( fd ) );
+        ret = SCOREP_LIBWRAP_ORIGINAL( syncfs )( fd );
     }
     SCOREP_IN_MEASUREMENT_DECREMENT();
     return ret;
 }
 
 int
-SCOREP_LIBWRAP_FUNC_NAME( unlink )( const char* pathname )
+SCOREP_LIBWRAP_WRAPPER( unlink )( const char* pathname )
 {
     bool trigger = SCOREP_IN_MEASUREMENT_TEST_AND_INCREMENT();
     int  ret;
@@ -2096,8 +2030,7 @@ SCOREP_LIBWRAP_FUNC_NAME( unlink )( const char* pathname )
         SCOREP_IoFileHandle file_handle = SCOREP_IoMgmt_GetIoFileHandle( pathname );
 
         SCOREP_ENTER_WRAPPED_REGION();
-        ret = SCOREP_LIBWRAP_FUNC_CALL( unlink,
-                                        ( pathname ) );
+        ret = SCOREP_LIBWRAP_ORIGINAL( unlink )( pathname );
         SCOREP_EXIT_WRAPPED_REGION();
 
         if ( file_handle != SCOREP_INVALID_IO_FILE )
@@ -2110,15 +2043,14 @@ SCOREP_LIBWRAP_FUNC_NAME( unlink )( const char* pathname )
     }
     else
     {
-        ret = SCOREP_LIBWRAP_FUNC_CALL( unlink,
-                                        ( pathname ) );
+        ret = SCOREP_LIBWRAP_ORIGINAL( unlink )( pathname );
     }
     SCOREP_IN_MEASUREMENT_DECREMENT();
     return ret;
 }
 
 int
-SCOREP_LIBWRAP_FUNC_NAME( unlinkat )( int dirfd, const char* pathname, int flags )
+SCOREP_LIBWRAP_WRAPPER( unlinkat )( int dirfd, const char* pathname, int flags )
 {
     bool trigger = SCOREP_IN_MEASUREMENT_TEST_AND_INCREMENT();
     int  ret;
@@ -2152,8 +2084,7 @@ SCOREP_LIBWRAP_FUNC_NAME( unlinkat )( int dirfd, const char* pathname, int flags
         }
 
         SCOREP_ENTER_WRAPPED_REGION();
-        ret = SCOREP_LIBWRAP_FUNC_CALL( unlinkat,
-                                        ( dirfd, pathname, flags ) );
+        ret = SCOREP_LIBWRAP_ORIGINAL( unlinkat )( dirfd, pathname, flags );
         SCOREP_EXIT_WRAPPED_REGION();
 
         if ( file_handle != SCOREP_INVALID_IO_FILE )
@@ -2167,15 +2098,14 @@ SCOREP_LIBWRAP_FUNC_NAME( unlinkat )( int dirfd, const char* pathname, int flags
     }
     else
     {
-        ret = SCOREP_LIBWRAP_FUNC_CALL( unlinkat,
-                                        ( dirfd, pathname, flags ) );
+        ret = SCOREP_LIBWRAP_ORIGINAL( unlinkat )( dirfd, pathname, flags );
     }
     SCOREP_IN_MEASUREMENT_DECREMENT();
     return ret;
 }
 
 ssize_t
-SCOREP_LIBWRAP_FUNC_NAME( write )( int fd, const void* buf, size_t count )
+SCOREP_LIBWRAP_WRAPPER( write )( int fd, const void* buf, size_t count )
 {
     bool    trigger = SCOREP_IN_MEASUREMENT_TEST_AND_INCREMENT();
     ssize_t ret;
@@ -2196,8 +2126,7 @@ SCOREP_LIBWRAP_FUNC_NAME( write )( int fd, const void* buf, size_t count )
                                      SCOREP_IO_UNKNOWN_OFFSET );
         }
         SCOREP_ENTER_WRAPPED_REGION();
-        ret = SCOREP_LIBWRAP_FUNC_CALL( write,
-                                        ( fd, buf, count ) );
+        ret = SCOREP_LIBWRAP_ORIGINAL( write )( fd, buf, count );
         SCOREP_EXIT_WRAPPED_REGION();
 
         if ( handle != SCOREP_INVALID_IO_HANDLE )
@@ -2214,15 +2143,14 @@ SCOREP_LIBWRAP_FUNC_NAME( write )( int fd, const void* buf, size_t count )
     }
     else
     {
-        ret = SCOREP_LIBWRAP_FUNC_CALL( write,
-                                        ( fd, buf, count ) );
+        ret = SCOREP_LIBWRAP_ORIGINAL( write )( fd, buf, count );
     }
     SCOREP_IN_MEASUREMENT_DECREMENT();
     return ret;
 }
 
 ssize_t
-SCOREP_LIBWRAP_FUNC_NAME( writev )( int fd, const struct iovec* iov, int iovcnt )
+SCOREP_LIBWRAP_WRAPPER( writev )( int fd, const struct iovec* iov, int iovcnt )
 {
     bool    trigger = SCOREP_IN_MEASUREMENT_TEST_AND_INCREMENT();
     ssize_t ret;
@@ -2243,8 +2171,7 @@ SCOREP_LIBWRAP_FUNC_NAME( writev )( int fd, const struct iovec* iov, int iovcnt 
         }
 
         SCOREP_ENTER_WRAPPED_REGION();
-        ret = SCOREP_LIBWRAP_FUNC_CALL( writev,
-                                        ( fd, iov, iovcnt ) );
+        ret = SCOREP_LIBWRAP_ORIGINAL( writev )( fd, iov, iovcnt );
         SCOREP_EXIT_WRAPPED_REGION();
 
         if ( handle != SCOREP_INVALID_IO_HANDLE )
@@ -2262,8 +2189,7 @@ SCOREP_LIBWRAP_FUNC_NAME( writev )( int fd, const struct iovec* iov, int iovcnt 
     }
     else
     {
-        ret = SCOREP_LIBWRAP_FUNC_CALL( writev,
-                                        ( fd, iov, iovcnt ) );
+        ret = SCOREP_LIBWRAP_ORIGINAL( writev )( fd, iov, iovcnt );
     }
     SCOREP_IN_MEASUREMENT_DECREMENT();
     return ret;

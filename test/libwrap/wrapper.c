@@ -18,8 +18,8 @@
 
 #include "foo.h"
 
-#define SCOREP_LIBWRAP_DECLARE_WRAPPER_FUNC_SPECIFIER static
-#define SCOREP_LIBWRAP_DECLARE_REAL_FUNC_SPECIFIER    static
+#define SCOREP_LIBWRAP_DECLARE_WRAPPER_SPECIFIER  static
+#define SCOREP_LIBWRAP_DECLARE_ORIGINAL_SPECIFIER static
 
 #include <scorep/SCOREP_Libwrap.h>
 #include <scorep/SCOREP_Libwrap_Macros.h>
@@ -28,8 +28,8 @@
 #include <SCOREP_Libwrap_Internal.h>
 
 
-SCOREP_LIBWRAP_DECLARE_WRAPPER_FUNC( ( void ), foo, ( void ) );
-SCOREP_LIBWRAP_DECLARE_REAL_FUNC( ( void ), foo, ( void ) );
+SCOREP_LIBWRAP_DECLARE_WRAPPER( ( void ), foo, ( void ) );
+SCOREP_LIBWRAP_DECLARE_ORIGINAL( ( void ), foo, ( void ) );
 
 // region handles
 
@@ -58,7 +58,7 @@ static const SCOREP_LibwrapAttributes lw_attr =
  * Function wrapper
  */
 void
-SCOREP_LIBWRAP_FUNC_NAME( foo )( void )
+SCOREP_LIBWRAP_WRAPPER( foo )( void )
 {
     SCOREP_LIBWRAP_ENTER_MEASUREMENT();
     printf( "Wrapped function 'foo'\n" );
@@ -68,7 +68,7 @@ SCOREP_LIBWRAP_FUNC_NAME( foo )( void )
     SCOREP_LIBWRAP_FUNC_ENTER( foo );
 
     SCOREP_LIBWRAP_ENTER_WRAPPED_REGION();
-    SCOREP_LIBWRAP_FUNC_CALL( foo, ( ) );
+    SCOREP_LIBWRAP_ORIGINAL( foo )();
     SCOREP_LIBWRAP_EXIT_WRAPPED_REGION();
 
     SCOREP_LIBWRAP_FUNC_EXIT( foo );

@@ -88,7 +88,7 @@ struct SCOREP_LibwrapAPI
      * @param file               Source file name
      * @param line               Line number in source file
      * @param wrapper            Function address of the wrapper
-     * @param[out] funcPtr       Pointer to the function address of the actual/wrappee
+     * @param[out] funcPtr       Pointer to the function address of the original
      * @param[out] regionHandle  Pointer to the region handle
      *
      * @return                   @see SCOREP_LibwrapEnableErrorCode
@@ -135,8 +135,8 @@ struct SCOREP_LibwrapAPI
     ( * exit_region )( SCOREP_RegionHandle region );
 
     /**
-     * Marks the transition between wrapper and wrappee. I.e., just before the wrapper
-     * calls the wrappee.
+     * Marks the transition between wrapper and original. I.e., just before the wrapper
+     * calls the original.
      *
      * @return previous state, must be passed on to @a SCOREP_LibwrapAPI::exit_wrapped_region.
      */
@@ -144,8 +144,8 @@ struct SCOREP_LibwrapAPI
     ( * enter_wrapped_region )( void );
 
     /**
-     * Marks the transition between wrapper and wrappee. I.e., just before the wrapper
-     * calls the wrappee.
+     * Marks the transition between wrapper and original. I.e., just before the wrapper
+     * calls the original.
      *
      * @param previous The return value from @a SCOREP_LibwrapAPI::enter_wrapped_region.
      */

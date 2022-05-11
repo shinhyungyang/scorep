@@ -100,7 +100,7 @@
         }                                                                      \
                                                                                \
         SCOREP_OPENCL_WRAP_ENTER();                                            \
-        cl_int ret = SCOREP_LIBWRAP_FUNC_CALL( func, args );                   \
+        cl_int ret = SCOREP_LIBWRAP_ORIGINAL( func )args;                      \
         SCOREP_OPENCL_WRAP_EXIT();                                             \
                                                                                \
         if ( trigger                                                           \

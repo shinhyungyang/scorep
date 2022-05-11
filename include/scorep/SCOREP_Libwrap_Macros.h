@@ -23,10 +23,10 @@
 #include <stdlib.h>
 #include <scorep/SCOREP_Libwrap.h>
 
-#ifndef SCOREP_LIBWRAP_FUNC_NAME
+#ifndef SCOREP_LIBWRAP_WRAPPER
 
 /**
- * @def SCOREP_LIBWRAP_FUNC_NAME
+ * @def SCOREP_LIBWRAP_WRAPPER
  * Name of the wrapper function for symbol @a func.
  *
  * Do not prefix this symbol with 'scorep_', it needs to survive the unwinding
@@ -34,21 +34,21 @@
  *
  * @param func             Function name
  */
-#define SCOREP_LIBWRAP_FUNC_NAME( func ) \
+#define SCOREP_LIBWRAP_WRAPPER( func ) \
     __scorep_libwrap_wrapper__ ## func
 
 #endif
 
-#ifndef SCOREP_LIBWRAP_FUNC_REAL_NAME
+#ifndef SCOREP_LIBWRAP_ORIGINAL
 
 /**
- * @def SCOREP_LIBWRAP_FUNC_REAL_NAME
+ * @def SCOREP_LIBWRAP_ORIGINAL
  * The function pointer of the original function.
  *
  * @param func              Function name
  */
-#define SCOREP_LIBWRAP_FUNC_REAL_NAME( func ) \
-    scorep_libwrap_funcptr__ ## func
+#define SCOREP_LIBWRAP_ORIGINAL( func ) \
+    scorep_libwrap_original__ ## func
 
 #endif
 
@@ -106,14 +106,14 @@ extern const SCOREP_LibwrapAPI scorep_libwrap_plugin_api;
 
 /**
  * @def SCOREP_LIBWRAP_ENTER_WRAPPED_REGION
- *      Transition from wrapper to wrappee
+ *      Transition from wrapper to original
  */
 #define SCOREP_LIBWRAP_ENTER_WRAPPED_REGION() \
     scorep_libwrap_var_previous = SCOREP_LIBWRAP_API( enter_wrapped_region )()
 
 /**
  * @def SCOREP_LIBWRAP_EXIT_WRAPPED_REGION
- *      Transition from wrappee to wrapper
+ *      Transition from original to wrapper
  */
 #define SCOREP_LIBWRAP_EXIT_WRAPPED_REGION() \
     SCOREP_LIBWRAP_API( exit_wrapped_region )( scorep_libwrap_var_previous )
@@ -148,88 +148,81 @@ extern const SCOREP_LibwrapAPI scorep_libwrap_plugin_api;
     }                                                                                   \
     while ( 0 )
 
-/** @internal
- *  @def _SCOREP_LIBWRAP_RETTYPE
+/**
+ * @internal
+ * @def _SCOREP_LIBWRAP_RETTYPE
  *
- *  Resolves the parentheses of the provided rettype of @a SCOREP_LIBWRAP_FUNC_TYPE
+ * Resolves the parentheses of the provided rettype of @a _SCOREP_LIBWRAP_FUNC_TYPE
  */
 #define _SCOREP_LIBWRAP_RETTYPE( ... ) __VA_ARGS__
 
 /**
- * @def SCOREP_LIBWRAP_FUNC_TYPE
+ * @internal
+ * @def _SCOREP_LIBWRAP_FUNC_TYPE
  * Produces a function declaration.
  *
  * @param rettype           Function return type in parentheses.
  * @param name              A name
  * @param argtypes          Function arguments in parentheses
  */
-#define SCOREP_LIBWRAP_FUNC_TYPE( rettype, name, argtypes ) \
+#define _SCOREP_LIBWRAP_FUNC_TYPE( rettype, name, argtypes ) \
     _SCOREP_LIBWRAP_RETTYPE rettype name argtypes
 
 /**
- * @def SCOREP_LIBWRAP_DECLARE_WRAPPER_FUNC_SPECIFIER
+ * @def SCOREP_LIBWRAP_DECLARE_WRAPPER_SPECIFIER
  * The default storage specifier for the wrapper-func declaration is empty.
  * Overwrite this macro if you want a different, like `static`.
  */
-#ifndef SCOREP_LIBWRAP_DECLARE_WRAPPER_FUNC_SPECIFIER
+#ifndef SCOREP_LIBWRAP_DECLARE_WRAPPER_SPECIFIER
 
-#define SCOREP_LIBWRAP_DECLARE_WRAPPER_FUNC_SPECIFIER
+#define SCOREP_LIBWRAP_DECLARE_WRAPPER_SPECIFIER
 
 #endif
 
 /**
- * @def SCOREP_LIBWRAP_DECLARE_WRAPPER_FUNC
+ * @def SCOREP_LIBWRAP_DECLARE_WRAPPER
  * Declares the wrapper function.
  *
  * @param rettype           Function return type in parentheses.
  * @param func              Function name
  * @param argtypes          Function arguments in parentheses
  */
-#define SCOREP_LIBWRAP_DECLARE_WRAPPER_FUNC( rettype, func, argtypes ) \
-    SCOREP_LIBWRAP_DECLARE_WRAPPER_FUNC_SPECIFIER SCOREP_LIBWRAP_FUNC_TYPE( rettype, SCOREP_LIBWRAP_FUNC_NAME( func ), argtypes )
+#define SCOREP_LIBWRAP_DECLARE_WRAPPER( rettype, func, argtypes ) \
+    SCOREP_LIBWRAP_DECLARE_WRAPPER_SPECIFIER _SCOREP_LIBWRAP_FUNC_TYPE( rettype, SCOREP_LIBWRAP_WRAPPER( func ), argtypes )
 
 /**
- * @def SCOREP_LIBWRAP_DECLARE_REAL_FUNC_SPECIFIER
- * The default storage specifier for the real-func declaration is 'extern'.
+ * @def SCOREP_LIBWRAP_DECLARE_ORIGINAL_SPECIFIER
+ * The default storage specifier for the function pointer to the original function
+ * declaration is 'extern'.
  * Overwrite this macro if you want a different.
  */
-#ifndef SCOREP_LIBWRAP_DECLARE_REAL_FUNC_SPECIFIER
+#ifndef SCOREP_LIBWRAP_DECLARE_ORIGINAL_SPECIFIER
 
-#define SCOREP_LIBWRAP_DECLARE_REAL_FUNC_SPECIFIER extern
+#define SCOREP_LIBWRAP_DECLARE_ORIGINAL_SPECIFIER extern
 
 #endif
 
 /**
- * @def SCOREP_LIBWRAP_DECLARE_REAL_FUNC
+ * @def SCOREP_LIBWRAP_DECLARE_ORIGINAL
  * Declares the function pointer for the original function.
  *
  * @param rettype           Function return type in parentheses.
  * @param func              Function name
  * @param argtypes          Function arguments in parentheses
  */
-#define SCOREP_LIBWRAP_DECLARE_REAL_FUNC( rettype, func, argtypes ) \
-    SCOREP_LIBWRAP_DECLARE_REAL_FUNC_SPECIFIER SCOREP_LIBWRAP_FUNC_TYPE( rettype, ( *SCOREP_LIBWRAP_FUNC_REAL_NAME( func )), argtypes )
+#define SCOREP_LIBWRAP_DECLARE_ORIGINAL( rettype, func, argtypes ) \
+    SCOREP_LIBWRAP_DECLARE_ORIGINAL_SPECIFIER _SCOREP_LIBWRAP_FUNC_TYPE( rettype, ( *SCOREP_LIBWRAP_ORIGINAL( func )), argtypes )
 
 /**
- * @def SCOREP_LIBWRAP_DEFINE_REAL_FUNC
+ * @def SCOREP_LIBWRAP_DEFINE_ORIGINAL
  * Defines the function pointer of the original function, initialized with NULL.
  *
  * @param rettype           Function return type in parentheses.
  * @param func              Function name
  * @param argtypes          Function arguments in parentheses
  */
-#define SCOREP_LIBWRAP_DEFINE_REAL_FUNC( rettype, func, argtypes ) \
-    SCOREP_LIBWRAP_FUNC_TYPE( rettype, ( *SCOREP_LIBWRAP_FUNC_REAL_NAME( func )), argtypes ) = NULL
-
-/**
- * @def SCOREP_LIBWRAP_FUNC_CALL
- * Call real function symbol
- *
- * @param func              Function name
- * @param args              Function arguments
- */
-#define SCOREP_LIBWRAP_FUNC_CALL( func, args ) \
-    SCOREP_LIBWRAP_FUNC_REAL_NAME( func )args
+#define SCOREP_LIBWRAP_DEFINE_ORIGINAL( rettype, func, argtypes ) \
+    _SCOREP_LIBWRAP_FUNC_TYPE( rettype, ( *SCOREP_LIBWRAP_ORIGINAL( func )), argtypes ) = NULL
 
 /**
  * @def SCOREP_LIBWRAP_FUNC_INIT
@@ -241,15 +234,15 @@ extern const SCOREP_LibwrapAPI scorep_libwrap_plugin_api;
  * @param file              Source code location (file as `const char*`)
  * @param line              Source code location (line as `int`)
  */
-#define SCOREP_LIBWRAP_FUNC_INIT( handle, func, prettyname, file, line )                        \
-    do                                                                                          \
-    {                                                                                           \
-        SCOREP_LIBWRAP_API( enable_wrapper )( handle,                                           \
-                                              prettyname, #func, file, line,                    \
-                                              ( void* )SCOREP_LIBWRAP_FUNC_NAME( func ),        \
-                                              ( void** )&SCOREP_LIBWRAP_FUNC_REAL_NAME( func ), \
-                                              &SCOREP_LIBWRAP_REGION_HANDLE( func ) );          \
-    }                                                                                           \
+#define SCOREP_LIBWRAP_FUNC_INIT( handle, func, prettyname, file, line )                    \
+    do                                                                                      \
+    {                                                                                       \
+        SCOREP_LIBWRAP_API( enable_wrapper )( handle,                                       \
+                                              prettyname, #func, file, line,                \
+                                              ( void* )SCOREP_LIBWRAP_WRAPPER( func ),      \
+                                              ( void** )&SCOREP_LIBWRAP_ORIGINAL( func ),   \
+                                              &SCOREP_LIBWRAP_REGION_HANDLE( func ) );      \
+    }                                                                                       \
     while ( 0 )
 
 #endif /* SCOREP_LIBWRAP_MACROS_H */
