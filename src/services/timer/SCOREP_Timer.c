@@ -312,6 +312,11 @@ SCOREP_Timer_Initialize( void )
             break;
         }
 
+        case TIMER_LOGICAL_BASIC_BLOCK:
+        {
+            break;
+        }
+
         default:
             UTILS_FATAL( "Invalid timer selected, shouldn't happen." );
     }
@@ -511,6 +516,11 @@ SCOREP_Timer_GetClockResolution( void )
             return UINT64_C( 1 );
         }
 
+        case TIMER_LOGICAL_BASIC_BLOCK:
+        {
+            return UINT64_C( 1 );
+        }
+
         default:
             UTILS_FATAL( "Invalid timer selected, shouldn't happen." );
     }
@@ -571,6 +581,9 @@ SCOREP_Timer_ClockIsGlobal( void )
             return true;
 
         case TIMER_LOGICAL_HWCTR_INSTR:
+            return true;
+
+        case TIMER_LOGICAL_BASIC_BLOCK:
             return true;
 
         default:

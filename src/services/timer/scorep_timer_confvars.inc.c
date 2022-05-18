@@ -113,6 +113,12 @@ static const SCOREP_ConfigType_SetEntry timer_table[] = {
         "Logical & HW instructions count for events."
     },
 
+    {
+        "logical_basicblock",
+        TIMER_LOGICAL_BASIC_BLOCK,
+        "Logical & basic block count for events."
+    },
+
     { NULL, 0, NULL }
 };
 

@@ -78,6 +78,8 @@ enum timer_type
 
     TIMER_LOGICAL_HWCTR_INSTR,
 
+    TIMER_LOGICAL_BASIC_BLOCK,
+
     TIMER_INVALID
 };
 
