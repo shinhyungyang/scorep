@@ -17,8 +17,8 @@
  */
 
 
-#ifndef SCOREP_COMPILER_GCC_PLUGIN_H
-#define SCOREP_COMPILER_GCC_PLUGIN_H
+#ifndef SCOREP_COMPILER_INSTRUMENTATION_PLUGIN_H
+#define SCOREP_COMPILER_INSTRUMENTATION_PLUGIN_H
 
 #include <stdint.h>
 
@@ -38,4 +38,4 @@ scorep_compiler_region_description;
 void
 scorep_compiler_register_region( const scorep_compiler_region_description* region_descr );
 
-#endif /* SCOREP_COMPILER_GCC_PLUGIN_H */
+#endif /* SCOREP_COMPILER_INSTRUMENTATION_PLUGIN_H */

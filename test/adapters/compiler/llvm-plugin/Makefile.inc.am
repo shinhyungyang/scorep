@@ -1,0 +1,120 @@
+## -*- mode: makefile -*-
+
+##
+## This file is part of the Score-P software (http://www.score-p.org)
+##
+## Copyright (c) 2017,
+## Technische Universitaet Muenchen, Germany
+##
+## This software may be modified and distributed under the terms of
+## a BSD-style license.  See the COPYING file in the package base
+## directory for details.
+##
+
+
+## file       Makefile.inc.am
+
+
+if HAVE_LLVM_PLUGIN_SUPPORT
+
+# load instrument plugin
+# Append it to CPPFLAGS and not to CFLAGS or CXXFLAGS.
+# Libtools would use it while linking not online while compiling and interprets -Xclang.
+# Therefore -load would appended to link flags but can't be handled.
+USE_LLVM_INSTR_FLAGS   = -Xclang -load \
+                         -Xclang .libs/libscorep_llvm_plugin.so \
+                         -g3
+
+check_LTLIBRARIES                            += libexception_handling_test_suite.la
+
+libexception_handling_test_suite_la_SOURCES  = $(SRC_ROOT)test/adapters/compiler/llvm-plugin/exception-handling/exception_handling_test_suite.cpp
+
+libexception_handling_test_suite_la_CXXFLAGS = $(AM_CXXFLAGS) \
+                                               -std=c++11
+
+
+
+check_PROGRAMS                   += basic_exception_handling
+
+basic_exception_handling_SOURCES  = $(SRC_ROOT)test/adapters/compiler/llvm-plugin/exception-handling/basic_exception_handling.cpp
+
+basic_exception_handling_CPPFLAGS = $(USE_LLVM_INSTR_FLAGS)
+
+basic_exception_handling_CXXFLAGS = $(AM_CXXFLAGS)
+
+basic_exception_handling_LDFLAGS  = $(serial_ldflags) \
+                                    libexception_handling_test_suite.la
+
+TESTS_SERIAL                     += ./basic_exception_handling
+
+
+
+check_PROGRAMS                                += propergate_exception_through_function
+
+propergate_exception_through_function_SOURCES  = $(SRC_ROOT)test/adapters/compiler/llvm-plugin/exception-handling/propergate_exception_through_function.cpp
+
+propergate_exception_through_function_CPPFLAGS = $(USE_LLVM_INSTR_FLAGS)
+
+propergate_exception_through_function_CXXFLAGS = $(AM_CXXFLAGS)
+
+propergate_exception_through_function_LDFLAGS  = $(serial_ldflags) \
+                                                 libexception_handling_test_suite.la
+
+TESTS_SERIAL                                  += ./propergate_exception_through_function
+
+
+
+check_PROGRAMS                += catch_other_exception
+
+catch_other_exception_SOURCES  = $(SRC_ROOT)test/adapters/compiler/llvm-plugin/exception-handling/catch_other_exception.cpp
+
+catch_other_exception_CPPFLAGS = $(USE_LLVM_INSTR_FLAGS)
+
+catch_other_exception_CXXFLAGS = $(AM_CXXFLAGS)
+
+catch_other_exception_LDFLAGS  = $(serial_ldflags) \
+                                 libexception_handling_test_suite.la
+
+TESTS_SERIAL                  += ./catch_other_exception
+
+
+
+check_LTLIBRARIES            += libunits_cpp_lib.la
+
+libunits_cpp_lib_la_SOURCES   = $(SRC_ROOT)test/adapters/compiler/llvm-plugin/exception-handling/3_compilation_units/cpp_lib.cpp
+
+libunits_cpp_lib_la_CPPFLAGS  = $(USE_LLVM_INSTR_FLAGS)
+libunits_cpp_lib_la_CXXFLAGS  = $(AM_CXXFLAGS)
+
+libunits_cpp_lib_la_LDFLAGS   = $(serial_ldflags) \
+                                libexception_handling_test_suite.la
+
+
+
+check_LTLIBRARIES        += libunits_c_lib.la
+
+libunits_c_lib_la_SOURCES = $(SRC_ROOT)test/adapters/compiler/llvm-plugin/exception-handling/3_compilation_units/c_lib.c
+
+libunits_c_lib_la_CPPFLAGS   = $(USE_LLVM_INSTR_FLAGS)
+libunits_c_lib_la_CFLAGS   = $(AM_CFLAGS)
+
+libunits_c_lib_la_LDFLAGS = $(serial_ldflags) \
+                            libunits_cpp_lib.la \
+                            libexception_handling_test_suite.la
+
+
+
+check_PROGRAMS                      += different_compilation_units
+
+different_compilation_units_SOURCES  = $(SRC_ROOT)test/adapters/compiler/llvm-plugin/exception-handling/3_compilation_units/cpp_application.cpp
+
+different_compilation_units_CPPFLAGS = $(USE_LLVM_INSTR_FLAGS)
+different_compilation_units_CXXFLAGS = $(AM_CXXFLAGS)
+
+different_compilation_units_LDFLAGS  = $(serial_ldflags) \
+                                       libexception_handling_test_suite.la \
+                                       libunits_c_lib.la
+
+TESTS_SERIAL                        += ./different_compilation_units
+
+endif HAVE_LLVM_PLUGIN_SUPPORT

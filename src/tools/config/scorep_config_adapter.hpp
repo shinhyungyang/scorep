@@ -297,11 +297,11 @@ public:
                 bool         build_check,
                 bool         nvcc );
 
-#if HAVE_BACKEND( GCC_PLUGIN_SUPPORT ) || SCOREP_BACKEND_COMPILER_INTEL
+#if HAVE_BACKEND( GCC_PLUGIN_SUPPORT ) || SCOREP_BACKEND_COMPILER_INTEL || HAVE_BACKEND( LLVM_PLUGIN_SUPPORT )
 private:
     /** Any additional cflags */
     std::string m_cflags;
-#endif
+#endif /*  HAVE_BACKEND( GCC_PLUGIN_SUPPORT ) || SCOREP_BACKEND_COMPILER_INTEL || HAVE_BACKEND( LLVM_PLUGIN_SUPPORT ) */
 };
 
 /* **************************************************************************************

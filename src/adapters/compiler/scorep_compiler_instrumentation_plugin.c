@@ -15,9 +15,10 @@
  *
  */
 
+
 #include <config.h>
 
-#include "scorep_compiler_gcc_plugin.h"
+#include "scorep_compiler_instrumentation_plugin.h"
 
 #include <SCOREP_RuntimeManagement.h>
 #include <SCOREP_InMeasurement.h>

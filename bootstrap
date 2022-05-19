@@ -12,7 +12,7 @@ LOCAL_CONFIGURES = \
 	build-frontend/configure \
 	build-mpi/configure \
 	build-shmem/configure \
-	build-gcc-plugin/configure \
+	build-instrumentation-plugin/configure \
 	build-score/configure \
 	build-libwrap/configure
 
@@ -53,8 +53,8 @@ build-mpi/configure: build-backend/configure
 build-shmem/configure: build-backend/configure
 	cd build-shmem; $(AUTORECONF) $(AUTORECONFFLAGS)
 
-build-gcc-plugin/configure: build-backend/configure
-	cd build-gcc-plugin; $(AUTORECONF) $(AUTORECONFFLAGS)
+build-instrumentation-plugin/configure: build-backend/configure
+	cd build-instrumentation-plugin; $(AUTORECONF) $(AUTORECONFFLAGS)
 
 build-score/configure: build-backend/configure
 	cd build-score; $(AUTORECONF) $(AUTORECONFFLAGS)

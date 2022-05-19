@@ -102,9 +102,9 @@ plugin_init( struct plugin_name_args*   plugin_info,
         save_target_CC=$CC
         save_target_CPPFLAGS=$CPPFLAGS
         save_target_CFLAGS=$CFLAGS
-        CC=$GCC_PLUGIN_TARGET_CC
-        CPPFLAGS=$GCC_PLUGIN_TARGET_CPPFLAGS
-        CFLAGS="$GCC_PLUGIN_TARGET_CFLAGS -fplugin=$PWD/lib/confmodule.so"
+        CC=$INSTRUMENTATION_PLUGIN_TARGET_CC
+        CPPFLAGS=$INSTRUMENTATION_PLUGIN_TARGET_CPPFLAGS
+        CFLAGS="$INSTRUMENTATION_PLUGIN_TARGET_CFLAGS -fplugin=$PWD/lib/confmodule.so"
 
         AC_MSG_CHECKING([to load a $1 plug-in])
         AC_COMPILE_IFELSE([AC_LANG_PROGRAM([], [])],
@@ -174,7 +174,7 @@ AS_UNSET([scorep_gcc_have_working_plugin])
 AC_DEFUN([_SCOREP_GCC_PLUGIN_TARGET_VERSION], [
 
 # -dumpversion gives us only ever major.minor
-scorep_gcc_plugin_target_version_dump="$($GCC_PLUGIN_TARGET_CC -dumpversion)"
+scorep_gcc_plugin_target_version_dump="$($INSTRUMENTATION_PLUGIN_TARGET_CC -dumpversion)"
 
 scorep_gcc_plugin_target_version=0
 AS_IF([test "x${scorep_gcc_plugin_target_version_dump}" != "x"],
@@ -197,7 +197,7 @@ AC_REQUIRE([_SCOREP_GCC_PLUGIN_TARGET_VERSION])dnl
 scorep_gcc_plugin_support="no"
 
 # we need the include directory from the target CC
-scorep_gcc_plugin_includedir=$($GCC_PLUGIN_TARGET_CC -print-file-name=plugin/include)
+scorep_gcc_plugin_includedir=$($INSTRUMENTATION_PLUGIN_TARGET_CC -print-file-name=plugin/include)
 
 AS_IF([test ${scorep_gcc_plugin_target_version} -lt 4005],
     [scorep_gcc_plugin_support_reason="no, GCC ${scorep_gcc_plugin_target_version_dump} is too old, no plug-in support"],

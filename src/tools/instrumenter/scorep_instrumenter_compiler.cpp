@@ -94,7 +94,7 @@ SCOREP_Instrumenter_CompilerAdapter::SCOREP_Instrumenter_CompilerAdapter( void )
 bool
 SCOREP_Instrumenter_CompilerAdapter::supportInstrumentFilters( void ) const
 {
-#if HAVE_BACKEND( GCC_PLUGIN_SUPPORT ) || SCOREP_BACKEND_COMPILER_INTEL
+#if HAVE_BACKEND( GCC_PLUGIN_SUPPORT ) || SCOREP_BACKEND_COMPILER_INTEL || HAVE_BACKEND( LLVM_PLUGIN_SUPPORT )
     return true;
 #else
     return false;
@@ -155,7 +155,7 @@ SCOREP_Instrumenter_CompilerAdapter::getConfigToolFlag( SCOREP_Instrumenter_CmdL
 
     std::string flags;
 
-#if HAVE_BACKEND( GCC_PLUGIN_SUPPORT )
+#if HAVE_BACKEND( GCC_PLUGIN_SUPPORT ) ||  HAVE_BACKEND( LLVM_PLUGIN_SUPPORT )
     if ( cmdLine.getVerbosity() >= 1 )
     {
         std::ostringstream verbosity_arg;

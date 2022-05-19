@@ -235,6 +235,7 @@ CHECK_TARGETS = \
     build-frontend:check-omp \
     build-backend:check-serial \
     build-backend:check-omp
+    build-instrumentation-plugin:check-serial
 if HAVE_SCOREP_MPI
 CHECK_TARGETS += \
     build-mpi:check-mpi \
@@ -248,6 +249,7 @@ else !CROSS_BUILD
 CHECK_TARGETS = \
     build-backend:check-serial \
     build-backend:check-omp
+    build-instrumentation-plugin:check-serial
 if HAVE_SCOREP_MPI
 CHECK_TARGETS += \
     build-mpi:check-mpi \

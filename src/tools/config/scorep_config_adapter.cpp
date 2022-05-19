@@ -327,13 +327,23 @@ SCOREP_Config_CompilerAdapter::checkArgument( const std::string& arg )
     }
 
 #if HAVE_BACKEND( GCC_PLUGIN_SUPPORT ) || SCOREP_BACKEND_COMPILER_INTEL
-    /* Catch any compiler plug-in args */
+    /* Catch any GCC plug-in args */
     if ( arg.substr( 0, 15 ) == "--compiler-arg=" )
     {
         m_cflags += arg.substr( 15 ) + " ";
         return true;
     }
 #endif /*HAVE_BACKEND( GCC_PLUGIN_SUPPORT ) || SCOREP_BACKEND_COMPILER_INTEL*/
+
+#if HAVE_BACKEND( LLVM_PLUGIN_SUPPORT )
+    /* Catch any LLVM instrumentation plug-in args */
+    if ( arg.substr( 0, 22 ) == "--compiler-plugin-arg=" )
+    {
+        m_cflags += "-mllvm -fplugin-arg-scorep_instrument_function-" + arg.substr( 22 ) + " ";
+        return true;
+    }
+#endif /*HAVE_BACKEND( LLVM_PLUGIN_SUPPORT )*/
+
 #endif /*HAVE_BACKEND( COMPILER_INSTRUMENTATION )*/
 
     return false;
@@ -365,7 +375,7 @@ SCOREP_Config_CompilerAdapter::addCFlags( std::string&           cflags,
     if ( build_check )
     {
         extern std::string path_to_binary;
-        cflags += "-fplugin=" + path_to_binary + "../build-gcc-plugin/" LT_OBJDIR "scorep_instrument_function.so ";
+        cflags += "-fplugin=" + path_to_binary + "../build-instrumentation-plugin/" LT_OBJDIR "scorep_instrument_function.so ";
     }
     else
     {
@@ -375,6 +385,21 @@ SCOREP_Config_CompilerAdapter::addCFlags( std::string&           cflags,
 #elif SCOREP_BACKEND_COMPILER_INTEL
     cflags += m_cflags;
 #endif /*SCOREP_BACKEND_COMPILER_INTEL*/
+
+#if HAVE_BACKEND( LLVM_PLUGIN_SUPPORT )
+    if ( build_check )
+    {
+        extern std::string path_to_binary;
+        // NDAO: do we have to update this to call: -flegacy-pass-manager -Xclang ... ?
+        cflags += "-Xclang -load -Xclang " + path_to_binary + "../build-instrumentation-plugin/" LT_OBJDIR "libscorep_llvm_plugin.so -g ";
+    }
+    else
+    {
+        cflags += "-Xclang -load -Xclang " SCOREP_PKGLIBDIR "/libscorep_llvm_plugin.so -g ";
+    }
+    cflags += m_cflags;
+#endif /*HAVE_BACKEND( LLVM_PLUGIN_SUPPORT )*/
+
 }
 
 void

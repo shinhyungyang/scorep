@@ -46,10 +46,16 @@ AC_ARG_WITH([extra-instrumentation-flags],
     [])dnl
 
 AC_SCOREP_COND_HAVE([GCC_PLUGIN_SUPPORT],
-                    [test -f ../build-gcc-plugin/gcc_plugin_supported],
+                    [test -f ../build-instrumentation-plugin/gcc_plugin_supported],
                     [Defined if GCC plug-in support is available.],
                     [scorep_compiler_gnu_with_plugin=yes],
                     [scorep_compiler_gnu_with_plugin=no])
+
+AC_SCOREP_COND_HAVE([LLVM_PLUGIN_SUPPORT],
+                    [test -f ../build-instrumentation-plugin/llvm_plugin_supported],
+                    [Defined if LLVM/Clang plug-in support is available.],
+                    [scorep_compiler_llvm_with_plugin=yes],
+                    [scorep_compiler_llvm_with_plugin=no])
 
 scorep_compiler_instrumentation_needs_addr2line="no"
 scorep_compiler_instrumentation_cflags=
@@ -72,15 +78,17 @@ AS_CASE([${ax_cv_c_compiler_vendor}],
                  scorep_compiler_instrumentation_needs_addr2line=yes],
     [fujitsu],  [scorep_compiler_instrumentation_cflags="-g -Ntl_vtrc -Ntl_notrt"
                  scorep_compiler_instrumentation_needs_addr2line="yes"],
-    [clang],    [SCOREP_CC_FLAG_TEST([scorep_compiler_instrumentation_cflags], [-g -finstrument-functions])
-                 SCOREP_CC_FLAG_TEST([scorep_compiler_instrumentation_cflags], [-g -finstrument-functions-after-inlining])
-                 scorep_compiler_instrumentation_needs_addr2line="yes"
-                 AS_CASE([${ac_scorep_platform}],
-                         [mac*], [# Disable position independent executable, which
-                                  # also disables address space randomization,
-                                  # which avoids matching addresses between NM and
-                                  # __cyg_profile_func_*
-                                  scorep_compiler_instrumentation_ldflags="-Wl,-no_pie"])],
+    [clang],    [AS_IF([test "x${scorep_compiler_llvm_with_plugin}" = "xyes"],
+                       [scorep_compiler_instrumentation_cppflags=""],
+                       [SCOREP_CC_FLAG_TEST([-g -finstrument-functions])
+                        SCOREP_CC_FLAG_TEST([-g -finstrument-functions-after-inlining])
+                        scorep_compiler_instrumentation_needs_symbol_table="yes"
+                        AS_CASE([${ac_scorep_platform}],
+                            [mac*], [# Disable position independent executable, which
+                                     # also disables address space randomization,
+                                     # which avoids matching addresses between NM and
+                                     # __cyg_profile_func_*
+                                     scorep_compiler_instrumentation_ldflags="-Wl,-no_pie"])])],
     [])dnl
 
 AS_IF([test "x${ax_cv_c_compiler_vendor}" != "x${ax_cv_fc_compiler_vendor}"],

@@ -20,7 +20,7 @@
 
 #include <stdlib.h>
 
-#include "scorep_compiler_gcc_plugin.h"
+#include "scorep_compiler_instrumentation_plugin.h"
 
 const scorep_compiler_region_description
 __attribute__( ( section( ".scorep.region.descrs" ) ) )

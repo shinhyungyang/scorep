@@ -248,7 +248,7 @@ AS_IF([test "x${libdir}" != 'x${exec_prefix}/lib'],
      scorep_score_extra_arg="--libdir=${LIBDIR_EVALUATED} ${scorep_score_extra_arg}"])
 AX_CONFIG_SUBDIR([build-score], [${scorep_score_extra_arg} ${scorep_cubelib_config_arg} ${scorep_otf2_config_arg} afs_cross_compiling=${ac_scorep_cross_compiling}])
 
-AX_CONFIG_SUBDIR([build-gcc-plugin], [${args} ac_scorep_platform=${ac_scorep_platform} ac_scorep_cross_compiling=${ac_scorep_cross_compiling}])
+AX_CONFIG_SUBDIR([build-instrumentation-plugin], [${args} ac_scorep_platform=${ac_scorep_platform} ac_scorep_cross_compiling=${ac_scorep_cross_compiling}])
 
 AX_CONFIG_SUBDIR([build-libwrap], [${args} afs_cross_compiling=${ac_scorep_cross_compiling}])
 

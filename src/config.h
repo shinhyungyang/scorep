@@ -73,8 +73,8 @@
 #elif defined SCORE_BUILD
     #include <config-score.h>
 
-#elif defined GCC_PLUGIN_BUILD
-       #include <config-gcc-plugin.h>
+#elif defined INSTRUMENTATION_PLUGIN_BUILD
+       #include <config-instrumentaion-plugin.h>
 
 #elif defined LIBWRAP_BUILD
     #include <config-libwrap.h>

@@ -16,8 +16,8 @@
 /**
  * @file
  *
- * @brief Support for GNU-Compiler
- * Will be triggered by the '-fplugin' flag of the GNU compiler.
+ * @brief Support for LLVM-Compiler
+ * Will be triggered by the '-Xclang load -Xclang <scorep-llvm-plugin>.so' flag of the LLVM/Clang compiler.
  */
 
 #include <config.h>
@@ -32,16 +32,9 @@
 #include "SCOREP_Compiler_Init.h"
 #include "scorep_compiler_instrumentation_plugin.h"
 
-/**
- * section markers for runtime instrumentation
- */
-extern const scorep_compiler_region_description scorep_region_descriptions_begin;
-extern const scorep_compiler_region_description scorep_region_descriptions_end;
-
 /****************************************************************************************
    Adapter management
  *****************************************************************************************/
-
 
 void
 scorep_compiler_register_region( const scorep_compiler_region_description* regionDescr )
@@ -76,48 +69,49 @@ scorep_compiler_register_region( const scorep_compiler_region_description* regio
                  regionDescr->name );
 }
 
-
 SCOREP_ErrorCode
 scorep_compiler_subsystem_init( void )
 {
-    UTILS_DEBUG( "initialize GCC plugin compiler adapter" );
+    UTILS_DEBUG( "initialize LLVM plugin compiler adapter" );
 
-    /* Initialize plugin instrumentation */
-    for ( const scorep_compiler_region_description* region_descr = &scorep_region_descriptions_begin + 1;
-          region_descr < &scorep_region_descriptions_end;
-          region_descr++ )
-    {
-        /* This handles SCOREP_IsUnwindingEnabled() and sets all regions handles to `FILTERED`. */
-        scorep_compiler_register_region( region_descr );
-    }
+    /* Initialize region mutex */
+    SCOREP_MutexCreate( &scorep_compiler_region_mutex );
+
+    // NDAO: Check here again whether to add  /* Initialize plugin instrumentation */ code or not
+    //       Why is it not added in the old plugin ?!
 
     return SCOREP_SUCCESS;
 }
-
 
 SCOREP_ErrorCode
 scorep_compiler_subsystem_begin( void )
 {
+    UTILS_DEBUG( "start LLVM plugin compiler adapter" );
+
     return SCOREP_SUCCESS;
 }
-
 
 void
 scorep_compiler_subsystem_end( void )
 {
+    UTILS_DEBUG( "stop LLVM plugin compiler adapter" );
 }
-
 
 /* Adapter finalization */
 void
 scorep_compiler_subsystem_finalize( void )
 {
-}
+    UTILS_DEBUG( "finalize LLVM plugin compiler adapter" );
 
+    /* Delete region mutex */
+    SCOREP_MutexDestroy( &scorep_compiler_region_mutex );
+}
 
 SCOREP_ErrorCode
 scorep_compiler_subsystem_init_location( struct SCOREP_Location* locationData,
                                          struct SCOREP_Location* parent )
 {
+    UTILS_DEBUG( "initialize location in LLVM plugin compiler adapter" );
+
     return SCOREP_SUCCESS;
 }
