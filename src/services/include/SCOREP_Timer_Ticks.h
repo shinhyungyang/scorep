@@ -246,9 +246,8 @@ SCOREP_Timer_GetClockTicks( void )
 
         case TIMER_LOGICAL_BASIC_BLOCK:
         {
-            extern uint64_t basic_block;
-
-            printf("%lld\n", basic_block);
+            //extern uint64_t basic_block;
+            //printf("%lld\n", basic_block);
 
             return 1;
         }

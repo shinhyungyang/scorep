@@ -74,7 +74,7 @@
     #include <config-score.h>
 
 #elif defined INSTRUMENTATION_PLUGIN_BUILD
-       #include <config-instrumentaion-plugin.h>
+       #include <config-instrumentation-plugin.h>
 
 #elif defined LIBWRAP_BUILD
     #include <config-libwrap.h>
