@@ -10,3 +10,4 @@
 /Makefile
 /config.lt
 /gcc_plugin_supported
+/llvm_plugin_supported

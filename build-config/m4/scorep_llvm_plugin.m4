@@ -177,7 +177,7 @@ AC_REQUIRE([_SCOREP_LLVM_PLUGIN_TARGET_VERSION])dnl
 scorep_llvm_plugin_support="no"
 
 # version checks
-AS_IF([test ${scorep_llvm_plugin_target_version} -lt 3008],
+AS_IF([test ${scorep_llvm_plugin_target_version} -lt 20000],
       [scorep_llvm_plugin_support_reason="no, LLVM ${scorep_llvm_plugin_target_version_dump} is too old"],
       [_SCOREP_LLVM_PLUGIN_CHECK([C++],
                                  [AFS_AM_CONDITIONAL([LLVM_COMPILED_WITH_CXX], [true], [false])
