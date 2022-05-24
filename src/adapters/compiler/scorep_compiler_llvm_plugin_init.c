@@ -75,7 +75,7 @@ scorep_compiler_subsystem_init( void )
     UTILS_DEBUG( "initialize LLVM plugin compiler adapter" );
 
     /* Initialize region mutex */
-    SCOREP_MutexCreate( &scorep_compiler_region_mutex );
+    SCOREP_MutexLock( &scorep_compiler_region_mutex );
 
     // NDAO: Check here again whether to add  /* Initialize plugin instrumentation */ code or not
     //       Why is it not added in the old plugin ?!
@@ -104,7 +104,7 @@ scorep_compiler_subsystem_finalize( void )
     UTILS_DEBUG( "finalize LLVM plugin compiler adapter" );
 
     /* Delete region mutex */
-    SCOREP_MutexDestroy( &scorep_compiler_region_mutex );
+    SCOREP_MutexUnlock( &scorep_compiler_region_mutex );
 }
 
 SCOREP_ErrorCode

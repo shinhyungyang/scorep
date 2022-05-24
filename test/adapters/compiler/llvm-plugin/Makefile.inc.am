@@ -21,7 +21,7 @@ if HAVE_LLVM_PLUGIN_SUPPORT
 # Append it to CPPFLAGS and not to CFLAGS or CXXFLAGS.
 # Libtools would use it while linking not online while compiling and interprets -Xclang.
 # Therefore -load would appended to link flags but can't be handled.
-USE_LLVM_INSTR_FLAGS   = -Xclang -load \
+USE_LLVM_INSTR_FLAGS   = -flegacy-pass-manager -Xclang -load \
                          -Xclang .libs/libscorep_llvm_plugin.so \
                          -g3
 
