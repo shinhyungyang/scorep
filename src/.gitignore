@@ -22,3 +22,4 @@
 /scorep_config_library_dependencies_inc.hpp
 /scorep_config_library_dependencies_mpi_inc.hpp
 /scorep_config_library_dependencies_shmem_inc.hpp
+/config-instrumentation-plugin.h.in

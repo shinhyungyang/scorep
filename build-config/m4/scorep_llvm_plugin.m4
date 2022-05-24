@@ -16,7 +16,7 @@ AC_REQUIRE([LT_OUTPUT])
 AC_REQUIRE([_SCOREP_LIBBFD])
 
 # Get CFLAGS required to compile with LLVM/Clang
-scorep_llvm_cflags="-std=c++11 $(llvm-config --cflags) -fno-rtti"
+scorep_llvm_cflags="-std=c++14 $(llvm-config --cflags) -fno-rtti"
 
 AC_LANG_PUSH($1)
 
@@ -25,7 +25,7 @@ CPPFLAGS="$CPPFLAGS ${scorep_llvm_cflags}"
 
 # header checks
 scorep_llvm_have_plugin_headers=yes
-AC_CHECK_HEADERS([llvm/Pass.h llvm/IR/Function.h llvm/Support/raw_ostream.h llvm/IR/LegacyPassManager.h llvm/IR/InstrTypes.h llvm/Transforms/IPO/PassManagerBuilder.h llvm/IR/IRBuilder.h llvm/IR/BasicBlock.h llvm/Transforms/Utils/BasicBlockUtils.h llvm/IR/Module.h llvm/Transforms/Utils/Local.h llvm/Analysis/EHPersonalities.h llvm/IR/DebugInfo.h],
+AC_CHECK_HEADERS([llvm/Pass.h llvm/IR/Function.h llvm/Support/raw_ostream.h llvm/IR/LegacyPassManager.h llvm/IR/InstrTypes.h llvm/Transforms/IPO/PassManagerBuilder.h llvm/IR/IRBuilder.h llvm/IR/BasicBlock.h llvm/Transforms/Utils/BasicBlockUtils.h llvm/IR/Module.h],
                  [],
                  [scorep_llvm_have_plugin_headers=no])
 
@@ -106,7 +106,7 @@ RegisterMyPass( PassManagerBuilder::EP_EarlyAsPossible,
            save_target_CFLAGS=$CFLAGS
            CC=$INSTRUMENTATION_PLUGIN_TARGET_CC
            CPPFLAGS=$INSTRUMENTATION_PLUGIN_TARGET_CPPFLAGS
-           CFLAGS="$INSTRUMENTATION_PLUGIN_TARGET_CFLAGS -Xclang -load -Xclang $PWD/lib/confmodule.so"
+           CFLAGS="$INSTRUMENTATION_PLUGIN_TARGET_CFLAGS -flegacy-pass-manager -Xclang -load -Xclang $PWD/lib/confmodule.so"
 
            AC_MSG_CHECKING([to load a $1 plug-in])
            AC_COMPILE_IFELSE([AC_LANG_PROGRAM([], [])],
@@ -171,13 +171,14 @@ AC_DEFINE_UNQUOTED([SCOREP_LLVM_PLUGIN_TARGET_VERSION],
 # SCOREP_LLVM_PLUGIN
 # -----------------
 # Performs checks whether the LLVM/Clang compiler has plug-in support.
+
 AC_DEFUN([SCOREP_LLVM_PLUGIN], [
 AC_REQUIRE([_SCOREP_LLVM_PLUGIN_TARGET_VERSION])dnl
 
 scorep_llvm_plugin_support="no"
 
 # version checks
-AS_IF([test ${scorep_llvm_plugin_target_version} -lt 20000],
+AS_IF([test ${scorep_llvm_plugin_target_version} -lt 13000],
       [scorep_llvm_plugin_support_reason="no, LLVM ${scorep_llvm_plugin_target_version_dump} is too old"],
       [_SCOREP_LLVM_PLUGIN_CHECK([C++],
                                  [AFS_AM_CONDITIONAL([LLVM_COMPILED_WITH_CXX], [true], [false])
