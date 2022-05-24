@@ -35,12 +35,13 @@ endif HAVE_LLVM_DEMANGLE
 
 if HAVE_SCOREP_DEMANGLE
     libscorep_llvm_plugin_la_CPPFLAGS += \
-        @LIBBFD_CPPFLAGS@ \
+        $(SCOREP_LIBBFD_CPPFLAGS) \
         -DGNU_DEMANGLE
     libscorep_llvm_plugin_la_LIBADD += \
-        @LIBBFD_LIBS@
+        $(SCOREP_LIBBFD_LIBS)
     libscorep_llvm_plugin_la_LDFLAGS += \
-        @LIBBFD_LDFLAGS@
+        $(SCOREP_LIBBFD_LDFLAGS)
+
 endif HAVE_SCOREP_DEMANGLE
 
 endif HAVE_LLVM_PLUGIN_SUPPORT
