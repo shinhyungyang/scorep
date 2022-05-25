@@ -50,6 +50,9 @@ AS_IF([test "x${scorep_llvm_have_plugin_headers}" = "xyes"],
 #include <llvm/IR/IRBuilder.h>
 #include <llvm/IR/BasicBlock.h>
 #include <llvm/IR/Module.h>
+#include <llvm/IR/Instruction.h>
+#include <llvm/Analysis/LoopInfo.h>
+
 
 using namespace llvm;
 
