@@ -615,7 +615,7 @@ SCOREP_Timer_SetLogical( uint64_t timerVal )
 
 
 void
-SCOREP_Timer_IncrementLogical( int increment )
+SCOREP_Timer_IncrementLogical( uint64_t increment )
 {
     /* timer subsystem registerd and location initialized */
     if ( scorep_timer_subsystem_initialized )

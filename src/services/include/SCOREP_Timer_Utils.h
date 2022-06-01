@@ -92,7 +92,7 @@ SCOREP_Timer_SetLogical( uint64_t val );
  * Icrements logical timer by "increment" units for current CPU location.
  */
 void
-SCOREP_Timer_IncrementLogical( int increment );
+SCOREP_Timer_IncrementLogical( uint64_t increment );
 
 
 /**
