@@ -246,10 +246,22 @@ SCOREP_Timer_GetClockTicks( void )
 
         case TIMER_LOGICAL_BASIC_BLOCK:
         {
-            //extern uint64_t basic_block;
-            //printf("%lld\n", basic_block);
+            extern size_t timer_subsystem_id;
+            extern bool   scorep_timer_subsystem_initialized;
 
-            return 1;
+            /* timer subsystem registerd and location initialized */
+            if ( scorep_timer_subsystem_initialized )
+            {
+                SCOREP_Location*             location       = SCOREP_Location_GetCurrentCPULocation();
+                scorep_location_timers_data* subsystem_data =
+                    SCOREP_Location_GetSubsystemData( location, timer_subsystem_id );
+
+                return subsystem_data->logical_timer_val;
+            }
+            else
+            {
+                return 0;
+            }
         }
 
         default:
