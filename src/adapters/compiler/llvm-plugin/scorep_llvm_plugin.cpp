@@ -24,7 +24,7 @@ namespace
 
 bool bDryRun                      = false;
 std::string aScorepStartFunc      = "enter";
-std::string aScorepStartFuncMulti = "SCOREP_Timer_SetLogical"; // SCOREP_Timer_SetLogical but use other api for omp for loops inside stream
+std::string aScorepStartFuncMulti = "SCOREP_Timer_IncrementLogical"; // SCOREP_Timer_SetLogical but use other api for omp for loops inside stream
 std::string aScorepStopFunc       = "leave";
 
 static bool
@@ -111,7 +111,8 @@ static FunctionCallee getVoidFunc(StringRef funcname, LLVMContext &context, Modu
     // TODO: _ndao: int64 is not compatible with uint64 (casted in Score-P)
     // int64 argument
     Type *argTz = Type::getInt64Ty(context);
-    SmallVector<Type *, 1> paramTys{argTz};
+
+    SmallVector<Type *, 1> paramTys {argTz};
 
     // Third param to `get` is `isVarArg`.  It's not documented, but might have
     // to do with variadic functions?
@@ -135,10 +136,11 @@ struct SkeletonPass : public FunctionPass {
         FunctionCallee
             onCallFunc = getVoidFunc(aScorepStartFuncMulti, context, module);
 
-        bool mutated = false;
-        int bbCount  = 0;
-        IntegerType *Int64;
-        Int64 = Type::getInt64Ty(context);
+        bool mutated   = false;
+        int bbCount    = 0;
+        int bbIncValue = 1;
+
+        IntegerType *Int64 = Type::getInt64Ty(context);
 
         Instruction * bbBeginMarker; // first valid instruction to insert instructions before
 
@@ -151,7 +153,7 @@ struct SkeletonPass : public FunctionPass {
             {
                 IRBuilder<> builder(bbBeginMarker);
 
-                Value *varArguments = ConstantInt::get(Int64, bbCount);
+                Value *varArguments = ConstantInt::get(Int64, bbIncValue);
                 SmallVector<Value *, 1> args{varArguments};
 
                 builder.CreateCall(onCallFunc, args);

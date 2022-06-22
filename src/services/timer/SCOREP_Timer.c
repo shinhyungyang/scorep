@@ -94,7 +94,7 @@ static SCOREP_ErrorCode
 timer_subsystem_init_location( SCOREP_Location* location,
                                SCOREP_Location* parent );
 
-bool scorep_timer_subsystem_initialized;
+bool SCOREP_Timer_Subsystem_Initialized;
 bool SCOREP_Timer_Subsystem_Logic_Event_Sync;
 
 /* ************************************** subsystem struct */
@@ -134,7 +134,7 @@ timer_subsystem_init_location( SCOREP_Location* location, SCOREP_Location* paren
                                       subsystem_data );
 
     /* global variable to all locations */
-    scorep_timer_subsystem_initialized      = true;
+    SCOREP_Timer_Subsystem_Initialized      = true;
     SCOREP_Timer_Subsystem_Logic_Event_Sync = false;
 
     return SCOREP_SUCCESS;
@@ -596,7 +596,7 @@ void
 SCOREP_Timer_SetLogical( uint64_t timerVal )
 {
     /* timer subsystem registerd and location initialized */
-    if ( scorep_timer_subsystem_initialized )
+    if ( SCOREP_Timer_Subsystem_Initialized )
     {
         extern size_t    timer_subsystem_id;
         SCOREP_Location* location = SCOREP_Location_GetCurrentCPULocation();
@@ -614,11 +614,11 @@ SCOREP_Timer_SetLogical( uint64_t timerVal )
 }
 
 
-void
+inline void
 SCOREP_Timer_IncrementLogical( uint64_t increment )
 {
     /* timer subsystem registerd and location initialized */
-    if ( scorep_timer_subsystem_initialized )
+    if ( SCOREP_Timer_Subsystem_Initialized )
     {
         extern size_t    timer_subsystem_id;
         SCOREP_Location* location = SCOREP_Location_GetCurrentCPULocation();
@@ -639,7 +639,7 @@ uint64_t
 SCOREP_Timer_GetLogical( void )
 {
     /* timer subsystem registerd and location initialized */
-    if ( scorep_timer_subsystem_initialized )
+    if ( SCOREP_Timer_Subsystem_Initialized )
     {
         extern size_t timer_subsystem_id;
 

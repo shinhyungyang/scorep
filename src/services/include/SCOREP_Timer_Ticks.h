@@ -180,10 +180,10 @@ SCOREP_Timer_GetClockTicks( void )
         case TIMER_LOGICAL:
         {
             extern size_t timer_subsystem_id;
-            extern bool   scorep_timer_subsystem_initialized;
+            extern bool   SCOREP_Timer_Subsystem_Initialized;
 
             /* timer subsystem registerd and location initialized */
-            if ( scorep_timer_subsystem_initialized )
+            if ( SCOREP_Timer_Subsystem_Initialized )
             {
                 SCOREP_Location*             location       = SCOREP_Location_GetCurrentCPULocation();
                 scorep_location_timers_data* subsystem_data =
@@ -206,10 +206,10 @@ SCOREP_Timer_GetClockTicks( void )
         case TIMER_LOGICAL_HWCTR_INSTR:
         {
             extern size_t timer_subsystem_id;
-            extern bool   scorep_timer_subsystem_initialized;
+            extern bool   SCOREP_Timer_Subsystem_Initialized;
             extern bool   SCOREP_Timer_Subsystem_Logic_Event_Sync;
 
-            if ( scorep_timer_subsystem_initialized )
+            if ( SCOREP_Timer_Subsystem_Initialized )
             {
                 SCOREP_Location*    location      = SCOREP_Location_GetCurrentCPULocation();
                 uint64_t*           metric_values = SCOREP_Metric_Read( location );
@@ -247,10 +247,10 @@ SCOREP_Timer_GetClockTicks( void )
         case TIMER_LOGICAL_BASIC_BLOCK:
         {
             extern size_t timer_subsystem_id;
-            extern bool   scorep_timer_subsystem_initialized;
+            extern bool   SCOREP_Timer_Subsystem_Initialized;
 
             /* timer subsystem registerd and location initialized */
-            if ( scorep_timer_subsystem_initialized )
+            if ( SCOREP_Timer_Subsystem_Initialized )
             {
                 SCOREP_Location*             location       = SCOREP_Location_GetCurrentCPULocation();
                 scorep_location_timers_data* subsystem_data =
@@ -270,6 +270,52 @@ SCOREP_Timer_GetClockTicks( void )
         }
     }
     return 0; /* never reached, but silences warnings */
+}
+
+#define SCOREP_TIMER_incr_basicblock_counters {                              \
+    extern size_t    timer_subsystem_id;                                     \
+    extern bool   SCOREP_Timer_Subsystem_Initialized;                        \
+                                                                             \
+    /* timer subsystem registerd and location initialized */                 \
+    if ( SCOREP_Timer_Subsystem_Initialized )                                \
+    {                                                                        \
+        SCOREP_Location* location = SCOREP_Location_GetCurrentCPULocation(); \
+                                                                             \
+        scorep_location_timers_data* subsystem_data =                        \
+            SCOREP_Location_GetSubsystemData( location, timer_subsystem_id );\
+                                                                             \
+        subsystem_data->logical_timer_val ++;                                \
+                                                                             \
+        SCOREP_Location_SetSubsystemData(  location,                         \
+                                        timer_subsystem_id,                  \
+                                        subsystem_data );                    \
+    }                                                                        \
+}
+
+/* instrumented in the begining of each basic block to increment by 1 */
+/* ndao: I can't define a prototype for func with void arg in llvm    */
+/*       therefore, add int64 (increment value) instead of ++         */
+static inline void
+SCOREP_Timer_Inc_BasicBlock( uint64_t incrementVal )
+{
+    extern size_t    timer_subsystem_id;
+    extern bool      SCOREP_Timer_Subsystem_Initialized;
+
+    /* timer subsystem registerd and location initialized */
+    if ( SCOREP_Timer_Subsystem_Initialized )
+    {
+        SCOREP_Location* location = SCOREP_Location_GetCurrentCPULocation();
+
+        scorep_location_timers_data* subsystem_data =
+            SCOREP_Location_GetSubsystemData( location, timer_subsystem_id );
+
+        subsystem_data->logical_timer_val += incrementVal;
+
+        SCOREP_Location_SetSubsystemData( location,
+                                          timer_subsystem_id,
+                                          subsystem_data );
+    }
+
 }
 
 
