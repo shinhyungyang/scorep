@@ -195,7 +195,8 @@ libscorep_adapter_compiler_event_la_CPPFLAGS = \
     -I$(INC_ROOT)src/measurement/include       \
     -I$(PUBLIC_INC_DIR)                        \
     $(UTILS_CPPFLAGS)                          \
-    -I$(INC_DIR_DEFINITIONS)
+    -I$(INC_DIR_DEFINITIONS)                   \
+    -I$(INC_DIR_COMMON_HASH)
 
 libscorep_adapter_compiler_event_la_LIBADD = \
     libscorep_measurement.la
@@ -225,7 +226,7 @@ libscorep_adapter_compiler_event_la_SOURCES += \
 endif SCOREP_COMPILER_CRAY
 
 if PLATFORM_CRAY
-if SCOREP_COMPILER_CLANG             # NDAO: Why is it related to LLVM ?!!
+if SCOREP_COMPILER_CLANG
 libscorep_adapter_compiler_event_la_SOURCES += \
     $(SRC_ROOT)src/adapters/compiler/scorep_compiler_cray.c
 endif SCOREP_COMPILER_CLANG
@@ -259,7 +260,7 @@ libscorep_adapter_compiler_event_la_SOURCES += \
 else HAVE_LLVM_PLUGIN_SUPPORT
 
 libscorep_adapter_compiler_event_la_SOURCES += \
-    $(SRC_ROOT)src/adapters/compiler/scorep_compiler_instrumentation_plugin.c
+    $(SRC_ROOT)src/adapters/compiler/scorep_compiler_clang.c
 
 endif HAVE_LLVM_PLUGIN_SUPPORT
 

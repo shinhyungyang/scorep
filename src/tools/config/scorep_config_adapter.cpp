@@ -390,12 +390,11 @@ SCOREP_Config_CompilerAdapter::addCFlags( std::string&           cflags,
     if ( build_check )
     {
         extern std::string path_to_binary;
-        // NDAO: do we have to update this to call: -flegacy-pass-manager -Xclang ... ?
-        cflags += "-O0 -flegacy-pass-manager -Xclang -load -Xclang " + path_to_binary + "../build-instrumentation-plugin/" LT_OBJDIR "libscorep_llvm_plugin.so -g ";
+        cflags += "-finstrument-functions -O0 -flegacy-pass-manager -Xclang -load -Xclang " + path_to_binary + "../build-instrumentation-plugin/" LT_OBJDIR "libscorep_llvm_plugin.so -g ";
     }
     else
     {
-        cflags += "-O0 -flegacy-pass-manager -Xclang -load -Xclang " SCOREP_PKGLIBDIR "/libscorep_llvm_plugin.so -g ";
+        cflags += "-finstrument-functions -O0 -flegacy-pass-manager -Xclang -load -Xclang " SCOREP_PKGLIBDIR "/libscorep_llvm_plugin.so -g ";
     }
     cflags += m_cflags;
 #endif /*HAVE_BACKEND( LLVM_PLUGIN_SUPPORT )*/
