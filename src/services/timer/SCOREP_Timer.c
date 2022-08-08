@@ -613,8 +613,9 @@ SCOREP_Timer_SetLogical( uint64_t timerVal )
     /* timer subsystem registerd and location initialized */
     if ( SCOREP_Timer_Subsystem_Initialized )
     {
-        extern size_t    timer_subsystem_id;
-        SCOREP_Location* location = SCOREP_Location_GetCurrentCPULocation();
+        extern size_t     timer_subsystem_id;
+        extern timer_type scorep_timer;
+        SCOREP_Location*  location = SCOREP_Location_GetCurrentCPULocation();
 
         scorep_location_timers_data* subsystem_data =
             SCOREP_Location_GetSubsystemData( location, timer_subsystem_id );
