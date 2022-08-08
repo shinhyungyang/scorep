@@ -22,10 +22,10 @@ using namespace llvm;
 namespace
 {
 
-bool bDryRun                      = false;
-std::string aScorepStartFunc      = "enter";
-std::string aScorepStartFuncMulti = "SCOREP_Timer_IncrementLogical"; // SCOREP_Timer_SetLogical but use other api for omp for loops inside stream
-std::string aScorepStopFunc       = "leave";
+/* Add a call to this function  from SCOREP library in code to count Basic Blocks */
+std::string aScorepInstrFuncBBCnt   = "SCOREP_Timer_IncrementLogical";
+/* Add a call to this function  from SCOREP library in code to count statements */
+std::string aScorepInstrFuncStmtCnt = "SCOREP_Timer_IncrementLogical_StmtCnt";
 
 static bool
 has_empty_body( const Function& func,
@@ -67,6 +67,29 @@ is_openmp_function( const Function& func,
 }
 
 static bool
+is_pomp_function( const Function& func,
+                  std::string*    error = nullptr )
+{
+
+    std::string func_name_as_string = func.getName().str();
+
+    bool is_POMP = func_name_as_string.find( "POMP" ) != std::string::npos;
+    bool is_pomp = func_name_as_string.find( "pomp" ) != std::string::npos;
+    bool is_Pomp = func_name_as_string.find( "Pomp" ) != std::string::npos;
+
+
+    if (    is_POMP
+         || is_pomp
+         || is_Pomp )
+    {
+        *error = "is POMP";
+
+        return true;
+    }
+    return false;
+}
+
+static bool
 is_artificial( const Function& func,
                std::string*    error = nullptr )
 {
@@ -90,7 +113,7 @@ is_instrumentable( const Function& func )
 {
     std::string error;
     if ( has_empty_body( func, &error )
-         //|| is_openmp_function( func, &error )
+         || is_openmp_function( func, &error )
          || is_artificial( func, &error ) )
     {
         //if ( ClScorepPassVerbose >= 1 )
@@ -102,13 +125,20 @@ is_instrumentable( const Function& func )
     return true;
 }
 
-
+  /*!
+   *  Find/declare a function taking a single `i64*` argument with a void return
+   *  type suitable for making a call to in IR. This is used to get references
+   *  to the SCOREP profiling function symbols.
+   *
+   * \param funcname The name of the function
+   * \param ctx The LLVMContext
+   * \param mdl The Module in which the function will be used
+   */
 static FunctionCallee getVoidFunc(StringRef funcname, LLVMContext &context, Module *module) {
 
     // Void return type
     Type *retTy = Type::getVoidTy(context);
 
-    // TODO: _ndao: int64 is not compatible with uint64 (casted in Score-P)
     // int64 argument
     Type *argTz = Type::getInt64Ty(context);
 
@@ -134,18 +164,21 @@ struct SkeletonPass : public FunctionPass {
         auto &context = func.getContext();
         auto *module  = func.getParent();
         FunctionCallee
-            onCallFunc = getVoidFunc(aScorepStartFuncMulti, context, module);
+            onCallFuncInstrBB   = getVoidFunc(aScorepInstrFuncBBCnt, context, module);
+        FunctionCallee
+            onCallFuncInstrStmt = getVoidFunc(aScorepInstrFuncStmtCnt, context, module);
 
         bool mutated   = false;
-        int bbCount    = 0;
+        //int bbCount    = 0; /* for debugging only */
         int bbIncValue = 1;
+        int stmtIncValue = 0;
 
         IntegerType *Int64 = Type::getInt64Ty(context);
 
         Instruction * bbBeginMarker; // first valid instruction to insert instructions before
 
         for (auto &block : func) {
-            bbCount++;
+            //bbCount++; /* for debugging only */
             /* get the first address in the basic block which is after phi instruction */
             /* if all instructions are PHI, 0 is returned */
             bbBeginMarker = block.getFirstNonPHI();
@@ -153,14 +186,26 @@ struct SkeletonPass : public FunctionPass {
             {
                 IRBuilder<> builder(bbBeginMarker);
 
-                Value *varArguments = ConstantInt::get(Int64, bbIncValue);
-                SmallVector<Value *, 1> args{varArguments};
+                Value *varArguments_bb = ConstantInt::get(Int64, bbIncValue);
+                SmallVector<Value *, 1> args_bb{varArguments_bb};
 
-                builder.CreateCall(onCallFunc, args);
+                /* number of statments inside a block */
+                stmtIncValue = std::distance(block.begin(), block.end());
+
+                Value *varArguments_stmt = ConstantInt::get(Int64, stmtIncValue);
+                SmallVector<Value *, 1> args_stmt{varArguments_stmt};
+
+                /* Insert A call to instrumentation function */
+                builder.CreateCall(onCallFuncInstrBB, args_bb);
+                builder.CreateCall(onCallFuncInstrStmt, args_stmt);
+
                 mutated = true;
             }
         }
-        errs() << "Basic Block count in function : " << func.getName() << " = " << bbCount << "\n";
+        //errs() << "Basic Block count in function : " << func.getName() << " = " << bbCount << "\n"; /* for debugging only */
+        /* We need micro instrumentation to update sync. points relatively fast, so use block Instr for Statmt. count */
+        /* else we can use the following method to update logical_stmt count at end of each function. */
+        //errs() << "Instructions count in function : " << func.getName() << " = " <<  func.getInstructionCount() << "\n";
         return mutated;
     }
 };

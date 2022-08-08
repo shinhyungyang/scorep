@@ -317,6 +317,11 @@ SCOREP_Timer_Initialize( void )
             break;
         }
 
+        case TIMER_LOGICAL_STATEMENT:
+        {
+            break;
+        }
+
         default:
             UTILS_FATAL( "Invalid timer selected, shouldn't happen." );
     }
@@ -521,6 +526,11 @@ SCOREP_Timer_GetClockResolution( void )
             return UINT64_C( 1 );
         }
 
+        case TIMER_LOGICAL_STATEMENT:
+        {
+            return UINT64_C( 1 );
+        }
+
         default:
             UTILS_FATAL( "Invalid timer selected, shouldn't happen." );
     }
@@ -586,6 +596,11 @@ SCOREP_Timer_ClockIsGlobal( void )
         case TIMER_LOGICAL_BASIC_BLOCK:
             return true;
 
+        case TIMER_LOGICAL_STATEMENT:
+        {
+            return true;
+        }
+
         default:
             UTILS_FATAL( "Invalid timer selected, shouldn't happen." );
     }
@@ -614,6 +629,37 @@ SCOREP_Timer_SetLogical( uint64_t timerVal )
 }
 
 
+uint64_t
+SCOREP_Timer_GetLogical( void )
+{
+    /* timer subsystem registerd and location initialized */
+    if ( SCOREP_Timer_Subsystem_Initialized )
+    {
+        extern size_t     timer_subsystem_id;
+        extern timer_type scorep_timer;
+
+        SCOREP_Location*             location       = SCOREP_Location_GetCurrentCPULocation();
+        scorep_location_timers_data* subsystem_data =
+            SCOREP_Location_GetSubsystemData( location, timer_subsystem_id );
+
+
+        /* Only if it is statement logical counter */
+        if ( scorep_timer == TIMER_LOGICAL_STATEMENT)
+        {
+            return subsystem_data->logical_stmt_cnt_timer_val;
+        }
+        /* Basic block and logical they use the same variable (only one exists per measurement run */
+        else
+        {
+            return subsystem_data->logical_timer_val;
+        }
+    }
+    return 0;
+}
+
+
+/* TODO: ndao: this can be used also for BB because the same logical counter */
+/* is used */
 inline void
 SCOREP_Timer_IncrementLogical( uint64_t increment )
 {
@@ -635,19 +681,23 @@ SCOREP_Timer_IncrementLogical( uint64_t increment )
 }
 
 
-uint64_t
-SCOREP_Timer_GetLogical( void )
+inline void
+SCOREP_Timer_IncrementLogical_StmtCnt( uint64_t increment )
 {
     /* timer subsystem registerd and location initialized */
     if ( SCOREP_Timer_Subsystem_Initialized )
     {
-        extern size_t timer_subsystem_id;
+        extern size_t    timer_subsystem_id;
+        SCOREP_Location* location = SCOREP_Location_GetCurrentCPULocation();
 
-        SCOREP_Location*             location       = SCOREP_Location_GetCurrentCPULocation();
         scorep_location_timers_data* subsystem_data =
             SCOREP_Location_GetSubsystemData( location, timer_subsystem_id );
 
-        return subsystem_data->logical_timer_val;
+        subsystem_data->logical_stmt_cnt_timer_val += increment;
+
+        SCOREP_Location_SetSubsystemData( location,
+                                          timer_subsystem_id,
+                                          subsystem_data );
     }
-    return 0;
 }
+

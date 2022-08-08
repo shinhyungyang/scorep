@@ -86,7 +86,10 @@
 
 typedef struct scorep_location_timers_data
 {
-    uint64_t logical_timer_val;
+    uint64_t logical_timer_val; /* TODO: ndao: rename to something relevant (used with logical, hwcntr, basicBlock) */
+    /* we need a new timer because the instrumentation for the 2 timers is done simult. in LLVM (and compiling the plugin */
+    /* is done at scorep compile time */
+    uint64_t logical_stmt_cnt_timer_val; /* same here, used for statements count only */
 } scorep_location_timers_data;
 
 /* ************************************** static functions */
@@ -189,6 +192,11 @@ SCOREP_Timer_GetClockTicks( void )
                 scorep_location_timers_data* subsystem_data =
                     SCOREP_Location_GetSubsystemData( location, timer_subsystem_id );
 
+                /* as well as returning the timer value, getClockTicks function
+                   also is called to retrieve each event's timestamp, and
+                   therefore logical events counter update will be executed
+                   inside this function calls */
+
                 subsystem_data->logical_timer_val++;
 
                 SCOREP_Location_SetSubsystemData( location,
@@ -229,6 +237,9 @@ SCOREP_Timer_GetClockTicks( void )
                         subsystem_data->logical_timer_val = metric_values[0] > subsystem_data->logical_timer_val ?
                                                             metric_values[0] : subsystem_data->logical_timer_val;
                     }
+                    /* lamport logical counting mandates that after sync,
+                       increment by one */
+
                     subsystem_data->logical_timer_val++;
 
                     SCOREP_Location_SetSubsystemData( location,
@@ -256,7 +267,29 @@ SCOREP_Timer_GetClockTicks( void )
                 scorep_location_timers_data* subsystem_data =
                     SCOREP_Location_GetSubsystemData( location, timer_subsystem_id );
 
-                return subsystem_data->logical_timer_val;
+                /* TODO: ndao: should we increment counter here by one also ? */
+                return subsystem_data->logical_timer_val++;
+            }
+            else
+            {
+                return 0;
+            }
+        }
+
+        case TIMER_LOGICAL_STATEMENT:
+        {
+            extern size_t timer_subsystem_id;
+            extern bool   SCOREP_Timer_Subsystem_Initialized;
+
+            /* timer subsystem registerd and location initialized */
+            if ( SCOREP_Timer_Subsystem_Initialized )
+            {
+                SCOREP_Location*             location       = SCOREP_Location_GetCurrentCPULocation();
+                scorep_location_timers_data* subsystem_data =
+                    SCOREP_Location_GetSubsystemData( location, timer_subsystem_id );
+
+                /* TODO: ndao: should we increment counter here by one also ? */
+                return subsystem_data->logical_stmt_cnt_timer_val++;
             }
             else
             {
@@ -270,52 +303,6 @@ SCOREP_Timer_GetClockTicks( void )
         }
     }
     return 0; /* never reached, but silences warnings */
-}
-
-#define SCOREP_TIMER_incr_basicblock_counters {                              \
-    extern size_t    timer_subsystem_id;                                     \
-    extern bool   SCOREP_Timer_Subsystem_Initialized;                        \
-                                                                             \
-    /* timer subsystem registerd and location initialized */                 \
-    if ( SCOREP_Timer_Subsystem_Initialized )                                \
-    {                                                                        \
-        SCOREP_Location* location = SCOREP_Location_GetCurrentCPULocation(); \
-                                                                             \
-        scorep_location_timers_data* subsystem_data =                        \
-            SCOREP_Location_GetSubsystemData( location, timer_subsystem_id );\
-                                                                             \
-        subsystem_data->logical_timer_val ++;                                \
-                                                                             \
-        SCOREP_Location_SetSubsystemData(  location,                         \
-                                        timer_subsystem_id,                  \
-                                        subsystem_data );                    \
-    }                                                                        \
-}
-
-/* instrumented in the begining of each basic block to increment by 1 */
-/* ndao: I can't define a prototype for func with void arg in llvm    */
-/*       therefore, add int64 (increment value) instead of ++         */
-static inline void
-SCOREP_Timer_Inc_BasicBlock( uint64_t incrementVal )
-{
-    extern size_t    timer_subsystem_id;
-    extern bool      SCOREP_Timer_Subsystem_Initialized;
-
-    /* timer subsystem registerd and location initialized */
-    if ( SCOREP_Timer_Subsystem_Initialized )
-    {
-        SCOREP_Location* location = SCOREP_Location_GetCurrentCPULocation();
-
-        scorep_location_timers_data* subsystem_data =
-            SCOREP_Location_GetSubsystemData( location, timer_subsystem_id );
-
-        subsystem_data->logical_timer_val += incrementVal;
-
-        SCOREP_Location_SetSubsystemData( location,
-                                          timer_subsystem_id,
-                                          subsystem_data );
-    }
-
 }
 
 

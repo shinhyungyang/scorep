@@ -80,6 +80,8 @@ enum timer_type
 
     TIMER_LOGICAL_BASIC_BLOCK,
 
+    TIMER_LOGICAL_STATEMENT,
+
     TIMER_INVALID
 };
 
