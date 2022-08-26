@@ -118,7 +118,7 @@ is_instrumentable( const Function& func )
     {
         //if ( ClScorepPassVerbose >= 1 )
         //{
-        errs() << "Ignore: " + func.getName().str() + " reason: " + error + "\n";
+        //errs() << "Ignore: " + func.getName().str() + " reason: " + error + "\n";
         //}
         return false;
     }
@@ -199,7 +199,7 @@ struct SkeletonPass : public FunctionPass {
                     Value *varArguments_stmt = ConstantInt::get(Int64, stmtIncValue);
                     SmallVector<Value *, 1> args_stmt{varArguments_stmt};
 
-                    /* Insert A call to instrumentation function */
+                    /* Insert a call to instrumentation function */
                     builder.CreateCall(onCallFuncInstrBB, args_bb);
                     builder.CreateCall(onCallFuncInstrStmt, args_stmt);
 
