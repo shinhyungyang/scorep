@@ -179,27 +179,32 @@ struct SkeletonPass : public FunctionPass {
 
         for (auto &block : func) {
             //bbCount++; /* for debugging only */
-            /* get the first address in the basic block which is after phi instruction */
-            /* if all instructions are PHI, 0 is returned */
-            bbBeginMarker = block.getFirstNonPHI();
-            if (bbBeginMarker)
+            /* instrument the block only if it is not an Exception Handler, else skip */
+            /* address inside Exception Handler results in memory violation error */
+            if (!(block.getFirstNonPHI()->isEHPad()))
             {
-                IRBuilder<> builder(bbBeginMarker);
+                /* get the first address in the basic block which is after phi instruction */
+                /* if all instructions are PHI, 0 is returned */
+                bbBeginMarker = block.getFirstNonPHI();
+                if (bbBeginMarker)
+                {
+                    IRBuilder<> builder(bbBeginMarker);
 
-                Value *varArguments_bb = ConstantInt::get(Int64, bbIncValue);
-                SmallVector<Value *, 1> args_bb{varArguments_bb};
+                    Value *varArguments_bb = ConstantInt::get(Int64, bbIncValue);
+                    SmallVector<Value *, 1> args_bb{varArguments_bb};
 
-                /* number of statments inside a block */
-                stmtIncValue = std::distance(block.begin(), block.end());
+                    /* number of statments inside a block */
+                    stmtIncValue = std::distance(block.begin(), block.end());
 
-                Value *varArguments_stmt = ConstantInt::get(Int64, stmtIncValue);
-                SmallVector<Value *, 1> args_stmt{varArguments_stmt};
+                    Value *varArguments_stmt = ConstantInt::get(Int64, stmtIncValue);
+                    SmallVector<Value *, 1> args_stmt{varArguments_stmt};
 
-                /* Insert A call to instrumentation function */
-                builder.CreateCall(onCallFuncInstrBB, args_bb);
-                builder.CreateCall(onCallFuncInstrStmt, args_stmt);
+                    /* Insert A call to instrumentation function */
+                    builder.CreateCall(onCallFuncInstrBB, args_bb);
+                    builder.CreateCall(onCallFuncInstrStmt, args_stmt);
 
-                mutated = true;
+                    mutated = true;
+                }
             }
         }
         //errs() << "Basic Block count in function : " << func.getName() << " = " << bbCount << "\n"; /* for debugging only */
