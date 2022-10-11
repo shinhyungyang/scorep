@@ -89,6 +89,27 @@ is_pomp_function( const Function& func,
     return false;
 }
 
+/* TODO */
+static bool
+is_scorep_function( const Function& func,
+                  std::string*    error = nullptr )
+{
+
+    std::string func_name_as_string = func.getName().str();
+
+    bool is_SCOREP = func_name_as_string.find( "SCOREP" ) != std::string::npos;
+    bool is_scorep = func_name_as_string.find( "scorep" ) != std::string::npos;
+
+    if (    is_SCOREP
+         || is_scorep )
+    {
+        *error = "is SCOREP function";
+
+        return true;
+    }
+    return false;
+}
+
 static bool
 is_artificial( const Function& func,
                std::string*    error = nullptr )
@@ -108,11 +129,16 @@ is_artificial( const Function& func,
     return false;
 }
 
+/* COMMENT TO BE UPDATED */
+/* For our case of instrumenting software for basic block and statement count, we
+shall not count score-p inserted code, i.e: POMP or PMPI (either we count them and discard OMP and MPI)
+*/
 static bool
 is_instrumentable( const Function& func )
 {
     std::string error;
     if ( has_empty_body( func, &error )
+         // || is_pomp_function( func, &error )
          || is_openmp_function( func, &error )
          || is_artificial( func, &error ) )
     {
@@ -219,12 +245,21 @@ struct SkeletonPass : public FunctionPass {
 
 char SkeletonPass::ID = 0;
 
+
+static RegisterPass<SkeletonPass> X("BasicBlockCountPass", "Counts dynamic basic blocks", false, false);
+
+static llvm::RegisterStandardPasses Y(
+    llvm::PassManagerBuilder::EP_EarlyAsPossible,
+    [](const llvm::PassManagerBuilder &Builder,
+       llvm::legacy::PassManagerBase &PM) { PM.add(new SkeletonPass()); });
+
 // Automatically enable the pass.
 // http://adriansampson.net/blog/clangpass.html
-static void registerSkeletonPass(const PassManagerBuilder &,
+/* static void registerSkeletonPass(const PassManagerBuilder &,
                          legacy::PassManagerBase &PM) {
   PM.add(new SkeletonPass());
 }
+
 static RegisterStandardPasses
   RegisterMyPass(PassManagerBuilder::EP_EarlyAsPossible,
-                 registerSkeletonPass);
+                 registerSkeletonPass); */
