@@ -21,14 +21,8 @@ using namespace llvm;
 
 namespace
 {
-
-/* Add a call to this function  from SCOREP library in code to count Basic Blocks */
-std::string aScorepInstrFuncBBCnt   = "SCOREP_Timer_IncrementLogical";
-/* Add a call to this function  from SCOREP library in code to count statements */
-std::string aScorepInstrFuncStmtCnt = "SCOREP_Timer_IncrementLogical_StmtCnt";
-
-/* Add a call to this function  from SCOREP library in code to count Basic Blocks */
-std::string aScorepInstrFunc        = "SCOREP_Timer_IncrementLogical_multi";
+/* Add a call to this function  from SCOREP library in code to count Basic Blocks or Stmts */
+std::string aScorepInstrFunc = "SCOREP_Timer_IncrementLogical_BB_Stmt";
 
 static bool
 has_empty_body( const Function& func,
@@ -252,10 +246,6 @@ struct BasicBlockPass : public FunctionPass {
         auto *module  = func.getParent();
 
         FunctionCallee
-            onCallFuncInstrBB   = getVoidFunc(aScorepInstrFuncBBCnt, context, module);
-        FunctionCallee
-            onCallFuncInstrStmt = getVoidFunc(aScorepInstrFuncStmtCnt, context, module);
-        FunctionCallee
             onCallFuncInstr     = getVoidFuncMultiParam(aScorepInstrFunc, context, module);
 
         bool mutated                    = false;
@@ -337,15 +327,7 @@ struct BasicBlockPass : public FunctionPass {
                     }
 
                     Value *varArguments_bb = ConstantInt::get(Int64, bbIncValue);
-                    SmallVector<Value *, 1> args_bb{varArguments_bb};
-
                     Value *varArguments_stmt = ConstantInt::get(Int64, stmtIncValue);
-                    SmallVector<Value *, 1> args_stmt{varArguments_stmt};
-
-                    /* Insert a call to instrumentation function */
-                    //builder.CreateCall(onCallFuncInstrBB, args_bb);
-                    //builder.CreateCall(onCallFuncInstrStmt, args_stmt);
-
                     SmallVector<Value *, 2> args{varArguments_bb, varArguments_stmt};
                     builder.CreateCall(onCallFuncInstr, args);
 

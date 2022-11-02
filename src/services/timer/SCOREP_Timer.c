@@ -670,8 +670,8 @@ SCOREP_Timer_GetLogical( void )
 }
 
 
-/* TODO: ndao: this can be used also for BB because the same logical counter */
-/* is used */
+/* TODO: This function is used for POMP2_Loop_iteration_count , Is it ok to increment same
+         timer ? */
 inline void
 SCOREP_Timer_IncrementLogical( uint64_t increment )
 {
@@ -692,16 +692,20 @@ SCOREP_Timer_IncrementLogical( uint64_t increment )
     }
 }
 
+/* !Comment: Used for instrumentation by LLVM to count basic blocks or stmts count */
 inline void
-SCOREP_Timer_IncrementLogical_multi( uint64_t bb_count, uint64_t stmt_count )
+SCOREP_Timer_IncrementLogical_BB_Stmt( uint64_t bb_count, uint64_t stmt_count )
 {
-
     uint64_t increment = bb_count;
 
+    /* !Comment: Since this API is - always - added by instrumentation , therefore
+                 exit if none of the designated timers (Logical_BB or Logical_stmt)
+                 is used */
     /* timer subsystem registerd and location initialized */
-    if ( SCOREP_Timer_Subsystem_Initialized )
+    if ( SCOREP_Timer_Subsystem_Initialized && ( (scorep_timer == TIMER_LOGICAL_BASIC_BLOCK) ||
+                                                 (scorep_timer == TIMER_LOGICAL_STATEMENT) ) )
     {
-        if ( scorep_timer == TIMER_LOGICAL_STATEMENT)
+        if ( scorep_timer == TIMER_LOGICAL_STATEMENT )
         {
             increment = stmt_count;
         }
@@ -718,25 +722,3 @@ SCOREP_Timer_IncrementLogical_multi( uint64_t bb_count, uint64_t stmt_count )
                                           subsystem_data );
     }
 }
-
-//// This should be removed later
-//inline void
-//SCOREP_Timer_IncrementLogical_StmtCnt( uint64_t increment )
-//{
-//    /* timer subsystem registerd and location initialized */
-//    if ( SCOREP_Timer_Subsystem_Initialized )
-//    {
-//        extern size_t    timer_subsystem_id;
-//        SCOREP_Location* location = SCOREP_Location_GetCurrentCPULocation();
-//
-//        scorep_location_timers_data* subsystem_data =
-//            SCOREP_Location_GetSubsystemData( location, timer_subsystem_id );
-//
-//        subsystem_data->logical_stmt_cnt_timer_val += increment;
-//
-//        SCOREP_Location_SetSubsystemData( location,
-//                                          timer_subsystem_id,
-//                                          subsystem_data );
-//    }
-//}
-//

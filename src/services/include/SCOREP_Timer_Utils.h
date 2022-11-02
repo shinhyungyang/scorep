@@ -95,10 +95,7 @@ extern inline void
 SCOREP_Timer_IncrementLogical( uint64_t increment );
 
 extern inline void
-SCOREP_Timer_IncrementLogical_StmtCnt( uint64_t increment );
-
-extern inline void
-SCOREP_Timer_IncrementLogical_multi( uint64_t bb_count, uint64_t stmt_count );
+SCOREP_Timer_IncrementLogical_BB_Stmt( uint64_t bb_count, uint64_t stmt_count );
 
 /**
  * @return logical timer value for current CPU location.

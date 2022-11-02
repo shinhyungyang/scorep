@@ -256,27 +256,6 @@ SCOREP_Timer_GetClockTicks( void )
         }
 
         case TIMER_LOGICAL_BASIC_BLOCK:
-        {
-            extern size_t timer_subsystem_id;
-            extern bool   SCOREP_Timer_Subsystem_Initialized;
-
-            /* timer subsystem registerd and location initialized */
-            if ( SCOREP_Timer_Subsystem_Initialized )
-            {
-                SCOREP_Location*             location       = SCOREP_Location_GetCurrentCPULocation();
-                scorep_location_timers_data* subsystem_data =
-                    SCOREP_Location_GetSubsystemData( location, timer_subsystem_id );
-
-                /* TODO: ndao: should we increment counter here by one also ? */
-                return subsystem_data->logical_timer_val++;
-            }
-            else
-            {
-                return 0;
-            }
-        }
-
-        // this case might be not needed and the ORING condition of cases with BB case
         case TIMER_LOGICAL_STATEMENT:
         {
             extern size_t timer_subsystem_id;
@@ -290,7 +269,6 @@ SCOREP_Timer_GetClockTicks( void )
                     SCOREP_Location_GetSubsystemData( location, timer_subsystem_id );
 
                 /* TODO: ndao: should we increment counter here by one also ? */
-                //return subsystem_data->logical_stmt_cnt_timer_val++;
                 return subsystem_data->logical_timer_val++;
             }
             else
