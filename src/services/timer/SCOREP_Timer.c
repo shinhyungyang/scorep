@@ -597,9 +597,8 @@ SCOREP_Timer_ClockIsGlobal( void )
             return true;
 
         case TIMER_LOGICAL_STATEMENT:
-        {
             return true;
-        }
+
 
         default:
             UTILS_FATAL( "Invalid timer selected, shouldn't happen." );
@@ -620,19 +619,8 @@ SCOREP_Timer_SetLogical( uint64_t timerVal )
         scorep_location_timers_data* subsystem_data =
             SCOREP_Location_GetSubsystemData( location, timer_subsystem_id );
 
-        /* Only if it is statement logical counter */
-        //if ( scorep_timer == TIMER_LOGICAL_STATEMENT)
-        //{
-        //    subsystem_data->logical_stmt_cnt_timer_val = timerVal > subsystem_data->logical_stmt_cnt_timer_val ?
-        //                                                 timerVal : subsystem_data->logical_stmt_cnt_timer_val;
-        //}
-        /* Basic block and logical they use the same variable (only one exists per measurement run */
-        //else
-        //{
         subsystem_data->logical_timer_val = timerVal > subsystem_data->logical_timer_val ?
                                             timerVal : subsystem_data->logical_timer_val;
-
-        //}
 
         SCOREP_Location_SetSubsystemData( location,
                                           timer_subsystem_id,
@@ -654,24 +642,14 @@ SCOREP_Timer_GetLogical( void )
         scorep_location_timers_data* subsystem_data =
             SCOREP_Location_GetSubsystemData( location, timer_subsystem_id );
 
-
-        /* Only if it is statement logical counter */
-        //if ( scorep_timer == TIMER_LOGICAL_STATEMENT)
-        //{
-        //    return subsystem_data->logical_stmt_cnt_timer_val;
-        //}
-        ///* Basic block and logical they use the same variable (only one exists per measurement run */
-        //else
-        //{
         return subsystem_data->logical_timer_val;
-        //}
+
     }
     return 0;
 }
 
 
-/* TODO: This function is used for POMP2_Loop_iteration_count , Is it ok to increment same
-         timer ? */
+/* !Comment: This function is used for POMP2_Loop_iteration_count */
 inline void
 SCOREP_Timer_IncrementLogical( uint64_t increment )
 {
