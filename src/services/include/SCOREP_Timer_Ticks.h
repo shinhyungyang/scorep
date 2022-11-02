@@ -89,7 +89,7 @@ typedef struct scorep_location_timers_data
     uint64_t logical_timer_val; /* TODO: ndao: rename to something relevant (used with logical, hwcntr, basicBlock) */
     /* we need a new timer because the instrumentation for the 2 timers is done simult. in LLVM (and compiling the plugin */
     /* is done at scorep compile time */
-    uint64_t logical_stmt_cnt_timer_val; /* same here, used for statements count only */
+    //uint64_t logical_stmt_cnt_timer_val; /* same here, used for statements count only */
 } scorep_location_timers_data;
 
 /* ************************************** static functions */
@@ -276,6 +276,7 @@ SCOREP_Timer_GetClockTicks( void )
             }
         }
 
+        // this case might be not needed and the ORING condition of cases with BB case
         case TIMER_LOGICAL_STATEMENT:
         {
             extern size_t timer_subsystem_id;
@@ -289,7 +290,8 @@ SCOREP_Timer_GetClockTicks( void )
                     SCOREP_Location_GetSubsystemData( location, timer_subsystem_id );
 
                 /* TODO: ndao: should we increment counter here by one also ? */
-                return subsystem_data->logical_stmt_cnt_timer_val++;
+                //return subsystem_data->logical_stmt_cnt_timer_val++;
+                return subsystem_data->logical_timer_val++;
             }
             else
             {

@@ -27,6 +27,9 @@ std::string aScorepInstrFuncBBCnt   = "SCOREP_Timer_IncrementLogical";
 /* Add a call to this function  from SCOREP library in code to count statements */
 std::string aScorepInstrFuncStmtCnt = "SCOREP_Timer_IncrementLogical_StmtCnt";
 
+/* Add a call to this function  from SCOREP library in code to count Basic Blocks */
+std::string aScorepInstrFunc        = "SCOREP_Timer_IncrementLogical_multi";
+
 static bool
 has_empty_body( const Function& func,
                 std::string*    error = nullptr )
@@ -200,6 +203,34 @@ static FunctionCallee getVoidFunc(StringRef funcname, LLVMContext &context, Modu
     return module->getOrInsertFunction(funcname, funcTy);
 }
 
+  /*!
+   *  Find/declare a function taking a double `i64*` argument with a void return
+   *  type suitable for making a call to in IR. This is used to get references
+   *  to the SCOREP profiling function symbols.
+   *
+   * \param funcname The name of the function
+   * \param ctx The LLVMContext
+   * \param mdl The Module in which the function will be used
+   */
+static FunctionCallee getVoidFuncMultiParam(StringRef funcname, LLVMContext &context, Module *module) {
+
+    // Void return type
+    Type *retTy = Type::getVoidTy(context);
+
+    // int64 argument
+    Type *argTw = Type::getInt64Ty(context);
+
+    // int64 argument
+    Type *argTz = Type::getInt64Ty(context);
+
+    SmallVector<Type *, 2> paramTys {argTw, argTz};
+
+    // Third param to `get` is `isVarArg`.  It's not documented, but might have
+    // to do with variadic functions?
+    FunctionType *funcTy = FunctionType::get(retTy, paramTys, false);
+    return module->getOrInsertFunction(funcname, funcTy);
+}
+
 struct BasicBlockPass : public FunctionPass {
     static char ID;
     BasicBlockPass() : FunctionPass(ID) {}
@@ -224,6 +255,8 @@ struct BasicBlockPass : public FunctionPass {
             onCallFuncInstrBB   = getVoidFunc(aScorepInstrFuncBBCnt, context, module);
         FunctionCallee
             onCallFuncInstrStmt = getVoidFunc(aScorepInstrFuncStmtCnt, context, module);
+        FunctionCallee
+            onCallFuncInstr     = getVoidFuncMultiParam(aScorepInstrFunc, context, module);
 
         bool mutated                    = false;
         //int bbCount    = 0; /* for debugging only */
@@ -310,8 +343,11 @@ struct BasicBlockPass : public FunctionPass {
                     SmallVector<Value *, 1> args_stmt{varArguments_stmt};
 
                     /* Insert a call to instrumentation function */
-                    builder.CreateCall(onCallFuncInstrBB, args_bb);
-                    builder.CreateCall(onCallFuncInstrStmt, args_stmt);
+                    //builder.CreateCall(onCallFuncInstrBB, args_bb);
+                    //builder.CreateCall(onCallFuncInstrStmt, args_stmt);
+
+                    SmallVector<Value *, 2> args{varArguments_bb, varArguments_stmt};
+                    builder.CreateCall(onCallFuncInstr, args);
 
                     mutated = true;
                 }

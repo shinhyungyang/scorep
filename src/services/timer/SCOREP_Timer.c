@@ -621,18 +621,18 @@ SCOREP_Timer_SetLogical( uint64_t timerVal )
             SCOREP_Location_GetSubsystemData( location, timer_subsystem_id );
 
         /* Only if it is statement logical counter */
-        if ( scorep_timer == TIMER_LOGICAL_STATEMENT)
-        {
-            subsystem_data->logical_stmt_cnt_timer_val = timerVal > subsystem_data->logical_stmt_cnt_timer_val ?
-                                                         timerVal : subsystem_data->logical_stmt_cnt_timer_val;
-        }
+        //if ( scorep_timer == TIMER_LOGICAL_STATEMENT)
+        //{
+        //    subsystem_data->logical_stmt_cnt_timer_val = timerVal > subsystem_data->logical_stmt_cnt_timer_val ?
+        //                                                 timerVal : subsystem_data->logical_stmt_cnt_timer_val;
+        //}
         /* Basic block and logical they use the same variable (only one exists per measurement run */
-        else
-        {
-            subsystem_data->logical_timer_val = timerVal > subsystem_data->logical_timer_val ?
-                                                timerVal : subsystem_data->logical_timer_val;
+        //else
+        //{
+        subsystem_data->logical_timer_val = timerVal > subsystem_data->logical_timer_val ?
+                                            timerVal : subsystem_data->logical_timer_val;
 
-        }
+        //}
 
         SCOREP_Location_SetSubsystemData( location,
                                           timer_subsystem_id,
@@ -656,15 +656,15 @@ SCOREP_Timer_GetLogical( void )
 
 
         /* Only if it is statement logical counter */
-        if ( scorep_timer == TIMER_LOGICAL_STATEMENT)
-        {
-            return subsystem_data->logical_stmt_cnt_timer_val;
-        }
-        /* Basic block and logical they use the same variable (only one exists per measurement run */
-        else
-        {
-            return subsystem_data->logical_timer_val;
-        }
+        //if ( scorep_timer == TIMER_LOGICAL_STATEMENT)
+        //{
+        //    return subsystem_data->logical_stmt_cnt_timer_val;
+        //}
+        ///* Basic block and logical they use the same variable (only one exists per measurement run */
+        //else
+        //{
+        return subsystem_data->logical_timer_val;
+        //}
     }
     return 0;
 }
@@ -692,20 +692,26 @@ SCOREP_Timer_IncrementLogical( uint64_t increment )
     }
 }
 
-
 inline void
-SCOREP_Timer_IncrementLogical_StmtCnt( uint64_t increment )
+SCOREP_Timer_IncrementLogical_multi( uint64_t bb_count, uint64_t stmt_count )
 {
+
+    uint64_t increment = bb_count;
+
     /* timer subsystem registerd and location initialized */
     if ( SCOREP_Timer_Subsystem_Initialized )
     {
+        if ( scorep_timer == TIMER_LOGICAL_STATEMENT)
+        {
+            increment = stmt_count;
+        }
         extern size_t    timer_subsystem_id;
         SCOREP_Location* location = SCOREP_Location_GetCurrentCPULocation();
 
         scorep_location_timers_data* subsystem_data =
             SCOREP_Location_GetSubsystemData( location, timer_subsystem_id );
 
-        subsystem_data->logical_stmt_cnt_timer_val += increment;
+        subsystem_data->logical_timer_val += increment;
 
         SCOREP_Location_SetSubsystemData( location,
                                           timer_subsystem_id,
@@ -713,3 +719,24 @@ SCOREP_Timer_IncrementLogical_StmtCnt( uint64_t increment )
     }
 }
 
+//// This should be removed later
+//inline void
+//SCOREP_Timer_IncrementLogical_StmtCnt( uint64_t increment )
+//{
+//    /* timer subsystem registerd and location initialized */
+//    if ( SCOREP_Timer_Subsystem_Initialized )
+//    {
+//        extern size_t    timer_subsystem_id;
+//        SCOREP_Location* location = SCOREP_Location_GetCurrentCPULocation();
+//
+//        scorep_location_timers_data* subsystem_data =
+//            SCOREP_Location_GetSubsystemData( location, timer_subsystem_id );
+//
+//        subsystem_data->logical_stmt_cnt_timer_val += increment;
+//
+//        SCOREP_Location_SetSubsystemData( location,
+//                                          timer_subsystem_id,
+//                                          subsystem_data );
+//    }
+//}
+//
