@@ -36,6 +36,7 @@
  * SCOREP_Timer_Ticks.h.
  */
 typedef uint64_t timer_type;
+
 enum timer_type
 {
 #if HAVE( BACKEND_SCOREP_TIMER_BGL )
@@ -76,7 +77,7 @@ enum timer_type
 
     TIMER_LOGICAL,  /* Logical Timer system independent */
 
-    TIMER_LOGICAL_HWCTR_INSTR,
+    TIMER_LOGICAL_HWCTR,
 
     TIMER_LOGICAL_BASIC_BLOCK,
 

@@ -109,7 +109,8 @@ static const SCOREP_ConfigType_SetEntry timer_table[] = {
 
     {
         "logical_hwctr",
-        TIMER_LOGICAL_HWCTR_INSTR,
+        TIMER_LOGICAL_HWCTR,
+        /* TODO: for now only instructions */
         "Logical & HW instructions count for events."
     },
 

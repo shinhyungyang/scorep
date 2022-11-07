@@ -49,7 +49,7 @@
 #include <SCOREP_Memory.h>
 #include <SCOREP_Location.h>
 
-//#if HAVE( TIMER_LOGICAL_HWCTR_INSTR )
+//#if HAVE( TIMER_LOGICAL_HWCTR )
 #include <linux/perf_event.h>
 #include <sys/syscall.h>
 #include <sys/ioctl.h>
@@ -147,29 +147,32 @@ timer_subsystem_init_location( SCOREP_Location* location, SCOREP_Location* paren
     SCOREP_Timer_Subsystem_Initialized      = true;
     SCOREP_Timer_Subsystem_Logic_Event_Sync = false;
 
-    //if ( scorep_timer == TIMER_LOGICAL_HWCTR_INSTR )
+    extern timer_type scorep_timer;
+
+    if ( scorep_timer == TIMER_LOGICAL_HWCTR )
     {
-        /* Now the following code is only needed for case of Logical HW Instructions count */
-        /* But for sake of testing will be added here */
-        //int perf_event_fd;
-        int retVal;
+        int                      retVal;
         struct perf_event_attr   attr;
         memset( &attr, 0, sizeof( struct perf_event_attr ) );
         attr.type           = PERF_TYPE_HARDWARE;
-        attr.config         = PERF_COUNT_HW_INSTRUCTIONS;    // Hard coded for instructions
+        attr.config         = PERF_COUNT_HW_INSTRUCTIONS; /* TODO: Now it's hard coded for hw events + instructions */
         attr.exclude_kernel = 1;  /* don't count kernel */
         attr.exclude_hv     = 1;  /* don't count hypervisor */
         attr.read_format    = PERF_FORMAT_GROUP;
 
-        subsystem_data->perf_event_fd = syscall( __NR_perf_event_open, &attr, 0, -1, -1, 0 );
-        if (subsystem_data->perf_event_fd < 0)
+        subsystem_data->logical_hwctr_perf_data.perf_event_fd = syscall( __NR_perf_event_open, &attr, 0, -1, -1, 0 );
+        if (subsystem_data->logical_hwctr_perf_data.perf_event_fd < 0)
         {
-            printf("error when creating perf event file descriptor\n");
+            /* TODO: UTILS_ERROR */
+            //printf("error when creating perf event file descriptor\n");
+            return SCOREP_ERROR_PERF_INIT;
         }
-        retVal = ioctl( subsystem_data->perf_event_fd, PERF_EVENT_IOC_ENABLE );
+        retVal = ioctl( subsystem_data->logical_hwctr_perf_data.perf_event_fd, PERF_EVENT_IOC_ENABLE );
         if (retVal)
         {
-            printf("ioctl enable error for fd: %d\n", subsystem_data->perf_event_fd);
+            /* TODO: UTILS_ERROR */
+            //printf("ioctl enable error for fd: %d\n", subsystem_data->logical_hwctr_perf_data.perf_event_fd);
+            return SCOREP_ERROR_PERF_INIT;
         }
     }
 
@@ -179,23 +182,31 @@ timer_subsystem_init_location( SCOREP_Location* location, SCOREP_Location* paren
 static SCOREP_ErrorCode
 timer_subsystem_finalize_location (SCOREP_Location* location)
 {
-    int retVal;
-    scorep_location_timers_data* subsystem_data =
-            SCOREP_Location_GetSubsystemData( location, timer_subsystem_id );
+    extern timer_type scorep_timer;
 
-    ///usr/include/unistd.h
-    //extern int close (int __fd);
-    retVal = ioctl( subsystem_data->perf_event_fd, PERF_EVENT_IOC_DISABLE );
-    if (retVal)
+    if ( scorep_timer == TIMER_LOGICAL_HWCTR )
     {
-        printf("error in disabling perf event\n");
-    }
-    retVal = close (subsystem_data->perf_event_fd);
-    if (retVal)
-    {
-        printf("error in closing perf event file descriptor\n");
-    }
+        int retVal;
+        scorep_location_timers_data* subsystem_data =
+                SCOREP_Location_GetSubsystemData( location, timer_subsystem_id );
 
+        ///usr/include/unistd.h
+        //extern int close (int __fd);
+        retVal = ioctl( subsystem_data->logical_hwctr_perf_data.perf_event_fd, PERF_EVENT_IOC_DISABLE );
+        if (retVal)
+        {
+            /* TODO: UTILS_ERROR */
+            //printf("error in disabling perf event\n");
+            return SCOREP_ERROR_PERF_INIT;
+        }
+        retVal = close (subsystem_data->logical_hwctr_perf_data.perf_event_fd);
+        if (retVal)
+        {
+            /* TODO: UTILS_ERROR */
+            //printf("error in closing perf event file descriptor\n");
+            return SCOREP_ERROR_PERF_INIT;
+        }
+    }
     return SCOREP_SUCCESS;
 }
 
@@ -362,7 +373,7 @@ SCOREP_Timer_Initialize( void )
             break;
         }
 
-        case TIMER_LOGICAL_HWCTR_INSTR:
+        case TIMER_LOGICAL_HWCTR:
         {
             /* here we need to enable metric perf measurements
              set SCOREP_METRIC_PERF env variable to instructions
@@ -575,7 +586,7 @@ SCOREP_Timer_GetClockResolution( void )
             return UINT64_C( 1 );
         }
 
-        case TIMER_LOGICAL_HWCTR_INSTR:
+        case TIMER_LOGICAL_HWCTR:
         {
             return UINT64_C( 1 );
         }
@@ -649,7 +660,7 @@ SCOREP_Timer_ClockIsGlobal( void )
         case TIMER_LOGICAL:
             return true;
 
-        case TIMER_LOGICAL_HWCTR_INSTR:
+        case TIMER_LOGICAL_HWCTR:
             return true;
 
         case TIMER_LOGICAL_BASIC_BLOCK:

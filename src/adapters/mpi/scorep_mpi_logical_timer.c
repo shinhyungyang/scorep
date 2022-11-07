@@ -75,7 +75,7 @@ scorep_mpi_ltimer_enabled()
     extern timer_type scorep_timer;
 
     if (  scorep_timer == TIMER_LOGICAL
-       || scorep_timer == TIMER_LOGICAL_HWCTR_INSTR
+       || scorep_timer == TIMER_LOGICAL_HWCTR
        || scorep_timer == TIMER_LOGICAL_BASIC_BLOCK
        || scorep_timer == TIMER_LOGICAL_STATEMENT )
     {

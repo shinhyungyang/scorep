@@ -90,13 +90,19 @@ read (int __fd, void *__buf, size_t __nbytes);
 
 /* ************************************** typedefs */
 
+#define SCOREP_LOGICAL_HW_CNTR_EVENTS_MAX 1
+
+
+typedef struct scorep_logical_hwctr_perf_data
+{
+    uint32_t perf_event_fd;
+    uint64_t perf_read_value[SCOREP_LOGICAL_HW_CNTR_EVENTS_MAX + 1]; /* (additional one for PERF which introduces an offset) */
+}scorep_logical_hwctr_perf_data;
+
 typedef struct scorep_location_timers_data
 {
-    uint64_t logical_timer_val; /* TODO: ndao: rename to something relevant (used with logical, hwcntr, basicBlock) */
-    /* Used only for Logical_HWCTR */
-    uint32_t perf_event_fd;
-    /* Return values (additional one for PERF which introduces an offset) */
-    uint64_t perf_read_value[2];
+    uint64_t                       logical_timer_val;
+    scorep_logical_hwctr_perf_data logical_hwctr_perf_data;
 } scorep_location_timers_data;
 
 /* ************************************** static functions */
@@ -218,7 +224,7 @@ SCOREP_Timer_GetClockTicks( void )
             }
         }
 
-        case TIMER_LOGICAL_HWCTR_INSTR:
+        case TIMER_LOGICAL_HWCTR:
         {
             extern size_t timer_subsystem_id;
             extern bool   SCOREP_Timer_Subsystem_Initialized;
@@ -233,11 +239,13 @@ SCOREP_Timer_GetClockTicks( void )
                     SCOREP_Location_GetSubsystemData( location, timer_subsystem_id );
 
                 /* !Comment: We have one event: HW Instructions, we read 2 * uint64_t due to offset added by perf */
-                retval = read(subsystem_data->perf_event_fd, subsystem_data->perf_read_value, 2 * sizeof( uint64_t ));
+                retval = read( subsystem_data->logical_hwctr_perf_data.perf_event_fd,
+                               subsystem_data->logical_hwctr_perf_data.perf_read_value,
+                               2 * sizeof( uint64_t ) );
 
                 if ( retval != (2 * sizeof( uint64_t )) )
                 {
-                    /* TODO: SCOREP Warning*/
+                    /* TODO: UTILS_WARNING */
                     /* printf("error with read from file descriptor. read bytes count = %d\n", retval); */
                 }
 
@@ -248,8 +256,8 @@ SCOREP_Timer_GetClockTicks( void )
                        calculated at sync points (master thread has more instr)
                        and so without this check, children threads won't be sync
                        with master threads at all */
-                    subsystem_data->logical_timer_val = subsystem_data->perf_read_value[1] > subsystem_data->logical_timer_val ?
-                                                        subsystem_data->perf_read_value[1] : subsystem_data->logical_timer_val;
+                    subsystem_data->logical_timer_val = subsystem_data->logical_hwctr_perf_data.perf_read_value[1] > subsystem_data->logical_timer_val ?
+                                                        subsystem_data->logical_hwctr_perf_data.perf_read_value[1] : subsystem_data->logical_timer_val;
                 }
 
                 subsystem_data->logical_timer_val++;
