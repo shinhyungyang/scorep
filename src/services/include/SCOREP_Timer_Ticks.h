@@ -82,14 +82,21 @@
 # include <time.h>
 #endif /* BACKEND_SCOREP_TIMER_CLOCK_GETTIME */
 
+
+
+//#include <unistd.h>
+__fortify_function __wur ssize_t
+read (int __fd, void *__buf, size_t __nbytes);
+
 /* ************************************** typedefs */
 
 typedef struct scorep_location_timers_data
 {
     uint64_t logical_timer_val; /* TODO: ndao: rename to something relevant (used with logical, hwcntr, basicBlock) */
-    /* we need a new timer because the instrumentation for the 2 timers is done simult. in LLVM (and compiling the plugin */
-    /* is done at scorep compile time */
-    //uint64_t logical_stmt_cnt_timer_val; /* same here, used for statements count only */
+    /* Used only for Logical_HWCTR */
+    uint32_t perf_event_fd;
+    /* Return values (additional one for PERF which introduces an offset) */
+    uint64_t perf_read_value[2];
 } scorep_location_timers_data;
 
 /* ************************************** static functions */
@@ -219,33 +226,36 @@ SCOREP_Timer_GetClockTicks( void )
 
             if ( SCOREP_Timer_Subsystem_Initialized )
             {
-                SCOREP_Location*    location      = SCOREP_Location_GetCurrentCPULocation();
-                uint64_t*           metric_values = SCOREP_Metric_Read( location );
-                scorep_location_timers_data* subsystem_data =
-                   SCOREP_Location_GetSubsystemData( location, timer_subsystem_id );
+                int        retval;
 
-                if (metric_values != NULL)
+                SCOREP_Location*             location       = SCOREP_Location_GetCurrentCPULocation();
+                scorep_location_timers_data* subsystem_data =
+                    SCOREP_Location_GetSubsystemData( location, timer_subsystem_id );
+
+                /* !Comment: We have one event: HW Instructions, we read 2 * uint64_t due to offset added by perf */
+                retval = read(subsystem_data->perf_event_fd, subsystem_data->perf_read_value, 2 * sizeof( uint64_t ));
+
+                if ( retval != (2 * sizeof( uint64_t )) )
+                {
+                    /* TODO: SCOREP Warning*/
+                    /* printf("error with read from file descriptor. read bytes count = %d\n", retval); */
+                }
+
+                if (SCOREP_Timer_Subsystem_Logic_Event_Sync == false)
                 {
                     /* must compare with existing value because in children threads
                        number of instructions is less than number of instructions
                        calculated at sync points (master thread has more instr)
                        and so without this check, children threads won't be sync
                        with master threads at all */
-
-                    if (SCOREP_Timer_Subsystem_Logic_Event_Sync == false)
-                    {
-                        subsystem_data->logical_timer_val = metric_values[0] > subsystem_data->logical_timer_val ?
-                                                            metric_values[0] : subsystem_data->logical_timer_val;
-                    }
-                    /* lamport logical counting mandates that after sync,
-                       increment by one */
-
-                    subsystem_data->logical_timer_val++;
-
-                    SCOREP_Location_SetSubsystemData( location,
-                                                      timer_subsystem_id,
-                                                      subsystem_data );
+                    subsystem_data->logical_timer_val = subsystem_data->perf_read_value[1] > subsystem_data->logical_timer_val ?
+                                                        subsystem_data->perf_read_value[1] : subsystem_data->logical_timer_val;
                 }
+
+                subsystem_data->logical_timer_val++;
+                SCOREP_Location_SetSubsystemData(   location,
+                                                    timer_subsystem_id,
+                                                    subsystem_data );
 
                 return subsystem_data->logical_timer_val;
             }

@@ -49,6 +49,12 @@
 #include <SCOREP_Memory.h>
 #include <SCOREP_Location.h>
 
+//#if HAVE( TIMER_LOGICAL_HWCTR_INSTR )
+#include <linux/perf_event.h>
+#include <sys/syscall.h>
+#include <sys/ioctl.h>
+//#endif
+
 /* *INDENT-OFF* */
 /* *INDENT-ON*  */
 
@@ -94,6 +100,9 @@ static SCOREP_ErrorCode
 timer_subsystem_init_location( SCOREP_Location* location,
                                SCOREP_Location* parent );
 
+static SCOREP_ErrorCode
+timer_subsystem_finalize_location( SCOREP_Location* location );
+
 bool SCOREP_Timer_Subsystem_Initialized;
 bool SCOREP_Timer_Subsystem_Logic_Event_Sync;
 
@@ -101,9 +110,10 @@ bool SCOREP_Timer_Subsystem_Logic_Event_Sync;
 
 const SCOREP_Subsystem SCOREP_Subsystem_Timer =
 {
-    .subsystem_name          = "Timer",
-    .subsystem_register      = &timer_subsystem_register,
-    .subsystem_init_location = &timer_subsystem_init_location
+    .subsystem_name              = "Timer",
+    .subsystem_register          = &timer_subsystem_register,
+    .subsystem_init_location     = &timer_subsystem_init_location,
+    .subsystem_finalize_location = &timer_subsystem_finalize_location
 };
 
 /* ************************************** static functions */
@@ -136,6 +146,55 @@ timer_subsystem_init_location( SCOREP_Location* location, SCOREP_Location* paren
     /* global variable to all locations */
     SCOREP_Timer_Subsystem_Initialized      = true;
     SCOREP_Timer_Subsystem_Logic_Event_Sync = false;
+
+    //if ( scorep_timer == TIMER_LOGICAL_HWCTR_INSTR )
+    {
+        /* Now the following code is only needed for case of Logical HW Instructions count */
+        /* But for sake of testing will be added here */
+        //int perf_event_fd;
+        int retVal;
+        struct perf_event_attr   attr;
+        memset( &attr, 0, sizeof( struct perf_event_attr ) );
+        attr.type           = PERF_TYPE_HARDWARE;
+        attr.config         = PERF_COUNT_HW_INSTRUCTIONS;    // Hard coded for instructions
+        attr.exclude_kernel = 1;  /* don't count kernel */
+        attr.exclude_hv     = 1;  /* don't count hypervisor */
+        attr.read_format    = PERF_FORMAT_GROUP;
+
+        subsystem_data->perf_event_fd = syscall( __NR_perf_event_open, &attr, 0, -1, -1, 0 );
+        if (subsystem_data->perf_event_fd < 0)
+        {
+            printf("error when creating perf event file descriptor\n");
+        }
+        retVal = ioctl( subsystem_data->perf_event_fd, PERF_EVENT_IOC_ENABLE );
+        if (retVal)
+        {
+            printf("ioctl enable error for fd: %d\n", subsystem_data->perf_event_fd);
+        }
+    }
+
+    return SCOREP_SUCCESS;
+}
+
+static SCOREP_ErrorCode
+timer_subsystem_finalize_location (SCOREP_Location* location)
+{
+    int retVal;
+    scorep_location_timers_data* subsystem_data =
+            SCOREP_Location_GetSubsystemData( location, timer_subsystem_id );
+
+    ///usr/include/unistd.h
+    //extern int close (int __fd);
+    retVal = ioctl( subsystem_data->perf_event_fd, PERF_EVENT_IOC_DISABLE );
+    if (retVal)
+    {
+        printf("error in disabling perf event\n");
+    }
+    retVal = close (subsystem_data->perf_event_fd);
+    if (retVal)
+    {
+        printf("error in closing perf event file descriptor\n");
+    }
 
     return SCOREP_SUCCESS;
 }
