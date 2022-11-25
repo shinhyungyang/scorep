@@ -1,4 +1,3 @@
-#if HAVE( OPENCL_2_0_SYMBOL_CLCREATECOMMANDQUEUEWITHPROPERTIES )
 cl_command_queue
 SCOREP_LIBWRAP_FUNC_NAME( clCreateCommandQueueWithProperties )( cl_context                 context,
                                                                 cl_device_id               device,
@@ -17,11 +16,9 @@ SCOREP_LIBWRAP_FUNC_NAME( clCreateCommandQueueWithProperties )( cl_context      
 
     return ret;
 }
-#endif
 
 
 
-#if HAVE( OPENCL_2_0_SYMBOL_CLCREATEPIPE )
 cl_mem
 SCOREP_LIBWRAP_FUNC_NAME( clCreatePipe )( cl_context                context,
                                           cl_mem_flags              flags,
@@ -42,11 +39,9 @@ SCOREP_LIBWRAP_FUNC_NAME( clCreatePipe )( cl_context                context,
 
     return ret;
 }
-#endif
 
 
 
-#if HAVE( OPENCL_2_0_SYMBOL_CLGETPIPEINFO )
 cl_int
 SCOREP_LIBWRAP_FUNC_NAME( clGetPipeInfo )( cl_mem       pipe,
                                            cl_pipe_info paramName,
@@ -66,11 +61,9 @@ SCOREP_LIBWRAP_FUNC_NAME( clGetPipeInfo )( cl_mem       pipe,
 
     return ret;
 }
-#endif
 
 
 
-#if HAVE( OPENCL_2_0_SYMBOL_CLSVMALLOC )
 void*
 SCOREP_LIBWRAP_FUNC_NAME( clSVMAlloc )( cl_context       context,
                                         cl_svm_mem_flags flags,
@@ -88,11 +81,9 @@ SCOREP_LIBWRAP_FUNC_NAME( clSVMAlloc )( cl_context       context,
 
     return ret;
 }
-#endif
 
 
 
-#if HAVE( OPENCL_2_0_SYMBOL_CLSVMFREE )
 void
 SCOREP_LIBWRAP_FUNC_NAME( clSVMFree )( cl_context context,
                                        void*      svmPointer )
@@ -105,11 +96,9 @@ SCOREP_LIBWRAP_FUNC_NAME( clSVMFree )( cl_context context,
 
     SCOREP_OPENCL_FUNC_EXIT( clSVMFree );
 }
-#endif
 
 
 
-#if HAVE( OPENCL_2_0_SYMBOL_CLCREATESAMPLERWITHPROPERTIES )
 cl_sampler
 SCOREP_LIBWRAP_FUNC_NAME( clCreateSamplerWithProperties )( cl_context                   context,
                                                            const cl_sampler_properties* normalizedCoords,
@@ -126,11 +115,9 @@ SCOREP_LIBWRAP_FUNC_NAME( clCreateSamplerWithProperties )( cl_context           
 
     return ret;
 }
-#endif
 
 
 
-#if HAVE( OPENCL_2_0_SYMBOL_CLSETKERNELARGSVMPOINTER )
 cl_int
 SCOREP_LIBWRAP_FUNC_NAME( clSetKernelArgSVMPointer )( cl_kernel   kernel,
                                                       cl_uint     argIndex,
@@ -147,11 +134,9 @@ SCOREP_LIBWRAP_FUNC_NAME( clSetKernelArgSVMPointer )( cl_kernel   kernel,
 
     return ret;
 }
-#endif
 
 
 
-#if HAVE( OPENCL_2_0_SYMBOL_CLSETKERNELEXECINFO )
 cl_int
 SCOREP_LIBWRAP_FUNC_NAME( clSetKernelExecInfo )( cl_kernel           kernel,
                                                  cl_kernel_exec_info paramName,
@@ -169,11 +154,9 @@ SCOREP_LIBWRAP_FUNC_NAME( clSetKernelExecInfo )( cl_kernel           kernel,
 
     return ret;
 }
-#endif
 
 
 
-#if HAVE( OPENCL_2_0_SYMBOL_CLENQUEUESVMFREE )
 cl_int
 SCOREP_LIBWRAP_FUNC_NAME( clEnqueueSVMFree )( cl_command_queue commandQueue,
                                               cl_uint          numSvmPointers,
@@ -200,11 +183,9 @@ SCOREP_LIBWRAP_FUNC_NAME( clEnqueueSVMFree )( cl_command_queue commandQueue,
 
     return ret;
 }
-#endif
 
 
 
-#if HAVE( OPENCL_2_0_SYMBOL_CLENQUEUESVMMEMCPY )
 cl_int
 SCOREP_LIBWRAP_FUNC_NAME( clEnqueueSVMMemcpy )( cl_command_queue commandQueue,
                                                 cl_bool          blockingCopy,
@@ -228,11 +209,9 @@ SCOREP_LIBWRAP_FUNC_NAME( clEnqueueSVMMemcpy )( cl_command_queue commandQueue,
 
     return ret;
 }
-#endif
 
 
 
-#if HAVE( OPENCL_2_0_SYMBOL_CLENQUEUESVMMEMFILL )
 cl_int
 SCOREP_LIBWRAP_FUNC_NAME( clEnqueueSVMMemFill )( cl_command_queue commandQueue,
                                                  void*            svmPtr,
@@ -256,11 +235,9 @@ SCOREP_LIBWRAP_FUNC_NAME( clEnqueueSVMMemFill )( cl_command_queue commandQueue,
 
     return ret;
 }
-#endif
 
 
 
-#if HAVE( OPENCL_2_0_SYMBOL_CLENQUEUESVMMAP )
 cl_int
 SCOREP_LIBWRAP_FUNC_NAME( clEnqueueSVMMap )( cl_command_queue commandQueue,
                                              cl_bool          blockingMap,
@@ -284,11 +261,9 @@ SCOREP_LIBWRAP_FUNC_NAME( clEnqueueSVMMap )( cl_command_queue commandQueue,
 
     return ret;
 }
-#endif
 
 
 
-#if HAVE( OPENCL_2_0_SYMBOL_CLENQUEUESVMUNMAP )
 cl_int
 SCOREP_LIBWRAP_FUNC_NAME( clEnqueueSVMUnmap )( cl_command_queue commandQueue,
                                                void*            svmPtr,
@@ -308,4 +283,3 @@ SCOREP_LIBWRAP_FUNC_NAME( clEnqueueSVMUnmap )( cl_command_queue commandQueue,
 
     return ret;
 }
-#endif
