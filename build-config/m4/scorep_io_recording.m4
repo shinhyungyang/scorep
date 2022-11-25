@@ -24,96 +24,6 @@ AFS_SUMMARY_SECTION_END
 
 dnl ----------------------------------------------------------------------------
 
-## _SCOREP_IO_RECORDING_POSIX_CHECK_SYMBOLS
-AC_DEFUN([_SCOREP_IO_RECORDING_POSIX_CHECK_SYMBOLS], [
-SCOREP_CHECK_SYMBOLS([POSIX I/O], [], [],
-           [close,
-            closedir,
-            creat,
-            creat64,
-            dup,
-            dup2,
-            dup3,
-            fclose,
-            fcntl,
-            fdatasync,
-            fdopen,
-            fflush,
-            fgetc,
-            fgetpos,
-            fgets,
-            flockfile,
-            fopen,
-            fopen64,
-            fputc,
-            fputs,
-            fread,
-            freopen,
-            fscanf,
-            fseek,
-            fseeko,
-            fseeko64,
-            fsync,
-            ftell,
-            ftello,
-            ftrylockfile,
-            funlockfile,
-            fwrite,
-            getchar,
-            gets,
-            lockf,
-            lseek,
-            lseek64,
-            open,
-            open64,
-            openat,
-            pread,
-            pread64,
-            preadv,
-            preadv2,
-            preadv64,
-            preadv64v2,
-            printf,
-            pselect,
-            putchar,
-            puts,
-            pwrite,
-            pwrite64,
-            pwritev,
-            pwritev2,
-            pwritev64,
-            pwritev64v2,
-            read,
-            readv,
-            remove,
-            rewind,
-            scanf,
-            select,
-            sync,
-            syncfs,
-            ungetc,
-            unlink,
-            unlinkat,
-            vfscanf,
-            vprintf,
-            vscanf,
-            write,
-            writev])
-])
-
-## _SCOREP_IO_RECORDING_POSIX_AIO_CHECK_SYMBOLS
-AC_DEFUN([_SCOREP_IO_RECORDING_POSIX_AIO_CHECK_SYMBOLS], [
-SCOREP_CHECK_SYMBOLS([POSIX I/O], [], [],
-           [aio_cancel,
-            aio_error,
-            aio_fsync,
-            aio_read,
-            aio_return,
-            aio_suspend,
-            aio_write,
-            lio_listio])
-])
-
 dnl ----------------------------------------------------------------------------
 
 AC_DEFUN([_SCOREP_IO_RECORDING_POSIX], [
@@ -141,14 +51,7 @@ AS_IF([test x"${scorep_posix_io_support}" = x"yes"],
 
 AC_SCOREP_COND_HAVE([POSIX_IO_SUPPORT],
                     [test x"${scorep_posix_io_support}" = x"yes"],
-                    [Defined if recording calls to POSIX I/O is possible.],
-                    [_SCOREP_IO_RECORDING_POSIX_CHECK_SYMBOLS
-                     # do not wrap 'vfprintf' on Cray platform
-                     AS_CASE([${ac_scorep_platform}],
-                             [cray*], [# as we do not check for vfprintf corresponding symbol should not be defined
-                                     AC_DEFINE([HAVE_POSIX_IO_SYMBOL_VFPRINTF], [0])
-                                     AC_DEFINE([HAVE_POSIX_IO_SYMBOL_FPRINTF], [0])],
-                             [SCOREP_CHECK_SYMBOLS([POSIX I/O], [], [], [vfprintf,fprintf])])])
+                    [Defined if recording calls to POSIX I/O is possible.])
 
 AFS_SUMMARY_POP([POSIX I/O support], [${scorep_posix_io_support}${scorep_posix_io_summary_reason}])
 
@@ -190,13 +93,7 @@ AS_IF([test x"${scorep_posix_aio_support}" = x"yes"],
 AC_SCOREP_COND_HAVE([POSIX_AIO_SUPPORT],
                     [test x"${scorep_posix_aio_support}" = x"yes"],
                     [Defined if recording calls to POSIX asynchronous I/O is possible.],
-                    [libs_save=${LIBS}
-                     LIBS="$LIBS ${with_posix_aio_libs}"
-                     _SCOREP_IO_RECORDING_POSIX_AIO_CHECK_SYMBOLS
-                     LIBS="$libs_save"
-                     AC_SUBST([SCOREP_POSIX_AIO_LIBS],    ["${with_posix_aio_libs}"])
-                     scorep_posix_aio_summary_reason="${with_posix_aio_libs:+, using ${with_posix_aio_libs}}"],
-                    [AC_SUBST([SCOREP_POSIX_AIO_LIBS],    [""])])
+                    [scorep_posix_aio_summary_reason="${with_posix_aio_libs:+, using ${with_posix_aio_libs}}"])
 
 AFS_SUMMARY_POP([POSIX asynchronous I/O support], [${scorep_posix_aio_support}${scorep_posix_aio_summary_reason}])
 ])

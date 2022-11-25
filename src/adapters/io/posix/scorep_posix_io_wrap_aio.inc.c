@@ -48,7 +48,6 @@ aio_get_transfer_size( const struct aiocb* aiocbp )
 #endif
 }
 
-#if HAVE( POSIX_IO_SYMBOL_AIO_CANCEL )
 int
 SCOREP_LIBWRAP_FUNC_NAME( aio_cancel )( int fd, struct aiocb* aiocbp )
 {
@@ -93,9 +92,7 @@ SCOREP_LIBWRAP_FUNC_NAME( aio_cancel )( int fd, struct aiocb* aiocbp )
     SCOREP_IN_MEASUREMENT_DECREMENT();
     return ret;
 }
-#endif
 
-#if HAVE( POSIX_IO_SYMBOL_AIO_ERROR )
 int
 SCOREP_LIBWRAP_FUNC_NAME( aio_error )( const struct aiocb* aiocbp )
 {
@@ -145,9 +142,7 @@ SCOREP_LIBWRAP_FUNC_NAME( aio_error )( const struct aiocb* aiocbp )
     SCOREP_IN_MEASUREMENT_DECREMENT();
     return ret;
 }
-#endif
 
-#if HAVE( POSIX_IO_SYMBOL_AIO_FSYNC )
 int
 SCOREP_LIBWRAP_FUNC_NAME( aio_fsync )( int op, struct aiocb* aiocbp )
 {
@@ -183,9 +178,7 @@ SCOREP_LIBWRAP_FUNC_NAME( aio_fsync )( int op, struct aiocb* aiocbp )
     SCOREP_IN_MEASUREMENT_DECREMENT();
     return ret;
 }
-#endif
 
-#if HAVE( POSIX_IO_SYMBOL_AIO_READ )
 int
 SCOREP_LIBWRAP_FUNC_NAME( aio_read )( struct aiocb* aiocbp )
 {
@@ -234,9 +227,7 @@ SCOREP_LIBWRAP_FUNC_NAME( aio_read )( struct aiocb* aiocbp )
     SCOREP_IN_MEASUREMENT_DECREMENT();
     return ret;
 }
-#endif
 
-#if HAVE( POSIX_IO_SYMBOL_AIO_RETURN )
 ssize_t
 SCOREP_LIBWRAP_FUNC_NAME( aio_return )( struct aiocb* aiocbp )
 {
@@ -278,9 +269,7 @@ SCOREP_LIBWRAP_FUNC_NAME( aio_return )( struct aiocb* aiocbp )
     SCOREP_IN_MEASUREMENT_DECREMENT();
     return ret;
 }
-#endif
 
-#if HAVE( POSIX_IO_SYMBOL_AIO_SUSPEND )
 int
 SCOREP_LIBWRAP_FUNC_NAME( aio_suspend )( const struct aiocb* const aiocb_list[], int nitems, const struct timespec* timeout )
 {
@@ -304,9 +293,7 @@ SCOREP_LIBWRAP_FUNC_NAME( aio_suspend )( const struct aiocb* const aiocb_list[],
     SCOREP_IN_MEASUREMENT_DECREMENT();
     return ret;
 }
-#endif
 
-#if HAVE( POSIX_IO_SYMBOL_AIO_WRITE )
 int
 SCOREP_LIBWRAP_FUNC_NAME( aio_write )( struct aiocb* aiocbp )
 {
@@ -355,9 +342,7 @@ SCOREP_LIBWRAP_FUNC_NAME( aio_write )( struct aiocb* aiocbp )
     SCOREP_IN_MEASUREMENT_DECREMENT();
     return ret;
 }
-#endif
 
-#if HAVE( POSIX_IO_SYMBOL_LIO_LISTIO )
 int
 SCOREP_LIBWRAP_FUNC_NAME( lio_listio )( int mode, struct aiocb* const aiocb_list[], int nitems, struct sigevent* sevp )
 {
@@ -448,4 +433,3 @@ SCOREP_LIBWRAP_FUNC_NAME( lio_listio )( int mode, struct aiocb* const aiocb_list
     SCOREP_IN_MEASUREMENT_DECREMENT();
     return ret;
 }
-#endif
