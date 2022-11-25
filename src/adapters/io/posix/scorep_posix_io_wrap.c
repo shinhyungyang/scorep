@@ -103,7 +103,6 @@ posix_io_vector_complete( SCOREP_IoFileHandle    handle,
  * Synchronous I/O
  */
 
-#if HAVE( POSIX_IO_SYMBOL_CLOSE )
 int
 SCOREP_LIBWRAP_FUNC_NAME( close )( int fd )
 {
@@ -153,9 +152,7 @@ SCOREP_LIBWRAP_FUNC_NAME( close )( int fd )
     SCOREP_IN_MEASUREMENT_DECREMENT();
     return ret;
 }
-#endif
 
-#if HAVE( POSIX_IO_SYMBOL_CLOSEDIR )
 int
 SCOREP_LIBWRAP_FUNC_NAME( closedir )( DIR* dirp )
 {
@@ -211,9 +208,7 @@ SCOREP_LIBWRAP_FUNC_NAME( closedir )( DIR* dirp )
     SCOREP_IN_MEASUREMENT_DECREMENT();
     return ret;
 }
-#endif
 
-#if HAVE( POSIX_IO_SYMBOL_CREAT )
 int
 SCOREP_LIBWRAP_FUNC_NAME( creat )( const char* pathname, mode_t mode )
 {
@@ -269,9 +264,7 @@ SCOREP_LIBWRAP_FUNC_NAME( creat )( const char* pathname, mode_t mode )
     SCOREP_IN_MEASUREMENT_DECREMENT();
     return ret;
 }
-#endif
 
-#if HAVE( POSIX_IO_SYMBOL_CREAT64 )
 int
 SCOREP_LIBWRAP_FUNC_NAME( creat64 )( const char* pathname, mode_t mode )
 {
@@ -326,9 +319,7 @@ SCOREP_LIBWRAP_FUNC_NAME( creat64 )( const char* pathname, mode_t mode )
     SCOREP_IN_MEASUREMENT_DECREMENT();
     return ret;
 }
-#endif
 
-#if HAVE( POSIX_IO_SYMBOL_DUP )
 int
 SCOREP_LIBWRAP_FUNC_NAME( dup )( int oldfd )
 {
@@ -389,9 +380,7 @@ SCOREP_LIBWRAP_FUNC_NAME( dup )( int oldfd )
     return ret;
 }
 
-#endif
 
-#if HAVE( POSIX_IO_SYMBOL_DUP2 )
 int
 SCOREP_LIBWRAP_FUNC_NAME( dup2 )( int oldfd, int newfd )
 {
@@ -472,9 +461,7 @@ SCOREP_LIBWRAP_FUNC_NAME( dup2 )( int oldfd, int newfd )
     SCOREP_IN_MEASUREMENT_DECREMENT();
     return ret;
 }
-#endif
 
-#if HAVE( POSIX_IO_SYMBOL_DUP3 )
 int
 SCOREP_LIBWRAP_FUNC_NAME( dup3 )( int oldfd, int newfd, int flags )
 {
@@ -542,9 +529,7 @@ SCOREP_LIBWRAP_FUNC_NAME( dup3 )( int oldfd, int newfd, int flags )
     SCOREP_IN_MEASUREMENT_DECREMENT();
     return ret;
 }
-#endif
 
-#if HAVE( POSIX_IO_SYMBOL_FCNTL )
 int
 SCOREP_LIBWRAP_FUNC_NAME( fcntl )( int fd, int cmd, ... )
 {
@@ -778,9 +763,7 @@ SCOREP_LIBWRAP_FUNC_NAME( fcntl )( int fd, int cmd, ... )
     SCOREP_IN_MEASUREMENT_DECREMENT();
     return ret;
 }
-#endif
 
-#if HAVE( POSIX_IO_SYMBOL_FDATASYNC )
 int
 SCOREP_LIBWRAP_FUNC_NAME( fdatasync )( int fd )
 {
@@ -826,9 +809,7 @@ SCOREP_LIBWRAP_FUNC_NAME( fdatasync )( int fd )
     SCOREP_IN_MEASUREMENT_DECREMENT();
     return ret;
 }
-#endif
 
-#if HAVE( POSIX_IO_SYMBOL_FSYNC )
 int
 SCOREP_LIBWRAP_FUNC_NAME( fsync )( int fd )
 {
@@ -875,9 +856,7 @@ SCOREP_LIBWRAP_FUNC_NAME( fsync )( int fd )
     SCOREP_IN_MEASUREMENT_DECREMENT();
     return ret;
 }
-#endif
 
-#if HAVE( POSIX_IO_SYMBOL_LOCKF )
 int
 SCOREP_LIBWRAP_FUNC_NAME( lockf )( int fd, int cmd, off_t len )
 {
@@ -931,9 +910,7 @@ SCOREP_LIBWRAP_FUNC_NAME( lockf )( int fd, int cmd, off_t len )
     SCOREP_IN_MEASUREMENT_DECREMENT();
     return ret;
 }
-#endif
 
-#if HAVE( POSIX_IO_SYMBOL_LSEEK )
 off_t
 SCOREP_LIBWRAP_FUNC_NAME( lseek )( int fd, off_t offset, int whence )
 {
@@ -971,9 +948,7 @@ SCOREP_LIBWRAP_FUNC_NAME( lseek )( int fd, off_t offset, int whence )
     SCOREP_IN_MEASUREMENT_DECREMENT();
     return ret;
 }
-#endif
 
-#if HAVE( POSIX_IO_SYMBOL_LSEEK64 )
 scorep_off64_t
 SCOREP_LIBWRAP_FUNC_NAME( lseek64 )( int fd, scorep_off64_t offset, int whence )
 {
@@ -1011,9 +986,7 @@ SCOREP_LIBWRAP_FUNC_NAME( lseek64 )( int fd, scorep_off64_t offset, int whence )
     SCOREP_IN_MEASUREMENT_DECREMENT();
     return ret;
 }
-#endif
 
-#if HAVE( POSIX_IO_SYMBOL_OPEN )
 int
 SCOREP_LIBWRAP_FUNC_NAME( open )( const char* pathname, int flags, ... /* mode_t mode */ )
 {
@@ -1092,9 +1065,7 @@ SCOREP_LIBWRAP_FUNC_NAME( open )( const char* pathname, int flags, ... /* mode_t
     SCOREP_IN_MEASUREMENT_DECREMENT();
     return ret;
 }
-#endif
 
-#if HAVE( POSIX_IO_SYMBOL_OPEN64 )
 int
 SCOREP_LIBWRAP_FUNC_NAME( open64 )( const char* pathname, int flags, ... )
 {
@@ -1171,9 +1142,7 @@ SCOREP_LIBWRAP_FUNC_NAME( open64 )( const char* pathname, int flags, ... )
     SCOREP_IN_MEASUREMENT_DECREMENT();
     return ret;
 }
-#endif
 
-#if HAVE( POSIX_IO_SYMBOL_OPENAT )
 int
 SCOREP_LIBWRAP_FUNC_NAME( openat )( int dirfd, const char* pathname, int flags, ... )
 {
@@ -1265,9 +1234,7 @@ SCOREP_LIBWRAP_FUNC_NAME( openat )( int dirfd, const char* pathname, int flags, 
     SCOREP_IN_MEASUREMENT_DECREMENT();
     return ret;
 }
-#endif
 
-#if HAVE( POSIX_IO_SYMBOL_PREAD )
 ssize_t
 SCOREP_LIBWRAP_FUNC_NAME( pread )( int fd, void* buf, size_t count, off_t offset )
 {
@@ -1321,9 +1288,7 @@ SCOREP_LIBWRAP_FUNC_NAME( pread )( int fd, void* buf, size_t count, off_t offset
     SCOREP_IN_MEASUREMENT_DECREMENT();
     return ret;
 }
-#endif
 
-#if HAVE( POSIX_IO_SYMBOL_PREAD64 )
 ssize_t
 SCOREP_LIBWRAP_FUNC_NAME( pread64 )( int fd, void* buf, size_t count, scorep_off64_t offset )
 {
@@ -1377,9 +1342,7 @@ SCOREP_LIBWRAP_FUNC_NAME( pread64 )( int fd, void* buf, size_t count, scorep_off
     SCOREP_IN_MEASUREMENT_DECREMENT();
     return ret;
 }
-#endif
 
-#if HAVE( POSIX_IO_SYMBOL_PREADV )
 ssize_t
 SCOREP_LIBWRAP_FUNC_NAME( preadv )( int fd, const struct iovec* iov, int iovcnt, off_t offset )
 {
@@ -1427,9 +1390,7 @@ SCOREP_LIBWRAP_FUNC_NAME( preadv )( int fd, const struct iovec* iov, int iovcnt,
     SCOREP_IN_MEASUREMENT_DECREMENT();
     return ret;
 }
-#endif
 
-#if HAVE( POSIX_IO_SYMBOL_PREADV2 )
 ssize_t
 SCOREP_LIBWRAP_FUNC_NAME( preadv2 )( int fd, const struct iovec* iov, int iovcnt, off_t offset, int flags )
 {
@@ -1477,9 +1438,7 @@ SCOREP_LIBWRAP_FUNC_NAME( preadv2 )( int fd, const struct iovec* iov, int iovcnt
     SCOREP_IN_MEASUREMENT_DECREMENT();
     return ret;
 }
-#endif
 
-#if HAVE( POSIX_IO_SYMBOL_PREADV64 )
 ssize_t
 SCOREP_LIBWRAP_FUNC_NAME( preadv64 )( int fd, const struct iovec* iov, int iovcnt, scorep_off64_t offset )
 {
@@ -1527,9 +1486,7 @@ SCOREP_LIBWRAP_FUNC_NAME( preadv64 )( int fd, const struct iovec* iov, int iovcn
     SCOREP_IN_MEASUREMENT_DECREMENT();
     return ret;
 }
-#endif
 
-#if HAVE( POSIX_IO_SYMBOL_PREADV64V2 )
 ssize_t
 SCOREP_LIBWRAP_FUNC_NAME( preadv64v2 )( int fd, const struct iovec* iov, int iovcnt, scorep_off64_t offset, int flags )
 {
@@ -1577,9 +1534,7 @@ SCOREP_LIBWRAP_FUNC_NAME( preadv64v2 )( int fd, const struct iovec* iov, int iov
     SCOREP_IN_MEASUREMENT_DECREMENT();
     return ret;
 }
-#endif
 
-#if HAVE( POSIX_IO_SYMBOL_PSELECT )
 int
 SCOREP_LIBWRAP_FUNC_NAME( pselect )( int nfds, fd_set* readfds, fd_set* writefds, fd_set* exceptfds, const struct timespec* timeout, const sigset_t* sigmask )
 {
@@ -1603,9 +1558,7 @@ SCOREP_LIBWRAP_FUNC_NAME( pselect )( int nfds, fd_set* readfds, fd_set* writefds
     SCOREP_IN_MEASUREMENT_DECREMENT();
     return ret;
 }
-#endif
 
-#if HAVE( POSIX_IO_SYMBOL_PWRITE )
 ssize_t
 SCOREP_LIBWRAP_FUNC_NAME( pwrite )( int fd, const void* buf, size_t count, off_t offset )
 {
@@ -1659,9 +1612,7 @@ SCOREP_LIBWRAP_FUNC_NAME( pwrite )( int fd, const void* buf, size_t count, off_t
     SCOREP_IN_MEASUREMENT_DECREMENT();
     return ret;
 }
-#endif
 
-#if HAVE( POSIX_IO_SYMBOL_PWRITE64 )
 ssize_t
 SCOREP_LIBWRAP_FUNC_NAME( pwrite64 )( int fd, const void* buf, size_t count, scorep_off64_t offset )
 {
@@ -1715,9 +1666,7 @@ SCOREP_LIBWRAP_FUNC_NAME( pwrite64 )( int fd, const void* buf, size_t count, sco
     SCOREP_IN_MEASUREMENT_DECREMENT();
     return ret;
 }
-#endif
 
-#if HAVE( POSIX_IO_SYMBOL_PWRITEV )
 ssize_t
 SCOREP_LIBWRAP_FUNC_NAME( pwritev )( int fd, const struct iovec* iov, int iovcnt, off_t offset )
 {
@@ -1765,9 +1714,7 @@ SCOREP_LIBWRAP_FUNC_NAME( pwritev )( int fd, const struct iovec* iov, int iovcnt
     SCOREP_IN_MEASUREMENT_DECREMENT();
     return ret;
 }
-#endif
 
-#if HAVE( POSIX_IO_SYMBOL_PWRITEV2 )
 ssize_t
 SCOREP_LIBWRAP_FUNC_NAME( pwritev2 )( int fd, const struct iovec* iov, int iovcnt, off_t offset, int flags )
 {
@@ -1823,9 +1770,7 @@ SCOREP_LIBWRAP_FUNC_NAME( pwritev2 )( int fd, const struct iovec* iov, int iovcn
     SCOREP_IN_MEASUREMENT_DECREMENT();
     return ret;
 }
-#endif
 
-#if HAVE( POSIX_IO_SYMBOL_PWRITEV64 )
 ssize_t
 SCOREP_LIBWRAP_FUNC_NAME( pwritev64 )( int fd, const struct iovec* iov, int iovcnt, scorep_off64_t offset )
 {
@@ -1873,9 +1818,7 @@ SCOREP_LIBWRAP_FUNC_NAME( pwritev64 )( int fd, const struct iovec* iov, int iovc
     SCOREP_IN_MEASUREMENT_DECREMENT();
     return ret;
 }
-#endif
 
-#if HAVE( POSIX_IO_SYMBOL_PWRITEV64V2 )
 ssize_t
 SCOREP_LIBWRAP_FUNC_NAME( pwritev64v2 )( int fd, const struct iovec* iov, int iovcnt, scorep_off64_t offset, int flags )
 {
@@ -1931,9 +1874,7 @@ SCOREP_LIBWRAP_FUNC_NAME( pwritev64v2 )( int fd, const struct iovec* iov, int io
     SCOREP_IN_MEASUREMENT_DECREMENT();
     return ret;
 }
-#endif
 
-#if HAVE( POSIX_IO_SYMBOL_READ )
 ssize_t
 SCOREP_LIBWRAP_FUNC_NAME( read )( int fd, void* buf, size_t count )
 {
@@ -1981,9 +1922,7 @@ SCOREP_LIBWRAP_FUNC_NAME( read )( int fd, void* buf, size_t count )
     SCOREP_IN_MEASUREMENT_DECREMENT();
     return ret;
 }
-#endif
 
-#if HAVE( POSIX_IO_SYMBOL_READV )
 ssize_t
 SCOREP_LIBWRAP_FUNC_NAME( readv )( int fd, const struct iovec* iov, int iovcnt )
 {
@@ -2031,9 +1970,7 @@ SCOREP_LIBWRAP_FUNC_NAME( readv )( int fd, const struct iovec* iov, int iovcnt )
     SCOREP_IN_MEASUREMENT_DECREMENT();
     return ret;
 }
-#endif
 
-#if HAVE( POSIX_IO_SYMBOL_SELECT )
 int
 SCOREP_LIBWRAP_FUNC_NAME( select )( int nfds, fd_set* readfds, fd_set* writefds, fd_set* exceptfds, struct timeval* timeout )
 {
@@ -2057,9 +1994,7 @@ SCOREP_LIBWRAP_FUNC_NAME( select )( int nfds, fd_set* readfds, fd_set* writefds,
     SCOREP_IN_MEASUREMENT_DECREMENT();
     return ret;
 }
-#endif
 
-#if HAVE( POSIX_IO_SYMBOL_SYNC )
 void
 SCOREP_LIBWRAP_FUNC_NAME( sync )( void )
 {
@@ -2099,9 +2034,7 @@ SCOREP_LIBWRAP_FUNC_NAME( sync )( void )
     }
     SCOREP_IN_MEASUREMENT_DECREMENT();
 }
-#endif
 
-#if HAVE( POSIX_IO_SYMBOL_SYNCFS )
 int
 SCOREP_LIBWRAP_FUNC_NAME( syncfs )( int fd )
 {
@@ -2149,9 +2082,7 @@ SCOREP_LIBWRAP_FUNC_NAME( syncfs )( int fd )
     SCOREP_IN_MEASUREMENT_DECREMENT();
     return ret;
 }
-#endif
 
-#if HAVE( POSIX_IO_SYMBOL_UNLINK )
 int
 SCOREP_LIBWRAP_FUNC_NAME( unlink )( const char* pathname )
 {
@@ -2185,9 +2116,7 @@ SCOREP_LIBWRAP_FUNC_NAME( unlink )( const char* pathname )
     SCOREP_IN_MEASUREMENT_DECREMENT();
     return ret;
 }
-#endif
 
-#if HAVE( POSIX_IO_SYMBOL_UNLINKAT )
 int
 SCOREP_LIBWRAP_FUNC_NAME( unlinkat )( int dirfd, const char* pathname, int flags )
 {
@@ -2244,9 +2173,7 @@ SCOREP_LIBWRAP_FUNC_NAME( unlinkat )( int dirfd, const char* pathname, int flags
     SCOREP_IN_MEASUREMENT_DECREMENT();
     return ret;
 }
-#endif
 
-#if HAVE( POSIX_IO_SYMBOL_WRITE )
 ssize_t
 SCOREP_LIBWRAP_FUNC_NAME( write )( int fd, const void* buf, size_t count )
 {
@@ -2293,9 +2220,7 @@ SCOREP_LIBWRAP_FUNC_NAME( write )( int fd, const void* buf, size_t count )
     SCOREP_IN_MEASUREMENT_DECREMENT();
     return ret;
 }
-#endif
 
-#if HAVE( POSIX_IO_SYMBOL_WRITEV )
 ssize_t
 SCOREP_LIBWRAP_FUNC_NAME( writev )( int fd, const struct iovec* iov, int iovcnt )
 {
@@ -2343,7 +2268,6 @@ SCOREP_LIBWRAP_FUNC_NAME( writev )( int fd, const struct iovec* iov, int iovcnt 
     SCOREP_IN_MEASUREMENT_DECREMENT();
     return ret;
 }
-#endif
 
 #if HAVE( POSIX_AIO_SUPPORT )
 #include "scorep_posix_io_wrap_aio.inc.c"

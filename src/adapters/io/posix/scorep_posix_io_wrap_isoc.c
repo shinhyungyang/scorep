@@ -172,7 +172,6 @@ get_scorep_io_access_mode_from_string( const char* mode )
  * Function wrappers
  * ******************************************************************/
 
-#if HAVE( POSIX_IO_SYMBOL_FCLOSE )
 int
 SCOREP_LIBWRAP_FUNC_NAME( fclose )( FILE* fp )
 {
@@ -249,9 +248,7 @@ SCOREP_LIBWRAP_FUNC_NAME( fclose )( FILE* fp )
     SCOREP_IN_MEASUREMENT_DECREMENT();
     return ret;
 }
-#endif
 
-#if HAVE( POSIX_IO_SYMBOL_FDOPEN )
 FILE*
 SCOREP_LIBWRAP_FUNC_NAME( fdopen )( int fd, const char* mode )
 {
@@ -302,9 +299,7 @@ SCOREP_LIBWRAP_FUNC_NAME( fdopen )( int fd, const char* mode )
     SCOREP_IN_MEASUREMENT_DECREMENT();
     return ret;
 }
-#endif
 
-#if HAVE( POSIX_IO_SYMBOL_FFLUSH )
 int
 SCOREP_LIBWRAP_FUNC_NAME( fflush )( FILE* stream )
 {
@@ -361,9 +356,7 @@ SCOREP_LIBWRAP_FUNC_NAME( fflush )( FILE* stream )
     SCOREP_IN_MEASUREMENT_DECREMENT();
     return ret;
 }
-#endif
 
-#if HAVE( POSIX_IO_SYMBOL_FGETC )
 int
 SCOREP_LIBWRAP_FUNC_NAME( fgetc )( FILE* stream )
 {
@@ -410,9 +403,7 @@ SCOREP_LIBWRAP_FUNC_NAME( fgetc )( FILE* stream )
     SCOREP_IN_MEASUREMENT_DECREMENT();
     return ret;
 }
-#endif
 
-#if HAVE( POSIX_IO_SYMBOL_FGETPOS )
 int
 SCOREP_LIBWRAP_FUNC_NAME( fgetpos )( FILE* stream, fpos_t* pos )
 {
@@ -438,9 +429,7 @@ SCOREP_LIBWRAP_FUNC_NAME( fgetpos )( FILE* stream, fpos_t* pos )
     SCOREP_IN_MEASUREMENT_DECREMENT();
     return ret;
 }
-#endif
 
-#if HAVE( POSIX_IO_SYMBOL_FGETS )
 char*
 SCOREP_LIBWRAP_FUNC_NAME( fgets )( char* s, int size, FILE* stream )
 {
@@ -487,9 +476,7 @@ SCOREP_LIBWRAP_FUNC_NAME( fgets )( char* s, int size, FILE* stream )
     SCOREP_IN_MEASUREMENT_DECREMENT();
     return ret;
 }
-#endif
 
-#if HAVE( POSIX_IO_SYMBOL_FLOCKFILE )
 void
 SCOREP_LIBWRAP_FUNC_NAME( flockfile )( FILE* filehandle )
 {
@@ -522,7 +509,6 @@ SCOREP_LIBWRAP_FUNC_NAME( flockfile )( FILE* filehandle )
     }
     SCOREP_IN_MEASUREMENT_DECREMENT();
 }
-#endif
 
 static inline void
 create_posix_handle( int fd, const char* path, SCOREP_IoAccessMode access_mode )
@@ -545,7 +531,6 @@ create_posix_handle( int fd, const char* path, SCOREP_IoAccessMode access_mode )
     }
 }
 
-#if HAVE( POSIX_IO_SYMBOL_FOPEN )
 FILE*
 SCOREP_LIBWRAP_FUNC_NAME( fopen )( const char* path, const char* mode )
 {
@@ -639,9 +624,7 @@ SCOREP_LIBWRAP_FUNC_NAME( fopen )( const char* path, const char* mode )
     SCOREP_IN_MEASUREMENT_DECREMENT();
     return ret;
 }
-#endif
 
-#if HAVE( POSIX_IO_SYMBOL_FOPEN64 )
 FILE*
 SCOREP_LIBWRAP_FUNC_NAME( fopen64 )( const char* path, const char* mode )
 {
@@ -707,9 +690,7 @@ SCOREP_LIBWRAP_FUNC_NAME( fopen64 )( const char* path, const char* mode )
     SCOREP_IN_MEASUREMENT_DECREMENT();
     return ret;
 }
-#endif
 
-#if HAVE( POSIX_IO_SYMBOL_FPUTC )
 int
 SCOREP_LIBWRAP_FUNC_NAME( fputc )( int c, FILE* stream )
 {
@@ -756,9 +737,7 @@ SCOREP_LIBWRAP_FUNC_NAME( fputc )( int c, FILE* stream )
     SCOREP_IN_MEASUREMENT_DECREMENT();
     return ret;
 }
-#endif
 
-#if HAVE( POSIX_IO_SYMBOL_FPRINTF ) && HAVE( POSIX_IO_SYMBOL_VFPRINTF )
 int
 SCOREP_LIBWRAP_FUNC_NAME( fprintf )( FILE* stream, const char* format, ... )
 {
@@ -783,8 +762,7 @@ SCOREP_LIBWRAP_FUNC_NAME( fprintf )( FILE* stream, const char* format, ... )
         va_list args;
         va_start( args, format );
         SCOREP_ENTER_WRAPPED_REGION();
-        ret = SCOREP_LIBWRAP_FUNC_CALL( vfprintf,
-                                        ( stream, format, args ) );
+        ret = vfprintf( stream, format, args );
         SCOREP_EXIT_WRAPPED_REGION();
         va_end( args );
 
@@ -804,16 +782,13 @@ SCOREP_LIBWRAP_FUNC_NAME( fprintf )( FILE* stream, const char* format, ... )
     {
         va_list args;
         va_start( args, format );
-        ret = SCOREP_LIBWRAP_FUNC_CALL( vfprintf,
-                                        ( stream, format, args ) );
+        ret = vfprintf( stream, format, args );
         va_end( args );
     }
     SCOREP_IN_MEASUREMENT_DECREMENT();
     return ret;
 }
-#endif
 
-#if HAVE( POSIX_IO_SYMBOL_FPUTS )
 int
 SCOREP_LIBWRAP_FUNC_NAME( fputs )( const char* s, FILE* stream )
 {
@@ -863,9 +838,7 @@ SCOREP_LIBWRAP_FUNC_NAME( fputs )( const char* s, FILE* stream )
     SCOREP_IN_MEASUREMENT_DECREMENT();
     return ret;
 }
-#endif
 
-#if HAVE( POSIX_IO_SYMBOL_FREAD )
 size_t
 SCOREP_LIBWRAP_FUNC_NAME( fread )( void* ptr, size_t size, size_t nmemb, FILE* stream )
 {
@@ -912,9 +885,7 @@ SCOREP_LIBWRAP_FUNC_NAME( fread )( void* ptr, size_t size, size_t nmemb, FILE* s
     SCOREP_IN_MEASUREMENT_DECREMENT();
     return ret;
 }
-#endif
 
-#if HAVE( POSIX_IO_SYMBOL_FREOPEN )
 FILE*
 SCOREP_LIBWRAP_FUNC_NAME( freopen )( const char* path, const char* mode, FILE* stream )
 {
@@ -989,9 +960,7 @@ SCOREP_LIBWRAP_FUNC_NAME( freopen )( const char* path, const char* mode, FILE* s
     return ret;
 }
 
-#endif
 
-#if HAVE( POSIX_IO_SYMBOL_FSCANF ) && HAVE( POSIX_IO_SYMBOL_VFSCANF )
 int
 SCOREP_LIBWRAP_FUNC_NAME( fscanf )( FILE* stream, const char* format, ... )
 {
@@ -1018,8 +987,7 @@ SCOREP_LIBWRAP_FUNC_NAME( fscanf )( FILE* stream, const char* format, ... )
 
         va_list args;
         va_start( args, format );
-        ret = SCOREP_LIBWRAP_FUNC_CALL( vfscanf,
-                                        ( stream, format, args ) );
+        ret = vfscanf( stream, format, args );
         va_end( args );
 
         SCOREP_EXIT_WRAPPED_REGION();
@@ -1040,16 +1008,13 @@ SCOREP_LIBWRAP_FUNC_NAME( fscanf )( FILE* stream, const char* format, ... )
     {
         va_list args;
         va_start( args, format );
-        ret = SCOREP_LIBWRAP_FUNC_CALL( vfscanf,
-                                        ( stream, format, args ) );
+        ret = vfscanf( stream, format, args );
         va_end( args );
     }
     SCOREP_IN_MEASUREMENT_DECREMENT();
     return ret;
 }
-#endif
 
-#if HAVE( POSIX_IO_SYMBOL_FSEEK )
 int
 SCOREP_LIBWRAP_FUNC_NAME( fseek )( FILE* stream, long offset, int whence )
 {
@@ -1089,9 +1054,7 @@ SCOREP_LIBWRAP_FUNC_NAME( fseek )( FILE* stream, long offset, int whence )
     SCOREP_IN_MEASUREMENT_DECREMENT();
     return ret;
 }
-#endif
 
-#if HAVE( POSIX_IO_SYMBOL_FSEEKO )
 int
 SCOREP_LIBWRAP_FUNC_NAME( fseeko )( FILE* stream, off_t offset, int whence )
 {
@@ -1129,9 +1092,7 @@ SCOREP_LIBWRAP_FUNC_NAME( fseeko )( FILE* stream, off_t offset, int whence )
     SCOREP_IN_MEASUREMENT_DECREMENT();
     return ret;
 }
-#endif
 
-#if HAVE( POSIX_IO_SYMBOL_FSEEKO64 )
 int
 SCOREP_LIBWRAP_FUNC_NAME( fseeko64 )( FILE* stream, scorep_off64_t offset, int whence )
 {
@@ -1169,9 +1130,8 @@ SCOREP_LIBWRAP_FUNC_NAME( fseeko64 )( FILE* stream, scorep_off64_t offset, int w
     SCOREP_IN_MEASUREMENT_DECREMENT();
     return ret;
 }
-#endif
 
-#if HAVE( POSIX_IO_SYMBOL_FSETPOS )
+#if 0
 int
 SCOREP_LIBWRAP_FUNC_NAME( fsetpos )( FILE* stream, const fpos_t* pos )
 {
@@ -1212,7 +1172,6 @@ SCOREP_LIBWRAP_FUNC_NAME( fsetpos )( FILE* stream, const fpos_t* pos )
 }
 #endif
 
-#if HAVE( POSIX_IO_SYMBOL_FTELL )
 long
 SCOREP_LIBWRAP_FUNC_NAME( ftell )( FILE* stream )
 {
@@ -1242,9 +1201,7 @@ SCOREP_LIBWRAP_FUNC_NAME( ftell )( FILE* stream )
     SCOREP_IN_MEASUREMENT_DECREMENT();
     return ret;
 }
-#endif
 
-#if HAVE( POSIX_IO_SYMBOL_FTELLO )
 off_t
 SCOREP_LIBWRAP_FUNC_NAME( ftello )( FILE* stream )
 {
@@ -1274,9 +1231,7 @@ SCOREP_LIBWRAP_FUNC_NAME( ftello )( FILE* stream )
     SCOREP_IN_MEASUREMENT_DECREMENT();
     return ret;
 }
-#endif
 
-#if HAVE( POSIX_IO_SYMBOL_FTRYLOCKFILE )
 int
 SCOREP_LIBWRAP_FUNC_NAME( ftrylockfile )( FILE* filehandle )
 {
@@ -1318,9 +1273,7 @@ SCOREP_LIBWRAP_FUNC_NAME( ftrylockfile )( FILE* filehandle )
     SCOREP_IN_MEASUREMENT_DECREMENT();
     return ret;
 }
-#endif
 
-#if HAVE( POSIX_IO_SYMBOL_FUNLOCKFILE )
 void
 SCOREP_LIBWRAP_FUNC_NAME( funlockfile )( FILE* filehandle )
 {
@@ -1352,9 +1305,7 @@ SCOREP_LIBWRAP_FUNC_NAME( funlockfile )( FILE* filehandle )
     }
     SCOREP_IN_MEASUREMENT_DECREMENT();
 }
-#endif
 
-#if HAVE( POSIX_IO_SYMBOL_FWRITE )
 size_t
 SCOREP_LIBWRAP_FUNC_NAME( fwrite )( const void* ptr, size_t size, size_t nmemb, FILE* stream )
 {
@@ -1401,10 +1352,8 @@ SCOREP_LIBWRAP_FUNC_NAME( fwrite )( const void* ptr, size_t size, size_t nmemb, 
     SCOREP_IN_MEASUREMENT_DECREMENT();
     return ret;
 }
-#endif
 
 /* getc() might be implemented as a macro */
-#if HAVE( POSIX_IO_SYMBOL_GETC )  && !defined getc
 int
 SCOREP_LIBWRAP_FUNC_NAME( getc )( FILE* stream )
 {
@@ -1451,9 +1400,7 @@ SCOREP_LIBWRAP_FUNC_NAME( getc )( FILE* stream )
     SCOREP_IN_MEASUREMENT_DECREMENT();
     return ret;
 }
-#endif
 
-#if HAVE( POSIX_IO_SYMBOL_GETCHAR )
 int
 SCOREP_LIBWRAP_FUNC_NAME( getchar )( void )
 {
@@ -1500,9 +1447,7 @@ SCOREP_LIBWRAP_FUNC_NAME( getchar )( void )
     SCOREP_IN_MEASUREMENT_DECREMENT();
     return ret;
 }
-#endif
 
-#if HAVE( POSIX_IO_SYMBOL_GETS )
 char*
 SCOREP_LIBWRAP_FUNC_NAME( gets )( char* s )
 {
@@ -1549,9 +1494,7 @@ SCOREP_LIBWRAP_FUNC_NAME( gets )( char* s )
     SCOREP_IN_MEASUREMENT_DECREMENT();
     return ret;
 }
-#endif
 
-#if HAVE( POSIX_IO_SYMBOL_PRINTF ) && HAVE( POSIX_IO_SYMBOL_VPRINTF )
 int
 SCOREP_LIBWRAP_FUNC_NAME( printf )( const char* format, ... )
 {
@@ -1576,8 +1519,7 @@ SCOREP_LIBWRAP_FUNC_NAME( printf )( const char* format, ... )
         va_list args;
         va_start( args, format );
         SCOREP_ENTER_WRAPPED_REGION();
-        ret = SCOREP_LIBWRAP_FUNC_CALL( vprintf,
-                                        ( format, args ) );
+        ret = vprintf( format, args );
         SCOREP_EXIT_WRAPPED_REGION();
         va_end( args );
 
@@ -1597,16 +1539,13 @@ SCOREP_LIBWRAP_FUNC_NAME( printf )( const char* format, ... )
     {
         va_list args;
         va_start( args, format );
-        ret = SCOREP_LIBWRAP_FUNC_CALL( vprintf,
-                                        ( format, args ) );
+        ret = vprintf( format, args );
         va_end( args );
     }
     SCOREP_IN_MEASUREMENT_DECREMENT();
     return ret;
 }
-#endif
 
-#if HAVE( POSIX_IO_SYMBOL_PUTCHAR )
 int
 SCOREP_LIBWRAP_FUNC_NAME( putchar )( int c )
 {
@@ -1653,9 +1592,7 @@ SCOREP_LIBWRAP_FUNC_NAME( putchar )( int c )
     SCOREP_IN_MEASUREMENT_DECREMENT();
     return ret;
 }
-#endif
 
-#if HAVE( POSIX_IO_SYMBOL_PUTS )
 int
 SCOREP_LIBWRAP_FUNC_NAME( puts )( const char* s )
 {
@@ -1703,9 +1640,7 @@ SCOREP_LIBWRAP_FUNC_NAME( puts )( const char* s )
     SCOREP_IN_MEASUREMENT_DECREMENT();
     return ret;
 }
-#endif
 
-#if HAVE( POSIX_IO_SYMBOL_REMOVE )
 int
 SCOREP_LIBWRAP_FUNC_NAME( remove )( const char* pathname )
 {
@@ -1737,9 +1672,7 @@ SCOREP_LIBWRAP_FUNC_NAME( remove )( const char* pathname )
     SCOREP_IN_MEASUREMENT_DECREMENT();
     return ret;
 }
-#endif
 
-#if HAVE( POSIX_IO_SYMBOL_REWIND )
 void
 SCOREP_LIBWRAP_FUNC_NAME( rewind )( FILE* stream )
 {
@@ -1775,9 +1708,7 @@ SCOREP_LIBWRAP_FUNC_NAME( rewind )( FILE* stream )
     }
     SCOREP_IN_MEASUREMENT_DECREMENT();
 }
-#endif
 
-#if HAVE( POSIX_IO_SYMBOL_SCANF ) && HAVE( POSIX_IO_SYMBOL_VSCANF )
 int
 SCOREP_LIBWRAP_FUNC_NAME( scanf )( const char* format, ... )
 {
@@ -1804,8 +1735,7 @@ SCOREP_LIBWRAP_FUNC_NAME( scanf )( const char* format, ... )
 
         va_list args;
         va_start( args, format );
-        ret = SCOREP_LIBWRAP_FUNC_CALL( vscanf,
-                                        ( format, args ) );
+        ret = vscanf( format, args );
         va_end( args );
 
         SCOREP_EXIT_WRAPPED_REGION();
@@ -1826,16 +1756,13 @@ SCOREP_LIBWRAP_FUNC_NAME( scanf )( const char* format, ... )
     {
         va_list args;
         va_start( args, format );
-        ret = SCOREP_LIBWRAP_FUNC_CALL( vscanf,
-                                        ( format, args ) );
+        ret = vscanf( format, args );
         va_end( args );
     }
     SCOREP_IN_MEASUREMENT_DECREMENT();
     return ret;
 }
-#endif
 
-#if HAVE( POSIX_IO_SYMBOL_UNGETC )
 int
 SCOREP_LIBWRAP_FUNC_NAME( ungetc )( int c, FILE* stream )
 {
@@ -1865,9 +1792,7 @@ SCOREP_LIBWRAP_FUNC_NAME( ungetc )( int c, FILE* stream )
     SCOREP_IN_MEASUREMENT_DECREMENT();
     return ret;
 }
-#endif
 
-#if HAVE( POSIX_IO_SYMBOL_VFPRINTF )
 int
 SCOREP_LIBWRAP_FUNC_NAME( vfprintf )( FILE* stream, const char* format, va_list ap )
 {
@@ -1915,9 +1840,7 @@ SCOREP_LIBWRAP_FUNC_NAME( vfprintf )( FILE* stream, const char* format, va_list 
     SCOREP_IN_MEASUREMENT_DECREMENT();
     return ret;
 }
-#endif
 
-#if HAVE( POSIX_IO_SYMBOL_VFSCANF )
 int
 SCOREP_LIBWRAP_FUNC_NAME( vfscanf )( FILE* stream, const char* format, va_list ap )
 {
@@ -1965,9 +1888,7 @@ SCOREP_LIBWRAP_FUNC_NAME( vfscanf )( FILE* stream, const char* format, va_list a
     SCOREP_IN_MEASUREMENT_DECREMENT();
     return ret;
 }
-#endif
 
-#if HAVE( POSIX_IO_SYMBOL_VSCANF )
 int
 SCOREP_LIBWRAP_FUNC_NAME( vscanf )( const char* format, va_list ap )
 {
@@ -2015,9 +1936,7 @@ SCOREP_LIBWRAP_FUNC_NAME( vscanf )( const char* format, va_list ap )
     SCOREP_IN_MEASUREMENT_DECREMENT();
     return ret;
 }
-#endif
 
-#if HAVE( POSIX_IO_SYMBOL_VPRINTF )
 int
 SCOREP_LIBWRAP_FUNC_NAME( vprintf )( const char* format, va_list ap )
 {
@@ -2064,4 +1983,3 @@ SCOREP_LIBWRAP_FUNC_NAME( vprintf )( const char* format, va_list ap )
     SCOREP_IN_MEASUREMENT_DECREMENT();
     return ret;
 }
-#endif
