@@ -44,151 +44,6 @@ dnl            clCreateCommandQueue,
 dnl            clCreateSampler,
 dnl            clEnqueueTask
 
-AC_DEFUN([_SCOREP_OPENCL_1_0_ADD_SYMBOLS], [
-_SCOREP_OPENCL_ADD_SYMBOLS([1.0],
-          [[clGetPlatformIDs,
-            clGetPlatformInfo,
-            clGetDeviceIDs,
-            clGetDeviceInfo,
-            clCreateContext,
-            clCreateContextFromType,
-            clRetainContext,
-            clReleaseContext,
-            clGetContextInfo,
-            clRetainCommandQueue,
-            clReleaseCommandQueue,
-            clGetCommandQueueInfo,
-            clSetCommandQueueProperty,
-            clCreateBuffer,
-            clRetainMemObject,
-            clReleaseMemObject,
-            clGetSupportedImageFormats,
-            clGetMemObjectInfo,
-            clGetImageInfo,
-            clRetainSampler,
-            clReleaseSampler,
-            clGetSamplerInfo,
-            clCreateProgramWithSource,
-            clCreateProgramWithBinary,
-            clRetainProgram,
-            clReleaseProgram,
-            clBuildProgram,
-            clGetProgramInfo,
-            clGetProgramBuildInfo,
-            clCreateKernel,
-            clCreateKernelsInProgram,
-            clRetainKernel,
-            clReleaseKernel,
-            clSetKernelArg,
-            clGetKernelInfo,
-            clGetKernelWorkGroupInfo,
-            clWaitForEvents,
-            clGetEventInfo,
-            clRetainEvent,
-            clReleaseEvent,
-            clGetEventProfilingInfo,
-            clFlush,
-            clFinish,
-            clEnqueueReadBuffer,
-            clEnqueueWriteBuffer,
-            clEnqueueCopyBuffer,
-            clEnqueueReadImage,
-            clEnqueueWriteImage,
-            clEnqueueCopyImage,
-            clEnqueueCopyImageToBuffer,
-            clEnqueueCopyBufferToImage,
-            clEnqueueMapBuffer,
-            clEnqueueMapImage,
-            clEnqueueUnmapMemObject,
-            clEnqueueNDRangeKernel,
-            clEnqueueNativeKernel,
-            clCreateImage2D,
-            clCreateImage3D,
-            clEnqueueMarker,
-            clEnqueueWaitForEvents,
-            clEnqueueBarrier,
-            clUnloadCompiler,
-            clGetExtensionFunctionAddress,
-            clCreateCommandQueue,
-            clCreateSampler,
-            clEnqueueTask]])
-])
-
-dnl ----------------------------------------------------------------------------
-
-AC_DEFUN([_SCOREP_OPENCL_1_1_ADD_SYMBOLS], [
-_SCOREP_OPENCL_ADD_SYMBOLS([1.1],
-          [[clCreateSubBuffer,
-            clSetMemObjectDestructorCallback,
-            clCreateUserEvent,
-            clSetUserEventStatus,
-            clSetEventCallback,
-            clEnqueueReadBufferRect,
-            clEnqueueWriteBufferRect,
-            clEnqueueCopyBufferRect]])
-])
-
-dnl ----------------------------------------------------------------------------
-
-AC_DEFUN([_SCOREP_OPENCL_1_2_ADD_SYMBOLS], [
-_SCOREP_OPENCL_ADD_SYMBOLS([1.2],
-          [[clCreateSubDevices,
-            clRetainDevice,
-            clReleaseDevice,
-            clCreateImage,
-            clCreateProgramWithBuiltInKernels,
-            clCompileProgram,
-            clLinkProgram,
-            clUnloadPlatformCompiler,
-            clGetKernelArgInfo,
-            clEnqueueFillBuffer,
-            clEnqueueFillImage,
-            clEnqueueMigrateMemObjects,
-            clEnqueueMarkerWithWaitList,
-            clEnqueueBarrierWithWaitList,
-            clGetExtensionFunctionAddressForPlatform]])
-])
-
-dnl ----------------------------------------------------------------------------
-
-AC_DEFUN([_SCOREP_OPENCL_2_0_ADD_SYMBOLS], [
-_SCOREP_OPENCL_ADD_SYMBOLS([2.0],
-          [[clCreateCommandQueueWithProperties,
-            clCreatePipe,
-            clGetPipeInfo,
-            clSVMAlloc,
-            clSVMFree,
-            clCreateSamplerWithProperties,
-            clSetKernelArgSVMPointer,
-            clSetKernelExecInfo,
-            clEnqueueSVMFree,
-            clEnqueueSVMMemcpy,
-            clEnqueueSVMMemFill,
-            clEnqueueSVMMap,
-            clEnqueueSVMUnmap]])
-])
-
-dnl ----------------------------------------------------------------------------
-
-AC_DEFUN([_SCOREP_OPENCL_2_1_ADD_SYMBOLS], [
-_SCOREP_OPENCL_ADD_SYMBOLS([2.1],
-          [[clGetKernelSubGroupInfo,
-            clCreateProgramWithIL,
-            clGetHostTimer,
-            clGetDeviceAndHostTimer,
-            clEnqueueSVMMigrateMem,
-            clCloneKernel,
-            clSetDefaultDeviceCommandQueue]])
-])
-
-dnl ----------------------------------------------------------------------------
-
-AC_DEFUN([_SCOREP_OPENCL_2_2_ADD_SYMBOLS], [
-_SCOREP_OPENCL_ADD_SYMBOLS([2.2],
-          [[clSetProgramSpecializationConstant,
-            clSetProgramReleaseCallback]])
-])
-
 dnl ----------------------------------------------------------------------------
 
 AC_DEFUN([SCOREP_OPENCL], [
@@ -228,33 +83,27 @@ AC_DEFINE_UNQUOTED(
 AC_SCOREP_COND_HAVE([OPENCL_VERSION_1_0_SUPPORT],
                     [test ${scorep_opencl_target_version-0} -ge 100 &&
                      test "x${scorep_opencl_error}" = "xno" ],
-                    [Defined if OpenCL API version 1.0 is supported.],
-                    [_SCOREP_OPENCL_1_0_ADD_SYMBOLS])
+                    [Defined if OpenCL API version 1.0 is supported.])
 AC_SCOREP_COND_HAVE([OPENCL_VERSION_1_1_SUPPORT],
                     [test ${scorep_opencl_target_version-0} -ge 110 &&
                      test "x${scorep_opencl_error}" = "xno" ],
-                    [Defined if OpenCL API version 1.1 is supported.],
-                    [_SCOREP_OPENCL_1_1_ADD_SYMBOLS])
+                    [Defined if OpenCL API version 1.1 is supported.])
 AC_SCOREP_COND_HAVE([OPENCL_VERSION_1_2_SUPPORT],
                     [test ${scorep_opencl_target_version-0} -ge 120 &&
                      test "x${scorep_opencl_error}" = "xno" ],
-                    [Defined if OpenCL API version 1.2 is supported.],
-                    [_SCOREP_OPENCL_1_2_ADD_SYMBOLS])
+                    [Defined if OpenCL API version 1.2 is supported.])
 AC_SCOREP_COND_HAVE([OPENCL_VERSION_2_0_SUPPORT],
                     [test ${scorep_opencl_target_version-0} -ge 200 &&
                      test "x${scorep_opencl_error}" = "xno" ],
-                    [Defined if OpenCL API version 2.0 is supported.],
-                    [_SCOREP_OPENCL_2_0_ADD_SYMBOLS])
+                    [Defined if OpenCL API version 2.0 is supported.])
 AC_SCOREP_COND_HAVE([OPENCL_VERSION_2_1_SUPPORT],
                     [test ${scorep_opencl_target_version-0} -ge 210 &&
                      test "x${scorep_opencl_error}" = "xno" ],
-                    [Defined if OpenCL API version 2.1 is supported.],
-                    [_SCOREP_OPENCL_2_1_ADD_SYMBOLS])
+                    [Defined if OpenCL API version 2.1 is supported.])
 AC_SCOREP_COND_HAVE([OPENCL_VERSION_2_2_SUPPORT],
                     [test ${scorep_opencl_target_version-0} -ge 220 &&
                      test "x${scorep_opencl_error}" = "xno" ],
-                    [Defined if OpenCL API version 2.2 is supported.],
-                    [_SCOREP_OPENCL_2_2_ADD_SYMBOLS])
+                    [Defined if OpenCL API version 2.2 is supported.])
 AC_SCOREP_COND_HAVE([OPENCL_SUPPORT],
                     [test "x${scorep_opencl_error}" = "xno"],
                     [Defined if OpenCL is available.],

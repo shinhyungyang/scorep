@@ -1,4 +1,3 @@
-#if HAVE( OPENCL_1_1_SYMBOL_CLCREATESUBBUFFER )
 cl_mem
 SCOREP_LIBWRAP_FUNC_NAME( clCreateSubBuffer )( cl_mem                buffer,
                                                cl_mem_flags          flags,
@@ -18,11 +17,9 @@ SCOREP_LIBWRAP_FUNC_NAME( clCreateSubBuffer )( cl_mem                buffer,
 
     return ret;
 }
-#endif
 
 
 
-#if HAVE( OPENCL_1_1_SYMBOL_CLSETMEMOBJECTDESTRUCTORCALLBACK )
 cl_int
 SCOREP_LIBWRAP_FUNC_NAME( clSetMemObjectDestructorCallback )( cl_mem memObj,
                                                               void( CL_CALLBACK * pfnNotify )( cl_mem,
@@ -40,11 +37,9 @@ SCOREP_LIBWRAP_FUNC_NAME( clSetMemObjectDestructorCallback )( cl_mem memObj,
 
     return ret;
 }
-#endif
 
 
 
-#if HAVE( OPENCL_1_1_SYMBOL_CLCREATEUSEREVENT )
 cl_event
 SCOREP_LIBWRAP_FUNC_NAME( clCreateUserEvent )( cl_context context,
                                                cl_int*    errcodeRet )
@@ -79,11 +74,9 @@ SCOREP_LIBWRAP_FUNC_NAME( clSetUserEventStatus )( cl_event event,
 
     return ret;
 }
-#endif
 
 
 
-#if HAVE( OPENCL_1_1_SYMBOL_CLSETEVENTCALLBACK )
 cl_int
 SCOREP_LIBWRAP_FUNC_NAME( clSetEventCallback )( cl_event event,
                                                 cl_int   commandExecCallbackType,
@@ -104,11 +97,9 @@ SCOREP_LIBWRAP_FUNC_NAME( clSetEventCallback )( cl_event event,
 
     return ret;
 }
-#endif
 
 
 
-#if HAVE( OPENCL_1_1_SYMBOL_CLENQUEUEREADBUFFERRECT )
 cl_int
 SCOREP_LIBWRAP_FUNC_NAME( clEnqueueReadBufferRect )( cl_command_queue commandQueue,
                                                      cl_mem           buffer,
@@ -139,11 +130,9 @@ SCOREP_LIBWRAP_FUNC_NAME( clEnqueueReadBufferRect )( cl_command_queue commandQue
 
     return ret;
 }
-#endif
 
 
 
-#if HAVE( OPENCL_1_1_SYMBOL_CLENQUEUEWRITEBUFFERRECT )
 cl_int
 SCOREP_LIBWRAP_FUNC_NAME( clEnqueueWriteBufferRect )( cl_command_queue commandQueue,
                                                       cl_mem           buffer,
@@ -174,11 +163,9 @@ SCOREP_LIBWRAP_FUNC_NAME( clEnqueueWriteBufferRect )( cl_command_queue commandQu
 
     return ret;
 }
-#endif
 
 
 
-#if HAVE( OPENCL_1_1_SYMBOL_CLENQUEUECOPYBUFFERRECT )
 cl_int
 SCOREP_LIBWRAP_FUNC_NAME( clEnqueueCopyBufferRect )( cl_command_queue commandQueue,
                                                      cl_mem           srcBuffer,
@@ -208,4 +195,3 @@ SCOREP_LIBWRAP_FUNC_NAME( clEnqueueCopyBufferRect )( cl_command_queue commandQue
 
     return ret;
 }
-#endif
