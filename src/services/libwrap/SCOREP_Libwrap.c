@@ -47,10 +47,17 @@
 #include <stdbool.h>
 
 #include <gotcha/gotcha.h>
+#if !defined( GOTCHA_VERSION )
+// introduced in 1.0.7, we check only against 1.0.7, hence we can force values
+// which evaluate to false
+#define GOTCHA_VERSION 0
+#define GOTCHA_GET_VERSION( x, y, z ) 1
+#endif
 
 #if HAVE( LIBWRAP_PLUGIN_SUPPORT )
 #include <dlfcn.h>
 #endif
+#include <link.h>
 
 struct scorep_gotcha_handle
 {
@@ -83,6 +90,53 @@ static char** libwrap_path;
 extern const SCOREP_LibwrapAPI scorep_libwrap_plugin_api;
 
 #include "scorep_libwrap_confvars.inc.c"
+
+/* ****************************************************************** */
+/* Filtering                                                          */
+/* ****************************************************************** */
+
+/* Only "helper" libraries, where we do not expect to get events from anyway */
+const static char* filtered_libraries[] =
+{
+    "/libscorep_",
+    "/libotf2.",
+    "/libcube4w.",
+    "/libgotcha.",
+    "/libunwind.",
+    "/libhwloc.",
+    "/libpfm.",
+    "/libpapi.",
+    "/libsde.",
+
+    /*
+     * Interfers with the libOpenCL ICD dispatcher.
+     * Solved in 1.0.7
+     * https://github.com/LLNL/GOTCHA/issues/146
+     */
+/* *INDENT-OFF* */ /* GOTCHA_GET_VERSION( 1,0, 7 ), seriously? */
+#if GOTCHA_VERSION < GOTCHA_GET_VERSION( 1, 0, 7 )
+    "libOpenCL",
+#endif
+/* *INDENT-ON* */
+    NULL
+};
+
+static int
+libwrap_library_exclude_filter( struct link_map* target )
+{
+    const char** it = filtered_libraries;
+    while ( *it )
+    {
+        if ( strstr( target->l_name, *it ) != NULL )
+        {
+            // filter this library
+            return 0;
+        }
+        it++;
+    }
+
+    return 1;
+}
 
 /* ****************************************************************** */
 /* Management                                                         */
@@ -227,6 +281,8 @@ static SCOREP_ErrorCode
 libwrap_subsystem_initialize( void )
 {
     UTILS_DEBUG_ENTRY();
+
+    gotcha_set_library_filter_func( libwrap_library_exclude_filter );
 
     SCOREP_ErrorCode ret = SCOREP_SUCCESS;
 
