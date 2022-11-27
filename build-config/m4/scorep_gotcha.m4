@@ -107,6 +107,7 @@ AFS_SUMMARY([libgotcha found], [${scorep_gotcha_support}${scorep_gotcha_summary_
 m4_define([_LIBGOTCHA_LA], [
 AC_LANG_SOURCE([[
 #include <gotcha/gotcha.h>
+#include <link.h>
 static gotcha_wrappee_handle_t wrappee_puts_handle;
 static int puts_wrapper(const char* str) {
     typeof(&puts_wrapper) wrappee_puts = gotcha_get_wrappee(wrappee_puts_handle);
@@ -115,8 +116,13 @@ static int puts_wrapper(const char* str) {
 static const struct gotcha_binding_t wrap_actions[] = {
     { "puts", puts_wrapper, &wrappee_puts_handle },
 };
+static int exclude_filter(struct link_map* target)
+{
+    return 1;
+}
 char init_wrap ()
 {
+    gotcha_set_library_filter_func(exclude_filter);
     gotcha_wrap(wrap_actions, sizeof(wrap_actions)/sizeof(struct gotcha_binding_t), "my_tool_name");
 }
 ]])])dnl _LIBGOTCHA_LA
