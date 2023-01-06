@@ -1,5 +1,11 @@
 ------------------- Upcoming version 8.1 -----------------------------
 
+Bugfixes:
+
+- Score-P now gracefully handles undefined behavior exploited by the
+  application when using the Pthread API instead of aborting the
+  application.
+
 ------------------- Released version 8.0 -----------------------------
 
 Major features:
