@@ -27,13 +27,10 @@ libscorep_adapter_opencl_mgmt_la_SOURCES = \
     $(SRC_ROOT)src/adapters/opencl/SCOREP_Opencl_Init.h \
     $(SRC_ROOT)src/adapters/opencl/scorep_opencl_config.c \
     $(SRC_ROOT)src/adapters/opencl/scorep_opencl_config.h \
-    $(SRC_ROOT)src/adapters/opencl/scorep_opencl_regions.c \
-    $(SRC_ROOT)src/adapters/opencl/scorep_opencl_regions.h \
+    $(SRC_ROOT)src/adapters/opencl/scorep_opencl_libwrap.c \
     $(SRC_ROOT)src/adapters/opencl/scorep_opencl_libwrap.h \
     $(SRC_ROOT)src/adapters/opencl/scorep_opencl.c \
     $(SRC_ROOT)src/adapters/opencl/scorep_opencl.h \
-    $(SRC_ROOT)src/adapters/opencl/scorep_opencl_libwrap.h \
-    $(SRC_ROOT)src/adapters/opencl/scorep_opencl_function_pointers.h \
     $(SRC_ROOT)src/measurement/paradigm/opencl/scorep_opencl_unify.c
 
 libscorep_adapter_opencl_mgmt_la_CPPFLAGS = \
