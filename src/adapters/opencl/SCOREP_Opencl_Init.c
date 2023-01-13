@@ -35,8 +35,7 @@
 
 #include "scorep_opencl.h"
 #include "scorep_opencl_config.h"
-#include "scorep_opencl_regions.h"
-#include "scorep_opencl_function_pointers.h"
+#include "scorep_opencl_libwrap.h"
 
 #include "scorep_opencl_confvars.inc.c"
 
@@ -79,7 +78,7 @@ opencl_subsystem_init( void )
             "OpenCL",
             SCOREP_PARADIGM_FLAG_RMA_ONLY );
 
-        scorep_opencl_register_regions();
+        scorep_opencl_libwrap_init();
 
         scorep_opencl_set_features();
 
