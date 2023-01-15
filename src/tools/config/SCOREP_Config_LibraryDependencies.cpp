@@ -7,7 +7,7 @@
  * Copyright (c) 2009-2013,
  * Gesellschaft fuer numerische Simulation mbH Braunschweig, Germany
  *
- * Copyright (c) 2009-2013, 2016-2017,
+ * Copyright (c) 2009-2013, 2016-2017, 2024,
  * Technische Universitaet Dresden, Germany
  *
  * Copyright (c) 2009-2013,
@@ -124,7 +124,7 @@ SCOREP_Config_LibraryDependencies::getLibraries( const deque<string>& inputLibs,
         }
     }
 
-    libs = remove_double_entries( libs );
+    libs = remove_double_entries_keep_last( libs );
 
     if ( !honorLibs )
     {
@@ -156,7 +156,7 @@ SCOREP_Config_LibraryDependencies::getLDFlags( const deque<string>& libs,
                       obj.m_ldflags.begin(),
                       obj.m_ldflags.end() );
     }
-    return remove_double_entries( flags );
+    return remove_double_entries_keep_first( flags );
 }
 
 deque<string>
@@ -194,7 +194,7 @@ SCOREP_Config_LibraryDependencies::getRpathFlags( const deque<string>& libs,
             }
         }
     }
-    return remove_double_entries( flags );
+    return remove_double_entries_keep_first( flags );
 }
 
 deque<string>
@@ -221,7 +221,7 @@ SCOREP_Config_LibraryDependencies::get_dependencies( const deque<string>& libs,
                      obj.m_dependency_las.begin(),
                      obj.m_dependency_las.end() );
     }
-    deps = remove_double_entries( deps );
+    deps = remove_double_entries_keep_last( deps );
 
     if ( !honorLibs )
     {

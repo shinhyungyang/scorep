@@ -1035,7 +1035,7 @@ print_adapter_init_source( void )
         init_structs.push_front( "SCOREP_Subsystem_TaskStack" );
         init_structs.push_front( "SCOREP_Subsystem_Substrates" );
 
-        init_structs = remove_double_entries( init_structs );
+        init_structs = remove_double_entries_keep_first( init_structs );
 
         std::cout << deque_to_string( init_structs,
                                       "extern const struct SCOREP_Subsystem ",

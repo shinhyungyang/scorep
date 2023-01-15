@@ -7,7 +7,7 @@
  * Copyright (c) 2009-2013,
  * Gesellschaft fuer numerische Simulation mbH Braunschweig, Germany
  *
- * Copyright (c) 2009-2017,
+ * Copyright (c) 2009-2017, 2024,
  * Technische Universitaet Dresden, Germany
  *
  * Copyright (c) 2009-2013,
@@ -320,13 +320,22 @@ string_to_deque( const std::string& input,
                  const std::string& delimiter );
 
 /**
- * Removes dublicate entries from a deque container of strings. It keeps only the
- * last occurence of each entry. This ensures that the dependencies are maintained.
- * @param input  The list of strings which where double entries are removed.
- * @return the list of strings where all but the last occurence are removed.
+ * Removes duplicate entries from a container of strings. It keeps only the
+ * first occurrence of duplicate entries.
+ * @param input  The container of strings that might contain duplicates.
+ * @return The container of strings with all but the first duplicates removed.
  */
 std::deque<std::string>
-remove_double_entries( const std::deque<std::string>& input );
+remove_double_entries_keep_first( const std::deque<std::string>& input );
+
+/**
+ * Removes duplicate entries from a container of strings. It keeps only the
+ * last occurrence of duplicate entries.
+ * @param input  The container of strings that might contain duplicates.
+ * @return The container of strings with all but the last duplicates removed.
+ */
+std::deque<std::string>
+remove_double_entries_keep_last( const std::deque<std::string>& input );
 
 std::string
 wrap_lines( const std::string& message,
