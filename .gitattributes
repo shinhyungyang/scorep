@@ -188,6 +188,11 @@
 # imported form ORNL
 /test/instrumenter_checks/shmem_omp/src/heat/cc/heat.c -hook-beautifier
 /test/instrumenter_checks/shmem/src/heat/cc/heat.c -hook-beautifier
+# Template files for library wrapper
+/src/tools/libwrap_init/libwrap.c -hook-config
+/src/tools/libwrap_init/main.c -hook-config
+/src/tools/libwrap_init/main_mpi.c -hook-config
+/src/tools/libwrap_init/main_shmem.c -hook-config
 # test files
 /test/tools/libwrap_init/target-lib-c/foo.c -hook-beautifier -hook-config
 /test/tools/libwrap_init/target-lib-c/foo.h -hook-beautifier

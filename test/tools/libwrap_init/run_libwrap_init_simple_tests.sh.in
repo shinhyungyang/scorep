@@ -3,7 +3,7 @@
 ##
 ## This file is part of the Score-P software (http://www.score-p.org)
 ##
-## Copyright (c) 2017,
+## Copyright (c) 2017, 2025,
 ## Technische Universitaet Dresden, Germany
 ##
 ## Copyright (c) 2024,
@@ -297,15 +297,12 @@ if [ "$mpi_support" = true ]; then
 
     insert_libwrap_h="#include <foo.h>\n"
     endif_line="#endif \/\* LIBWRAP_H \*\/"
-    include_libwrap_line="#include \\\"libwrap.h\\\""
-    insert_main_c_1="#include <mpi.h>"
-    insert_main_c_2="    int foo = 123;\n    MPI_Init(\&argc, \&argv);\n    foo_mpi_broadcast_test(\&foo, 0);\n    MPI_Finalize();\n"
-    return_line="    return 0;"
-    test_expect_success_all "mpi:   configure wrapper"                                                 \
-        "cd wrapper-lib-mpi"                                                                           \
-        "test_sed_i \"s/$endif_line/$insert_libwrap_h\n$endif_line/g\"                      libwrap.h" \
-        "test_sed_i \"s/$include_libwrap_line/$include_libwrap_line\n\n$insert_main_c_1/g\" main.c   " \
-        "test_sed_i \"s/$return_line/$insert_main_c_2\n$return_line/g\"                     main.c   "
+    insert_main_c="    int foo = 123;\n    foo_mpi_broadcast_test(\&foo, 0);\n"
+    finalize_line="    MPI_Finalize();"
+    test_expect_success_all "mpi:   configure wrapper"                                 \
+        "cd wrapper-lib-mpi"                                                           \
+        "test_sed_i \"s/$endif_line/$insert_libwrap_h\n$endif_line/g\"      libwrap.h" \
+        "test_sed_i \"s/$finalize_line/$insert_main_c\n$finalize_line/g\"   main.c"
 
     test_expect_success_all "mpi:   build wrapper"                     \
         "cd wrapper-lib-mpi"                                           \
@@ -351,15 +348,12 @@ if [ "$shmem_support" = true ]; then
 
     insert_libwrap_h="#include <foo.h>\n"
     endif_line="#endif \/\* LIBWRAP_H \*\/"
-    include_libwrap_line="#include \\\"libwrap.h\\\""
-    insert_main_c_1="#include <shmem.h>"
-    insert_main_c_2="    start_pes( 0 );\n    foo_shmem_test();\n"
-    return_line="    return 0;"
-    test_expect_success_all "shmem: configure wrapper"                                                 \
-        "cd wrapper-lib-shmem"                                                                         \
-        "test_sed_i \"s/$endif_line/$insert_libwrap_h\n$endif_line/g\"                      libwrap.h" \
-        "test_sed_i \"s/$include_libwrap_line/$include_libwrap_line\n\n$insert_main_c_1/g\" main.c   " \
-        "test_sed_i \"s/$return_line/$insert_main_c_2\n$return_line/g\"                     main.c   "
+    insert_main_c="    foo_shmem_test();\n"
+    finalize_line="    shmem_finalize();"
+    test_expect_success_all "shmem: configure wrapper"                                 \
+        "cd wrapper-lib-shmem"                                                         \
+        "test_sed_i \"s/$endif_line/$insert_libwrap_h\n$endif_line/g\"      libwrap.h" \
+        "test_sed_i \"s/$finalize_line/$insert_main_c_2\n$finalize_line/g\" main.c"
 
     test_expect_success_all "shmem: build shmem-lib wrapper"   \
         "cd wrapper-lib-shmem"                                 \
