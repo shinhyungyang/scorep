@@ -73,12 +73,11 @@ if [ ! -d $DATADIR ]; then error_and_exit "\$DATADIR is undefined, but should no
 
 libwrap_h=$DATADIR/libwrap/libwrap.h
 libwrap_c=$DATADIR/libwrap/libwrap.c
-main_c=$DATADIR/libwrap/main.c
 makefile_template=$DATADIR/libwrap/Makefile.template
 readme=$DATADIR/libwrap/README.md
 wrap_filter=$DATADIR/libwrap/wrap.filter
-if  [ ! -f $libwrap_h ] || [ ! -f $libwrap_c ] || [ ! -f $main_c ] || [ ! -f $makefile_template ] || [ ! -f $readme ] || [ ! -f $wrap_filter ]; then
-    error_and_exit "File $libwrap_h, $libwrap_c, $main_c, $makefile_template or $readme could not be found, but are necessary to proceed."
+if  [ ! -f $libwrap_h ] || [ ! -f $libwrap_c ] || [ ! -f $makefile_template ] || [ ! -f $readme ] || [ ! -f $wrap_filter ]; then
+    error_and_exit "File $libwrap_h, $libwrap_c, $makefile_template or $readme could not be found in the installation of Score-P, but are necessary to proceed."
 fi
 
 @HAVE_MPI_SUPPORT_FALSE@mpi_support=false
@@ -281,19 +280,25 @@ esac
 
 # determine $lw_cc and $lw_libtool from $lw_backend
 if [ $lw_backend = vanilla ]; then
+    main_c=$DATADIR/libwrap/main.c
     lw_compiler_prefix=
     lw_srp=
     lw_srp_padding=''
 elif [ $lw_backend = mpi ]; then
     if [ $mpi_support != true ]; then error_and_exit "MPI is not supported."; fi
+    main_c=$DATADIR/libwrap/main_mpi.c
     lw_compiler_prefix=mpi
     lw_srp=MPI
     lw_srp_padding='   '
 else # [ $lw_backend = shmem ]; then
     if [ $shmem_support != true ]; then error_and_exit "SHMEM is not supported."; fi
+    main_c=$DATADIR/libwrap/main_shmem.c
     lw_compiler_prefix=shmem
     lw_srp=SHMEM
     lw_srp_padding='     '
+fi
+if  [ ! -f $main_c ]; then
+    error_and_exit "File $main_c could not be found in the installation of Score-P, but are necessary to proceed."
 fi
 
 lw_cc=$($scorep_config --${lw_compiler_prefix}${lw_config_compiler_suffix})
@@ -315,7 +320,7 @@ fi
 # ### copy all files (and edit makefile) into the working directory ###
 libwrap_h_target=$lw_workspace_directory/${libwrap_h##*/}
 libwrap_c_target=$lw_workspace_directory/$(basename ${libwrap_c##*/} .c).$lw_srcext
-main_target=$lw_workspace_directory/$(basename ${main_c##*/} .c).$lw_srcext
+main_target=$lw_workspace_directory/main.$lw_srcext
 wrap_filter_target=$lw_workspace_directory/${lw_name}.filter
 makefile=$lw_workspace_directory/Makefile
 readme_target=$lw_workspace_directory/${readme##*/}

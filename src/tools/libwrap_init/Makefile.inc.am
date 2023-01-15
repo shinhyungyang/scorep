@@ -3,7 +3,7 @@
 ##
 ## This file is part of the Score-P software (http://www.score-p.org)
 ##
-## Copyright (c) 2017,
+## Copyright (c) 2017, 2025,
 ## Technische Universitaet Dresden, Germany
 ##
 ## This software may be modified and distributed under the terms of
@@ -19,6 +19,8 @@ libwrap_pkgdatadir = $(pkgdatadir)/libwrap
 libwrap_pkgdata_DATA  = $(SRC_ROOT)src/tools/libwrap_init/libwrap.h
 libwrap_pkgdata_DATA += $(SRC_ROOT)src/tools/libwrap_init/libwrap.c
 libwrap_pkgdata_DATA += $(SRC_ROOT)src/tools/libwrap_init/main.c
+libwrap_pkgdata_DATA += $(SRC_ROOT)src/tools/libwrap_init/main_mpi.c
+libwrap_pkgdata_DATA += $(SRC_ROOT)src/tools/libwrap_init/main_shmem.c
 libwrap_pkgdata_DATA += $(SRC_ROOT)src/tools/libwrap_init/Makefile.template
 libwrap_pkgdata_DATA += $(SRC_ROOT)src/tools/libwrap_init/README.md
 libwrap_pkgdata_DATA += $(SRC_ROOT)src/tools/libwrap_init/wrap.filter
@@ -28,6 +30,8 @@ endif HAVE_LIBRARY_WRAPPING_GENERATOR
 EXTRA_DIST += $(SRC_ROOT)src/tools/libwrap_init/libwrap.h
 EXTRA_DIST += $(SRC_ROOT)src/tools/libwrap_init/libwrap.c
 EXTRA_DIST += $(SRC_ROOT)src/tools/libwrap_init/main.c
+EXTRA_DIST += $(SRC_ROOT)src/tools/libwrap_init/main_mpi.c
+EXTRA_DIST += $(SRC_ROOT)src/tools/libwrap_init/main_shmem.c
 EXTRA_DIST += $(SRC_ROOT)src/tools/libwrap_init/Makefile.template
 EXTRA_DIST += $(SRC_ROOT)src/tools/libwrap_init/README.md
 EXTRA_DIST += $(SRC_ROOT)src/tools/libwrap_init/wrap.filter
