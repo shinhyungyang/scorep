@@ -4,6 +4,7 @@
 # LW_PREFIX
 # LW_BACKEND
 # LW_SRP
+# LW_SRP_PADDING
 # LW_BACKEND_SUFFIX
 # CPPFLAGS
 # LDFLAGS
@@ -94,7 +95,7 @@ lw__v_P_1 = :
 
 LW_V_GEN = $(lw__v_GEN_$(V))
 lw__v_GEN_1 =
-lw__v_GEN_ = @$(lw__tty_colors); echo "  GEN      $${mgn}$@$$std";
+lw__v_GEN_ = @$(lw__tty_colors); echo "  GEN"$(LW_SRP_PADDING)"      $${mgn}$@$$std";
 
 LW_V_libtool = $(lw__v_libtool_$(V))
 lw__v_libtool_ = --silent
@@ -106,7 +107,7 @@ lw__v_devnull_1 =
 
 LW_V_SCOREP = $(lw__v_SCOREP_$(V))
 lw__v_SCOREP_1 =
-lw__v_SCOREP_ = @$(lw__tty_colors); echo "  SCOREP   $${grn}$@$$std";
+lw__v_SCOREP_ = @$(lw__tty_colors); echo "  SCOREP"$(LW_SRP_PADDING)"   $${grn}$@$$std";
 
 LW_V_scorep = $(lw__v_scorep_$(V))
 lw__v_scorep_1 = --verbose --keep-files

@@ -3,7 +3,7 @@
 ##
 ## This file is part of the Score-P software (http://www.score-p.org)
 ##
-## Copyright (c) 2017,
+## Copyright (c) 2017, 2025,
 ## Technische Universitaet Dresden, Germany
 ##
 ## This software may be modified and distributed under the terms of
@@ -283,14 +283,17 @@ esac
 if [ $lw_backend = vanilla ]; then
     lw_compiler_prefix=
     lw_srp=
+    lw_srp_padding=''
 elif [ $lw_backend = mpi ]; then
     if [ $mpi_support != true ]; then error_and_exit "MPI is not supported."; fi
     lw_compiler_prefix=mpi
     lw_srp=MPI
+    lw_srp_padding='   '
 else # [ $lw_backend = shmem ]; then
     if [ $shmem_support != true ]; then error_and_exit "SHMEM is not supported."; fi
     lw_compiler_prefix=shmem
     lw_srp=SHMEM
+    lw_srp_padding='     '
 fi
 
 lw_cc=$($scorep_config --${lw_compiler_prefix}${lw_config_compiler_suffix})
@@ -450,6 +453,7 @@ fi
     echo "LW_BACKEND              = $lw_compiler_prefix" # don't export "vanilla". Export an empty string, instead.
     echo "LW_BACKEND_SUFFIX       = $lw_backend_suffix"
     echo "LW_SRP                  = $lw_srp"
+    echo "LW_SRP_PADDING          = '$lw_srp_padding'"
     echo "CPPFLAGS                = $lw_cppflags"
     echo "LDFLAGS                 = $lw_ldflags"
     echo "LIBS                    = $lw_libs"
