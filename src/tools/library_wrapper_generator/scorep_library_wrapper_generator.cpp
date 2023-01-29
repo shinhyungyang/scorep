@@ -492,7 +492,7 @@ SCOREP_Libwrap_Generator::write_wrapper_code( const macro_information& data,
 
     if ( m_config.language == "c" && data.hasreturn )
     {
-        out << "    " << data.returntype << " scorep_libwrap_var_ret;\n";
+        out << "    " << data.returntype << " return_value;\n";
     }
     if ( data.va_list_symbol.size() )
     {
@@ -537,7 +537,7 @@ SCOREP_Libwrap_Generator::write_wrapper_code( const macro_information& data,
     }
     if ( data.hasreturn )
     {
-        out << "scorep_libwrap_var_ret = ";
+        out << "return_value = ";
     }
     if ( !data.va_list_symbol.size() || m_all_wrapped_symbols.count( call_symbol ) != 0 )
     {
@@ -561,7 +561,7 @@ SCOREP_Libwrap_Generator::write_wrapper_code( const macro_information& data,
 
     if ( data.hasreturn )
     {
-        out << "    return scorep_libwrap_var_ret;\n";
+        out << "    return return_value;\n";
     }
     out << "}\n" << endl;
 }
@@ -592,7 +592,7 @@ SCOREP_Libwrap_Generator::write_internal_wrapper_code( const macro_information& 
 
     if ( data.hasreturn )
     {
-        out << data.returntype << " scorep_libwrap_var_ret = ";
+        out << data.returntype << " return_value = ";
     }
 
     out << "SCOREP_LIBWRAP_ORIGINAL( " << data.symbolname << " )( " << argnames_iterate( data ) << " );\n"
@@ -604,7 +604,7 @@ SCOREP_Libwrap_Generator::write_internal_wrapper_code( const macro_information& 
 
     if ( data.hasreturn )
     {
-        out << "    return scorep_libwrap_var_ret;\n";
+        out << "    return return_value;\n";
     }
     out << "}\n" << endl;
 }
