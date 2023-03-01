@@ -7,7 +7,9 @@
 #     Beautify all modified and added source files in your working copy.
 #     Without beautification, a commit may be rejected. Currently, the
 #     beautification is performed by "uncrustify" using the configuration
-#     file "common/beautifier/beautify.cfg".
+#     file "common/beautifier/beautify.cfg" and, for Fortran 90 upwards,
+#     "fprettify" using the configuration file
+#     "common/beautifier/beautify_f.cfg".
 #
 #
 # USAGE
@@ -71,6 +73,7 @@ done
 
 # Setup and use common beautification code
 : ${BEAUTIFY_CONFIG:=$BEAUTIFY_ROOT/beautify.cfg}
+: ${BEAUTIFY_F_CONFIG:=$BEAUTIFY_ROOT/beautify_f.cfg}
 if [ ! -f $BEAUTIFY_ROOT/beautify-common ]
 then
     echo "  ERROR    Could not find $BEAUTIFY_ROOT/beautify-common"
