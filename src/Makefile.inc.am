@@ -55,6 +55,7 @@ libscorep_measurement_la_LIBADD =        \
     libscorep_measurement_core.la        \
     libscorep_measurement_libwrap.la     \
     libscorep_timer.la                   \
+    $(libscorep_timer_la_needs_LIBS)     \
     libscorep_metric.la                  \
     libscorep_profile.la                 \
     libscorep_tracing.la                 \
@@ -72,7 +73,6 @@ libscorep_measurement_la_LIBADD =        \
     $(libscorep_addr2line_la_needs_LIBS) \
     @SCOREP_PAPI_LIBS@                   \
     @SCOREP_DLFCN_LIBS@                  \
-    @SCOREP_TIMER_LIBS@                  \
     @OTF2_LIBS@                          \
     @CUBEW_LIBS@
 
@@ -117,7 +117,8 @@ libscorep_measurement_la_LDFLAGS = \
     $(SCOREP_LIBUNWIND_LDFLAGS)    \
     @SCOREP_PAPI_LDFLAGS@          \
     @CUBEW_LDFLAGS@                \
-    $(libscorep_addr2line_la_needs_LDFLAGS)
+    $(libscorep_addr2line_la_needs_LDFLAGS) \
+    $(libscorep_timer_la_needs_LDFLAGS)
 
 
 # In case of --with-foo=download, we need to build and install
