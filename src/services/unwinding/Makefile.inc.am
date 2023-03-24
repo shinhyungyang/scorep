@@ -6,7 +6,7 @@
 ## Copyright (c) 2015, 2017,
 ## Technische Universitaet Dresden, Germany
 ##
-## Copyright (c) 2021,
+## Copyright (c) 2021, 2023,
 ## Forschungszentrum Juelich GmbH, Germany
 ##
 ## This software may be modified and distributed under the terms of
@@ -44,12 +44,10 @@ libscorep_unwinding_la_LIBADD = \
 libscorep_unwinding_la_LDFLAGS = \
     $(SCOREP_LIBUNWIND_LDFLAG)
 
-libscorep_unwinding_la_CPPFLAGS += \
-    @SCOREP_LIBBFD_CPPFLAGS@
 libscorep_measurement_la_LIBADD += \
-    @SCOREP_LIBBFD_LIBS@
+    $(libscorep_addr2line_la_needs_LIBS)
 libscorep_measurement_la_LDFLAGS += \
-    @SCOREP_LIBBFD_LDFLAGS@
+    $(libscorep_addr2line_la_needs_LDFLAGS)
 
 FILES_THAT_INCLUDE_LIBUNWIND_H += \
     $(SRC_ROOT)src/services/unwinding/SCOREP_Unwinding.c \

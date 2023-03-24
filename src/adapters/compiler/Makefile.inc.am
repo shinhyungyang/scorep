@@ -60,7 +60,11 @@ libscorep_adapter_compiler_mgmt_la_CPPFLAGS += \
     -I$(INC_DIR_SERVICES)
 
 libscorep_adapter_compiler_mgmt_la_LIBADD += \
-    libscorep_addr2line.la
+    libscorep_addr2line.la \
+    $(libscorep_addr2line_la_needs_LIBS)
+
+libscorep_adapter_compiler_mgmt_la_LDFLAGS += \
+    $(libscorep_addr2line_la_needs_LDFLAGS)
 endif HAVE_SCOREP_COMPILER_INSTRUMENTATION_NEEDS_ADDR2LINE
 
 if HAVE_SCOREP_DEMANGLE
@@ -141,18 +145,22 @@ libscorep_adapter_compiler_event_la_CPPFLAGS += \
     -I$(INC_DIR_SERVICES)                       \
     -I$(INC_DIR_COMMON_HASH)
 
+libscorep_adapter_compiler_event_la_LDFLAGS += \
+    $(libscorep_addr2line_la_needs_LDFLAGS)
+
 libscorep_adapter_compiler_event_la_LIBADD += \
-    libscorep_addr2line.la
+    libscorep_addr2line.la \
+    $(libscorep_addr2line_la_needs_LIBS)
 else !HAVE_SCOREP_COMPILER_INSTRUMENTATION_NEEDS_ADDR2LINE
 if HAVE_SCOREP_DEMANGLE
 libscorep_adapter_compiler_event_la_CPPFLAGS += \
     -I$(INC_DIR_SERVICES)
 
 libscorep_adapter_compiler_event_la_LDFLAGS += \
-    @SCOREP_LIBBFD_LDFLAGS@
+    $(libscorep_addr2line_la_needs_LDFLAGS)
 
 libscorep_adapter_compiler_event_la_LIBADD += \
-    @SCOREP_LIBBFD_LIBS@
+    $(libscorep_addr2line_la_needs_LIBS)
 endif HAVE_SCOREP_DEMANGLE
 endif !HAVE_SCOREP_COMPILER_INSTRUMENTATION_NEEDS_ADDR2LINE
 

@@ -15,7 +15,7 @@
 ## Copyright (c) 2009-2013,
 ## University of Oregon, Eugene, USA
 ##
-## Copyright (c) 2009-2015, 2017, 2021-2022, 2024,
+## Copyright (c) 2009-2015, 2017, 2021-2024,
 ## Forschungszentrum Juelich GmbH, Germany
 ##
 ## Copyright (c) 2009-2014,
@@ -68,6 +68,8 @@ libscorep_measurement_la_LIBADD =        \
     libscorep_accelerator_management.la  \
     libutils.la                          \
     libjenkins_hash.la                   \
+    libscorep_addr2line.la               \
+    $(libscorep_addr2line_la_needs_LIBS) \
     @SCOREP_PAPI_LIBS@                   \
     @SCOREP_DLFCN_LIBS@                  \
     @SCOREP_TIMER_LIBS@                  \
@@ -114,7 +116,8 @@ libscorep_measurement_la_LDFLAGS = \
     @OTF2_LDFLAGS@                 \
     $(SCOREP_LIBUNWIND_LDFLAGS)    \
     @SCOREP_PAPI_LDFLAGS@          \
-    @CUBEW_LDFLAGS@
+    @CUBEW_LDFLAGS@                \
+    $(libscorep_addr2line_la_needs_LDFLAGS)
 
 
 # In case of --with-foo=download, we need to build and install
