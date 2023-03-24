@@ -75,11 +75,21 @@ libscorep_measurement_la_LIBADD =        \
     @SCOREP_DLFCN_LIBS@                  \
     @OTF2_LIBS@                          \
     @CUBEW_LIBS@
+libscorep_measurement_la_LDFLAGS = \
+    $(library_api_version_ldflags) \
+    @OTF2_LDFLAGS@                 \
+    @SCOREP_PAPI_LDFLAGS@          \
+    @CUBEW_LDFLAGS@                \
+    $(libscorep_addr2line_la_needs_LDFLAGS) \
+    $(libscorep_timer_la_needs_LDFLAGS)
 
 if HAVE_UNWINDING_SUPPORT
 
 libscorep_measurement_la_LIBADD += \
-    libscorep_unwinding.la
+    libscorep_unwinding.la \
+    $(libscorep_unwinding_la_needs_LIBS)
+libscorep_measurement_la_LDFLAGS += \
+    $(libscorep_unwinding_la_needs_LDFLAGS)
 
 else !HAVE_UNWINDING_SUPPORT
 
@@ -110,15 +120,6 @@ BUILT_SOURCES += @CUBEW_LIBS@
 	@$(am__cd) `dirname $@` && $(MAKE) $(AM_MAKEFLAGS) `basename $@`
 
 endif !HAVE_SCOREP_EXTERNAL_CUBEW
-
-libscorep_measurement_la_LDFLAGS = \
-    $(library_api_version_ldflags) \
-    @OTF2_LDFLAGS@                 \
-    $(SCOREP_LIBUNWIND_LDFLAGS)    \
-    @SCOREP_PAPI_LDFLAGS@          \
-    @CUBEW_LDFLAGS@                \
-    $(libscorep_addr2line_la_needs_LDFLAGS) \
-    $(libscorep_timer_la_needs_LDFLAGS)
 
 
 # In case of --with-foo=download, we need to build and install

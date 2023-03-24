@@ -39,14 +39,11 @@ libscorep_unwinding_la_CPPFLAGS = \
     -I$(INC_DIR_DEFINITIONS) \
     -I$(INC_DIR_SUBSTRATES) \
     $(SCOREP_LIBUNWIND_CPPFLAGS)
-libscorep_unwinding_la_LIBADD = \
-    $(SCOREP_LIBUNWIND_LIBS)
-libscorep_unwinding_la_LDFLAGS = \
-    $(SCOREP_LIBUNWIND_LDFLAG)
-
-libscorep_measurement_la_LIBADD += \
+libscorep_unwinding_la_needs_LIBS = \
+    $(SCOREP_LIBUNWIND_LIBS) \
     $(libscorep_addr2line_la_needs_LIBS)
-libscorep_measurement_la_LDFLAGS += \
+libscorep_unwinding_la_needs_LDFLAGS = \
+    $(SCOREP_LIBUNWIND_LDFLAGS) \
     $(libscorep_addr2line_la_needs_LDFLAGS)
 
 FILES_THAT_INCLUDE_LIBUNWIND_H += \
