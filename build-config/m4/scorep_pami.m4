@@ -3,7 +3,7 @@ dnl -*- mode: autoconf -*-
 dnl
 dnl This file is part of the Score-P software (http://www.score-p.org)
 dnl
-dnl Copyright (c) 2013, 2015,
+dnl Copyright (c) 2013, 2015, 2023,
 dnl Forschungszentrum Juelich GmbH, Germany
 dnl
 dnl This software may be modified and distributed under the terms of
@@ -55,7 +55,7 @@ dnl and http://www.redbooks.ibm.com/redbooks/pdfs/sg247948.pdf
                 AC_CHECK_LIB([${scorep_pami_lib}],
                     [PAMI_Client_create],
                     [scorep_pami_lib_found="yes"
-                     AC_SUBST([SCOREP_PAMI_LDFLAGS], ["${scorep_pami_ldflags} ${scorep_pami_ldflags_common}"])
+                     AC_SUBST([SCOREP_PAMI_LDFLAGS], ["${scorep_pami_ldflags} ${scorep_pami_ldflags:+-R${scorep_pami_ldflags#-L}} ${scorep_pami_ldflags_common} ${scorep_pami_ldflags_common:+-R${scorep_pami_ldflags_common#-L}}"])
                      AC_SUBST([SCOREP_PAMI_LIBS], ["-l${scorep_pami_lib} ${scorep_pami_additional_libs}"])
                      break
                     ],

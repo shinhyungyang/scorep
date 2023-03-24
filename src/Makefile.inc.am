@@ -62,6 +62,7 @@ libscorep_measurement_la_LIBADD =        \
     libscorep_substrates.la              \
     libscorep_definitions.la             \
     libscorep_platform.la                \
+    $(libscorep_platform_la_needs_LIBS)  \
     libscorep_bitstring.la               \
     libscorep_allocator.la               \
     libscorep_adapter_utils.la           \
@@ -81,7 +82,8 @@ libscorep_measurement_la_LDFLAGS = \
     @SCOREP_PAPI_LDFLAGS@          \
     @CUBEW_LDFLAGS@                \
     $(libscorep_addr2line_la_needs_LDFLAGS) \
-    $(libscorep_timer_la_needs_LDFLAGS)
+    $(libscorep_timer_la_needs_LDFLAGS) \
+    $(libscorep_platform_la_needs_LDFLAGS)
 
 if HAVE_UNWINDING_SUPPORT
 
