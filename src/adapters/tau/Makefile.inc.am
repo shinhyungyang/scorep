@@ -42,5 +42,3 @@ libscorep_adapter_tau_la_CPPFLAGS = \
     $(UTILS_CPPFLAGS)             \
     -I$(INC_ROOT)src/measurement/include \
     -I$(INC_DIR_DEFINITIONS)
-
-#libscorep_adapter_tau_la_LIBADD   =
