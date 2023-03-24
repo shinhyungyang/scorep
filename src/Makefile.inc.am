@@ -57,6 +57,7 @@ libscorep_measurement_la_LIBADD =        \
     libscorep_timer.la                   \
     $(libscorep_timer_la_needs_LIBS)     \
     libscorep_metric.la                  \
+    $(libscorep_metric_la_needs_LIBS)    \
     libscorep_profile.la                 \
     libscorep_tracing.la                 \
     libscorep_substrates.la              \
@@ -72,14 +73,13 @@ libscorep_measurement_la_LIBADD =        \
     libjenkins_hash.la                   \
     libscorep_addr2line.la               \
     $(libscorep_addr2line_la_needs_LIBS) \
-    @SCOREP_PAPI_LIBS@                   \
     @SCOREP_DLFCN_LIBS@                  \
     @OTF2_LIBS@                          \
     @CUBEW_LIBS@
 libscorep_measurement_la_LDFLAGS = \
     $(library_api_version_ldflags) \
     @OTF2_LDFLAGS@                 \
-    @SCOREP_PAPI_LDFLAGS@          \
+    $(libscorep_metric_la_needs_LDFLAGS) \
     @CUBEW_LDFLAGS@                \
     $(libscorep_addr2line_la_needs_LDFLAGS) \
     $(libscorep_timer_la_needs_LDFLAGS) \
