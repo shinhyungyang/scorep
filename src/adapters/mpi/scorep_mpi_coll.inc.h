@@ -1,8 +1,18 @@
 /*
- * To be included from scorep_mpi_coll.h, which defines the following macros
+ * This file is part of the Score-P software (http://www.score-p.org)
  *
- * This file is included twice with differing defines to generate both the normal
- * and the large count interfaces.
+ * Copyright (c) 2023,
+ * Forschungszentrum Juelich GmbH, Germany
+ *
+ * This software may be modified and distributed under the terms of
+ * a BSD-style license. See the COPYING file in the package base
+ * directory for details.
+ *
+ */
+
+/*
+ * This file is included twice by scorep_mpi_coll.h with differing defines to
+ * generate the normal and the large count interfaces.
  */
 #if !defined( TYPE_SIZE_FUN ) || !defined( COUNT_T ) || !defined( COUNT_FUN )
 #error "This file should only be included by scorep_mpi_coll.h"
@@ -185,6 +195,55 @@ COUNT_FUN( scorep_mpi_coll_bytes_exscan )( COUNT_T      count,
                                            MPI_Comm     comm,
                                            uint64_t*    sendbytes,
                                            uint64_t*    recvbytes );
+
+
+/* -----------------------------------------------------------------------------
+ * All-to-all neighborhood
+ * -------------------------------------------------------------------------- */
+void
+COUNT_FUN( scorep_mpi_coll_bytes_neighbor_alltoall )( COUNT_T      sendcount,
+                                                      MPI_Datatype sendtype,
+                                                      COUNT_T      recvcount,
+                                                      MPI_Datatype recvtype,
+                                                      MPI_Comm     comm,
+                                                      uint64_t*    sendbytes,
+                                                      uint64_t*    recvbytes );
+
+void
+COUNT_FUN( scorep_mpi_coll_bytes_neighbor_alltoallv )( const COUNT_T* sendcounts,
+                                                       MPI_Datatype   sendtype,
+                                                       const COUNT_T* recvcounts,
+                                                       MPI_Datatype   recvtype,
+                                                       MPI_Comm       comm,
+                                                       uint64_t*      sendbytes,
+                                                       uint64_t*      recvbytes );
+
+void
+COUNT_FUN( scorep_mpi_coll_bytes_neighbor_alltoallw )( const COUNT_T*      sendcounts,
+                                                       const MPI_Datatype* sendtypes,
+                                                       const COUNT_T*      recvcounts,
+                                                       const MPI_Datatype* recvtypes,
+                                                       MPI_Comm            comm,
+                                                       uint64_t*           sendbytes,
+                                                       uint64_t*           recvbytes );
+
+void
+COUNT_FUN( scorep_mpi_coll_bytes_neighbor_allgather )( COUNT_T      sendcount,
+                                                       MPI_Datatype sendtype,
+                                                       COUNT_T      recvcount,
+                                                       MPI_Datatype recvtype,
+                                                       MPI_Comm     comm,
+                                                       uint64_t*    sendbytes,
+                                                       uint64_t*    recvbytes );
+
+void
+COUNT_FUN( scorep_mpi_coll_bytes_neighbor_allgatherv )( COUNT_T        sendcount,
+                                                        MPI_Datatype   sendtype,
+                                                        const COUNT_T* recvcounts,
+                                                        MPI_Datatype   recvtype,
+                                                        MPI_Comm       comm,
+                                                        uint64_t*      sendbytes,
+                                                        uint64_t*      recvbytes );
 
 #undef TYPE_SIZE_FUN
 #undef COUNT_T

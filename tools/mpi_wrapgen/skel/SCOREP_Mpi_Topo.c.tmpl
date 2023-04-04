@@ -13,7 +13,7 @@
  * Copyright (c) 2009-2013,
  * University of Oregon, Eugene, USA
  *
- * Copyright (c) 2009-2016, 2022,
+ * Copyright (c) 2009-2016, 2022-2023,
  * Forschungszentrum Juelich GmbH, Germany
  *
  * Copyright (c) 2009-2014,
@@ -59,6 +59,8 @@
 
 #include "SCOREP_Mpi.h"
 #include "scorep_mpi_communicator.h"
+#include "scorep_mpi_request_mgmt.h"
+#include "scorep_mpi_coll.h"
 #include <UTILS_Error.h>
 #include <SCOREP_RuntimeManagement.h>
 #include <SCOREP_InMeasurement.h>
@@ -309,8 +311,8 @@ MPI_Cart_sub( MPI_Comm comm, SCOREP_MPI_CONST_DECL int* remain_dims, MPI_Comm* n
 #pragma wrapgen single MPI_Dist_graph_create skel/SCOREP_Mpi_CommMgnt.w
 #pragma wrapgen single MPI_Dist_graph_create_adjacent skel/SCOREP_Mpi_CommMgnt.w
 
-#pragma wrapgen multiple restrict(gtopo+nMPI_Neighbor+!n_init) skel/SCOREP_Mpi_Std.w
-#pragma wrapgen multiple restrict(gtopo+nMPI_Ineighbor) skel/SCOREP_Mpi_Std.w
+#pragma wrapgen multiple restrict(gtopo+nMPI_Neighbor+!n_init) skel/SCOREP_Mpi_Coll.w
+#pragma wrapgen multiple restrict(gtopo+nMPI_Ineighbor) skel/SCOREP_Mpi_Icoll.w
 #pragma wrapgen multiple restrict(gtopo+nMPI_Neighbor+n_init) skel/SCOREP_Mpi_Std.w
 
 #pragma wrapgen multiple restrict(gtopo+!ncreate+!nsub+!nMPI_Neighbor+!nMPI_Ineighbor) skel/SCOREP_Mpi_Std.w

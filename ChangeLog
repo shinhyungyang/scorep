@@ -32,6 +32,7 @@ Features and improvements:
   tool features. When building Score-P with NVTX v2 or older,
   usage will require setting LD_PRELOAD. See OPEN_ISSUES for more
   information.
+- Added support for MPI neighborhood collectives.
 
 User tools and API improvements and changes:
 

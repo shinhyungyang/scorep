@@ -3275,6 +3275,8 @@
 
 <prototype name="MPI_Ineighbor_allgather" rtype="int" group="topo" >
     <attribute id="kind">COLL_ALL2ALL</attribute>
+    <attribute id="coll_bytes_fun">neighbor_allgather</attribute>
+    <attribute id="coll_bytes_args">sendcount, sendtype, recvcount, recvtype</attribute>
     <param access="i" type_modifier="SCOREP_MPI_CONST_DECL" type="void*" name="sendbuf" />
     <param access="i" type_modifier="" type="int" name="sendcount" />
     <param access="i" type_modifier="" type="MPI_Datatype" name="sendtype" />
@@ -3308,6 +3310,8 @@
 
 <prototype name="MPI_Ineighbor_allgatherv" rtype="int" group="topo" guard="topo" >
     <attribute id="kind">COLL_ALL2ALL</attribute>
+    <attribute id="coll_bytes_fun">neighbor_allgatherv</attribute>
+    <attribute id="coll_bytes_args">sendcount, sendtype, recvcounts, recvtype</attribute>
     <param access="i" type_modifier="SCOREP_MPI_CONST_DECL" type="void*" name="sendbuf" />
     <param access="i" type_modifier="" type="int" name="sendcount" />
     <param access="i" type_modifier="" type="MPI_Datatype" name="sendtype" />
@@ -3346,6 +3350,8 @@
 
 <prototype name="MPI_Ineighbor_alltoall" rtype="int" group="topo" guard="topo" >
     <attribute id="kind">COLL_ALL2ALL</attribute>
+    <attribute id="coll_bytes_fun">neighbor_alltoall</attribute>
+    <attribute id="coll_bytes_args">sendcount, sendtype, recvcount, recvtype</attribute>
     <param access="i" type_modifier="SCOREP_MPI_CONST_DECL" type="void*" name="sendbuf" />
     <param access="i" type_modifier="" type="int" name="sendcount" />
     <param access="i" type_modifier="" type="MPI_Datatype" name="sendtype" />
@@ -3387,6 +3393,8 @@
 
 <prototype name="MPI_Ineighbor_alltoallv" rtype="int" group="topo" guard="topo" >
     <attribute id="kind">COLL_ALL2ALL</attribute>
+    <attribute id="coll_bytes_fun">neighbor_alltoallv</attribute>
+    <attribute id="coll_bytes_args">sendcounts, sendtype, recvcounts, recvtype</attribute>
     <param access="i" type_modifier="SCOREP_MPI_CONST_DECL" type="void*" name="sendbuf" />
     <param access="i" type_modifier="SCOREP_MPI_CONST_DECL" type="int*" name="sendcounts" />
     <param access="i" type_modifier="SCOREP_MPI_CONST_DECL" type="int*" name="sdispls" />
@@ -3430,6 +3438,8 @@
 
 <prototype name="MPI_Ineighbor_alltoallw" rtype="int" group="topo" guard="topo" >
     <attribute id="kind">COLL_ALL2ALL</attribute>
+    <attribute id="coll_bytes_fun">neighbor_alltoallw</attribute>
+    <attribute id="coll_bytes_args">sendcounts, sendtypes, recvcounts, recvtypes</attribute>
     <param access="i" type_modifier="SCOREP_MPI_CONST_DECL" type="void*" name="sendbuf" />
     <param access="i" type_modifier="SCOREP_MPI_CONST_DECL" type="int" name="sendcounts" suffix="[]" />
     <param access="i" type_modifier="SCOREP_MPI_CONST_DECL" type="MPI_Aint" name="sdispls" suffix="[]" />
@@ -4104,6 +4114,8 @@
 
 <prototype name="MPI_Neighbor_allgather" rtype="int" group="topo" >
     <attribute id="kind">COLL_ALL2ALL</attribute>
+    <attribute id="coll_bytes_fun">neighbor_allgather</attribute>
+    <attribute id="coll_bytes_args">sendcount, sendtype, recvcount, recvtype</attribute>
     <param access="i" type_modifier="SCOREP_MPI_CONST_DECL" type="void*" name="sendbuf" />
     <param access="i" type_modifier="" type="int" name="sendcount" />
     <param access="i" type_modifier="" type="MPI_Datatype" name="sendtype" />
@@ -4158,6 +4170,8 @@
 
 <prototype name="MPI_Neighbor_allgatherv" rtype="int" group="topo" guard="topo" >
     <attribute id="kind">COLL_ALL2ALL</attribute>
+    <attribute id="coll_bytes_fun">neighbor_allgatherv</attribute>
+    <attribute id="coll_bytes_args">sendcount, sendtype, recvcounts, recvtype</attribute>
     <param access="i" type_modifier="SCOREP_MPI_CONST_DECL" type="void*" name="sendbuf" />
     <param access="i" type_modifier="" type="int" name="sendcount" />
     <param access="i" type_modifier="" type="MPI_Datatype" name="sendtype" />
@@ -4214,6 +4228,8 @@
 
 <prototype name="MPI_Neighbor_alltoall" rtype="int" group="topo" guard="topo" >
     <attribute id="kind">COLL_ALL2ALL</attribute>
+    <attribute id="coll_bytes_fun">neighbor_alltoall</attribute>
+    <attribute id="coll_bytes_args">sendcount, sendtype, recvcount, recvtype</attribute>
     <param access="i" type_modifier="SCOREP_MPI_CONST_DECL" type="void*" name="sendbuf" />
     <param access="i" type_modifier="" type="int" name="sendcount" />
     <param access="i" type_modifier="" type="MPI_Datatype" name="sendtype" />
@@ -4268,6 +4284,8 @@
 
 <prototype name="MPI_Neighbor_alltoallv" rtype="int" group="topo" guard="topo" >
     <attribute id="kind">COLL_ALL2ALL</attribute>
+    <attribute id="coll_bytes_fun">neighbor_alltoallv</attribute>
+    <attribute id="coll_bytes_args">sendcounts, sendtype, recvcounts, recvtype</attribute>
     <param access="i" type_modifier="SCOREP_MPI_CONST_DECL" type="void*" name="sendbuf" />
     <param access="i" type_modifier="SCOREP_MPI_CONST_DECL" type="int*" name="sendcounts" />
     <param access="i" type_modifier="SCOREP_MPI_CONST_DECL" type="int*" name="sdispls" />
@@ -4326,6 +4344,8 @@
 
 <prototype name="MPI_Neighbor_alltoallw" rtype="int" group="topo" guard="topo" >
     <attribute id="kind">COLL_ALL2ALL</attribute>
+    <attribute id="coll_bytes_fun">neighbor_alltoallw</attribute>
+    <attribute id="coll_bytes_args">sendcounts, sendtypes, recvcounts, recvtypes</attribute>
     <param access="i" type_modifier="SCOREP_MPI_CONST_DECL" type="void*" name="sendbuf" />
     <param access="i" type_modifier="SCOREP_MPI_CONST_DECL" type="int" name="sendcounts" suffix="[]" />
     <param access="i" type_modifier="SCOREP_MPI_CONST_DECL" type="MPI_Aint" name="sdispls" suffix="[]" />

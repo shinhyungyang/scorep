@@ -1,3 +1,19 @@
+/*
+ * This file is part of the Score-P software (http://www.score-p.org)
+ *
+ * Copyright (c) 2023,
+ * Forschungszentrum Juelich GmbH, Germany
+ *
+ * This software may be modified and distributed under the terms of
+ * a BSD-style license. See the COPYING file in the package base
+ * directory for details.
+ *
+ */
+
+/*
+ * This file is included twice by scorep_mpi_coll.c with differing defines to
+ * generate the normal and the large count byte calculations.
+ */
 #if !defined( TYPE_SIZE_FUN ) || !defined( COUNT_T ) || !defined( COUNT_FUN )
 #error "This file should only be included by scorep_mpi_coll.c"
 #endif
@@ -724,6 +740,218 @@ COUNT_FUN( scorep_mpi_coll_bytes_exscan )( COUNT_T      count,
                                              sendbytes,
                                              recvbytes );
 }
+
+
+/* -----------------------------------------------------------------------------
+ * All-to-all neighborhood
+ * -------------------------------------------------------------------------- */
+
+/**
+ * Iterate over all neighbors in a comm with cartesian topology and execute CODE
+ * for the non-null neighbors.
+ *
+ * comm : Name of an MPI_Comm with cartesian topology.
+ * index: Name of the index variable. Declared as int by the macro.
+ * CODE : Code to be executed for the neighbors that are not MPI_PROC_NULL.
+ *        Can use 'index'.
+ *
+ *
+ * Indexing of neighbors in a cartesian topology, See MPI Standard 4.0, Section 8.6:
+ *
+ * For a Cartesian topology, created with MPI_CART_CREATE, the sequence of neigh-
+ * bors in the send and receive buffers at each process is defined by order of the
+ * dimensions, first the neighbor in the negative direction and then in the positive
+ * direction with displacement 1. The numbers of sources and destinations in the
+ * communication routines are 2*ndims with ndims defined in MPI_CART_CREATE. If
+ * a neighbor does not exist, i.e., at the border of a Cartesian topology in the
+ * case of a nonperiodic virtual grid dimension (i.e., periods[. . .]==false),
+ * then this neighbor is defined to be MPI_PROC_NULL.
+ */
+#define CART_ITER_NON_NULL_NEIGHBORS( comm, index, CODE ) do { \
+        int ndims; \
+        int neighbor_ranks[ 2 ]; \
+        int index; \
+        PMPI_Cartdim_get( comm, &ndims ); \
+        for ( int dim = 0; dim < ndims; ++dim ) \
+        { \
+            PMPI_Cart_shift( comm, dim, 1, &neighbor_ranks[ 0 ], &neighbor_ranks[ 1 ] ); \
+            for ( int i = 0; i < 2; ++i ) \
+            { \
+                if ( neighbor_ranks[ i ] != MPI_PROC_NULL ) \
+                { \
+                    index = 2 * dim + i; \
+                    { CODE } \
+                } \
+            } \
+        } \
+} while ( 0 )
+
+void
+COUNT_FUN( scorep_mpi_coll_bytes_neighbor_alltoall )( COUNT_T      sendcount,
+                                                      MPI_Datatype sendtype,
+                                                      COUNT_T      recvcount,
+                                                      MPI_Datatype recvtype,
+                                                      MPI_Comm     comm,
+                                                      uint64_t*    sendbytes,
+                                                      uint64_t*    recvbytes )
+{
+    int num_sources, num_destinations;
+    if ( is_cart_topo( comm ) )
+    {
+        int nneighbors = 0;
+        CART_ITER_NON_NULL_NEIGHBORS( comm, index, ++nneighbors;
+                                      );
+        num_sources      = nneighbors;
+        num_destinations = nneighbors;
+    }
+    else
+    {
+        topo_num_neighbors( comm, &num_sources, &num_destinations );
+    }
+
+
+    COUNT_T sendsize, recvsize;
+    TYPE_SIZE_FUN( sendtype, &sendsize );
+    TYPE_SIZE_FUN( recvtype, &recvsize );
+    *sendbytes = num_destinations * sendcount * sendsize;
+    *recvbytes = num_sources * recvcount * recvsize;
+}
+
+void
+COUNT_FUN( scorep_mpi_coll_bytes_neighbor_alltoallv )( const COUNT_T* sendcounts,
+                                                       MPI_Datatype   sendtype,
+                                                       const COUNT_T* recvcounts,
+                                                       MPI_Datatype   recvtype,
+                                                       MPI_Comm       comm,
+                                                       uint64_t*      sendbytes,
+                                                       uint64_t*      recvbytes )
+{
+    *sendbytes = 0;
+    *recvbytes = 0;
+
+    COUNT_T sendsize, recvsize;
+    TYPE_SIZE_FUN( sendtype, &sendsize );
+    TYPE_SIZE_FUN( recvtype, &recvsize );
+
+    if ( is_cart_topo( comm ) )
+    {
+        CART_ITER_NON_NULL_NEIGHBORS( comm, index,
+                                      *sendbytes += sendcounts[ index ] * sendsize;
+                                      *recvbytes += recvcounts[ index ] * recvsize;
+                                      );
+    }
+    else
+    {
+        int indegree, outdegree;
+        topo_num_neighbors( comm, &indegree, &outdegree );
+
+        for ( int i = 0; i < outdegree; ++i )
+        {
+            *sendbytes += sendcounts[ i ] * sendsize;
+        }
+        for ( int i = 0; i < indegree; ++i )
+        {
+            *recvbytes += recvcounts[ i ] * recvsize;
+        }
+    }
+}
+
+void
+COUNT_FUN( scorep_mpi_coll_bytes_neighbor_alltoallw )( const COUNT_T*      sendcounts,
+                                                       const MPI_Datatype* sendtypes,
+                                                       const COUNT_T*      recvcounts,
+                                                       const MPI_Datatype* recvtypes,
+                                                       MPI_Comm            comm,
+                                                       uint64_t*           sendbytes,
+                                                       uint64_t*           recvbytes )
+{
+    *sendbytes = 0;
+    *recvbytes = 0;
+
+    COUNT_T sendsize, recvsize;
+
+    if ( is_cart_topo( comm ) )
+    {
+        CART_ITER_NON_NULL_NEIGHBORS( comm, index,
+                                      TYPE_SIZE_FUN( sendtypes[ index ], &sendsize );
+                                      TYPE_SIZE_FUN( recvtypes[ index ], &recvsize );
+                                      *sendbytes += sendcounts[ index ] * sendsize;
+                                      *recvbytes += recvcounts[ index ] * recvsize;
+                                      );
+    }
+    else
+    {
+        int indegree, outdegree;
+        topo_num_neighbors( comm, &indegree, &outdegree );
+
+        for ( int i = 0; i < outdegree; ++i )
+        {
+            TYPE_SIZE_FUN( sendtypes[ i ], &sendsize );
+            *sendbytes += sendcounts[ i ] * sendsize;
+        }
+        for ( int i = 0; i < indegree; ++i )
+        {
+            TYPE_SIZE_FUN( recvtypes[ i ], &recvsize );
+            *recvbytes += recvcounts[ i ] * recvsize;
+        }
+    }
+}
+
+void
+COUNT_FUN( scorep_mpi_coll_bytes_neighbor_allgather )( COUNT_T      sendcount,
+                                                       MPI_Datatype sendtype,
+                                                       COUNT_T      recvcount,
+                                                       MPI_Datatype recvtype,
+                                                       MPI_Comm     comm,
+                                                       uint64_t*    sendbytes,
+                                                       uint64_t*    recvbytes )
+{
+    scorep_mpi_coll_bytes_neighbor_alltoall( sendcount,
+                                             sendtype,
+                                             recvcount,
+                                             recvtype,
+                                             comm,
+                                             sendbytes,
+                                             recvbytes );
+}
+
+void
+COUNT_FUN( scorep_mpi_coll_bytes_neighbor_allgatherv )( COUNT_T        sendcount,
+                                                        MPI_Datatype   sendtype,
+                                                        const COUNT_T* recvcounts,
+                                                        MPI_Datatype   recvtype,
+                                                        MPI_Comm       comm,
+                                                        uint64_t*      sendbytes,
+                                                        uint64_t*      recvbytes )
+{
+    *sendbytes = 0;
+    *recvbytes = 0;
+
+    COUNT_T sendsize, recvsize;
+    TYPE_SIZE_FUN( sendtype, &sendsize );
+    TYPE_SIZE_FUN( recvtype, &recvsize );
+
+    if ( is_cart_topo( comm ) )
+    {
+        CART_ITER_NON_NULL_NEIGHBORS( comm, index,
+                                      *sendbytes += sendcount * sendsize;
+                                      *recvbytes += recvcounts[ index ] * recvsize;
+                                      );
+    }
+    else
+    {
+        int indegree, outdegree;
+        topo_num_neighbors( comm, &indegree, &outdegree );
+
+
+        *sendbytes = outdegree * sendcount * sendsize;
+        for ( int i = 0; i < indegree; ++i )
+        {
+            *recvbytes += recvcounts[ i ] * recvsize;
+        }
+    }
+}
+#undef CART_ITER_NON_NULL_NEIGHBORS
 
 #undef TYPE_SIZE_FUN
 #undef COUNT_T
