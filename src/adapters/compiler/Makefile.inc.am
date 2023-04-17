@@ -138,8 +138,7 @@ libscorep_adapter_compiler_event_la_CPPFLAGS = \
     $(UTILS_CPPFLAGS)                          \
     -I$(INC_DIR_DEFINITIONS)
 
-libscorep_adapter_compiler_event_la_LIBADD = \
-    libscorep_measurement.la
+libscorep_adapter_compiler_event_la_LIBADD =
 
 if HAVE_SCOREP_COMPILER_INSTRUMENTATION_NEEDS_ADDR2LINE
 libscorep_adapter_compiler_event_la_CPPFLAGS += \

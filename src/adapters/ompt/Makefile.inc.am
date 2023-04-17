@@ -60,8 +60,7 @@ libscorep_adapter_ompt_event_la_CPPFLAGS = \
 
 libscorep_adapter_ompt_event_la_LIBADD = \
     libscorep_addr2line.la \
-    $(libscorep_addr2line_la_needs_LIBS) \
-    libscorep_measurement.la
+    $(libscorep_addr2line_la_needs_LIBS)
 
 libscorep_adapter_ompt_event_la_LDFLAGS = \
     $(library_api_version_ldflags) \

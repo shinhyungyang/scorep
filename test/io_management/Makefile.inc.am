@@ -15,7 +15,7 @@
 ## Copyright (c) 2009-2011,
 ## University of Oregon, Eugene, USA
 ##
-## Copyright (c) 2009-2014, 2020, 2022,
+## Copyright (c) 2009-2014, 2020, 2022, 2024,
 ## Forschungszentrum Juelich GmbH, Germany
 ##
 ## Copyright (c) 2009-2011, 2014,
@@ -59,7 +59,7 @@ handle_test_CPPFLAGS = $(AM_CPPFLAGS)                       \
                             -I$(INC_DIR_COMMON_CUTEST)           \
                             $(UTILS_CPPFLAGS)                    \
                             -I$(INC_DIR_DEFINITIONS)
-handle_test_LDADD    = $(io_mgmt_libadd) libscorep_measurement.la
+handle_test_LDADD    = $(io_mgmt_libadd)
 handle_test_LDFLAGS  = $(io_mgmt_ldflags)
 
 TESTS_SERIAL += handle_test
