@@ -1,7 +1,7 @@
 /*
  * This file is part of the Score-P software (http://www.score-p.org)
  *
- * Copyright (c) 2013, 2015,
+ * Copyright (c) 2013, 2015, 2023,
  * Forschungszentrum Juelich GmbH, Germany
  *
  * Copyright (c) 2013-2014, 2016-2017, 2019,
@@ -158,7 +158,6 @@ SCOREP_Config_MpiMppSystem::addLibs( std::deque<std::string>&           libs,
     deps.addDependency( "libscorep_measurement", "libscorep_mpp_mpi" );
 
     deps.addDependency( "libscorep_adapter_mpi_mgmt", "libscorep_alloc_metric" );
-    deps.addDependency( "libscorep_adapter_mpi_mgmt", "libscorep_adapter_utils" );
 }
 
 void

@@ -34,21 +34,6 @@
 
 library_api_version_ldflags = -version-info @LIBRARY_INTERFACE_VERSION@
 
-
-# Utilities used by adapters (and others). To be libadded to
-# adapter_mgmt libraries.
-lib_LTLIBRARIES += libscorep_adapter_utils.la
-libscorep_adapter_utils_la_SOURCES =
-libscorep_adapter_utils_la_LIBADD = \
-    libscorep_filter.la             \
-    libscorep_hashtab.la            \
-    libscorep_vector.la             \
-    libutils.la
-
-libscorep_adapter_utils_la_LDFLAGS = \
-    $(library_api_version_ldflags)
-
-
 lib_LTLIBRARIES += libscorep_measurement.la
 libscorep_measurement_la_SOURCES =
 libscorep_measurement_la_LIBADD =        \
@@ -66,7 +51,8 @@ libscorep_measurement_la_LIBADD =        \
     $(libscorep_platform_la_needs_LIBS)  \
     libscorep_bitstring.la               \
     libscorep_allocator.la               \
-    libscorep_adapter_utils.la           \
+    libscorep_filter.la                  \
+    libscorep_hashtab.la                 \
     libscorep_io_management.la           \
     libscorep_accelerator_management.la  \
     libutils.la                          \
