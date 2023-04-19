@@ -156,8 +156,6 @@ SCOREP_Config_MpiMppSystem::addLibs( std::deque<std::string>&           libs,
     libs.push_back( "libscorep_adapter_mpi_event" );
     deps.addDependency( "libscorep_measurement", "libscorep_adapter_mpi_mgmt" );
     deps.addDependency( "libscorep_measurement", "libscorep_mpp_mpi" );
-
-    deps.addDependency( "libscorep_adapter_mpi_mgmt", "libscorep_alloc_metric" );
 }
 
 void
@@ -195,7 +193,6 @@ SCOREP_Config_ShmemMppSystem::addLibs( std::deque<std::string>&           libs,
     libs.push_back( "libscorep_adapter_shmem_event" );
     deps.addDependency( "libscorep_measurement", "libscorep_adapter_shmem_mgmt" );
     deps.addDependency( "libscorep_measurement", "libscorep_mpp_shmem" );
-    deps.addDependency( "libscorep_adapter_shmem_mgmt", "libscorep_alloc_metric" );
 }
 
 void

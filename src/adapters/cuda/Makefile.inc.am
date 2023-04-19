@@ -75,7 +75,8 @@ libscorep_adapter_cuda_mgmt_la_CPPFLAGS = \
 
 libscorep_adapter_cuda_mgmt_la_LIBADD = \
     @CUDA_LIBS@ \
-    $(libscorep_addr2line_la_needs_LIBS)
+    $(libscorep_addr2line_la_needs_LIBS) \
+    libscorep_alloc_metric.la
 
 libscorep_adapter_cuda_mgmt_la_LDFLAGS = \
     @CUDA_LDFLAGS@                       \

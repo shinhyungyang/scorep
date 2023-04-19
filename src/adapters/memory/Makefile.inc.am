@@ -39,7 +39,8 @@ libscorep_adapter_memory_mgmt_la_CPPFLAGS = \
     -I$(INC_DIR_DEFINITIONS)                 \
     -I$(INC_DIR_SUBSTRATES)
 
-libscorep_adapter_memory_mgmt_la_LIBADD =
+libscorep_adapter_memory_mgmt_la_LIBADD = \
+    libscorep_alloc_metric.la
 
 libscorep_adapter_memory_mgmt_la_LDFLAGS = \
     $(library_api_version_ldflags)
@@ -58,6 +59,9 @@ libscorep_adapter_memory_event_hbwmalloc_la_CPPFLAGS =  \
     $(UTILS_CPPFLAGS)                         \
     -DSCOREP_LIBWRAP_STATIC                   \
     -I$(INC_DIR_DEFINITIONS)
+
+libscorep_adapter_memory_event_hbwmalloc_la_LIBADD = \
+    libscorep_alloc_metric.la
 
 libscorep_adapter_memory_event_hbwmalloc_la_LDFLAGS = \
     $(library_api_version_ldflags) \
@@ -81,6 +85,9 @@ libscorep_adapter_memory_event_libc_la_CPPFLAGS =  \
     -DSCOREP_LIBWRAP_STATIC                   \
     -I$(INC_DIR_DEFINITIONS)
 
+libscorep_adapter_memory_event_libc_la_LIBADD = \
+    libscorep_alloc_metric.la
+
 libscorep_adapter_memory_event_libc_la_LDFLAGS = \
     $(library_api_version_ldflags) \
     -Wl,-wrap,malloc,-wrap,realloc,-wrap,calloc,-wrap,free,-wrap,memalign,-wrap,posix_memalign,-wrap,valloc
@@ -99,6 +106,9 @@ libscorep_adapter_memory_event_libc11_la_CPPFLAGS =  \
     $(UTILS_CPPFLAGS)                         \
     -DSCOREP_LIBWRAP_STATIC                   \
     -I$(INC_DIR_DEFINITIONS)
+
+libscorep_adapter_memory_event_libc11_la_LIBADD = \
+    libscorep_alloc_metric.la
 
 libscorep_adapter_memory_event_libc11_la_LDFLAGS = \
     $(library_api_version_ldflags) \
@@ -120,6 +130,9 @@ libscorep_adapter_memory_event_cxx_la_CPPFLAGS = \
     -DSCOREP_LIBWRAP_STATIC                   \
     -I$(INC_DIR_DEFINITIONS)
 
+libscorep_adapter_memory_event_cxx_la_LIBADD = \
+    libscorep_alloc_metric.la
+
 libscorep_adapter_memory_event_cxx_la_LDFLAGS = \
     $(library_api_version_ldflags) \
     -Wl,-wrap,_ZdlPv,-wrap,_ZdaPv
@@ -139,6 +152,9 @@ libscorep_adapter_memory_event_cxx_L32_la_CPPFLAGS =  \
     $(UTILS_CPPFLAGS)                         \
     -DSCOREP_LIBWRAP_STATIC                   \
     -I$(INC_DIR_DEFINITIONS)
+
+libscorep_adapter_memory_event_cxx_L32_la_LIBADD = \
+    libscorep_alloc_metric.la
 
 libscorep_adapter_memory_event_cxx_L32_la_LDFLAGS = \
     $(library_api_version_ldflags) \
@@ -160,6 +176,9 @@ libscorep_adapter_memory_event_cxx_L64_la_CPPFLAGS =  \
     -DSCOREP_LIBWRAP_STATIC                   \
     -I$(INC_DIR_DEFINITIONS)
 
+libscorep_adapter_memory_event_cxx_L64_la_LIBADD = \
+    libscorep_alloc_metric.la
+
 libscorep_adapter_memory_event_cxx_L64_la_LDFLAGS = \
     $(library_api_version_ldflags) \
     -Wl,-wrap,_Znwm,-wrap,_Znam
@@ -179,6 +198,9 @@ libscorep_adapter_memory_event_cxx14_L32_la_CPPFLAGS = \
     $(UTILS_CPPFLAGS)                    \
     -DSCOREP_LIBWRAP_STATIC              \
     -I$(INC_DIR_DEFINITIONS)
+
+libscorep_adapter_memory_event_cxx14_L32_la_LIBADD = \
+    libscorep_alloc_metric.la
 
 libscorep_adapter_memory_event_cxx14_L32_la_LDFLAGS = \
     $(library_api_version_ldflags) \
@@ -200,6 +222,9 @@ libscorep_adapter_memory_event_cxx14_L64_la_CPPFLAGS = \
     -DSCOREP_LIBWRAP_STATIC              \
     -I$(INC_DIR_DEFINITIONS)
 
+libscorep_adapter_memory_event_cxx14_L64_la_LIBADD = \
+    libscorep_alloc_metric.la
+
 libscorep_adapter_memory_event_cxx14_L64_la_LDFLAGS = \
     $(library_api_version_ldflags) \
     -Wl,-wrap,_ZdlPvm,-wrap,_ZdaPvm
@@ -219,6 +244,9 @@ libscorep_adapter_memory_event_pgCC_la_CPPFLAGS = \
     $(UTILS_CPPFLAGS)                         \
     -DSCOREP_LIBWRAP_STATIC                   \
     -I$(INC_DIR_DEFINITIONS)
+
+libscorep_adapter_memory_event_pgCC_la_LIBADD = \
+    libscorep_alloc_metric.la
 
 libscorep_adapter_memory_event_pgCC_la_LDFLAGS = \
     $(library_api_version_ldflags) \
@@ -240,6 +268,9 @@ libscorep_adapter_memory_event_pgCC_L32_la_CPPFLAGS =  \
     -DSCOREP_LIBWRAP_STATIC                   \
     -I$(INC_DIR_DEFINITIONS)
 
+libscorep_adapter_memory_event_pgCC_L32_la_LIBADD = \
+    libscorep_alloc_metric.la
+
 libscorep_adapter_memory_event_pgCC_L32_la_LDFLAGS = \
     $(library_api_version_ldflags) \
     -Wl,-wrap,__nw__FUi,-wrap,__nwa__FUi
@@ -259,6 +290,9 @@ libscorep_adapter_memory_event_pgCC_L64_la_CPPFLAGS =  \
     $(UTILS_CPPFLAGS)                         \
     -DSCOREP_LIBWRAP_STATIC                   \
     -I$(INC_DIR_DEFINITIONS)
+
+libscorep_adapter_memory_event_pgCC_L64_la_LIBADD = \
+    libscorep_alloc_metric.la
 
 libscorep_adapter_memory_event_pgCC_L64_la_LDFLAGS = \
     $(library_api_version_ldflags) \

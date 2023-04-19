@@ -516,7 +516,6 @@ SCOREP_Config_CudaAdapter::addLibs( std::deque<std::string>&           libs,
     libs.push_back( "lib" + m_library + "_event" );
     libs.push_back( "libscorep_measurement" );
     deps.addDependency( "libscorep_measurement", "lib" + m_library + "_mgmt" );
-    deps.addDependency( "lib" + m_library + "_mgmt", "libscorep_alloc_metric" );
 }
 
 void
@@ -560,7 +559,6 @@ SCOREP_Config_HipAdapter::addLibs( std::deque<std::string>&           libs,
        only adapter, we need to add libscorep_measurement.la to the needed libs. */
     libs.push_back( "libscorep_measurement" );
     deps.addDependency( "libscorep_measurement", "lib" + m_library + "_mgmt" );
-    deps.addDependency( "lib" + m_library + "_mgmt", "libscorep_alloc_metric" );
 }
 
 void
@@ -584,7 +582,6 @@ SCOREP_Config_OpenaccAdapter::addLibs( std::deque<std::string>&           libs,
 {
     libs.push_back( "lib" + m_library + "_event" );
     deps.addDependency( "libscorep_measurement", "lib" + m_library + "_mgmt" );
-    deps.addDependency( "lib" + m_library + "_mgmt", "libscorep_alloc_metric" );
 }
 
 /* **************************************************************************************
@@ -696,7 +693,6 @@ SCOREP_Config_KokkosAdapter::addLibs( std::deque<std::string>&           libs,
     /* the Kokkos event library is loaded by the Kokkos runtime via
        KOKKOS_PROFILE_LIBRARY */
     deps.addDependency( "libscorep_measurement", "lib" + m_library + "_mgmt" );
-    deps.addDependency( "lib" + m_library + "_mgmt", "libscorep_alloc_metric" );
 }
 
 void
@@ -1022,7 +1018,6 @@ SCOREP_Config_MemoryAdapter::addLibs( std::deque<std::string>&           libs,
     }
 
     deps.addDependency( "libscorep_measurement", "lib" + m_library + "_mgmt" );
-    deps.addDependency( "lib" + m_library + "_mgmt", "libscorep_alloc_metric" );
 }
 
 void

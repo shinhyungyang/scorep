@@ -51,7 +51,8 @@ libscorep_adapter_shmem_mgmt_la_CPPFLAGS = \
     $(shmem_libwrap_cppflags)
 libscorep_adapter_shmem_mgmt_la_LIBADD = \
     $(LIB_DIR_SCOREP)libutils.la \
-    $(backend_libutils_la_needs_LIBS)
+    $(backend_libutils_la_needs_LIBS) \
+    $(LIB_DIR_SCOREP)libscorep_alloc_metric.la
 libscorep_adapter_shmem_mgmt_la_LDFLAGS = \
     $(shmem_libwrap_ldflags) \
     $(library_api_version_ldflags)
@@ -65,25 +66,24 @@ BACKEND_TARGETS += $(LIB_DIR_SCOREP)libutils.la
 lib_LTLIBRARIES += libscorep_adapter_shmem_event.la
 libscorep_adapter_shmem_event_la_SOURCES =
 
-if HAVE_SHMEM_FORTRAN_SUPPORT
-
 libscorep_adapter_shmem_event_la_LIBADD = \
     libscorep_adapter_shmem_c_event.la \
+    $(LIB_DIR_SCOREP)libscorep_alloc_metric.la
+
+if HAVE_SHMEM_FORTRAN_SUPPORT
+
+libscorep_adapter_shmem_event_la_LIBADD += \
     libscorep_adapter_shmem_event_fortran_sub3.la \
     libscorep_adapter_shmem_event_fortran_sub4.la
 
-else !HAVE_SHMEM_FORTRAN_SUPPORT
-
-libscorep_adapter_shmem_event_la_LIBADD = \
-    libscorep_adapter_shmem_c_event.la
-
-endif !HAVE_SHMEM_FORTRAN_SUPPORT
+endif HAVE_SHMEM_FORTRAN_SUPPORT
 
 libscorep_adapter_shmem_event_la_LDFLAGS = \
     $(shmem_libwrap_ldflags) \
     $(library_api_version_ldflags)
 
-BACKEND_TARGETS += $(LIB_DIR_SCOREP)libutils.la
+BACKEND_TARGETS += $(LIB_DIR_SCOREP)libutils.la \
+    $(LIB_DIR_SCOREP)libscorep_alloc_metric.la
 
 if HAVE_SHMEM_FORTRAN_SUPPORT
 

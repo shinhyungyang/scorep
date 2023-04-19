@@ -39,7 +39,8 @@ libscorep_adapter_openacc_mgmt_la_LDFLAGS = \
 
 libscorep_adapter_openacc_mgmt_la_LIBADD = \
     libutils.la \
-    $(libutils_la_needs_LIBS)
+    $(libutils_la_needs_LIBS) \
+    libscorep_alloc_metric.la
 
 # event library for the OpenACC adapter
 
@@ -57,5 +58,8 @@ libscorep_adapter_openacc_event_la_CPPFLAGS = \
 
 libscorep_adapter_openacc_event_la_LDFLAGS = \
     $(library_api_version_ldflags)
+
+libscorep_adapter_openacc_event_la_LIBADD = \
+    libscorep_alloc_metric.la
 
 endif HAVE_OPENACC_PROFILING_SUPPORT

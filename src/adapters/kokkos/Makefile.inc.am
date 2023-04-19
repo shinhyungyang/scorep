@@ -52,7 +52,8 @@ libscorep_adapter_kokkos_event_la_SOURCES = \
 libscorep_adapter_kokkos_event_la_CPPFLAGS = $(kokkos_common_cppflags)
 
 libscorep_adapter_kokkos_event_la_LIBADD = \
-    $(libscorep_addr2line_la_needs_LIBS)
+    $(libscorep_addr2line_la_needs_LIBS) \
+    libscorep_alloc_metric.la
 
 libscorep_adapter_kokkos_event_la_LDFLAGS = \
     $(library_api_version_ldflags) \
