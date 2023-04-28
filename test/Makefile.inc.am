@@ -35,14 +35,14 @@ external_libadd = \
     @OTF2_LIBS@         \
     @SCOREP_PAPI_LIBS@  \
     @SCOREP_DLFCN_LIBS@ \
-    @CUBEW_LIBS@
+    $(CUBEW_LIBS)
 
 external_ldflags = \
     @OTF2_LDFLAGS@        \
     @SCOREP_LIBBFD_LDFLAGS@      \
     @SCOREP_LIBUNWIND_LDFLAGS@      \
     @SCOREP_PAPI_LDFLAGS@ \
-    @CUBEW_LDFLAGS@ \
+    $(CUBEW_LDFLAGS) \
     @CUDA_LDFLAGS@        \
     @OPENCL_LDFLAGS@
 

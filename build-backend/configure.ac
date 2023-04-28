@@ -13,7 +13,7 @@ dnl
 dnl Copyright (c) 2009-2013,
 dnl University of Oregon, Eugene, USA
 dnl
-dnl Copyright (c) 2009-2022, 2024,
+dnl Copyright (c) 2009-2024,
 dnl Forschungszentrum Juelich GmbH, Germany
 dnl
 dnl Copyright (c) 2009-2013,
@@ -218,25 +218,24 @@ AS_IF([test -n "${scorep_opari2_bindir}"],
        AM_CONDITIONAL([HAVE_SCOREP_EXTERNAL_OPARI2], [false])])
 AC_SUBST([HAVE_OPARI2_FIX_AND_FREE_FORM_OPTIONS], [${opari2_fix_and_free_form_options}])
 
-AS_IF([test -n "${scorep_cubew_bindir}"],
-      [scorep_cubew_config_backend_arg=""
-       AS_IF([test "x${ac_scorep_cross_compiling}" = "xyes"],
-             [scorep_cubew_config_backend_arg="--target=backend"
-              AS_IF([test "x${ac_scorep_platform}" = "xmic"],
-                    [scorep_cubew_config_backend_arg="--target=mic"])
-             ])
-       AC_SUBST([CUBEW_CPPFLAGS],      ["`${scorep_cubew_bindir}/cubew-config --cflags`"])
-       AC_SUBST([CUBEW_LIBS],          ["`${scorep_cubew_bindir}/cubew-config --libs`"])
-       AC_SUBST([CUBEW_LDFLAGS],       ["`${scorep_cubew_bindir}/cubew-config --ldflags ${scorep_cubew_config_backend_arg}`"])
-       AC_SUBST([CUBEW_BINDIR],          ["${scorep_cubew_bindir}"])
-       AM_CONDITIONAL([HAVE_SCOREP_EXTERNAL_CUBEW], [test 1 -eq 1])
-      ],
-      [AC_SUBST([CUBEW_CPPFLAGS],      ['-I$(srcdir)/../vendor/cubew/src/cubew -I../vendor/cubew/src'])
-       AC_SUBST([CUBEW_LIBS],          ['../vendor/cubew/build-backend/libcube4w.la'])
-       AC_SUBST([CUBEW_LDFLAGS],       [])
-       AC_SUBST([CUBEW_BINDIR], ["../vendor/cubew/build-backend"])
-       AM_CONDITIONAL([HAVE_SCOREP_EXTERNAL_CUBEW], [test 1 -eq 0])
-      ])
+scorep_cubew_config_backend_arg=""
+AS_IF([test "x${ac_scorep_cross_compiling}" = xyes],
+    [scorep_cubew_config_backend_arg="--target=backend"
+     AS_IF([test "x${ac_scorep_platform}" = xmic],
+         [scorep_cubew_config_backend_arg="--target=mic"])])
+AS_IF([test "x${scorep_cubew_bindir}" != x],
+    [cubew_config_cmd="${scorep_cubew_bindir}/cubew-config ${scorep_cubew_config_backend_arg}"
+     AC_SUBST([CUBEW_LIBS], [$($cubew_config_cmd --libs)])
+     AC_SUBST([CUBEW_LDFLAGS], [$($cubew_config_cmd --ltldflags)])
+     AC_SUBST([CUBEW_CPPFLAGS], [$($cubew_config_cmd --cppflags)])],
+    [# CUBEW_* Makefile variables are evaluated by calling cubew-config,
+     # once it has been installed. When used earlier, a compile/link will fail.
+     m4_define([CUBEW_CONFIG], [\$(DESTDIR)\$(bindir)/cubew-config])dnl
+     AC_SUBST([CUBEW_LIBS], ["\$\$(if test -x \"CUBEW_CONFIG\"; then echo \$\$(CUBEW_CONFIG \$\${scorep_cubew_config_backend_arg} --libs); else echo \"-lCUBEW_LIBS_not_provided_yet\"; fi)"])
+     AC_SUBST([CUBEW_LDFLAGS], ["\$\$(if test -x \"CUBEW_CONFIG\"; then echo \$\$(CUBEW_CONFIG \$\${scorep_cubew_config_backend_arg} --ltldflags | sed 's|-L|-L\$(DESTDIR)|g;s|-R|-R\$(DESTDIR)|g'); else echo \"-LCUBEW_LDFLAGS_not_provided_yet -RCUBEW_LDFLAGS_not_provided_yet\"; fi)"])
+     AC_SUBST([CUBEW_CPPFLAGS], ["\$\$(if test -x \"CUBEW_CONFIG\"; then echo \$\$(CUBEW_CONFIG \$\${scorep_cubew_config_backend_arg} --cppflags | sed 's|-I|-I\$(DESTDIR)|g'); else echo \"-ICUBEW_CPPFLAGS_not_provided_yet\"; fi)"])
+     m4_undefine([CUBEW_CONFIG])])
+AM_CONDITIONAL([HAVE_SCOREP_EXTERNAL_CUBEW], [test "x${scorep_cubew_bindir}" != x])
 
 AS_IF([test -n "${scorep_cubelib_bindir}"],
       [AC_SUBST([CUBELIB_BINDIR], ["${scorep_cubelib_bindir}"])],
