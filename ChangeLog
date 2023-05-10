@@ -1,5 +1,10 @@
 ------------------- Upcoming version 8.2 -----------------------------
 
+Bugfixes:
+
+- The OpenMP detection now additionally checks for the `-fiopenmp` flag
+  used by Intel oneAPI.
+
 ------------------- Released version 8.1 -----------------------------
 
 Bugfixes:
