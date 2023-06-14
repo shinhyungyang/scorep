@@ -13,7 +13,7 @@
  * Copyright (c) 2009-2012,
  * University of Oregon, Eugene, USA
  *
- * Copyright (c) 2009-2014, 2021,
+ * Copyright (c) 2009-2014, 2021, 2024,
  * Forschungszentrum Juelich GmbH, Germany
  *
  * Copyright (c) 2009-2012,
@@ -63,6 +63,7 @@ extern const SCOREP_Subsystem SCOREP_Subsystem_Topologies;
 extern const SCOREP_Subsystem SCOREP_Subsystem_PlatformTopology;
 extern const SCOREP_Subsystem SCOREP_Subsystem_KokkosAdapter;
 extern const SCOREP_Subsystem SCOREP_Subsystem_HipAdapter;
+extern const SCOREP_Subsystem SCOREP_Subsystem_OmptAdapter;
 
 /**
  * List of subsystems.
@@ -88,7 +89,8 @@ const SCOREP_Subsystem* scorep_subsystems[] = {
     &SCOREP_Subsystem_OpenaccAdapter,
     &SCOREP_Subsystem_MemoryAdapter,
     &SCOREP_Subsystem_KokkosAdapter,
-    &SCOREP_Subsystem_HipAdapter
+    &SCOREP_Subsystem_HipAdapter,
+    &SCOREP_Subsystem_OmptAdapter
 };
 
 const size_t scorep_number_of_subsystems = sizeof( scorep_subsystems ) /
