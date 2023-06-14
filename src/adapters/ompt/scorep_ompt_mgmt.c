@@ -19,6 +19,8 @@
 #include "scorep_ompt.h"
 #include "scorep_ompt_callbacks_host.h"
 #include "scorep_ompt_callbacks_device.h"
+#include "scorep_ompt_confvars.h"
+#include "scorep_ompt_confvars.inc.c"
 
 #include <string.h>
 #include <stddef.h>
@@ -77,6 +79,7 @@ initialize_tool( ompt_function_lookup_t lookup,
                  int                    initialDeviceNum,
                  ompt_data_t*           toolData )
 {
+    SCOREP_IN_MEASUREMENT_INCREMENT();
     UTILS_DEBUG( "[%s] initial_device_num=%d",
                  UTILS_FUNCTION_NAME, initialDeviceNum );
 
@@ -97,12 +100,18 @@ initialize_tool( ompt_function_lookup_t lookup,
         ( ompt_finalize_tool_t )lookup( "ompt_finalize_tool" );
     UTILS_BUG_ON( ompt_finalize_tool == 0 );
 
+    if ( SCOREP_IS_MEASUREMENT_PHASE( PRE ) )
+    {
+        SCOREP_InitConfigVariables();
+    }
+
     /* Use runtime entry point set_callback to register callbacks:
        TODO provide means to selectively register (groups of) callbacks? */
     register_event_callbacks_host( set_callback );
     register_event_callbacks_device( set_callback );
 
     tool_initialized = true;
+    SCOREP_IN_MEASUREMENT_DECREMENT();
     return 1; /* non-zero indicates success */
 }
 
@@ -361,9 +370,16 @@ register_event_callbacks_device( ompt_set_callback_t setCallback )
 static SCOREP_ErrorCode
 ompt_subsystem_register( size_t id )
 {
-    UTILS_DEBUG( "[%s] OMPT subsystem id: %zu", UTILS_FUNCTION_NAME, id );
+    UTILS_DEBUG_ENTRY( "OMPT subsystem id: %zu", id );
     scorep_ompt_subsystem_id = id;
-    return SCOREP_SUCCESS;
+
+    const SCOREP_ErrorCode host_register_result = SCOREP_ConfigRegister( "openmp", scorep_ompt_confvars );
+    if ( host_register_result != SCOREP_SUCCESS )
+    {
+        return host_register_result;
+    }
+
+    return SCOREP_ConfigRegister( "openmp", scorep_ompt_target_confvars );
 }
 
 
