@@ -1,5 +1,10 @@
 ------------------- Upcoming version 8.2 -----------------------------
 
+Features and improvements:
+
+- The OMPT adapter is now able to report the schedule type selected
+  in OpenMP loops. However, this needs to be supported by the runtime.
+
 Bugfixes:
 
 - The OpenMP detection now additionally checks for the `-fiopenmp` flag
