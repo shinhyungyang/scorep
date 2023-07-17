@@ -43,6 +43,8 @@ Bugfixes:
 - Compiler-generated functions are now checked by their mangled and
   demangled function name, as only checking demangled function
   names could lead them to pass the checks incorrectly.
+- Removed flags for pre-LLVM CCE memory instrumentation, which were
+  inappropriately applied to other compilers on Cray/HPE systems.
 
 ------------------- Released version 8.1 -----------------------------
 
