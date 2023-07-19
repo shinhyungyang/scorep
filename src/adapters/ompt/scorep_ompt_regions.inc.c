@@ -30,6 +30,7 @@ typedef enum tool_event_t
 
     TOOL_EVENT_PARALLEL,
     TOOL_EVENT_IMPLICIT_BARRIER,
+    TOOL_EVENT_IMPLEMENTATION_BARRIER,
     TOOL_EVENT_SINGLE,
     TOOL_EVENT_SINGLE_SBLOCK,
     TOOL_EVENT_TASK,
@@ -71,6 +72,7 @@ typedef struct region_fallback_t
 #define REGION_OMP_PARALLEL "!$omp parallel"
 /* Note: OpenMP 5.1+ allows us to distinguish between several barrier types */
 #define REGION_OMP_IBARRIER "!$omp implicit barrier"
+#define REGION_OMP_IMPBARRIER "!$omp implementation barrier"
 #define REGION_OMP_SINGLE "!$omp single"
 #define REGION_OMP_SINGLE_SBLOCK "!$omp single sblock"
 #define REGION_OMP_TASK "!$omp task"
@@ -100,6 +102,7 @@ static region_fallback_t region_fallback[ TOOL_EVENTS ] =
     { REGION_OMP_UNKNOWN,         sizeof( REGION_OMP_UNKNOWN ) - 1,         SCOREP_REGION_UNKNOWN,          SCOREP_INVALID_REGION },
     { REGION_OMP_PARALLEL,        sizeof( REGION_OMP_PARALLEL ) - 1,        SCOREP_REGION_PARALLEL,         SCOREP_INVALID_REGION },
     { REGION_OMP_IBARRIER,        sizeof( REGION_OMP_IBARRIER ) - 1,        SCOREP_REGION_IMPLICIT_BARRIER, SCOREP_INVALID_REGION },
+    { REGION_OMP_IMPBARRIER,      sizeof( REGION_OMP_IMPBARRIER ) - 1,      SCOREP_REGION_IMPLICIT_BARRIER, SCOREP_INVALID_REGION },
     { REGION_OMP_SINGLE,          sizeof( REGION_OMP_SINGLE ) - 1,          SCOREP_REGION_SINGLE,           SCOREP_INVALID_REGION },
     { REGION_OMP_SINGLE_SBLOCK,   sizeof( REGION_OMP_SINGLE_SBLOCK ) - 1,   SCOREP_REGION_SINGLE_SBLOCK,    SCOREP_INVALID_REGION },
     { REGION_OMP_TASK,            sizeof( REGION_OMP_TASK ) - 1,            SCOREP_REGION_TASK,             SCOREP_INVALID_REGION },
@@ -127,6 +130,7 @@ static region_fallback_t region_fallback[ TOOL_EVENTS ] =
 #undef REGION_OMP_UNKNOWN
 #undef REGION_OMP_PARALLEL
 #undef REGION_OMP_IBARRIER
+#undef REGION_OMP_IMPBARRIER
 #undef REGION_OMP_SINGLE
 #undef REGION_OMP_SINGLE_SBLOCK
 #undef REGION_OMP_TASK

@@ -1297,9 +1297,10 @@ scorep_ompt_cb_host_sync_region( ompt_sync_region_t    kind,
                     break;
                 }
                 case ompt_sync_region_barrier_implementation:
-                    UTILS_WARN_ONCE( "ompt_sync_region_t %s not implemented yet.",
-                                     sync_region2string( kind ) );
+                {
+                    SCOREP_EnterRegion( sync_region_begin( task, codeptr_ra, TOOL_EVENT_IMPLEMENTATION_BARRIER ) );
                     break;
+                }
                 case ompt_sync_region_taskwait:
                     SCOREP_EnterRegion( sync_region_begin( task, codeptr_ra, TOOL_EVENT_TASKWAIT ) );
                     break;
@@ -1340,6 +1341,11 @@ scorep_ompt_cb_host_sync_region( ompt_sync_region_t    kind,
                 case ompt_sync_region_barrier_implicit:
                 {
                     UTILS_WARN_ONCE( "Deprecated enum ompt_sync_region_barrier_implicit encountered." );
+                } /* fall-through into ompt_sync_region_barrier_implementation intended */
+                /* OpenMP 5.2 spec.: The implementation can handle these barriers like implicit barriers
+                   and dispatch all events as for implicit barriers. */
+                case ompt_sync_region_barrier_implementation:
+                {
                     if ( parallel_data != NULL ) /* ibarrier inside parallel region */
                     {
                         task_t* task = task_data->ptr;
@@ -1350,7 +1356,7 @@ scorep_ompt_cb_host_sync_region( ompt_sync_region_t    kind,
                 case ompt_sync_region_barrier_implicit_parallel:
                 {
                     /* parallel_data == NULL for ompt_sync_region_barrier_implicit_parallel
-                       according to spec (5.2 p488:22 */
+                       according to spec (5.2 p488:22) */
                     UTILS_BUG_ON( parallel_data != NULL );
 
                     #if HAVE( UTILS_DEBUG )
@@ -1384,10 +1390,6 @@ scorep_ompt_cb_host_sync_region( ompt_sync_region_t    kind,
                 }
                 case ompt_sync_region_barrier_explicit:
                     SCOREP_ExitRegion( sync_region_end( task ) );
-                    break;
-                case ompt_sync_region_barrier_implementation:
-                    UTILS_WARN_ONCE( "ompt_sync_region_t %s not implemented yet.",
-                                     sync_region2string( kind ) );
                     break;
                 case ompt_sync_region_taskwait:
                     SCOREP_ExitRegion( sync_region_end( task ) );
