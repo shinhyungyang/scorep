@@ -1,7 +1,7 @@
 /*
  * This file is part of the Score-P software (http://www.score-p.org)
  *
- * Copyright (c) 2022,
+ * Copyright (c) 2022, 2025,
  * Technische Universitaet Dresden, Germany
  *
  * This software may be modified and distributed under the terms of
@@ -63,13 +63,16 @@ subsystem_register( size_t subsystemId )
 static SCOREP_ErrorCode
 subsystem_init( void )
 {
-    SCOREP_Paradigms_RegisterParallelParadigm(
-        SCOREP_PARADIGM_HIP,
-        SCOREP_PARADIGM_CLASS_ACCELERATOR,
-        "HIP",
-        SCOREP_PARADIGM_FLAG_RMA_ONLY );
+    if ( scorep_hip_features > 0 )
+    {
+        SCOREP_Paradigms_RegisterParallelParadigm(
+            SCOREP_PARADIGM_HIP,
+            SCOREP_PARADIGM_CLASS_ACCELERATOR,
+            "HIP",
+            SCOREP_PARADIGM_FLAG_RMA_ONLY );
 
-    scorep_hip_callbacks_init();
+        scorep_hip_callbacks_init();
+    }
 
     return SCOREP_SUCCESS;
 }
@@ -77,20 +80,29 @@ subsystem_init( void )
 static SCOREP_ErrorCode
 subsystem_begin( void )
 {
-    scorep_hip_callbacks_enable();
+    if ( scorep_hip_features > 0 )
+    {
+        scorep_hip_callbacks_enable();
+    }
     return SCOREP_SUCCESS;
 }
 
 static void
 subsystem_end( void )
 {
-    scorep_hip_callbacks_disable();
+    if ( scorep_hip_features > 0 )
+    {
+        scorep_hip_callbacks_disable();
+    }
 }
 
 static void
 subsystem_finalize( void )
 {
-    scorep_hip_callbacks_finalize();
+    if ( scorep_hip_features > 0 )
+    {
+        scorep_hip_callbacks_finalize();
+    }
 }
 
 static SCOREP_ErrorCode
