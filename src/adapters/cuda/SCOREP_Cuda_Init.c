@@ -7,7 +7,7 @@
  * Copyright (c) 2009-2013,
  * Gesellschaft fuer numerische Simulation mbH Braunschweig, Germany
  *
- * Copyright (c) 2009-2015, 2022,
+ * Copyright (c) 2009-2015, 2022, 2025,
  * Technische Universitaet Dresden, Germany
  *
  * Copyright (c) 2009-2013,
@@ -196,28 +196,28 @@ cuda_subsystem_init( void )
 {
     UTILS_DEBUG( "Selected options: %llu", scorep_cuda_features );
 
-    SCOREP_Paradigms_RegisterParallelParadigm(
-        SCOREP_PARADIGM_CUDA,
-        SCOREP_PARADIGM_CLASS_ACCELERATOR,
-        "CUDA",
-        SCOREP_PARADIGM_FLAG_RMA_ONLY );
-
-#if HAVE( NVML_SUPPORT )
-    if ( create_visible_devices_map() != SCOREP_SUCCESS )
-    {
-        UTILS_WARNING( "Query of NVML interface failed. Stream locations will keep "
-                       "their logical device ids, which might differ from the "
-                       "physical mapping in a multi GPU environment." );
-    }
-#endif
-
-    /* Ensure NVTX is initialized before CUPTI has a chance to */
-    #if HAVE( NVTX_SUPPORT )
-    scorep_cuda_nvtx_init();
-    #endif
-
     if ( scorep_cuda_features > 0 )
     {
+        SCOREP_Paradigms_RegisterParallelParadigm(
+            SCOREP_PARADIGM_CUDA,
+            SCOREP_PARADIGM_CLASS_ACCELERATOR,
+            "CUDA",
+            SCOREP_PARADIGM_FLAG_RMA_ONLY );
+
+#if HAVE( NVML_SUPPORT )
+        if ( create_visible_devices_map() != SCOREP_SUCCESS )
+        {
+            UTILS_WARNING( "Query of NVML interface failed. Stream locations will keep "
+                           "their logical device ids, which might differ from the "
+                           "physical mapping in a multi GPU environment." );
+        }
+#endif
+
+        /* Ensure NVTX is initialized before CUPTI has a chance to */
+        #if HAVE( NVTX_SUPPORT )
+        scorep_cuda_nvtx_init();
+        #endif
+
         scorep_cupti_callbacks_init();
     }
 
