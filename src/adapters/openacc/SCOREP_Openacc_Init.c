@@ -1,7 +1,7 @@
 /*
  * This file is part of the Score-P software (http://www.score-p.org)
  *
- * Copyright (c) 2014-2016, 2020,
+ * Copyright (c) 2014-2016, 2020, 2025,
  * Technische Universitaet Dresden, Germany
  *
  * Copyright (c) 2016, 2022,
@@ -61,14 +61,14 @@ openacc_subsystem_init( void )
 {
     UTILS_DEBUG( "Selected options: %llu", scorep_openacc_features );
 
-    SCOREP_Paradigms_RegisterParallelParadigm(
-        SCOREP_PARADIGM_OPENACC,
-        SCOREP_PARADIGM_CLASS_ACCELERATOR,
-        "OpenACC",
-        SCOREP_PARADIGM_FLAG_RMA_ONLY );
-
     if ( scorep_openacc_features > 0 )
     {
+        SCOREP_Paradigms_RegisterParallelParadigm(
+            SCOREP_PARADIGM_OPENACC,
+            SCOREP_PARADIGM_CLASS_ACCELERATOR,
+            "OpenACC",
+            SCOREP_PARADIGM_FLAG_RMA_ONLY );
+
         scorep_openacc_setup_features();
     }
 
