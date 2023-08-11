@@ -392,8 +392,11 @@ kokkosp_init_library( const int      loadSeq,
         SCOREP_InitMeasurement();
     }
 
-    UTILS_DEBUG( "[Kokkos] Initialize library." );
-    init_kokkos();
+    if ( scorep_kokkos_features > 0 )
+    {
+        UTILS_DEBUG( "[Kokkos] Initialize library." );
+        init_kokkos();
+    }
 
     SCOREP_IN_MEASUREMENT_DECREMENT();
 }
@@ -409,13 +412,16 @@ kokkosp_finalize_library( void )
 {
     SCOREP_IN_MEASUREMENT_INCREMENT();
 
-    UTILS_DEBUG( "[Kokkos] Finalize library" );
-
-    if ( kokkos_record_memcpy )
+    if ( scorep_kokkos_features > 0 )
     {
-        SCOREP_Location*                 location = scorep_kokkos_get_device_location();
-        scorep_kokkos_gpu_location_data* data     =
-            SCOREP_Location_GetSubsystemData( location, scorep_kokkos_subsystem_id );
+        UTILS_DEBUG( "[Kokkos] Finalize library" );
+
+        if ( kokkos_record_memcpy )
+        {
+            SCOREP_Location*                 location = scorep_kokkos_get_device_location();
+            scorep_kokkos_gpu_location_data* data     =
+                SCOREP_Location_GetSubsystemData( location, scorep_kokkos_subsystem_id );
+        }
     }
 
     SCOREP_IN_MEASUREMENT_DECREMENT();
