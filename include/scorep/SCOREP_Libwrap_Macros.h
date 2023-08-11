@@ -1,7 +1,7 @@
 /*
  * This file is part of the Score-P software (http://www.score-p.org)
  *
- * Copyright (c) 2013-2014, 2017,
+ * Copyright (c) 2013-2014, 2017, 2025,
  * Technische Universitaet Dresden, Germany
  *
  * This software may be modified and distributed under the terms of
@@ -182,9 +182,9 @@
  * Declares the symbol name of the original function. For static wrapping, this defaults
  * to the `__real_`-symbol.
  *
- * @param rettype           Function return type in parantheses.
+ * @param rettype           Function return type in parentheses.
  * @param func              Function name
- * @param argtypes          Function arguments in parantheses
+ * @param argtypes          Function arguments in parentheses
  */
 #define SCOREP_LIBWRAP_DECLARE_REAL_FUNC( rettype, func, argtypes ) \
     _SCOREP_LIBWRAP_RETTYPE rettype SCOREP_LIBWRAP_FUNC_REAL_NAME( func )argtypes
@@ -194,9 +194,9 @@
  * Defines the symbol name of the original function. For static wrapping,
  * this is not needed, thus empty.
  *
- * @param rettype           Function return type in parantheses.
+ * @param rettype           Function return type in parentheses.
  * @param func              Function name
- * @param argtypes          Function arguments in parantheses
+ * @param argtypes          Function arguments in parentheses
  */
 #define SCOREP_LIBWRAP_DEFINE_REAL_FUNC( rettype, func, argtypes )
 
@@ -272,9 +272,9 @@
  * Type of the functionDefines the symbol name of the original function. For runtime wrapping,
  * this defines the function pointer variable and initializes with NULL
  *
- * @param rettype           Function return type in parantheses.
+ * @param rettype           Function return type in parentheses.
  * @param name              A name
- * @param argtypes          Function arguments in parantheses
+ * @param argtypes          Function arguments in parentheses
  */
 #define SCOREP_LIBWRAP_FUNC_TYPE( rettype, name, argtypes ) \
     _SCOREP_LIBWRAP_RETTYPE rettype( *name ) argtypes
@@ -295,9 +295,9 @@
  * Declares the symbol name of the original function. For runtime wrapping,
  * this declares the function pointer as extern.
  *
- * @param rettype           Function return type in parantheses.
+ * @param rettype           Function return type in parentheses.
  * @param func              Function name
- * @param argtypes          Function arguments in parantheses
+ * @param argtypes          Function arguments in parentheses
  */
 #define SCOREP_LIBWRAP_DECLARE_REAL_FUNC( rettype, func, argtypes ) \
     SCOREP_LIBWRAP_DECLARE_REAL_FUNC_SPECIFIER SCOREP_LIBWRAP_FUNC_TYPE( rettype, SCOREP_LIBWRAP_FUNC_REAL_NAME( func ), argtypes )
@@ -307,9 +307,9 @@
  * Defines the symbol name of the original function. For runtime wrapping,
  * this defines the function pointer variable and initializes with NULL
  *
- * @param rettype           Function return type in parantheses.
+ * @param rettype           Function return type in parentheses.
  * @param func              Function name
- * @param argtypes          Function arguments in parantheses
+ * @param argtypes          Function arguments in parentheses
  */
 #define SCOREP_LIBWRAP_DEFINE_REAL_FUNC( rettype, func, argtypes ) \
     SCOREP_LIBWRAP_FUNC_TYPE( rettype, SCOREP_LIBWRAP_FUNC_REAL_NAME( func ), argtypes ) = NULL
@@ -397,9 +397,9 @@
  * Declares the symbol name of the original function. For weak/strong wrapping,
  * this declares the strong function.
  *
- * @param rettype           Function return type in parantheses.
+ * @param rettype           Function return type in parentheses.
  * @param func              Function name
- * @param argtypes          Function arguments in parantheses
+ * @param argtypes          Function arguments in parentheses
  */
 #define SCOREP_LIBWRAP_DECLARE_REAL_FUNC( rettype, func, argtypes ) \
     _SCOREP_LIBWRAP_RETTYPE rettype SCOREP_LIBWRAP_FUNC_REAL_NAME( func )argtypes
@@ -409,9 +409,9 @@
  * Defines the symbol name of the original function. For weak/strong wrapping,
  * this is not needed, thus empty.
  *
- * @param rettype           Function return type in parantheses.
+ * @param rettype           Function return type in parentheses.
  * @param func              Function name
- * @param argtypes          Function arguments in parantheses
+ * @param argtypes          Function arguments in parentheses
  */
 #define SCOREP_LIBWRAP_DEFINE_REAL_FUNC( rettype, func, argtypes )
 

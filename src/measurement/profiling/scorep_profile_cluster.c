@@ -7,7 +7,7 @@
  * Copyright (c) 2009-2013,
  * Gesellschaft fuer numerische Simulation mbH Braunschweig, Germany
  *
- * Copyright (c) 2009-2013, 2015, 2020,
+ * Copyright (c) 2009-2013, 2015, 2020, 2025,
  * Technische Universitaet Dresden, Germany
  *
  * Copyright (c) 2009-2013,
@@ -1436,7 +1436,7 @@ add_iter_to_clustering( SCOREP_Profile_LocationData* location,
                     cl_a->mets_sum.dense_metrics[ mr ] / cl_a->iteration_count;
             }
 
-            /* Remove it from its parant list. If it contains a parallel regions,
+            /* Remove it from its parent list. If it contains a parallel regions,
                the merge takes care of removing the forked threads. */
             scorep_profile_remove_node( cl_b->root );
 
