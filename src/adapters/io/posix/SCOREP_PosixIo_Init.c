@@ -24,10 +24,14 @@
 
 #include "SCOREP_PosixIo_Init.h"
 
+#include <SCOREP_Config.h>
+
 #define SCOREP_DEBUG_MODULE_NAME IO
 #include <UTILS_Debug.h>
 
 #include "scorep_posix_io.h"
+
+#include "scorep_posix_io_confvars.inc.c"
 
 static size_t subsystem_id = 0;
 
@@ -47,8 +51,7 @@ posix_io_subsystem_register( size_t subsystemId )
 
     UTILS_DEBUG( "Register environment variables" );
 
-//  return SCOREP_ConfigRegister( "posix", scorep_posix_configs );
-    return SCOREP_SUCCESS;
+    return SCOREP_ConfigRegister( "io", scorep_posix_io_confvars );
 }
 
 /**
