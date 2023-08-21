@@ -437,6 +437,11 @@ various Score-P components.
     configure checks might fail because no GPU was found. Please build
     on a node with the accelerator being present.
 
+  - When instrumenting an application using OpenMP tasks within a teams region,
+    using `#pragma omp single nowait` or `#pragma omp masked` might cause Score-P
+    to abort when using LLVM based compilers due to missing implicit barriers
+    in the runtime. As a workaround, please use `#pragma omp single` instead.
+
 --------------------------------------------------------------------------------
 
 * CUDA support
