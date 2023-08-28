@@ -23,6 +23,8 @@
 
 #include <SCOREP_Libwrap_Internal.h>
 
+#include <scorep/SCOREP_Libwrap_Plugins.h>
+
 #include <SCOREP_Config.h>
 #include <SCOREP_RuntimeManagement.h>
 #include <SCOREP_InMeasurement.h>
@@ -31,7 +33,6 @@
 #include <SCOREP_Types.h>
 #include <SCOREP_Events.h>
 #include <SCOREP_Subsystem.h>
-#include <scorep/SCOREP_Libwrap.h>
 
 #include <UTILS_Error.h>
 #include <UTILS_CStr.h>

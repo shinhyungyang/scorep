@@ -138,10 +138,12 @@ public:
 
         if ( !generator.m_config.create_internal_wrapper_code_file )
         {
-            out << "#define SCOREP_LIBWRAP_API( api ) \\\n"
+            out << "#include <scorep/SCOREP_Libwrap_Macros.h>\n"
+                << "\n"
+                << "#define SCOREP_LIBWRAP_API( api ) \\\n"
                 << "    libwrap_plugin_api->api\n"
                 << "\n"
-                << "#include <scorep/SCOREP_Libwrap_Macros.h>\n"
+                << "#include <scorep/SCOREP_Libwrap_Plugins.h>\n"
                 << "\n"
                 << "static const SCOREP_LibwrapAPI* libwrap_plugin_api;\n"
                 << "\n";

@@ -22,14 +22,22 @@
 #define SCOREP_LIBWRAP_DECLARE_ORIGINAL_SPECIFIER static
 
 #include <scorep/SCOREP_Libwrap.h>
+
+#define SCOREP_LIBWRAP_API( api ) scorep_libwrap_plugin_api.api
+
+#include <scorep/SCOREP_Libwrap_Plugins.h>
 #include <scorep/SCOREP_Libwrap_Macros.h>
+
 #include <SCOREP_Definitions.h>
 #include <SCOREP_RuntimeManagement.h>
-#include <SCOREP_Libwrap_Internal.h>
+
+
+extern const SCOREP_LibwrapAPI scorep_libwrap_plugin_api;
 
 
 SCOREP_LIBWRAP_DECLARE_WRAPPER( ( void ), foo, ( void ) );
 SCOREP_LIBWRAP_DECLARE_ORIGINAL( ( void ), foo, ( void ) );
+
 
 // region handles
 
