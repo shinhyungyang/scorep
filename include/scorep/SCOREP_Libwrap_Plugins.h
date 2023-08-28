@@ -46,26 +46,29 @@ struct SCOREP_LibwrapAPI
     /**
      * Call this function to enable wrapping of one function.
      *
-     * @param handle             Score-P library wrapper object
-     * @param prettyName         Region display name (i.e., demangled)
-     * @param symbolName         Symbol name (i.e., mangled)
-     * @param file               Source file name
-     * @param line               Line number in source file
-     * @param wrapper            Function address of the wrapper
-     * @param[out] funcPtr       Pointer to the function address of the original
-     * @param[out] regionHandle  Pointer to the region handle
+     * @param handle                  Score-P library wrapper object
+     * @param prettyName              Region display name (i.e., demangled)
+     * @param symbolName              Symbol name (i.e., mangled)
+     * @param file                    Source file name
+     * @param line                    Line number in source file
+     * @param wrapper                 Function address of the wrapper
+     * @param[out] originalHandleOut  Pointer to the orignal handle
+     * @param[out] regionHandleOut    Pointer to the region handle
      *
      * @return                   @see SCOREP_LibwrapEnableErrorCode
      */
     SCOREP_LibwrapEnableErrorCode
-    ( * enable_wrapper )( SCOREP_LibwrapHandle* handle,
-                          const char*           prettyName,
-                          const char*           symbolName,
-                          const char*           file,
-                          int                   line,
-                          void*                 wrapper,
-                          void**                funcPtr,
-                          SCOREP_RegionHandle*  regionHandle );
+    ( * enable_wrapper )( SCOREP_LibwrapHandle*          handle,
+                          const char*                    prettyName,
+                          const char*                    symbolName,
+                          const char*                    file,
+                          int                            line,
+                          void*                          wrapper,
+                          SCOREP_Libwrap_OriginalHandle* originalHandleOut,
+                          SCOREP_RegionHandle*           regionHandleOut );
+
+    void*
+    ( * get_original )( SCOREP_Libwrap_OriginalHandle );
 
     /**
      * Enter the measurement. First action a wrapper must do.
@@ -223,16 +226,25 @@ struct SCOREP_LibwrapAPI
  * @param file              Source code location (file as `const char*`)
  * @param line              Source code location (line as `int`)
  */
-#define SCOREP_LIBWRAP_FUNC_INIT( handle, func, prettyname, file, line )                    \
-    do                                                                                      \
-    {                                                                                       \
-        SCOREP_LIBWRAP_API( enable_wrapper )( handle,                                       \
-                                              prettyname, #func, file, line,                \
-                                              ( void* )SCOREP_LIBWRAP_WRAPPER( func ),      \
-                                              ( void** )&SCOREP_LIBWRAP_ORIGINAL( func ),   \
-                                              &SCOREP_LIBWRAP_REGION_HANDLE( func ) );      \
-    }                                                                                       \
+#define SCOREP_LIBWRAP_FUNC_INIT( handle, func, prettyname, file, line )                \
+    do                                                                                  \
+    {                                                                                   \
+        SCOREP_LIBWRAP_API( enable_wrapper )( handle,                                   \
+                                              prettyname, #func, file, line,            \
+                                              ( void* )SCOREP_LIBWRAP_WRAPPER( func ),  \
+                                              &SCOREP_LIBWRAP_ORIGINAL_HANDLE( func ),  \
+                                              &SCOREP_LIBWRAP_REGION_HANDLE( func ) );  \
+    }                                                                                   \
     while ( 0 )
+
+/**
+ * @def SCOREP_LIBWRAP_ORIGINAL
+ * Get the function pointer to the original function for @a func
+ *
+ * @param func              Function symbol
+ */
+#define SCOREP_LIBWRAP_ORIGINAL( func ) \
+    ( ( SCOREP_LIBWRAP_ORIGINAL_TYPE( func )* )SCOREP_LIBWRAP_API( get_original )( SCOREP_LIBWRAP_ORIGINAL_HANDLE( func ) ) )
 
 #endif /* !SCOREP_LIBWRAP_API */
 

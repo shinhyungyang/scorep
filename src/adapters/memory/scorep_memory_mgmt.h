@@ -33,11 +33,14 @@
  * Do not prefix this symbol with 'scorep_', it needs to survive the unwinding
  * filter.
  */
+#define SCOREP_LIBWRAP_ORIGINAL_TYPE( func ) \
+    scorep_memory_original_type__ ## func ## _t
+
 #define SCOREP_LIBWRAP_WRAPPER( func ) \
     __scorep_memory_wrapper__ ## func
 
-#define SCOREP_LIBWRAP_ORIGINAL( func ) \
-    scorep_memory_original__ ## func
+#define SCOREP_LIBWRAP_ORIGINAL_HANDLE( func ) \
+    scorep_memory_original_handle__ ## func
 
 #include <scorep/SCOREP_Libwrap_Macros.h>
 
@@ -79,8 +82,9 @@ extern SCOREP_RegionHandle scorep_memory_regions[ SCOREP_MEMORY_REGION_SENTINEL 
 
 
 #define SCOREP_MEMORY_WRAPPER( RET, NAME, ARGS ) \
-    SCOREP_LIBWRAP_DECLARE_WRAPPER( ( RET ), NAME, ARGS ); \
-    SCOREP_LIBWRAP_DECLARE_ORIGINAL( ( RET ), NAME, ARGS );
+    SCOREP_LIBWRAP_DECLARE_ORIGINAL_TYPE( ( RET ), NAME, ARGS ); \
+    SCOREP_LIBWRAP_DECLARE_WRAPPER( NAME ); \
+    SCOREP_LIBWRAP_DECLARE_ORIGINAL_HANDLE( NAME );
 #include "scorep_memory_wrappers.inc.c"
 
 

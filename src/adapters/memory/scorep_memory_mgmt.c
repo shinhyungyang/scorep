@@ -48,7 +48,7 @@
 SCOREP_RegionHandle scorep_memory_regions[ SCOREP_MEMORY_REGION_SENTINEL ];
 
 #define SCOREP_MEMORY_WRAPPER( RET, NAME, ARGS ) \
-    SCOREP_LIBWRAP_DEFINE_ORIGINAL( ( RET ), NAME, ARGS );
+    SCOREP_LIBWRAP_DEFINE_ORIGINAL_HANDLE( NAME );
 #include "scorep_memory_wrappers.inc.c"
 
 /* *INDENT-OFF* */
@@ -149,7 +149,7 @@ enable_memory_wrappers( void )
                                   SCOREP_PARADIGM_MEMORY, \
                                   SCOREP_REGION_UNKNOWN, \
                                   ( void* )SCOREP_LIBWRAP_WRAPPER( NAME ), \
-                                  ( void** )&SCOREP_LIBWRAP_ORIGINAL( NAME ), \
+                                  &SCOREP_LIBWRAP_ORIGINAL_HANDLE( NAME ), \
                                   NULL );
 #include "scorep_memory_wrappers.inc.c"
 }

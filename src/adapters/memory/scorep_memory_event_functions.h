@@ -16,7 +16,7 @@
 #define SCOREP_MEMORY_EVENT_FUNCTIONS_H
 
 /**
- * Declaration of all __real_* functions used by the memory library wrapper
+ * Declaration of wrapper functions used by the memory library wrapper
  */
 
 #include <malloc.h>
@@ -26,6 +26,7 @@
 
 #include <SCOREP_InMeasurement.h>
 #include <SCOREP_RuntimeManagement.h>
+#include <SCOREP_Libwrap_Internal.h>
 
 #define SCOREP_DEBUG_MODULE_NAME MEMORY
 #include <UTILS_Debug.h>

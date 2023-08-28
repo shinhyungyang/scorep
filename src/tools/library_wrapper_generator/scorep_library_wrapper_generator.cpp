@@ -123,17 +123,20 @@ public:
 
         out << generator.iterate_includes() << endl;
 
-        out << "#define SCOREP_LIBWRAP_WRAPPER( func ) \\\n"
+        out << "#define SCOREP_LIBWRAP_ORIGINAL_TYPE( func ) \\\n"
+            << "    libwrap_" << generator.m_config.wrapper_name << "_original_type__ ## func ## _t\n"
+            << "\n"
+            << "#define SCOREP_LIBWRAP_WRAPPER( func ) \\\n"
             << "    libwrap_" << generator.m_config.wrapper_name << "_wrapper__ ## func\n"
             << "\n"
             << "#define SCOREP_LIBWRAP_REGION_DESCRIPTOR( func ) \\\n"
             << "    libwrap_" << generator.m_config.wrapper_name << "_region_descr__ ## func\n"
             << "\n"
-            << "#define SCOREP_LIBWRAP_REGION_HANDLE( func ) \\\n"
-            << "    SCOREP_LIBWRAP_REGION_DESCRIPTOR( func ).handle\n"
+            << "#define SCOREP_LIBWRAP_ORIGINAL_HANDLE( func ) \\\n"
+            << "    SCOREP_LIBWRAP_REGION_DESCRIPTOR( func ).original_handle\n"
             << "\n"
-            << "#define SCOREP_LIBWRAP_ORIGINAL( func ) \\\n"
-            << "    SCOREP_LIBWRAP_REGION_DESCRIPTOR( func ).original\n"
+            << "#define SCOREP_LIBWRAP_REGION_HANDLE( func ) \\\n"
+            << "    SCOREP_LIBWRAP_REGION_DESCRIPTOR( func ).region_handle\n"
             << "\n";
 
         if ( !generator.m_config.create_internal_wrapper_code_file )
@@ -165,7 +168,8 @@ public:
             << "/* wrapper declarations */\n"
             << "\n"
             << DEFINE_LIBWRAP_PROCESS_FUNC
-            << "    static _SCOREP_LIBWRAP_RETTYPE rettype SCOREP_LIBWRAP_WRAPPER( func )args;\n"
+            << "    SCOREP_LIBWRAP_DECLARE_ORIGINAL_TYPE( rettype, func, args ); \\\n"
+            << "    SCOREP_LIBWRAP_DECLARE_WRAPPER( func );\n"
             << "\n"
             << "#define SCOREP_LIBWRAP_PROCESS_FUNC_WITH_NAMESPACE\n"
             << "#include \"" << remove_path( generator.m_config.function_list_file_name ) << "\"\n"
@@ -175,8 +179,8 @@ public:
             << DEFINE_LIBWRAP_PROCESS_FUNC
             << "    static struct \\\n"
             << "    { \\\n"
-            << "        SCOREP_RegionHandle handle; \\\n"
-            << "        _SCOREP_LIBWRAP_FUNC_TYPE( rettype, ( *original ), args ); \\\n"
+            << "        SCOREP_Libwrap_OriginalHandle original_handle; \\\n"
+            << "        SCOREP_RegionHandle           region_handle; \\\n"
             << "    } SCOREP_LIBWRAP_REGION_DESCRIPTOR( func );\n"
             << "\n"
             << "#define SCOREP_LIBWRAP_PROCESS_FUNC_WITH_NAMESPACE\n"
@@ -200,7 +204,7 @@ public:
                 << "                                      SCOREP_PARADIGM_LIBWRAP, \\\n"
                 << "                                      SCOREP_REGION_ ## TYPE, \\\n"
                 << "                                      ( void* )SCOREP_LIBWRAP_WRAPPER( func ), \\\n"
-                << "                                      ( void** )&SCOREP_LIBWRAP_ORIGINAL( func ), \\\n"
+                << "                                      &SCOREP_LIBWRAP_ORIGINAL_HANDLE( func ), \\\n"
                 << "                                      &SCOREP_LIBWRAP_REGION_HANDLE( func ) ); \\\n";
         }
 
@@ -234,7 +238,7 @@ public:
         if ( !generator.m_config.create_internal_wrapper_code_file )
         {
             out << "void\n"
-                << "scorep_libwrap_plugin( const SCOREP_LibwrapAPI* const libwrapAPI, \n"
+                << "scorep_libwrap_plugin( const SCOREP_LibwrapAPI* const libwrapAPI,\n"
                 << "                       size_t                         libwrapAPISize )\n"
                 << "{\n"
                 << "    if ( libwrapAPISize < sizeof( *libwrap_plugin_api ) )\n"

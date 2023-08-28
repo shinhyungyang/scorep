@@ -18,8 +18,8 @@
 
 #include "foo.h"
 
-#define SCOREP_LIBWRAP_DECLARE_WRAPPER_SPECIFIER  static
-#define SCOREP_LIBWRAP_DECLARE_ORIGINAL_SPECIFIER static
+#define SCOREP_LIBWRAP_DECLARE_WRAPPER_SPECIFIER         static
+#define SCOREP_LIBWRAP_DECLARE_ORIGINAL_HANDLE_SPECIFIER static
 
 #include <scorep/SCOREP_Libwrap.h>
 
@@ -35,8 +35,9 @@
 extern const SCOREP_LibwrapAPI scorep_libwrap_plugin_api;
 
 
-SCOREP_LIBWRAP_DECLARE_WRAPPER( ( void ), foo, ( void ) );
-SCOREP_LIBWRAP_DECLARE_ORIGINAL( ( void ), foo, ( void ) );
+SCOREP_LIBWRAP_DECLARE_ORIGINAL_TYPE( ( void ), foo, ( void ) );
+SCOREP_LIBWRAP_DECLARE_WRAPPER( foo );
+SCOREP_LIBWRAP_DECLARE_ORIGINAL_HANDLE( foo );
 
 
 // region handles

@@ -45,11 +45,14 @@
  */
 typedef int64_t scorep_off64_t;
 
+#define SCOREP_LIBWRAP_ORIGINAL_TYPE( func ) \
+    scorep_posix_io_original_type__ ## func ## _t
+
 #define SCOREP_LIBWRAP_WRAPPER( func ) \
     __scorep_posix_io_wrapper__ ## func
 
-#define SCOREP_LIBWRAP_ORIGINAL( func ) \
-    scorep_posix_io_original_ ## func
+#define SCOREP_LIBWRAP_ORIGINAL_HANDLE( func ) \
+    scorep_posix_io_original_handle__ ## func
 
 #define SCOREP_LIBWRAP_REGION_HANDLE( func ) \
     scorep_posix_io_region_ ## func
@@ -58,8 +61,9 @@ typedef int64_t scorep_off64_t;
 
 #define SCOREP_POSIX_IO_PROCESS_FUNC( PARADIGM, TYPE, return_type, func, func_args ) \
     extern SCOREP_RegionHandle SCOREP_LIBWRAP_REGION_HANDLE( func ); \
-    SCOREP_LIBWRAP_DECLARE_WRAPPER( ( return_type ), func, func_args ); \
-    SCOREP_LIBWRAP_DECLARE_ORIGINAL( ( return_type ), func, func_args );
+    SCOREP_LIBWRAP_DECLARE_ORIGINAL_TYPE( ( return_type ), func, func_args ); \
+    SCOREP_LIBWRAP_DECLARE_WRAPPER( func ); \
+    SCOREP_LIBWRAP_DECLARE_ORIGINAL_HANDLE( func );
 
 #include "scorep_posix_io_function_list.inc.c"
 
