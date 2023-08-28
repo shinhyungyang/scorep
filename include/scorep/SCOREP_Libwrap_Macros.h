@@ -65,89 +65,6 @@
 
 #endif
 
-#ifndef SCOREP_LIBWRAP_API
-
-extern const SCOREP_LibwrapAPI scorep_libwrap_plugin_api;
-
-#define SCOREP_LIBWRAP_API( api ) \
-    scorep_libwrap_plugin_api.api
-
-#endif
-
-/** @def SCOREP_LIBWRAP_NULL
- *  NULL handle within Score-P library wrapper
- */
-#define SCOREP_LIBWRAP_NULL NULL
-
-#define SCOREP_LIBWRAP_INIT( handle, attributes )                           \
-    do                                                                      \
-    {                                                                       \
-        if ( ( handle ) == SCOREP_LIBWRAP_NULL )                            \
-        {                                                                   \
-            SCOREP_LIBWRAP_API( create )( &( handle ), &( attributes ) );   \
-        }                                                                   \
-    }                                                                       \
-    while ( 0 )
-
-/**
- * @def SCOREP_LIBWRAP_ENTER_MEASUREMENT
- * Entering the wrapper function
- */
-#define SCOREP_LIBWRAP_ENTER_MEASUREMENT() \
-    int scorep_libwrap_var_previous; \
-    int scorep_libwrap_var_trigger = SCOREP_LIBWRAP_API( enter_measurement )()
-
-/**
- * @def SCOREP_LIBWRAP_EXIT_MEASUREMENT
- * Exiting the wrapper function
- */
-#define SCOREP_LIBWRAP_EXIT_MEASUREMENT() \
-    SCOREP_LIBWRAP_API( exit_measurement )()
-
-/**
- * @def SCOREP_LIBWRAP_ENTER_WRAPPED_REGION
- *      Transition from wrapper to original
- */
-#define SCOREP_LIBWRAP_ENTER_WRAPPED_REGION() \
-    scorep_libwrap_var_previous = SCOREP_LIBWRAP_API( enter_wrapped_region )()
-
-/**
- * @def SCOREP_LIBWRAP_EXIT_WRAPPED_REGION
- *      Transition from original to wrapper
- */
-#define SCOREP_LIBWRAP_EXIT_WRAPPED_REGION() \
-    SCOREP_LIBWRAP_API( exit_wrapped_region )( scorep_libwrap_var_previous )
-
-/**
- * @def SCOREP_LIBWRAP_FUNC_ENTER
- * Write event for entering wrapped function
- *
- */
-#define SCOREP_LIBWRAP_FUNC_ENTER( func )                                               \
-    do                                                                                  \
-    {                                                                                   \
-        if ( scorep_libwrap_var_trigger )                                               \
-        {                                                                               \
-            SCOREP_LIBWRAP_API( enter_region )( SCOREP_LIBWRAP_REGION_HANDLE( func ) ); \
-        }                                                                               \
-    }                                                                                   \
-    while ( 0 )
-
-/**
- * @def SCOREP_LIBWRAP_FUNC_EXIT
- * Write event for leaving wrapped function
- *
- */
-#define SCOREP_LIBWRAP_FUNC_EXIT( func )                                                \
-    do                                                                                  \
-    {                                                                                   \
-        if ( scorep_libwrap_var_trigger )                                               \
-        {                                                                               \
-            SCOREP_LIBWRAP_API( exit_region )( SCOREP_LIBWRAP_REGION_HANDLE( func ) );  \
-        }                                                                               \
-    }                                                                                   \
-    while ( 0 )
-
 /**
  * @internal
  * @def _SCOREP_LIBWRAP_RETTYPE
@@ -211,7 +128,7 @@ extern const SCOREP_LibwrapAPI scorep_libwrap_plugin_api;
  * @param argtypes          Function arguments in parentheses
  */
 #define SCOREP_LIBWRAP_DECLARE_ORIGINAL( rettype, func, argtypes ) \
-    SCOREP_LIBWRAP_DECLARE_ORIGINAL_SPECIFIER _SCOREP_LIBWRAP_FUNC_TYPE( rettype, ( *SCOREP_LIBWRAP_ORIGINAL( func )), argtypes )
+    SCOREP_LIBWRAP_DECLARE_ORIGINAL_SPECIFIER _SCOREP_LIBWRAP_FUNC_TYPE( rettype, ( *SCOREP_LIBWRAP_ORIGINAL( func ) ), argtypes )
 
 /**
  * @def SCOREP_LIBWRAP_DEFINE_ORIGINAL
@@ -222,27 +139,11 @@ extern const SCOREP_LibwrapAPI scorep_libwrap_plugin_api;
  * @param argtypes          Function arguments in parentheses
  */
 #define SCOREP_LIBWRAP_DEFINE_ORIGINAL( rettype, func, argtypes ) \
-    _SCOREP_LIBWRAP_FUNC_TYPE( rettype, ( *SCOREP_LIBWRAP_ORIGINAL( func )), argtypes ) = NULL
+    _SCOREP_LIBWRAP_FUNC_TYPE( rettype, ( *SCOREP_LIBWRAP_ORIGINAL( func ) ), argtypes ) = NULL
 
-/**
- * @def SCOREP_LIBWRAP_FUNC_INIT
- * Enable wrapping of requested function. Ignoring return code.
- *
- * @param handle            Library wrapper handle
- * @param func              Function symbol
- * @param prettyname        The pretty name of the function (i.e., demangled; as `const char*`)
- * @param file              Source code location (file as `const char*`)
- * @param line              Source code location (line as `int`)
+/** @def SCOREP_LIBWRAP_NULL
+ *  NULL handle within Score-P library wrapper
  */
-#define SCOREP_LIBWRAP_FUNC_INIT( handle, func, prettyname, file, line )                    \
-    do                                                                                      \
-    {                                                                                       \
-        SCOREP_LIBWRAP_API( enable_wrapper )( handle,                                       \
-                                              prettyname, #func, file, line,                \
-                                              ( void* )SCOREP_LIBWRAP_WRAPPER( func ),      \
-                                              ( void** )&SCOREP_LIBWRAP_ORIGINAL( func ),   \
-                                              &SCOREP_LIBWRAP_REGION_HANDLE( func ) );      \
-    }                                                                                       \
-    while ( 0 )
+#define SCOREP_LIBWRAP_NULL NULL
 
 #endif /* SCOREP_LIBWRAP_MACROS_H */
