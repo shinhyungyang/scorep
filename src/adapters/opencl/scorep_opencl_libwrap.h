@@ -32,11 +32,14 @@
  * Do not prefix this symbol with 'scorep_', it needs to survive the unwinding
  * filter.
  */
+#define SCOREP_LIBWRAP_ORIGINAL_TYPE( func ) \
+    scorep_opencl_original_type__ ## func ## _t
+
 #define SCOREP_LIBWRAP_WRAPPER( func ) \
     __scorep_opencl_wrapper__ ## func
 
-#define SCOREP_LIBWRAP_ORIGINAL( func ) \
-    scorep_opencl_original__ ## func
+#define SCOREP_LIBWRAP_ORIGINAL_HANDLE( func ) \
+    scorep_opencl_original_handle__ ## func
 
 #define SCOREP_LIBWRAP_REGION_HANDLE( func ) \
     scorep_opencl_region__ ## func
@@ -48,8 +51,9 @@
  */
 #define SCOREP_OPENCL_PROCESS_FUNC( TYPE, return_type, func, func_args ) \
     extern SCOREP_RegionHandle SCOREP_LIBWRAP_REGION_HANDLE( func ); \
-    SCOREP_LIBWRAP_DECLARE_WRAPPER( ( return_type ), func, func_args ); \
-    SCOREP_LIBWRAP_DECLARE_ORIGINAL( ( return_type ), func, func_args );
+    SCOREP_LIBWRAP_DECLARE_ORIGINAL_TYPE( ( return_type ), func, func_args ); \
+    SCOREP_LIBWRAP_DECLARE_WRAPPER( func ); \
+    SCOREP_LIBWRAP_DECLARE_ORIGINAL_HANDLE( func );
 #include "scorep_opencl_function_list.inc.c"
 
 void

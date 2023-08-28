@@ -31,6 +31,10 @@ extern "C"
 /** Version of this library API/ABI */
 #define SCOREP_LIBWRAP_VERSION 2
 
+/** @brief Opaque handle to the original function.
+ * Must be compatible with gotcha_wrappee_handle_t */
+typedef void* SCOREP_Libwrap_OriginalHandle;
+
 /** @brief Keeps all necessary information of the library wrapping object. */
 typedef struct SCOREP_LibwrapHandle SCOREP_LibwrapHandle;
 

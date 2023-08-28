@@ -35,6 +35,7 @@
 #include <SCOREP_InMeasurement.h>
 #include <SCOREP_RuntimeManagement.h>
 #include <SCOREP_IoManagement.h>
+#include <SCOREP_Libwrap_Internal.h>
 
 #define SCOREP_DEBUG_MODULE_NAME IO
 #include <UTILS_Debug.h>

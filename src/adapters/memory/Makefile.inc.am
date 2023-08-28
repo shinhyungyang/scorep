@@ -68,7 +68,8 @@ libscorep_adapter_memory_event_la_CPPFLAGS =  \
     -I$(PUBLIC_INC_DIR)                       \
     -I$(INC_ROOT)src/measurement/include      \
     $(UTILS_CPPFLAGS)                         \
-    -I$(INC_DIR_DEFINITIONS)
+    -I$(INC_DIR_DEFINITIONS)                  \
+    -I$(INC_DIR_SERVICES)
 
 libscorep_adapter_memory_event_la_LDFLAGS = \
     $(library_api_version_ldflags)

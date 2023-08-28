@@ -40,28 +40,49 @@ SCOREP_Libwrap_Create( SCOREP_LibwrapHandle**          handle,
 /**
  * Call this function to enable wrapping of one function.
  *
- * @param handle             Score-P library wrapper object
- * @param prettyName         Region display name (i.e., demangled)
- * @param symbolName         Symbol name (i.e., mangled)
- * @param file               Source file name
- * @param line               Line number in source file
- * @param wrapper            Function address of the wrapper
- * @param[out] funcPtr       Pointer to the function address of the actual/wrappee
- * @param[out] regionHandle  Pointer to the region handle
+ * @param handle                  Score-P library wrapper object
+ * @param prettyName              Region display name (i.e., demangled)
+ * @param symbolName              Symbol name (i.e., mangled)
+ * @param file                    Source file name
+ * @param line                    Line number in source file
+ * @param wrapper                 Function address of the wrapper
+ * @param[out] originalHandleOut  Pointer to the orignal handle
+ * @param[out] regionHandleOut    Pointer to the region handle
  *
  * @return                   @see SCOREP_LibwrapEnableErrorCode
  */
 SCOREP_LibwrapEnableErrorCode
-SCOREP_Libwrap_EnableWrapper( SCOREP_LibwrapHandle* handle,
-                              const char*           prettyName,
-                              const char*           symbolName,
-                              const char*           file,
-                              int                   line,
-                              SCOREP_ParadigmType   paradigm,
-                              SCOREP_RegionType     regionType,
-                              void*                 wrapper,
-                              void**                funcPtr,
-                              SCOREP_RegionHandle*  regionHandle );
+SCOREP_Libwrap_EnableWrapper( SCOREP_LibwrapHandle*          handle,
+                              const char*                    prettyName,
+                              const char*                    symbolName,
+                              const char*                    file,
+                              int                            line,
+                              SCOREP_ParadigmType            paradigm,
+                              SCOREP_RegionType              regionType,
+                              void*                          wrapper,
+                              SCOREP_Libwrap_OriginalHandle* originalHandle,
+                              SCOREP_RegionHandle*           regionHandle );
 
+#ifndef SCOREP_LIBWRAP_ORIGINAL
+
+/**
+ * @def SCOREP_LIBWRAP_ORIGINAL
+ * The function pointer of the original function for @a func
+ *
+ * @param func              Function name
+ */
+#define SCOREP_LIBWRAP_ORIGINAL( func ) \
+    ( ( SCOREP_LIBWRAP_ORIGINAL_TYPE( func )* )SCOREP_Libwrap_GetOriginal( SCOREP_LIBWRAP_ORIGINAL_HANDLE( func ) ) )
+
+static inline void*
+SCOREP_Libwrap_GetOriginal( SCOREP_Libwrap_OriginalHandle originalHandle )
+{
+    void*
+    gotcha_get_wrappee( void* );
+
+    return gotcha_get_wrappee( originalHandle );
+}
+
+#endif /* SCOREP_LIBWRAP_ORIGINAL */
 
 #endif /* SCOREP_LIBWRAP_INTERNAL_H */

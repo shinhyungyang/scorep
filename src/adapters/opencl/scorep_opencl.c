@@ -31,6 +31,7 @@
 #include <SCOREP_Timer_Ticks.h>
 #include <SCOREP_AcceleratorManagement.h>
 #include <scorep_system_tree.h>
+#include <SCOREP_Libwrap_Internal.h>
 
 #include <jenkins_hash.h>
 

@@ -39,16 +39,29 @@
 
 #endif
 
-#ifndef SCOREP_LIBWRAP_ORIGINAL
+#ifndef SCOREP_LIBWRAP_ORIGINAL_HANDLE
 
 /**
- * @def SCOREP_LIBWRAP_ORIGINAL
+ * @def SCOREP_LIBWRAP_ORIGINAL_HANDLE
  * The function pointer of the original function.
  *
  * @param func              Function name
  */
-#define SCOREP_LIBWRAP_ORIGINAL( func ) \
-    scorep_libwrap_original__ ## func
+#define SCOREP_LIBWRAP_ORIGINAL_HANDLE( func ) \
+    scorep_libwrap_original_handle__ ## func
+
+#endif
+
+#ifndef SCOREP_LIBWRAP_ORIGINAL_TYPE
+
+/**
+ * @def SCOREP_LIBWRAP_ORIGINAL_TYPE
+ * The function pointer typename of the original function.
+ *
+ * @param func              Function name
+ */
+#define SCOREP_LIBWRAP_ORIGINAL_TYPE( func ) \
+    scorep_libwrap_original_type__ ## func ## _t
 
 #endif
 
@@ -86,6 +99,17 @@
     _SCOREP_LIBWRAP_RETTYPE rettype name argtypes
 
 /**
+ * @def SCOREP_LIBWRAP_DECLARE_ORIGINAL_TYPE
+ * Declares the wrapper function.
+ *
+ * @param rettype           Function return type in parentheses.
+ * @param func              Function name
+ * @param argtypes          Function arguments in parentheses
+ */
+#define SCOREP_LIBWRAP_DECLARE_ORIGINAL_TYPE( rettype, func, argtypes ) \
+    typedef _SCOREP_LIBWRAP_FUNC_TYPE ( rettype, ( SCOREP_LIBWRAP_ORIGINAL_TYPE( func ) ), argtypes )
+
+/**
  * @def SCOREP_LIBWRAP_DECLARE_WRAPPER_SPECIFIER
  * The default storage specifier for the wrapper-func declaration is empty.
  * Overwrite this macro if you want a different, like `static`.
@@ -104,42 +128,37 @@
  * @param func              Function name
  * @param argtypes          Function arguments in parentheses
  */
-#define SCOREP_LIBWRAP_DECLARE_WRAPPER( rettype, func, argtypes ) \
-    SCOREP_LIBWRAP_DECLARE_WRAPPER_SPECIFIER _SCOREP_LIBWRAP_FUNC_TYPE( rettype, SCOREP_LIBWRAP_WRAPPER( func ), argtypes )
+#define SCOREP_LIBWRAP_DECLARE_WRAPPER( func ) \
+    SCOREP_LIBWRAP_DECLARE_WRAPPER_SPECIFIER SCOREP_LIBWRAP_ORIGINAL_TYPE( func ) SCOREP_LIBWRAP_WRAPPER( func )
 
 /**
- * @def SCOREP_LIBWRAP_DECLARE_ORIGINAL_SPECIFIER
- * The default storage specifier for the function pointer to the original function
- * declaration is 'extern'.
+ * @def SCOREP_LIBWRAP_DECLARE_ORIGINAL_HANDLE_SPECIFIER
+ * The default storage specifier for the function pointer declaration is 'extern'.
  * Overwrite this macro if you want a different.
  */
-#ifndef SCOREP_LIBWRAP_DECLARE_ORIGINAL_SPECIFIER
+#ifndef SCOREP_LIBWRAP_DECLARE_ORIGINAL_HANDLE_SPECIFIER
 
-#define SCOREP_LIBWRAP_DECLARE_ORIGINAL_SPECIFIER extern
+#define SCOREP_LIBWRAP_DECLARE_ORIGINAL_HANDLE_SPECIFIER extern
 
 #endif
 
 /**
- * @def SCOREP_LIBWRAP_DECLARE_ORIGINAL
+ * @def SCOREP_LIBWRAP_DECLARE_ORIGINAL_HANDLE
  * Declares the function pointer for the original function.
  *
- * @param rettype           Function return type in parentheses.
  * @param func              Function name
- * @param argtypes          Function arguments in parentheses
  */
-#define SCOREP_LIBWRAP_DECLARE_ORIGINAL( rettype, func, argtypes ) \
-    SCOREP_LIBWRAP_DECLARE_ORIGINAL_SPECIFIER _SCOREP_LIBWRAP_FUNC_TYPE( rettype, ( *SCOREP_LIBWRAP_ORIGINAL( func ) ), argtypes )
+#define SCOREP_LIBWRAP_DECLARE_ORIGINAL_HANDLE( func ) \
+    SCOREP_LIBWRAP_DECLARE_ORIGINAL_HANDLE_SPECIFIER SCOREP_Libwrap_OriginalHandle SCOREP_LIBWRAP_ORIGINAL_HANDLE( func )
 
 /**
- * @def SCOREP_LIBWRAP_DEFINE_ORIGINAL
- * Defines the function pointer of the original function, initialized with NULL.
+ * @def SCOREP_LIBWRAP_DEFINE_ORIGINAL_HANDLE
+ * Defines the handle to the original function, initialized with NULL.
  *
- * @param rettype           Function return type in parentheses.
  * @param func              Function name
- * @param argtypes          Function arguments in parentheses
  */
-#define SCOREP_LIBWRAP_DEFINE_ORIGINAL( rettype, func, argtypes ) \
-    _SCOREP_LIBWRAP_FUNC_TYPE( rettype, ( *SCOREP_LIBWRAP_ORIGINAL( func ) ), argtypes ) = NULL
+#define SCOREP_LIBWRAP_DEFINE_ORIGINAL_HANDLE( func ) \
+    SCOREP_Libwrap_OriginalHandle SCOREP_LIBWRAP_ORIGINAL_HANDLE( func ) = NULL
 
 /** @def SCOREP_LIBWRAP_NULL
  *  NULL handle within Score-P library wrapper

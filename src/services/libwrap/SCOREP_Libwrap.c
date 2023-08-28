@@ -460,21 +460,21 @@ SCOREP_Libwrap_Create( SCOREP_LibwrapHandle**          outHandle,
 }
 
 SCOREP_LibwrapEnableErrorCode
-SCOREP_Libwrap_EnableWrapper( SCOREP_LibwrapHandle* handle,
-                              const char*           prettyName,
-                              const char*           symbolName,
-                              const char*           file,
-                              int                   line,
-                              SCOREP_ParadigmType   paradigm,
-                              SCOREP_RegionType     regionType,
-                              void*                 wrapper,
-                              void**                funcPtrOut,
-                              SCOREP_RegionHandle*  region )
+SCOREP_Libwrap_EnableWrapper( SCOREP_LibwrapHandle*          handle,
+                              const char*                    prettyName,
+                              const char*                    symbolName,
+                              const char*                    file,
+                              int                            line,
+                              SCOREP_ParadigmType            paradigm,
+                              SCOREP_RegionType              regionType,
+                              void*                          wrapper,
+                              SCOREP_Libwrap_OriginalHandle* originalHandleOut,
+                              SCOREP_RegionHandle*           regionOut )
 {
-    UTILS_ASSERT( handle && symbolName && wrapper && funcPtrOut );
+    UTILS_ASSERT( handle && symbolName && wrapper && originalHandleOut );
 
     /* shoule only be called once */
-    if ( NULL != UTILS_Atomic_LoadN_void_ptr( funcPtrOut,
+    if ( NULL != UTILS_Atomic_LoadN_void_ptr( originalHandleOut,
                                               UTILS_ATOMIC_SEQUENTIAL_CONSISTENT ) )
     {
         return SCOREP_LIBWRAP_ENABLED_SUCCESS;
@@ -482,7 +482,7 @@ SCOREP_Libwrap_EnableWrapper( SCOREP_LibwrapHandle* handle,
 
     UTILS_MutexLock( &handle->lock );
 
-    if ( NULL != UTILS_Atomic_LoadN_void_ptr( funcPtrOut,
+    if ( NULL != UTILS_Atomic_LoadN_void_ptr( originalHandleOut,
                                               UTILS_ATOMIC_SEQUENTIAL_CONSISTENT ) )
     {
         UTILS_MutexUnlock( &handle->lock );
@@ -515,24 +515,21 @@ SCOREP_Libwrap_EnableWrapper( SCOREP_LibwrapHandle* handle,
     *handle->gotcha_tail = gotcha_handle;
     handle->gotcha_tail  = &gotcha_handle->next;
 
-    if ( region )
+    if ( regionOut )
     {
-        *region = SCOREP_Definitions_NewRegion( prettyName,
-                                                symbolName,
-                                                file ? SCOREP_Definitions_NewSourceFile( file )
-                                                : SCOREP_INVALID_SOURCE_FILE,
-                                                line,
-                                                SCOREP_INVALID_LINE_NO,
-                                                paradigm,
-                                                regionType );
+        *regionOut = SCOREP_Definitions_NewRegion( prettyName,
+                                                   symbolName,
+                                                   file ? SCOREP_Definitions_NewSourceFile( file )
+                                                   : SCOREP_INVALID_SOURCE_FILE,
+                                                   line,
+                                                   SCOREP_INVALID_LINE_NO,
+                                                   paradigm,
+                                                   regionType );
     }
 
-    if ( ret != GOTCHA_FUNCTION_NOT_FOUND )
-    {
-        UTILS_Atomic_StoreN_void_ptr( funcPtrOut,
-                                      gotcha_get_wrappee( gotcha_handle->wrappee_handle ),
-                                      UTILS_ATOMIC_SEQUENTIAL_CONSISTENT );
-    }
+    UTILS_Atomic_StoreN_void_ptr( originalHandleOut,
+                                  gotcha_handle->wrappee_handle,
+                                  UTILS_ATOMIC_SEQUENTIAL_CONSISTENT );
 
     UTILS_MutexUnlock( &handle->lock );
 
@@ -552,10 +549,10 @@ libwrap_plugin_api_enable_wrapper( SCOREP_LibwrapHandle* handle,
                                    const char*           file,
                                    int                   line,
                                    void*                 wrapper,
-                                   void**                funcPtrOut,
-                                   SCOREP_RegionHandle*  region )
+                                   void**                originalHandleOut,
+                                   SCOREP_RegionHandle*  regionOut )
 {
-    if ( !handle || !symbolName || !wrapper || !funcPtrOut || !region )
+    if ( !handle || !symbolName || !wrapper || !originalHandleOut || !regionOut )
     {
         return SCOREP_LIBWRAP_ENABLED_ERROR_INVALID_ARGUMENTS;
     }
@@ -574,14 +571,20 @@ libwrap_plugin_api_enable_wrapper( SCOREP_LibwrapHandle* handle,
         SCOREP_PARADIGM_LIBWRAP,
         SCOREP_REGION_WRAPPER,
         wrapper,
-        funcPtrOut,
-        region );
+        originalHandleOut,
+        regionOut );
     if ( ret == SCOREP_LIBWRAP_ENABLED_SUCCESS )
     {
-        SCOREP_RegionHandle_SetGroup( *region, handle->attributes->display_name );
+        SCOREP_RegionHandle_SetGroup( *regionOut, handle->attributes->display_name );
     }
 
     return ret;
+}
+
+static void*
+libwrap_plugin_api_get_original( SCOREP_Libwrap_OriginalHandle originalHandle )
+{
+    return gotcha_get_wrappee( originalHandle );
 }
 
 static int
@@ -640,6 +643,7 @@ const SCOREP_LibwrapAPI scorep_libwrap_plugin_api =
 {
     .create               = SCOREP_Libwrap_Create,
     .enable_wrapper       = libwrap_plugin_api_enable_wrapper,
+    .get_original         = libwrap_plugin_api_get_original,
     .enter_measurement    = libwrap_plugin_api_enter_measurement,
     .exit_measurement     = libwrap_plugin_api_exit_measurement,
     .enter_region         = libwrap_plugin_api_enter_region,

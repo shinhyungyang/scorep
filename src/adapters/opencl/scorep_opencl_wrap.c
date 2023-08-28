@@ -25,6 +25,7 @@
 #include <SCOREP_RuntimeManagement.h>
 #include <SCOREP_InMeasurement.h>
 #include <SCOREP_Events.h>
+#include <SCOREP_Libwrap_Internal.h>
 
 #include "scorep_opencl.h"
 #include "scorep_opencl_config.h"

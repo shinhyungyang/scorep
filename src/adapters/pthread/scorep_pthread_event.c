@@ -28,6 +28,7 @@
 #include <SCOREP_InMeasurement.h>
 #include <SCOREP_Memory.h>
 #include <SCOREP_Task.h>
+#include <SCOREP_Libwrap_Internal.h>
 
 #define SCOREP_DEBUG_MODULE_NAME PTHREAD
 #include <UTILS_Debug.h>
