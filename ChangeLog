@@ -7,6 +7,10 @@ Features and improvements:
 - Communicators created with one of the procedures added in MPI 4.0 are now
   properly tracked by Score-P.
 
+Compatibility:
+
+- The HIP adapter requires the ROCm SMI library.
+
 Bugfixes:
 
 - The OpenMP detection now additionally checks for the `-fiopenmp` flag
