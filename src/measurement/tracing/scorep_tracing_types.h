@@ -13,7 +13,7 @@
  * Copyright (c) 2009-2013,
  * University of Oregon, Eugene, USA
  *
- * Copyright (c) 2009-2014, 2016-2019,
+ * Copyright (c) 2009-2014, 2016-2019, 2023,
  * Forschungszentrum Juelich GmbH, Germany
  *
  * Copyright (c) 2009-2013,
@@ -140,6 +140,10 @@ scorep_tracing_group_type_to_otf2( SCOREP_GroupType scorepType,
         // HIP
         case_return( HIP_LOCATIONS, COMM_LOCATIONS, HIP, NONE );
         case_return( HIP_GROUP,     COMM_GROUP,     HIP, NONE );
+
+        // OpenMP target
+        case_return( OPENMP_TARGET_LOCATIONS, COMM_LOCATIONS, OPENMP_TARGET, NONE );
+        case_return( OPENMP_TARGET_GROUP,     COMM_GROUP,     OPENMP_TARGET, NONE );
 
 #undef case_return
         default:

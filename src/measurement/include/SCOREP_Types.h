@@ -13,7 +13,7 @@
  * Copyright (c) 2009-2013,
  * University of Oregon, Eugene, USA
  *
- * Copyright (c) 2009-2014, 2016-2017,
+ * Copyright (c) 2009-2014, 2016-2017, 2023,
  * Forschungszentrum Juelich GmbH, Germany
  *
  * Copyright (c) 2009-2014,
@@ -367,6 +367,9 @@ typedef enum SCOREP_GroupType
 
     SCOREP_GROUP_HIP_LOCATIONS               = 26,
     SCOREP_GROUP_HIP_GROUP                   = 27,
+
+    SCOREP_GROUP_OPENMP_TARGET_LOCATIONS     = 28,
+    SCOREP_GROUP_OPENMP_TARGET_GROUP         = 29,
 
     SCOREP_INVALID_GROUP_TYPE /**< For internal use only. */
 } SCOREP_GroupType;
