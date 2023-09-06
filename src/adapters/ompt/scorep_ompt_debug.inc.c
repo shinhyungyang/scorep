@@ -1,7 +1,7 @@
 /*
  * This file is part of the Score-P software (http://www.score-p.org)
  *
- * Copyright (c) 2022,
+ * Copyright (c) 2022-2023,
  * Forschungszentrum Juelich GmbH, Germany
  *
  * This software may be modified and distributed under the terms of
@@ -264,6 +264,92 @@ task_status2string( ompt_task_status_t t )
             return "switch";
         case ompt_taskwait_complete:
             return "taskwait_complete";
+    }
+    UTILS_BUG();
+    return "";
+}
+
+static const char*
+target_data_optype2string( ompt_target_data_op_t t )
+{
+    /**
+     * typedef enum ompt_target_data_op_t {
+          ompt_target_data_alloc                      = 1,
+          ompt_target_data_transfer_to_device         = 2,
+          ompt_target_data_transfer_from_device       = 3,
+          ompt_target_data_delete                     = 4,
+          ompt_target_data_associate                  = 5,
+          ompt_target_data_disassociate               = 6,
+          ompt_target_data_alloc_async                = 17,
+          ompt_target_data_transfer_to_device_async   = 18,
+          ompt_target_data_transfer_from_device_async = 19,
+          ompt_target_data_delete_async               = 20
+        } ompt_target_data_op_t;
+     */
+    switch ( t )
+    {
+        case ompt_target_data_alloc:
+            return "target_data_alloc";
+        case ompt_target_data_transfer_to_device:
+            return "target_data_transfer_to_device";
+        case ompt_target_data_transfer_from_device:
+            return "target_data_transfer_from_device";
+        case ompt_target_data_delete:
+            return "target_data_delete";
+        case ompt_target_data_associate:
+            return "target_data_associate";
+        case ompt_target_data_disassociate:
+            return "target_data_disassociate";
+        case ompt_target_data_alloc_async:
+            return "target_data_alloc_async";
+        case ompt_target_data_transfer_to_device_async:
+            return "target_data_transfer_to_device_async";
+        case ompt_target_data_transfer_from_device_async:
+            return "target_data_transfer_from_device_async";
+        case ompt_target_data_delete_async:
+            return "target_data_delete_async";
+        default:
+            break;
+    }
+    UTILS_BUG();
+    return "";
+}
+
+static const char*
+target_kind2string( ompt_target_t t )
+{
+    /**
+     * typedef enum ompt_target_t {
+          ompt_target                         = 1,
+          ompt_target_enter_data              = 2,
+          ompt_target_exit_data               = 3,
+          ompt_target_update                  = 4,
+          ompt_target_nowait                  = 9,
+          ompt_target_enter_data_nowait       = 10,
+          ompt_target_exit_data_nowait        = 11,
+          ompt_target_update_nowait           = 12
+        } ompt_target_t;
+     */
+    switch ( t )
+    {
+        case ompt_target:
+            return "target";
+        case ompt_target_enter_data:
+            return "target_enter_data";
+        case ompt_target_exit_data:
+            return "target_exit_data";
+        case ompt_target_update:
+            return "target_update";
+        case ompt_target_nowait:
+            return "target_nowait";
+        case ompt_target_enter_data_nowait:
+            return "target_enter_data_nowait";
+        case ompt_target_exit_data_nowait:
+            return "target_exit_data_nowait";
+        case ompt_target_update_nowait:
+            return "target_update_nowait";
+        default:
+            break;
     }
     UTILS_BUG();
     return "";
