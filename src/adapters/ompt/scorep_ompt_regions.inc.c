@@ -1,7 +1,7 @@
 /*
  * This file is part of the Score-P software (http://www.score-p.org)
  *
- * Copyright (c) 2022, 2024,
+ * Copyright (c) 2022-2024,
  * Forschungszentrum Juelich GmbH, Germany
  *
  * This software may be modified and distributed under the terms of
@@ -57,6 +57,15 @@ typedef enum tool_event_t
     TOOL_EVENT_FLUSH,
     TOOL_EVENT_REDUCTION,
 
+    TOOL_HOST_EVENTS,
+
+    TOOL_EVENT_TARGET_HOST,
+    TOOL_EVENT_TARGET_KERNEL,
+    TOOL_EVENT_TARGET_KERNEL_LAUNCH,
+    TOOL_EVENT_TARGET_DATA,
+    TOOL_EVENT_TARGET_ALLOC,
+    TOOL_EVENT_TARGET_FREE,
+
     TOOL_EVENTS,
 
     TOOL_EVENT_INVALID
@@ -102,6 +111,13 @@ typedef struct region_fallback_t
 #define REGION_OMP_SECTION "!$omp section"
 #define REGION_OMP_FLUSH "!$omp flush"
 #define REGION_OMP_REDUCTION "!$omp reduction"
+// OpenMP target regions
+#define REGION_OMP_TARGET_HOST "!$omp target"
+#define REGION_OMP_TARGET_KERNEL "!$omp target (kernel execution)"
+#define REGION_OMP_TARGET_KERNEL_LAUNCH "!$omp target submit"
+#define REGION_OMP_TARGET_DATA "!$omp target data op"
+#define REGION_OMP_TARGET_ALLOC "!$omp target alloc"
+#define REGION_OMP_TARGET_FREE "!$omp target free"
 
 static region_fallback_t region_fallback[ TOOL_EVENTS ] =
 {
@@ -136,6 +152,14 @@ static region_fallback_t region_fallback[ TOOL_EVENTS ] =
     { REGION_OMP_SECTION,                sizeof( REGION_OMP_SECTION ) - 1,                SCOREP_REGION_SECTION,          SCOREP_INVALID_REGION },
     { REGION_OMP_FLUSH,                  sizeof( REGION_OMP_FLUSH ) - 1,                  SCOREP_REGION_FLUSH,            SCOREP_INVALID_REGION },
     { REGION_OMP_REDUCTION,              sizeof( REGION_OMP_REDUCTION ) - 1,              SCOREP_REGION_COLL_ALL2ONE,     SCOREP_INVALID_REGION },
+    /* TOOL_HOST_EVENTS is not a valid event and should be skipped. */
+    { NULL,                              0,                                               SCOREP_INVALID_REGION_TYPE,     SCOREP_INVALID_REGION },
+    { REGION_OMP_TARGET_HOST,            sizeof( REGION_OMP_TARGET_HOST ) - 1,            SCOREP_REGION_TASK_WAIT,        SCOREP_INVALID_REGION },
+    { REGION_OMP_TARGET_KERNEL,          sizeof( REGION_OMP_TARGET_KERNEL ) - 1,          SCOREP_REGION_KERNEL,           SCOREP_INVALID_REGION },
+    { REGION_OMP_TARGET_KERNEL_LAUNCH,   sizeof( REGION_OMP_TARGET_KERNEL_LAUNCH ) - 1,   SCOREP_REGION_KERNEL_LAUNCH,    SCOREP_INVALID_REGION },
+    { REGION_OMP_TARGET_DATA,            sizeof( REGION_OMP_TARGET_DATA ) - 1,            SCOREP_REGION_DATA_TRANSFER,    SCOREP_INVALID_REGION },
+    { REGION_OMP_TARGET_ALLOC,           sizeof( REGION_OMP_TARGET_ALLOC ) - 1,           SCOREP_REGION_ALLOCATE,         SCOREP_INVALID_REGION },
+    { REGION_OMP_TARGET_FREE,            sizeof( REGION_OMP_TARGET_FREE ) - 1,            SCOREP_REGION_DEALLOCATE,       SCOREP_INVALID_REGION },
     /* *INDENT-ON* */
 };
 
@@ -168,6 +192,12 @@ static region_fallback_t region_fallback[ TOOL_EVENTS ] =
 #undef REGION_OMP_SECTION
 #undef REGION_OMP_FLUSH
 #undef REGION_OMP_REDUCTION
+#undef REGION_OMP_TARGET_HOST
+#undef REGION_OMP_TARGET_KERNEL
+#undef REGION_OMP_TARGET_KERNEL_LAUNCH
+#undef REGION_OMP_TARGET_DATA
+#undef REGION_OMP_TARGET_ALLOC
+#undef REGION_OMP_TARGET_FREE
 
 /* To match opari2's behavior, define lock regions once but use for all lock
    events. With codeptr_ra available, we could provide a link to the source,
@@ -194,7 +224,8 @@ typedef enum tool_lock_event_t
 
 
 static SCOREP_RegionHandle     lock_regions[ TOOL_LOCK_EVENTS ];
-static SCOREP_SourceFileHandle omp_file = SCOREP_INVALID_SOURCE_FILE;
+static SCOREP_SourceFileHandle omp_file        = SCOREP_INVALID_SOURCE_FILE;
+static SCOREP_SourceFileHandle omp_target_file = SCOREP_INVALID_SOURCE_FILE;
 
 void
 init_region_fallbacks( void )
@@ -206,7 +237,7 @@ init_region_fallbacks( void )
     {
         initialized = true;
         omp_file    = SCOREP_Definitions_NewSourceFile( "OMP" );
-        for ( int i = 0; i < TOOL_EVENTS; i++ )
+        for ( int i = 0; i < TOOL_HOST_EVENTS; i++ )
         {
             region_fallback[ i ].handle =
                 SCOREP_Definitions_NewRegion( region_fallback[ i ].name,
@@ -215,6 +246,19 @@ init_region_fallbacks( void )
                                               SCOREP_INVALID_LINE_NO,
                                               SCOREP_INVALID_LINE_NO,
                                               SCOREP_PARADIGM_OPENMP,
+                                              region_fallback[ i ].type );
+        }
+
+        omp_target_file = SCOREP_Definitions_NewSourceFile( "OMP_TARGET" );
+        for ( int i = TOOL_HOST_EVENTS + 1; i < TOOL_EVENTS; i++ )
+        {
+            region_fallback[ i ].handle =
+                SCOREP_Definitions_NewRegion( region_fallback[ i ].name,
+                                              NULL,
+                                              omp_target_file,
+                                              SCOREP_INVALID_LINE_NO,
+                                              SCOREP_INVALID_LINE_NO,
+                                              SCOREP_PARADIGM_OPENMP_TARGET,
                                               region_fallback[ i ].type );
         }
 
@@ -360,7 +404,7 @@ codeptr_hash_value_ctor( codeptr_hash_key_t* key,
                                  &line_no );
 
     SCOREP_RegionHandle     region    = SCOREP_INVALID_REGION;
-    SCOREP_SourceFileHandle file      = omp_file;
+    SCOREP_SourceFileHandle file      = key->type > TOOL_HOST_EVENTS ? omp_target_file : omp_file;
     const char*             file_name = NULL;
     if ( path )
     {
@@ -375,19 +419,24 @@ codeptr_hash_value_ctor( codeptr_hash_key_t* key,
         /* Create unique name '<type> @<file>:<lineno>' to distinguish regions.
            Filename and line number are only available if compiled with -g. */
         size_t file_strlen    = strlen( file_name );
-        size_t line_no_strlen = 10;   /* UINT_MAX fits in 10 characters */
+        size_t line_no_strlen = 10;  /* UINT_MAX fits in 10 characters */
 
         const size_t append = 2 + file_strlen + 1 + line_no_strlen + 1;
         char         unique_name[ type_strlen + append ];
         memcpy( &unique_name[ 0 ], region_fallback[ key->type ].name, type_strlen );
         snprintf( &unique_name[ type_strlen ], append, " @%s:%u", file_name, line_no );
+        /* For OpenMP target, also remove line_no to ensure that Vampir sets the correct paradigm */
+        if ( key->type > TOOL_HOST_EVENTS )
+        {
+            line_no = SCOREP_INVALID_LINE_NO;
+        }
 
         region = SCOREP_Definitions_NewRegion( unique_name,
                                                unique_name,
                                                file,
                                                line_no,
                                                SCOREP_INVALID_LINE_NO,
-                                               SCOREP_PARADIGM_OPENMP,
+                                               key->type > TOOL_HOST_EVENTS ? SCOREP_PARADIGM_OPENMP_TARGET : SCOREP_PARADIGM_OPENMP,
                                                region_fallback[ key->type ].type );
     }
     else
@@ -403,7 +452,7 @@ codeptr_hash_value_ctor( codeptr_hash_key_t* key,
                                                file,
                                                line_no,
                                                SCOREP_INVALID_LINE_NO,
-                                               SCOREP_PARADIGM_OPENMP,
+                                               key->type > TOOL_HOST_EVENTS ? SCOREP_PARADIGM_OPENMP_TARGET : SCOREP_PARADIGM_OPENMP,
                                                region_fallback[ key->type ].type );
     }
 
