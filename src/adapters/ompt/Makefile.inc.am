@@ -18,7 +18,8 @@ if HAVE_SCOREP_OMPT_SUPPORT
 lib_LTLIBRARIES += libscorep_adapter_ompt_mgmt.la
 
 libscorep_adapter_ompt_mgmt_la_SOURCES = \
-    $(SRC_ROOT)src/adapters/ompt/scorep_ompt_mgmt.c
+    $(SRC_ROOT)src/adapters/ompt/scorep_ompt_mgmt.c \
+    $(SRC_ROOT)src/measurement/paradigm/ompt/scorep_ompt_unify.c
 
 libscorep_adapter_ompt_mgmt_la_CPPFLAGS = \
     $(AM_CPPFLAGS) \
@@ -26,7 +27,9 @@ libscorep_adapter_ompt_mgmt_la_CPPFLAGS = \
     -I$(PUBLIC_INC_DIR) \
     -I$(INC_DIR_DEFINITIONS) \
     -I$(INC_DIR_MEASUREMENT) \
-    -I$(INC_DIR_SERVICES)
+    -I$(INC_DIR_SERVICES) \
+    -I$(INC_ROOT)src/adapters/ompt \
+    -I$(INC_ROOT)src/measurement
 
 libscorep_adapter_ompt_mgmt_la_LIBADD = \
     libutils.la \
@@ -54,6 +57,7 @@ libscorep_adapter_ompt_event_la_CPPFLAGS = \
     -I$(INC_DIR_COMMON_HASH) \
     -I$(INC_DIR_DEFINITIONS) \
     -I$(INC_DIR_MEASUREMENT) \
+    -I$(INC_ROOT)src/measurement \
     -I$(INC_DIR_SERVICES) \
     -I$(INC_DIR_THREAD) \
     -I$(INC_DIR_THREAD_FORK_JOIN)

@@ -25,6 +25,7 @@
 #include <string.h>
 #include <stddef.h>
 #include <stdio.h>
+#include <inttypes.h>
 
 
 #include <SCOREP_RuntimeManagement.h>
@@ -54,6 +55,15 @@ bool        scorep_ompt_record_events   = false;
 bool        scorep_ompt_finalizing_tool = false;
 
 
+SCOREP_RmaWindowHandle           scorep_ompt_rma_window_handle           = SCOREP_INVALID_RMA_WINDOW;
+SCOREP_InterimCommunicatorHandle scorep_ompt_interim_communicator_handle = SCOREP_INVALID_INTERIM_COMMUNICATOR;
+uint32_t                         scorep_ompt_global_location_count       = 0;
+/* Holds global location ids of host and target locations after unification.
+ * scorep_ompt_cpu_location_data and scorep_ompt_device_stream_t objects to
+ * index into this array. */
+uint64_t* scorep_ompt_global_location_ids = NULL;
+
+
 /* Called by the OpenMP runtime. Everything starts from here. */
 ompt_start_tool_result_t*
 ompt_start_tool( unsigned int omp_version, /* == _OPENMP */
@@ -71,6 +81,28 @@ ompt_start_tool( unsigned int omp_version, /* == _OPENMP */
 
     SCOREP_IN_MEASUREMENT_DECREMENT();
     return &tool;
+}
+
+
+static inline void
+init_rma_window( void )
+{
+    if ( scorep_ompt_interim_communicator_handle != SCOREP_INVALID_INTERIM_COMMUNICATOR )
+    {
+        return;
+    }
+
+    scorep_ompt_interim_communicator_handle =
+        SCOREP_Definitions_NewInterimCommunicator(
+            SCOREP_INVALID_INTERIM_COMMUNICATOR,
+            SCOREP_PARADIGM_OPENMP_TARGET,
+            0,
+            NULL );
+    scorep_ompt_rma_window_handle =
+        SCOREP_Definitions_NewRmaWindow(
+            "OPENMP_TARGET_WINDOW",
+            scorep_ompt_interim_communicator_handle,
+            SCOREP_RMA_WINDOW_FLAG_NONE );
 }
 
 
@@ -367,6 +399,37 @@ register_event_callbacks_device( ompt_set_callback_t setCallback )
 #undef NO_EVENT
 
 
+static bool
+iterate_assign_cpu_locations( SCOREP_Location* location,
+                              void*            arg )
+{
+    if ( SCOREP_Location_GetType( location ) == SCOREP_LOCATION_TYPE_CPU_THREAD )
+    {
+        scorep_ompt_cpu_location_data* location_data = SCOREP_Location_GetSubsystemData(
+            location, scorep_ompt_subsystem_id );
+        if ( location_data->local_rank != SCOREP_OMPT_INVALID_LOCAL_RANK )
+        {
+            UTILS_BUG_ON( location_data->local_rank >= scorep_ompt_global_location_count,
+                          "CPU location ID %" PRIu32 " exceeds the expected number of OMPT locations (%" PRIu32 ")!",
+                          location_data->local_rank, scorep_ompt_global_location_count );
+
+            scorep_ompt_global_location_ids[ location_data->local_rank ] =
+                SCOREP_Location_GetGlobalId( location );
+        }
+    }
+
+    return false;
+}
+
+
+static void
+collect_comm_locations( void )
+{
+    scorep_ompt_global_location_ids = SCOREP_Memory_AllocForMisc( sizeof( uint64_t ) * scorep_ompt_global_location_count );
+    SCOREP_Location_ForAll( iterate_assign_cpu_locations, NULL );
+}
+
+
 static SCOREP_ErrorCode
 ompt_subsystem_register( size_t id )
 {
@@ -394,6 +457,18 @@ ompt_subsystem_init( void )
         "OpenMP",
         SCOREP_PARADIGM_FLAG_NONE );
 
+    /* Only register the parallel paradigm if at least one
+     * target feature is enabled. With this, the paradigm
+     * will not show up at all if the user chose to disable
+     * targeting. */
+    if ( scorep_ompt_target_features > 0 )
+    {
+        SCOREP_Paradigms_RegisterParallelParadigm(
+            SCOREP_PARADIGM_OPENMP_TARGET,
+            SCOREP_PARADIGM_CLASS_ACCELERATOR,
+            "OpenMP Target",
+            SCOREP_PARADIGM_FLAG_RMA_ONLY );
+    }
     SCOREP_Paradigms_SetStringProperty( SCOREP_PARADIGM_OPENMP,
                                         SCOREP_PARADIGM_PROPERTY_COMMUNICATOR_TEMPLATE,
                                         "Thread team ${id}" );
@@ -407,6 +482,13 @@ ompt_subsystem_init( void )
 static SCOREP_ErrorCode
 ompt_subsystem_begin( void )
 {
+    /* Only initialize RMA window if OpenMP target recording is enabled.
+     * The host side of OMPT does not require having an RMA window. */
+    if ( scorep_ompt_target_features > 0 )
+    {
+        init_rma_window();
+    }
+
     UTILS_DEBUG( "[%s] start recording OMPT events", UTILS_FUNCTION_NAME );
     scorep_ompt_record_events = true;
     return SCOREP_SUCCESS;
@@ -456,10 +538,36 @@ ompt_subsystem_init_location( struct SCOREP_Location* newLocation,
         scorep_ompt_cpu_location_data* data =
             SCOREP_Memory_AlignedAllocForMisc( SCOREP_CACHELINESIZE, sizeof( *data ) );
         memset( data, 0, sizeof( *data ) );
+        data->local_rank = SCOREP_OMPT_INVALID_LOCAL_RANK;
         SCOREP_Location_SetSubsystemData( newLocation,
                                           scorep_ompt_subsystem_id,
                                           data );
     }
+    return SCOREP_SUCCESS;
+}
+
+
+static SCOREP_ErrorCode
+ompt_subsystem_pre_unify( void )
+{
+    if ( scorep_ompt_interim_communicator_handle == SCOREP_INVALID_INTERIM_COMMUNICATOR )
+    {
+        return SCOREP_SUCCESS;
+    }
+    collect_comm_locations();
+    scorep_ompt_unify_pre();
+    return SCOREP_SUCCESS;
+}
+
+
+static SCOREP_ErrorCode
+ompt_subsystem_post_unify( void )
+{
+    if ( scorep_ompt_interim_communicator_handle == SCOREP_INVALID_INTERIM_COMMUNICATOR )
+    {
+        return SCOREP_SUCCESS;
+    }
+    scorep_ompt_unify_post();
     return SCOREP_SUCCESS;
 }
 
@@ -472,5 +580,7 @@ const SCOREP_Subsystem SCOREP_Subsystem_OmptAdapter =
     .subsystem_begin                  = &ompt_subsystem_begin,
     .subsystem_end                    = &ompt_subsystem_end,
     .subsystem_init_location          = &ompt_subsystem_init_location,
-    .subsystem_trigger_overdue_events = &scorep_ompt_subsystem_trigger_overdue_events
+    .subsystem_trigger_overdue_events = &scorep_ompt_subsystem_trigger_overdue_events,
+    .subsystem_pre_unify              = &ompt_subsystem_pre_unify,
+    .subsystem_post_unify             = &ompt_subsystem_post_unify
 };
