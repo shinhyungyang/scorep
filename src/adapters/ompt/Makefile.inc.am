@@ -25,6 +25,7 @@ libscorep_adapter_ompt_mgmt_la_CPPFLAGS = \
     $(AM_CPPFLAGS) \
     $(UTILS_CPPFLAGS) \
     -I$(PUBLIC_INC_DIR) \
+    -I$(INC_DIR_COMMON_HASH) \
     -I$(INC_DIR_DEFINITIONS) \
     -I$(INC_DIR_MEASUREMENT) \
     -I$(INC_DIR_SERVICES) \
@@ -47,6 +48,7 @@ lib_LTLIBRARIES += libscorep_adapter_ompt_event.la
 libscorep_adapter_ompt_event_la_SOURCES = \
     $(SRC_ROOT)src/adapters/ompt/scorep_ompt_callbacks_device.h \
     $(SRC_ROOT)src/adapters/ompt/scorep_ompt_callbacks_host.h \
+    $(SRC_ROOT)src/adapters/ompt/scorep_ompt_device.h \
     $(SRC_ROOT)src/adapters/ompt/scorep_ompt_events.c \
     $(SRC_ROOT)src/adapters/ompt/scorep_ompt.h
 
@@ -71,12 +73,17 @@ libscorep_adapter_ompt_event_la_LDFLAGS = \
     $(library_api_version_ldflags) \
     $(libscorep_addr2line_la_needs_LDFLAGS)
 
-
 endif HAVE_SCOREP_OMPT_SUPPORT
 
 EXTRA_DIST += \
     $(SRC_ROOT)src/adapters/ompt/scorep_ompt_debug.inc.c \
     $(SRC_ROOT)src/adapters/ompt/scorep_ompt_events_device.inc.c \
+    $(SRC_ROOT)src/adapters/ompt/scorep_ompt_events_device_callbacks.inc.c \
+    $(SRC_ROOT)src/adapters/ompt/scorep_ompt_events_device_data_op.inc.c \
+    $(SRC_ROOT)src/adapters/ompt/scorep_ompt_events_device_id_mapping.inc.c \
+    $(SRC_ROOT)src/adapters/ompt/scorep_ompt_events_device_submit.inc.c \
+    $(SRC_ROOT)src/adapters/ompt/scorep_ompt_events_device_target.inc.c \
+    $(SRC_ROOT)src/adapters/ompt/scorep_ompt_events_device_tracing.inc.c \
     $(SRC_ROOT)src/adapters/ompt/scorep_ompt_events_host.inc.c \
     $(SRC_ROOT)src/adapters/ompt/scorep_ompt_mutex.inc.c \
     $(SRC_ROOT)src/adapters/ompt/scorep_ompt_regions.inc.c
