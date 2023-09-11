@@ -120,6 +120,25 @@ scorep_ompt_get_task_info( int            ancestor_level,
                                            thread_num );
 }
 
+
+static inline uint64_t
+scorep_ompt_get_unique_id( void )
+{
+    /* Use OpenMP tools interface runtime entry point if available,
+     * as runtimes might provide a more efficient way to get unique IDs.
+     * LLVM-based runtimes provide 2^48 unique IDs, which is more
+     * than enough for us. */
+    extern ompt_get_unique_id_t scorep_ompt_mgmt_get_unique_id;
+    if ( scorep_ompt_mgmt_get_unique_id )
+    {
+        return scorep_ompt_mgmt_get_unique_id();
+    }
+    /* Do not start at 0, as ompt_id_none is defined as 0. */
+    static uint64_t next_unique_id = 1;
+    return UTILS_Atomic_FetchAdd_uint64( &next_unique_id, 1, UTILS_ATOMIC_SEQUENTIAL_CONSISTENT );
+}
+
+
 SCOREP_ErrorCode
 scorep_ompt_subsystem_trigger_overdue_events( struct SCOREP_Location* location );
 

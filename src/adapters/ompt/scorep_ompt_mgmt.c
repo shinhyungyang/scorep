@@ -17,6 +17,7 @@
 #include <config.h>
 
 #include "scorep_ompt.h"
+#include "scorep_ompt_device.h"
 #include "scorep_ompt_callbacks_host.h"
 #include "scorep_ompt_callbacks_device.h"
 #include "scorep_ompt_confvars.h"
@@ -31,7 +32,6 @@
 #include <SCOREP_RuntimeManagement.h>
 #include <SCOREP_InMeasurement.h>
 #include <SCOREP_Subsystem.h>
-#include <SCOREP_Memory.h>
 #include <SCOREP_Paradigms.h>
 #include <SCOREP_Addr2line.h>
 #include <SCOREP_Definitions.h>
@@ -48,6 +48,7 @@ static void finalize_tool( ompt_data_t *toolData );
 size_t scorep_ompt_subsystem_id;
 
 ompt_get_task_info_t        scorep_ompt_mgmt_get_task_info;
+ompt_get_unique_id_t        scorep_ompt_mgmt_get_unique_id;
 static ompt_finalize_tool_t ompt_finalize_tool;
 
 static bool tool_initialized;
@@ -128,6 +129,11 @@ initialize_tool( ompt_function_lookup_t lookup,
     scorep_ompt_mgmt_get_task_info =
         ( ompt_get_task_info_t )lookup( "ompt_get_task_info" );
     UTILS_BUG_ON( scorep_ompt_mgmt_get_task_info == 0 );
+    scorep_ompt_mgmt_get_unique_id =
+        ( ompt_get_unique_id_t )lookup( "ompt_get_unique_id" );
+    UTILS_DEBUG( "[%s] Using unique ids of runtime? %s",
+                 UTILS_FUNCTION_NAME,
+                 scorep_ompt_mgmt_get_unique_id == 0 ? "no" : "yes" );
     ompt_finalize_tool =
         ( ompt_finalize_tool_t )lookup( "ompt_finalize_tool" );
     UTILS_BUG_ON( ompt_finalize_tool == 0 );
@@ -262,44 +268,44 @@ register_callback( ompt_set_callback_t       setCallback,
         {                                                                                            \
             if ( !register_callback( setCallback, CALLBACK_GROUP[ i ] ) )                            \
             {                                                                                        \
-                UTILS_BUG( "[%s] Failed to register %s, which is mandatory! "                        \
+                UTILS_BUG( "[OMPT] Failed to register %s, which is mandatory! "                      \
                            "Cannot use OMPT, consider instrumenting `--thread=omp:opari2` instead.", \
-                           UTILS_FUNCTION_NAME, CALLBACK_GROUP[ i ].name );                          \
+                           CALLBACK_GROUP[ i ].name );                                               \
             }                                                                                        \
         }                                                                                            \
     } while ( 0 )
 
 
 /* Try to register entire group. If one callback fails to register, disable entire group */
-#define REGISTER_OPTIONAL_CALLBACK_GROUP( CALLBACK_GROUP )                                                            \
-    do                                                                                                                \
-    {                                                                                                                 \
-        short i;                                                                                                      \
-        for ( i = 0; CALLBACK_GROUP[ i ].event != NO_EVENT; ++i )                                                     \
-        {                                                                                                             \
-            if ( !register_callback( setCallback, CALLBACK_GROUP[ i ] ) )                                             \
-            {                                                                                                         \
-                if ( CALLBACK_GROUP[ i ].critical_callback )                                                           \
-                {                                                                                                     \
-                    UTILS_WARNING( "[%s] Failed to register %s, disabling related callbacks.",                        \
-                                   UTILS_FUNCTION_NAME, CALLBACK_GROUP[ i ].name );                                   \
-                    break;                                                                                            \
-                }                                                                                                     \
-                else                                                                                                  \
-                {                                                                                                     \
-                    UTILS_WARNING( "[%s] Failed to register %s, but callback is not critical for related callbacks.", \
-                                   UTILS_FUNCTION_NAME, CALLBACK_GROUP[ i ].name );                                   \
-                    setCallback( CALLBACK_GROUP[ i ].event, NULL );                                                   \
-                }                                                                                                     \
-            }                                                                                                         \
-        }                                                                                                             \
-        if ( CALLBACK_GROUP[ i ].event != NO_EVENT )                                                                  \
-        {                                                                                                             \
-            for ( i = 0; CALLBACK_GROUP[ i ].event != NO_EVENT; ++i )                                                 \
-            {                                                                                                         \
-                setCallback( CALLBACK_GROUP[ i ].event, NULL );                                                       \
-            }                                                                                                         \
-        }                                                                                                             \
+#define REGISTER_OPTIONAL_CALLBACK_GROUP( CALLBACK_GROUP )                                                              \
+    do                                                                                                                  \
+    {                                                                                                                   \
+        short i;                                                                                                        \
+        for ( i = 0; CALLBACK_GROUP[ i ].event != NO_EVENT; ++i )                                                       \
+        {                                                                                                               \
+            if ( !register_callback( setCallback, CALLBACK_GROUP[ i ] ) )                                               \
+            {                                                                                                           \
+                if ( CALLBACK_GROUP[ i ].critical_callback )                                                            \
+                {                                                                                                       \
+                    UTILS_WARNING( "[OMPT] Failed to register %s, disabling related callbacks.",                        \
+                                   CALLBACK_GROUP[ i ].name );                                                          \
+                    break;                                                                                              \
+                }                                                                                                       \
+                else                                                                                                    \
+                {                                                                                                       \
+                    UTILS_WARNING( "[OMPT] Failed to register %s, but callback is not critical for related callbacks.", \
+                                   CALLBACK_GROUP[ i ].name );                                                          \
+                    setCallback( CALLBACK_GROUP[ i ].event, NULL );                                                     \
+                }                                                                                                       \
+            }                                                                                                           \
+        }                                                                                                               \
+        if ( CALLBACK_GROUP[ i ].event != NO_EVENT )                                                                    \
+        {                                                                                                               \
+            for ( i = 0; CALLBACK_GROUP[ i ].event != NO_EVENT; ++i )                                                   \
+            {                                                                                                           \
+                setCallback( CALLBACK_GROUP[ i ].event, NULL );                                                         \
+            }                                                                                                           \
+        }                                                                                                               \
     } while ( 0 )
 
 
@@ -310,8 +316,8 @@ register_callback( ompt_set_callback_t       setCallback,
         {                                                                           \
             if ( !register_callback( setCallback, CALLBACK_GROUP[ i ] ) )           \
             {                                                                       \
-                UTILS_WARNING( "[%s] Failed to register %s, disabling callback.",   \
-                               UTILS_FUNCTION_NAME, CALLBACK_GROUP[ i ].name );     \
+                UTILS_WARNING( "[OMPT] Failed to register %s, disabling callback.", \
+                               CALLBACK_GROUP[ i ].name );                          \
                 setCallback( CALLBACK_GROUP[ i ].event, NULL );                     \
             }                                                                       \
         }                                                                           \
@@ -378,18 +384,43 @@ static void
 register_event_callbacks_device( ompt_set_callback_t setCallback )
 {
     #define CALLBACK( name, result ) { ompt_callback_ ## name, ( ompt_callback_t )&scorep_ompt_cb_ ## name, #name, result }
+    #define CALLBACK_NON_CRITICAL( name, result ) { ompt_callback_ ## name, ( ompt_callback_t )&scorep_ompt_cb_ ## name, #name, result, false }
     #define END()                    { NO_EVENT, NULL, "" } /* Indicate end of section */
 
-    const registration_data_t single_callbacks[] =
+    if ( scorep_ompt_target_features == 0 )
     {
-        CALLBACK( device_initialize, ompt_set_always ),
+        return;
+    }
+    const registration_data_t required_callbacks[] =
+    {
+        CALLBACK( device_initialize,            ompt_set_sometimes_paired ),
+        CALLBACK( target_emi,                   ompt_set_sometimes_paired ),
+        CALLBACK_NON_CRITICAL( device_finalize, ompt_set_sometimes_paired ),
         END()
     };
+    REGISTER_OPTIONAL_CALLBACK_GROUP( required_callbacks );
+
+    if ( scorep_ompt_target_features & SCOREP_OMPT_TARGET_FEATURE_MEMORY )
+    {
+        const registration_data_t single_callbacks[] =
+        {
+            CALLBACK( target_data_op_emi, ompt_set_sometimes_paired ),
+            END()
+        };
+        REGISTER_SINGLE_CALLBACK( single_callbacks );
+    }
+    if ( scorep_ompt_target_features & SCOREP_OMPT_TARGET_FEATURE_KERNEL )
+    {
+        const registration_data_t single_callbacks[] =
+        {
+            CALLBACK( target_submit_emi, ompt_set_sometimes_paired ),
+            END()
+        };
+        REGISTER_SINGLE_CALLBACK( single_callbacks );
+    }
 
     #undef CALLBACK
     #undef END
-
-    REGISTER_SINGLE_CALLBACK( single_callbacks );
 }
 
 
@@ -423,10 +454,43 @@ iterate_assign_cpu_locations( SCOREP_Location* location,
 
 
 static void
+iterate_finalize_trace( scorep_ompt_device_table_key_t key, scorep_ompt_device_table_value_t value, void* cbData )
+{
+    scorep_ompt_device_tracing_finalize( value );
+}
+
+
+static void
+iterate_report_leaked( scorep_ompt_device_table_key_t key, scorep_ompt_device_table_value_t value, void* cbData )
+{
+    if ( !value || !value->alloc_metric )
+    {
+        return;
+    }
+    SCOREP_AllocMetric_ReportLeaked( value->alloc_metric );
+}
+
+
+static void
+iterate_collect_comm_locations( scorep_ompt_device_table_key_t key, scorep_ompt_device_table_value_t value, void* cbData )
+{
+    if ( !value )
+    {
+        return;
+    }
+    for ( scorep_ompt_device_stream_t* ptr = value->streams; ptr != NULL; ptr = ptr->next )
+    {
+        scorep_ompt_global_location_ids[ ptr->local_rank ] = SCOREP_Location_GetGlobalId( ptr->scorep_location );
+    }
+}
+
+
+static void
 collect_comm_locations( void )
 {
     scorep_ompt_global_location_ids = SCOREP_Memory_AllocForMisc( sizeof( uint64_t ) * scorep_ompt_global_location_count );
     SCOREP_Location_ForAll( iterate_assign_cpu_locations, NULL );
+    scorep_ompt_device_table_iterate_key_value_pairs( &iterate_collect_comm_locations, NULL );
 }
 
 
@@ -506,8 +570,15 @@ ompt_subsystem_end( void )
 
     UTILS_DEBUG( "[%s] finalizing tool, might trigger overdue OMPT events",
                  UTILS_FUNCTION_NAME );
+
     scorep_ompt_finalizing_tool = true;
+    /* Since iterate_finalize_trace will call functions of the OMPT device tracing interface,
+     * we may need to call this function before ompt_finalize_tool(). In theory, ompt_finalize_tool()
+     * should do the same job, but fails to do so with LLVM based runtimes.
+     * Issue link: https://github.com/RadeonOpenCompute/ROCm/issues/2056 */
+    scorep_ompt_device_table_iterate_key_value_pairs( &iterate_finalize_trace, NULL );
     ompt_finalize_tool();
+    scorep_ompt_device_table_iterate_key_value_pairs( &iterate_report_leaked, NULL );
 
     /* ignore subsequent events */
     scorep_ompt_record_events = false;
