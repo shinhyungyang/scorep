@@ -10,6 +10,7 @@ Features and improvements:
 Compatibility:
 
 - The HIP adapter requires the ROCm SMI library.
+- Score-P now requires CubeW and CubeLib in version 4.8.2.
 
 Bugfixes:
 
