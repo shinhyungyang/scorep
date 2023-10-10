@@ -1,5 +1,9 @@
 ------------------- Upcoming version 8.4 -----------------------------
 
+Bugfixes:
+- Fix crash when issuing multiple consecutive split collective IO operations on
+  the same file handle.
+
 ------------------- Released version 8.3 -----------------------------
 
 Bugfixes:
