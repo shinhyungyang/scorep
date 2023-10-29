@@ -760,7 +760,7 @@ main( int    argc,
             break;
 
         case ACTION_LIBWRAP_RUNTIME:
-#if HAVE_BACKEND( LIBWRAP_RUNTIME_SUPPORT )
+#if HAVE_BACKEND( LIBWRAP_SUPPORT )
             std::cout << "true" << std::endl;
 #else
             std::cout << "false" << std::endl;

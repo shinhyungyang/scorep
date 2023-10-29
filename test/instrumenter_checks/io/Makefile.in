@@ -60,7 +60,7 @@ TESTS = \
     $(BINDIR)/isoc-io-cc \
     $(BINDIR)/isoc-io-cxx
 
-@PLATFORM_CRAY_FALSE@HAVE_LIBWRAP_RUNTIME_SUPPORT_TRUE@TESTS += \
+@PLATFORM_CRAY_FALSE@HAVE_LIBWRAP_SUPPORT_TRUE@TESTS += \
     $(BINDIR)/posix-io-cc-runtime \
     $(BINDIR)/isoc-io-cc-runtime \
     $(BINDIR)/isoc-io-cxx-runtime

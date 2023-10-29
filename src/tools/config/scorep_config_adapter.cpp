@@ -929,14 +929,11 @@ SCOREP_Config_LibwrapAdapter::addLibs( std::deque<std::string>&           libs,
         /* we point to <prefix>/share/scorep/<name>.libwrap */
         std::string libdir = join_path( extract_path( extract_path( extract_path( libwrap ) ) ), "lib" SCOREP_BACKEND_SUFFIX );
 
-#if HAVE_BACKEND( LIBWRAP_RUNTIME_SUPPORT )
         if ( exists_file( join_path( libdir, "libscorep_libwrap_" + name + "_runtime.la" ) ) )
         {
             deps.insert( "libscorep_libwrap_" + name + "_runtime", libdir );
         }
-        else
-#endif
-        if ( wrapmode == "runtime" )
+        else if ( wrapmode == "runtime" )
         {
             std::cerr << "[Score-P] ERROR: Library wrapping mode 'runtime' not supported by this installation." << std::endl;
             exit( EXIT_FAILURE );

@@ -128,10 +128,10 @@ scorep_posix_io_support="yes"
 scorep_posix_io_summary_reason=
 
 # check for library wrapping support
-AM_COND_IF([HAVE_LIBWRAP_RUNTIME_SUPPORT],
-           [],
-           [scorep_posix_io_support="no"
-            AS_VAR_APPEND([scorep_posix_io_summary_reason], [", missing library runtime wrapping support"])])
+AM_COND_IF([HAVE_LIBWRAP_SUPPORT],
+    [],
+    [scorep_posix_io_support="no"
+     AS_VAR_APPEND([scorep_posix_io_summary_reason], [", missing library wrapping support"])])
 
 # check result of TLS
 AS_IF([test x"${scorep_posix_io_support}" = x"yes"],

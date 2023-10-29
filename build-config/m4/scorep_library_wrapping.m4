@@ -32,10 +32,6 @@ AC_MSG_RESULT([${scorep_libwrap_runtime_support}])
 AC_SCOREP_COND_HAVE([LIBWRAP_SUPPORT],
                     [test "x${scorep_libwrap_support}" = "xyes"],
                     [Define if library wrapping is possible at all.])
-
-AC_SCOREP_COND_HAVE([LIBWRAP_RUNTIME_SUPPORT],
-                    [test "x${scorep_libwrap_runtime_support}" = "xyes"],
-                    [Define if runtime library wrapping is possible.])
 ])
 
 dnl ----------------------------------------------------------------------------

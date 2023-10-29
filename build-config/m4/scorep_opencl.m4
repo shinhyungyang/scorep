@@ -211,14 +211,14 @@ AC_DEFINE([NVCL_SUPPRESS_USE_DEPRECATED_OPENCL_1_0_APIS_WARNING],
 
 AFS_SUMMARY_PUSH
 
-AM_COND_IF([HAVE_LIBWRAP_RUNTIME_SUPPORT],
-      [AC_SCOREP_BACKEND_LIB([libOpenCL], [CL/cl.h])
-       AS_IF([test "x$scorep_opencl_error" = "xyes"],
-             [AS_UNSET([ac_cv_search_clGetPlatformIDs])
-              AC_SCOREP_BACKEND_LIB([libOpenCL], [OpenCL/opencl.h])])],
-      [scorep_opencl_error="yes"
-       AM_CONDITIONAL(HAVE_LIBOPENCL, [test 1 -eq 0])
-       AC_MSG_NOTICE([OpenCL instrumentation disabled, no library wrapping available])])
+AM_COND_IF([HAVE_LIBWRAP_SUPPORT],
+    [AC_SCOREP_BACKEND_LIB([libOpenCL], [CL/cl.h])
+     AS_IF([test "x$scorep_opencl_error" = "xyes"],
+        [AS_UNSET([ac_cv_search_clGetPlatformIDs])
+         AC_SCOREP_BACKEND_LIB([libOpenCL], [OpenCL/opencl.h])])],
+    [scorep_opencl_error="yes"
+     AM_CONDITIONAL(HAVE_LIBOPENCL, [test 1 -eq 0])
+     AC_MSG_NOTICE([OpenCL instrumentation disabled, no library wrapping available])])
 
 AC_DEFINE_UNQUOTED(
     [CL_TARGET_OPENCL_VERSION],

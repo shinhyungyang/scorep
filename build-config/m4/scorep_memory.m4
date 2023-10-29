@@ -30,11 +30,11 @@ AFS_SUMMARY_PUSH
 scorep_memory_support="yes"
 scorep_memory_summary_reason=
 
-# check runtime wrapping support
-AM_COND_IF([HAVE_LIBWRAP_RUNTIME_SUPPORT],
-           [],
-           [scorep_memory_support="no"
-            AS_VAR_APPEND([scorep_memory_summary_reason], [", missing runtime library wrapping support"])])
+# check library wrapping support
+AM_COND_IF([HAVE_LIBWRAP_SUPPORT],
+    [],
+    [scorep_memory_support="no"
+     AS_VAR_APPEND([scorep_memory_summary_reason], [", missing library wrapping support"])])
 
 # check result of TLS
 AS_IF([test "x${scorep_memory_support}" = "xyes"],
