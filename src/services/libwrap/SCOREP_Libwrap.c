@@ -21,14 +21,10 @@
 
 #include <config.h>
 
-#if HAVE_BACKEND( LIBWRAP_RUNTIME_SUPPORT )
-
 #include <dlfcn.h>
 
-# if HAVE( GNU_LIB_NAMES_H )
-#  include <gnu/lib-names.h>
-# endif
-
+#if HAVE( GNU_LIB_NAMES_H )
+# include <gnu/lib-names.h>
 #endif
 
 #include <stdlib.h>
@@ -172,8 +168,6 @@ SCOREP_Libwrap_Create( SCOREP_LibwrapHandle**          outHandle,
 
     if ( handle->attributes->mode == SCOREP_LIBWRAP_MODE_SHARED )
     {
-#if HAVE_BACKEND( LIBWRAP_RUNTIME_SUPPORT )
-
         /* clear any recent errors */
         ( void )dlerror();
         if ( handle->attributes->number_of_shared_libs == 0 )
@@ -219,12 +213,6 @@ SCOREP_Libwrap_Create( SCOREP_LibwrapHandle**          outHandle,
 
             handle->number_of_shared_lib_handles++;
         }
-
-#else
-
-        UTILS_BUG( "This Score-P installation does not support dynamic linking via dlfcn.h" );
-
-#endif
     }
 
     if ( attributes->init )
@@ -264,8 +252,6 @@ SCOREP_Libwrap_SharedPtrInit( SCOREP_LibwrapHandle* handle,
         return;
     }
 
-#if HAVE_BACKEND( LIBWRAP_RUNTIME_SUPPORT )
-
     /* clear any recent errors */
     ( void )dlerror();
     for ( uint32_t i = 0; i < handle->number_of_shared_lib_handles; i++ )
@@ -286,12 +272,6 @@ SCOREP_Libwrap_SharedPtrInit( SCOREP_LibwrapHandle* handle,
         UTILS_FATAL( "Could not resolve symbol '%s' for library wrapper '%s': %s",
                      func, handle->attributes->name, error );
     }
-
-#else
-
-    UTILS_BUG( "This Score-P installation does not support dynamic linking via dlfcn.h" );
-
-#endif
 }
 
 static void
@@ -301,8 +281,6 @@ delete_libwrap_handle( SCOREP_LibwrapHandle* handle )
 
     if ( handle->attributes->mode != SCOREP_LIBWRAP_MODE_SHARED )
     {
-#if HAVE_BACKEND( LIBWRAP_RUNTIME_SUPPORT )
-
         /* Clear dlerror */
         ( void )dlerror();
 
@@ -314,12 +292,6 @@ delete_libwrap_handle( SCOREP_LibwrapHandle* handle )
                              handle->attributes->shared_libs[ i ], dlerror() );
             }
         }
-
-#else
-
-        UTILS_BUG( "This Score-P installation does not support dynamic linking via dlfcn.h" );
-
-#endif
     }
 }
 

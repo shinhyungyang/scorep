@@ -14,7 +14,7 @@
 ## directory for details.
 ##
 
-if HAVE_LIBWRAP_RUNTIME_SUPPORT
+if HAVE_LIBWRAP_SUPPORT
 
 check_PROGRAMS += scorep_libwrap_macros_static_test
 ##check_PROGRAMS += scorep_libwrap_macros_static_test \
@@ -50,4 +50,4 @@ common_wrapper_sources = $(SRC_ROOT)test/libwrap/wrapper.c
 ##                                          libfoo.la
 ##TESTS_SERIAL += scorep_libwrap_macros_shared_test
 
-endif HAVE_LIBWRAP_RUNTIME_SUPPORT
+endif HAVE_LIBWRAP_SUPPORT

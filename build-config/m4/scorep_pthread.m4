@@ -46,12 +46,11 @@ scorep_pthread_support=${scorep_have_pthread}
 scorep_pthread_summary_reason=
 
 AS_IF([test "x${scorep_pthread_support}" = x1],
-    [AM_COND_IF([HAVE_LIBWRAP_RUNTIME_SUPPORT],
+    [AM_COND_IF([HAVE_LIBWRAP_SUPPORT],
         [],
         [scorep_pthread_support=0
-         AS_VAR_APPEND([scorep_pthread_summary_reason], [", missing runtime library wrapping support"])])],
-    [scorep_pthread_support=0
-     AS_VAR_APPEND([scorep_pthread_summary_reason], [", missing pthread header or library"])])
+         AS_VAR_APPEND([scorep_pthread_summary_reason], [", missing library wrapping support"])])],
+    [AS_VAR_APPEND([scorep_pthread_summary_reason], [", missing pthread header or library"])])
 
 # check result of TLS
 AS_IF([test "x${scorep_pthread_support}" = x1],
