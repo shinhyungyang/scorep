@@ -1,5 +1,10 @@
 ------------------- Upcoming version 8.4 -----------------------------
 
+Compatibility:
+
+- The classic Intel compilers will now use the flag `-diag-disable=10441`
+  to suppress the deprecation warning for each compilation unit.
+
 Bugfixes:
 
 - Fix crash when issuing multiple consecutive split collective IO operations
