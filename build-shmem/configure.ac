@@ -92,6 +92,9 @@ AS_IF([test "x${ac_scorep_cross_compiling}" = "xyes"],
 
 m4_include(../build-includes/computenode-shmem.m4)
 
+adl_RECURSIVE_EVAL([${bindir}], [BINDIR])
+AC_SUBST([BINDIR])
+
 AC_SCOREP_GIT_CONTROLLED
 
 AM_CONDITIONAL([BUILD_TESTS], [test "x${ac_scorep_cross_compiling}" = "xno"])
@@ -154,22 +157,25 @@ SCOREP_IO_RECORDING
 
 ## Configure internal/external libraries
 scorep_otf2_config_backend_arg=
-AS_IF([test "x${ac_scorep_cross_compiling}" = "xyes"],
-      [scorep_otf2_config_backend_arg="--target=backend"
-       AS_IF([test "x${ac_scorep_platform}" = "xmic"],
-             [scorep_otf2_config_backend_arg="--target=mic"])
-      ])
-AS_IF([test -n "${scorep_otf2_bindir}"],
-      [AC_SUBST([OTF2_CPPFLAGS], ["`${scorep_otf2_bindir}/otf2-config --cppflags ${scorep_otf2_config_backend_arg}`"])
-       AC_SUBST([OTF2_LIBS],     ["`${scorep_otf2_bindir}/otf2-config --libs ${scorep_otf2_config_backend_arg}`"])
-       AC_SUBST([OTF2_LDFLAGS],  ["`${scorep_otf2_bindir}/otf2-config --ldflags ${scorep_otf2_config_backend_arg}`"])
-       AC_SUBST([OTF2_BINDIR],   ["${scorep_otf2_bindir}"])
-       AM_CONDITIONAL([HAVE_SCOREP_EXTERNAL_OTF2], [test 1 -eq 1])],
-      [AC_SUBST([OTF2_CPPFLAGS], ['-I../vendor/otf2/include -I$(srcdir)/../vendor/otf2/include'])
-       AC_SUBST([OTF2_LIBS],     [../vendor/otf2/build-backend/libotf2.la])
-       AC_SUBST([OTF2_LDFLAGS],  [])
-       AC_SUBST([OTF2_BINDIR],   [../vendor/otf2/build-backend])
-       AM_CONDITIONAL([HAVE_SCOREP_EXTERNAL_OTF2], [test 1 -eq 0])])
+AS_IF([test "x${ac_scorep_cross_compiling}" = xyes],
+    [scorep_otf2_config_backend_arg="--target=backend"
+     AS_IF([test "x${ac_scorep_platform}" = xmic],
+         [scorep_otf2_config_backend_arg="--target=mic"])])
+AS_IF([test "x${scorep_otf2_bindir}" != x],
+    [otf2_config_cmd="${scorep_otf2_bindir}/otf2-config ${scorep_otf2_config_backend_arg}"
+     AC_SUBST([OTF2_LIBS], [$($otf2_config_cmd --libs)])
+     AC_SUBST([OTF2_LDFLAGS], [$($otf2_config_cmd --ltldflags)])
+     AC_SUBST([OTF2_CPPFLAGS], [$($otf2_config_cmd --cppflags)])
+     AC_SUBST([OTF2_BINDIR],   ["${scorep_otf2_bindir}"])],
+    [# OTF2_* Makefile variables are evaluated by calling otf2-config,
+     # once it has been installed. When used earlier, a compile/link will fail.
+     m4_define([OTF2_CONFIG], [\$(DESTDIR)\$(bindir)/otf2-config])dnl
+     AC_SUBST([OTF2_LIBS], ["\$\$(if test -x \"OTF2_CONFIG\"; then echo \$\$(OTF2_CONFIG \$\${scorep_otf2_config_backend_arg} --libs); else echo \"-lOTF2_LIBS_not_provided_yet\"; fi)"])
+     AC_SUBST([OTF2_LDFLAGS], ["\$\$(if test -x \"OTF2_CONFIG\"; then echo \$\$(OTF2_CONFIG \$\${scorep_otf2_config_backend_arg} --ltldflags | sed 's|-L|-L\$(DESTDIR)|g;s|-R|-R\$(DESTDIR)|g'); else echo \"-LOTF2_LDFLAGS_not_provided_yet -ROTF2_LDFLAGS_not_provided_yet\"; fi)"])
+     AC_SUBST([OTF2_CPPFLAGS], ["\$\$(if test -x \"OTF2_CONFIG\"; then echo \$\$(OTF2_CONFIG \$\${scorep_otf2_config_backend_arg} --cppflags | sed 's|-I|-I\$(DESTDIR)|g'); else echo \"-IOTF2_CPPFLAGS_not_provided_yet\"; fi)"])
+     m4_undefine([OTF2_CONFIG])dnl
+     AC_SUBST([OTF2_BINDIR], ["${BINDIR}"])])
+AM_CONDITIONAL([HAVE_SCOREP_EXTERNAL_OTF2], [test "x${scorep_otf2_bindir}" != x])
 
 
 AS_IF([test -n "${scorep_opari2_bindir}"],

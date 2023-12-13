@@ -61,4 +61,21 @@ libscorep_ipc_shmem_la_CPPFLAGS = \
     $(shmem_libwrap_cppflags)            \
     -I$(INC_DIR_DEFINITIONS)
 
+if !HAVE_SCOREP_EXTERNAL_OTF2
+
+# For internal otf2, otf2-config is not available at first
+# invocation of make, but make all, check, install, install-exec,
+# dist will build it via BUILT_SOURCES and call make <target>
+# again. In this second make call, the variables are set as
+# intended. BUILT_SOURCES are also built via
+# make build_external_targets.
+BUILT_SOURCES += $(BINDIR)/otf2-config
+$(BINDIR)/otf2-config:
+	@if test -f ../vendor/otf2/Makefile; then $(am__cd) ../vendor/otf2 && $(MAKE) $(AM_MAKEFLAGS) install; else exit 1; fi
+otf2-clean:
+	@if test -f ../vendor/otf2/Makefile; then $(am__cd) ../vendor/otf2 && $(MAKE) $(AM_MAKEFLAGS) clean uninstall; fi
+CLEAN_LOCAL += otf2-clean
+
+endif !HAVE_SCOREP_EXTERNAL_OTF2
+
 endif HAVE_SHMEM_SUPPORT

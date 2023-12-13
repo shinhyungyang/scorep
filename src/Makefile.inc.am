@@ -61,12 +61,12 @@ libscorep_measurement_la_LIBADD =        \
     libscorep_addr2line.la               \
     $(libscorep_addr2line_la_needs_LIBS) \
     @SCOREP_DLFCN_LIBS@                  \
-    @OTF2_LIBS@                          \
+    $(OTF2_LIBS)                         \
     $(CUBEW_LIBS)
 
 libscorep_measurement_la_LDFLAGS = \
     $(library_api_version_ldflags) \
-    @OTF2_LDFLAGS@                 \
+    $(OTF2_LDFLAGS) \
     $(libscorep_metric_la_needs_LDFLAGS) \
     $(CUBEW_LDFLAGS) \
     $(libscorep_addr2line_la_needs_LDFLAGS) \
@@ -97,9 +97,18 @@ endif HAVE_SAMPLING_SUPPORT
 
 if !HAVE_SCOREP_EXTERNAL_OTF2
 
-BUILT_SOURCES += @OTF2_LIBS@
-@OTF2_LIBS@:
-	@$(am__cd) `dirname $@` && $(MAKE) $(AM_MAKEFLAGS) `basename $@`
+# For internal otf2, otf2-config is not available at first
+# invocation of make, but make all, check, install, install-exec,
+# dist will build it via BUILT_SOURCES and call make <target>
+# again. In this second make call, the variables are set as
+# intended. BUILT_SOURCES are also built via
+# make build_external_targets.
+# Note that a make clean will clean otf2's builddir, but not
+# uninstall the installation. This prevents corrupting an installation
+# by a final make clean, e.g., to save disk space.
+BUILT_SOURCES += $(BINDIR)/otf2-config
+$(BINDIR)/otf2-config:
+	@if test -f ../vendor/otf2/Makefile; then $(am__cd) ../vendor/otf2 && $(MAKE) $(AM_MAKEFLAGS) install; else exit 1; fi
 
 endif !HAVE_SCOREP_EXTERNAL_OTF2
 

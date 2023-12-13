@@ -76,20 +76,34 @@ libscorep_ipc_mpi_la_CPPFLAGS = \
 
 ## sion-mpi
 
-if ! HAVE_SCOREP_EXTERNAL_OTF2
+if !HAVE_SCOREP_EXTERNAL_OTF2
 ## build some otf2 code from here as it requires MPI
+
+# For internal otf2, otf2-config is not available at first
+# invocation of make, but make all, check, install, install-exec,
+# dist will build it via BUILT_SOURCES and call make <target>
+# again. In this second make call, the variables are set as
+# intended. BUILT_SOURCES are also built via
+# make build_external_targets.
+BUILT_SOURCES += $(BINDIR)/otf2-config
+$(BINDIR)/otf2-config:
+	@if test -f ../vendor/otf2/Makefile; then $(am__cd) ../vendor/otf2 && $(MAKE) $(AM_MAKEFLAGS) install; else exit 1;fi
+otf2-clean:
+	@if test -f ../vendor/otf2/Makefile; then $(am__cd) ../vendor/otf2 && $(MAKE) $(AM_MAKEFLAGS) clean uninstall; fi
+CLEAN_LOCAL += otf2-clean
+
 check_PROGRAMS += otf2_speed_test
 otf2_speed_test_SOURCES = \
     $(SRC_ROOT)vendor/otf2/src/tools/otf2_speed_test/otf2_speed_test.c
 otf2_speed_test_CPPFLAGS = \
     $(AM_CPPFLAGS) \
     $(UTILS_CPPFLAGS) \
-    @OTF2_CPPFLAGS@
+    $(OTF2_CPPFLAGS)
 otf2_speed_test_LDFLAGS = \
-    @OTF2_LDFLAGS@
+    $(OTF2_LDFLAGS)
 otf2_speed_test_LDADD = \
     $(MPILIBS) \
-    @OTF2_LIBS@
-endif
+    $(OTF2_LIBS)
+endif !HAVE_SCOREP_EXTERNAL_OTF2
 
-endif
+endif HAVE_MPI_SUPPORT
