@@ -4,7 +4,7 @@ dnl
 dnl Copyright (c) 2017, 2019, 2022,
 dnl Technische Universitaet Dresden, Germany
 dnl
-dnl Copyright (c) 2018, 2021-2022, 2024,
+dnl Copyright (c) 2018, 2021-2024,
 dnl Forschungszentrum Juelich GmbH, Germany
 dnl
 dnl This software may be modified and distributed under the terms of
@@ -150,6 +150,7 @@ AFS_PROG_CC([99])
 AFS_PROG_CXX([11], [noext])
 
 LT_PREREQ([2.4.6])
+# disable-shared as default; we don't have lib_LTLIBRARIES, just noinst_LTLIBRARIES
 LT_INIT([disable-shared])
 AC_SUBST([LIBTOOL_DEPS])
 

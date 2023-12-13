@@ -13,7 +13,7 @@ dnl
 dnl Copyright (c) 2009-2013,
 dnl University of Oregon, Eugene, USA
 dnl
-dnl Copyright (c) 2009-2013, 2015-2016, 2018, 2020-2022, 2024,
+dnl Copyright (c) 2009-2013, 2015-2016, 2018, 2020-2024,
 dnl Forschungszentrum Juelich GmbH, Germany
 dnl
 dnl Copyright (c) 2009-2014,
@@ -116,8 +116,14 @@ AFS_MAINTAINER_MODE
 AC_CANONICAL_BUILD
 AC_CANONICAL_HOST
 
+# Force --enable-shared for a shared libscorep_estimator, if libtool
+# permits. This way, CubeGUI can use libscorep_estimator using a
+# plug-in meachnism to aid the user in generating filter files (see
+# the ScorePion plug-in).
+enable_shared=yes
+AS_UNSET([enable_static])
 LT_PREREQ([2.4.6])
-LT_INIT
+LT_INIT([disable-static pic-only])
 AC_SUBST([LIBTOOL_DEPS])
 AFS_LT_RESTRICTIONS
 

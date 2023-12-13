@@ -4,7 +4,7 @@ dnl
 dnl Copyright (c) 2012-2015, 2018-2019, 2022,
 dnl Technische Universitaet Dresden, Germany
 dnl
-dnl Copyright (c) 2015, 2018, 2021-2023,
+dnl Copyright (c) 2015, 2018, 2021-2024,
 dnl Forschungszentrum Juelich GmbH, Germany
 dnl
 dnl This software may be modified and distributed under the terms of
@@ -106,6 +106,8 @@ AFS_PROG_FC([optional])
 
 LT_PREREQ([2.4.6])
 LT_INIT([shared disable-static])
+AS_IF([test "x${enable_shared}" = xno],
+    [AC_MSG_ERROR("Cannot build LLVM plug-in in --disable-shared mode.")])
 AC_SUBST([LIBTOOL_DEPS])
 
 adl_RECURSIVE_EVAL([${datadir}/${PACKAGE}], [PKGDATADIR])
