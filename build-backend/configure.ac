@@ -76,9 +76,10 @@ AFS_PROG_F77_SUMMARY
 AM_CONDITIONAL([HAVE_FORTRAN_SUPPORT], [test "x${afs_cv_prog_f77_works}" = "xyes" && test "x${afs_cv_prog_fc_works}" = "xyes"])
 
 LT_PREREQ([2.4.6])
-LT_INIT([disable-shared])
+LT_INIT([shared disable-static pic-only])
 AC_SUBST([LIBTOOL_DEPS])
 AFS_LINKMODE
+AFS_LT_RESTRICTIONS
 AFS_SUMMARY([Link mode], [static=$enable_static, shared=$enable_shared])
 
 AC_CONFIG_HEADERS([../src/config-backend.h])

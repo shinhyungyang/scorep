@@ -4,7 +4,7 @@ dnl
 dnl Copyright (c) 2013-2018, 2020, 2022,
 dnl Technische Universitaet Dresden, Germany
 dnl
-dnl Copyright (c) 2015-2016, 2018-2022, 2024,
+dnl Copyright (c) 2015-2016, 2018-2024,
 dnl Forschungszentrum Juelich GmbH, Germany
 dnl
 dnl This software may be modified and distributed under the terms of
@@ -73,9 +73,10 @@ SCOREP_COMPUTENODE_F77
 AFS_PROG_F77_SUMMARY([SHMEM])
 
 LT_PREREQ([2.4.6])
-LT_INIT([disable-shared])
+LT_INIT([shared disable-static pic-only])
 AC_SUBST([LIBTOOL_DEPS])
 AFS_LINKMODE
+AFS_LT_RESTRICTIONS
 AFS_SUMMARY([Link mode], [static=$enable_static, shared=$enable_shared])
 
 AC_CONFIG_HEADERS([../src/config-backend-shmem.h])

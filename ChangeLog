@@ -94,6 +94,10 @@ Compatibility:
 - For unwind, bfd and lustreapi additional `LIBS`, `LDFLAGS` and
   `CPPFLAGS` can be passed during configure (e.g. via `LIBBFD_EXTRA_LIBS`) to
   ensure that these libraries are detected correctly.
+- Score-P's installed libraries can be built either shared or static,
+  but not the combination of both in one installation. The default
+  changed to shared. For a pure static build, use `--enable-static
+  --disable-shared`.
 
 Bugfixes:
 
