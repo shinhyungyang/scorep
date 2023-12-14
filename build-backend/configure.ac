@@ -80,6 +80,7 @@ LT_INIT([shared disable-static pic-only])
 AC_SUBST([LIBTOOL_DEPS])
 AFS_LINKMODE
 AFS_LT_RESTRICTIONS
+AFS_LT_RPATHS
 AFS_SUMMARY([Link mode], [static=$enable_static, shared=$enable_shared])
 
 AC_CONFIG_HEADERS([../src/config-backend.h])
