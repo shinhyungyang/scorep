@@ -15,7 +15,7 @@
 ## Copyright (c) 2009-2011,
 ## University of Oregon, Eugene, USA
 ##
-## Copyright (c) 2009-2015, 2017-2018, 2022, 2024,
+## Copyright (c) 2009-2015, 2017-2018, 2022-2024,
 ## Forschungszentrum Juelich GmbH, Germany
 ##
 ## Copyright (c) 2009-2011,
@@ -194,7 +194,7 @@ if HAVE_HIP_CHECK_SUPPORT
 PARADIGMS += hip
 endif HAVE_HIP_CHECK_SUPPORT
 
-INSTALLCHECK_LOCAL += instrumenter-checks
+INSTALLCHECK_LOCAL += instrumenter-checks shared-objects-self-contained
 instrumenter-checks: $(instrumenter_configuration_files) \
                      ../installcheck/instrumenter_checks/check-instrumentation.sh
 	@fail= failcom='exit 1'; \

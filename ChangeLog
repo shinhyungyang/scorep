@@ -137,6 +137,12 @@ Bugfixes:
   or "no".
 - Reduction of overhead when the CUDA adapter is active and runtime
   filtering is used.
+- The self-containdness of instrumented executables WRT the needed
+  Score-P libraries has been improved. Non-self-contained executables
+  have been reported on Cray systems and, dependent on the configure
+  flags and the system configuration, on some others. Oftentimes, this
+  issue has been hidden by LD_LIBRARY_PATH settings provided by module
+  systems.
 
 ------------------- Released version 8.4 -----------------------------
 
