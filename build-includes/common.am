@@ -15,7 +15,7 @@
 ## Copyright (c) 2009-2012,
 ## University of Oregon, Eugene, USA
 ##
-## Copyright (c) 2009-2014, 2021, 2024,
+## Copyright (c) 2009-2014, 2021, 2023-2024,
 ## Forschungszentrum Juelich GmbH, Germany
 ##
 ## Copyright (c) 2009-2012,
@@ -63,9 +63,11 @@ INSTALLCHECK_LOCAL =
 installcheck-local: $(INSTALLCHECK_LOCAL)
 
 INSTALL_EXEC_HOOK =
+INSTALL_EXEC_HOOK += install-exec-move-la-files
 install-exec-hook: $(INSTALL_EXEC_HOOK)
 
 UNINSTALL_HOOK =
+UNINSTALL_HOOK += uninstall-moved-la-files
 uninstall-hook: $(UNINSTALL_HOOK)
 
 # Install objectfiles in $(pkglibdir). pkglib_DATA not legitimate since automake 1.11.2
