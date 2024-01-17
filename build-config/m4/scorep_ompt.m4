@@ -470,7 +470,7 @@ CFLAGS="${OPENMP_CFLAGS} ${CFLAGS}"
 LDFLAGS="${ompt_c_ldflags} ${LDFLAGS}"
 AC_RUN_IFELSE([AC_LANG_SOURCE(_TRY_RUN_OMPT_TEST_INPUT)],
     [have_[]_OMPT_TEST[]=yes],
-    [have_[]_OMPT_TEST[]="no"],
+    [have_[]_OMPT_TEST[]=no],
     [AC_MSG_FAILURE([TODO: handle real cross-compile systems])])
 CFLAGS="${CFLAGS_save}"
 LDFLAGS="${LDFLAGS_save}"
@@ -1002,7 +1002,7 @@ m4_define([_CHECK_OMPT_REMEDIABLE_ISSUES], [
 have_ompt_remediable_checks_passed=yes
 AS_UNSET([issues_detected])
 m4_foreach_w([_OMPT_TEST],
-    [wrong_test_lock_mutex missing_work_loop_schedule missing_work_sections_end],
+    [wrong_test_lock_mutex missing_work_loop_schedule missing_work_sections_end teams_dispatch_implicit_task],
     [m4_define([_TRY_RUN_OMPT_TEST_INPUT], [_INPUT_OMPT_KNOWN_ISSUE_[]m4_toupper(_OMPT_TEST)[]])
      _TRY_RUN_OMPT_TEST
      AS_IF([test "x${have_[]_OMPT_TEST[]}" != xyes],
@@ -1347,3 +1347,108 @@ main( void )
     return 1;
 }
 ]]) dnl _INPUT_OMPT_KNOWN_ISSUE_MISSING_WORK_SECTIONS_END
+
+# _INPUT_OMPT_KNOWN_ISSUE_teams_dispatch_implicit_task
+# ---------------------------------------------
+# Test code to check if teams callback dispatches additional
+# implicit task callback with flag initial
+#
+m4_define([_INPUT_OMPT_KNOWN_ISSUE_teams_dispatch_implicit_task], [[
+#include <assert.h>
+#include <omp.h>
+#include <omp-tools.h>
+#include <stdatomic.h>
+
+static ompt_finalize_tool_t ompt_finalize_tool;
+atomic_int_least32_t        num_implicit_tasks = 0;
+atomic_int_least32_t        num_initial_tasks = 0;
+atomic_int_least32_t        teams_created = 0;
+
+void
+on_ompt_implicit_task( ompt_scope_endpoint_t endpoint,
+                       ompt_data_t*          parallel_data,
+                       ompt_data_t*          task_data,
+                       unsigned int          actual_parallelism,
+                       unsigned int          index, /* thread or team num */
+                       int                   flags )
+{
+    if( flags & ompt_task_initial )
+    {
+        atomic_fetch_add( &num_initial_tasks, 1 );
+    }
+    else if (flags & ompt_task_implicit )
+    {
+        atomic_fetch_add( &num_implicit_tasks, 1 );
+    }
+}
+
+static int
+initialize_tool( ompt_function_lookup_t lookup,
+                 int                    initialDeviceNum,
+                 ompt_data_t*           toolData )
+{
+    ompt_set_callback_t set_callback =
+        ( ompt_set_callback_t )lookup( "ompt_set_callback" );
+    assert( set_callback != 0 );
+    ompt_finalize_tool =
+        ( ompt_finalize_tool_t )lookup( "ompt_finalize_tool" );
+    assert( ompt_finalize_tool != 0 );
+
+    set_callback( ompt_callback_implicit_task, (ompt_callback_t) &on_ompt_implicit_task );
+    return 1; /* non-zero indicates success */
+}
+
+static void
+finalize_tool( ompt_data_t* toolData )
+{
+
+}
+
+/* Called by the OpenMP runtime. Everything starts from here. */
+ompt_start_tool_result_t*
+ompt_start_tool( unsigned int omp_version, /* == _OPENMP */
+                 const char*  runtime_version )
+{
+    static ompt_start_tool_result_t tool = { &initialize_tool,
+                                             &finalize_tool,
+                                             ompt_data_none };
+    return &tool;
+}
+
+void
+summary()
+{
+    const int fetched_initial_tasks   = atomic_load( &num_initial_tasks );
+    const int fetched_implicit_tasks  = atomic_load( &num_implicit_tasks );
+    const int fetched_created_teams   = atomic_load( &teams_created );
+    const int expected_initial_tasks  = ( fetched_created_teams + 1 ) * 2;
+    const int expected_implicit_tasks = 0;
+    printf( "------------------------------\n");
+    printf( "Expected: initial_tasks encountered = %u | implicit_tasks encountered = %u\n", expected_initial_tasks, expected_implicit_tasks );
+    printf( "Actual:   initial_tasks encountered = %u | implicit_tasks encountered = %u\n", fetched_initial_tasks, fetched_implicit_tasks );
+    printf( "------------------------------\n");
+    assert( fetched_initial_tasks == expected_initial_tasks );
+    assert( fetched_implicit_tasks == expected_implicit_tasks );
+}
+
+int main( void )
+{
+// NVHPC (until at least 24.11) does not support the teams directive without
+// a surrounding target construct, resulting in:
+// 'NVC++-S-0155-TEAMS construct must be contained within TARGET construct'
+// However, a 'target teams' construct still dispatches host callbacks if
+// offloaded to the host. Therefore, execute this test with an additional
+// 'target' construct on the initial device (i.e. host).
+#ifdef __NVCOMPILER
+    #pragma omp target teams num_teams( 2 ) device( omp_get_initial_device() )
+#else
+    #pragma omp teams num_teams( 2 )
+#endif
+    {
+        atomic_fetch_add( &teams_created, 1 );
+    }
+    ompt_finalize_tool();
+    summary();
+    return 0;
+}
+]])
