@@ -1756,8 +1756,7 @@ scorep_ompt_cb_host_work( ompt_work_t           work_type,
                     SCOREP_EnterRegion( work_begin( task, codeptr_ra, TOOL_EVENT_WORKSHARE ) );
                     break;
                 case ompt_work_distribute:
-                    UTILS_WARN_ONCE( "ompt_work_t %s not implemented yet.",
-                                     work2string( work_type ) );
+                    SCOREP_EnterRegion( work_begin( task, codeptr_ra, TOOL_EVENT_DISTRIBUTE ) );
                     break;
                 case ompt_work_taskloop:
                     SCOREP_EnterRegion( work_begin( task, codeptr_ra, TOOL_EVENT_TASKLOOP ) );
@@ -1811,8 +1810,7 @@ scorep_ompt_cb_host_work( ompt_work_t           work_type,
                     SCOREP_ExitRegion( work_end( task ) );
                     break;
                 case ompt_work_distribute:
-                    UTILS_WARN_ONCE( "ompt_work_t %s not implemented yet.",
-                                     work2string( work_type ) );
+                    SCOREP_ExitRegion( work_end( task ) );
                     break;
                 case ompt_work_taskloop:
                     SCOREP_ExitRegion( work_end( task ) );
