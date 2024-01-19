@@ -249,9 +249,11 @@ various Score-P components.
 
   Applies to OPARI2 and OMPT instrumentation:
 
-  - Device directives, introduced with OpenMP 4 and later, are not supported.
+  - Changes introduced with the OpenMP 6.0 specification are not supported.
 
   Applies to OPARI2 instrumentation only:
+
+  - Device directives, introduced with OpenMP 4 and later, are not supported.
 
   - Function instrumentation using the Intel compiler version 11.1 for
     codes using OpenMP tasking is erroneous.
@@ -368,11 +370,38 @@ various Score-P components.
     build an OpenMP application with OPARI2 enabled will fail with compilation
     errors.
 
-  Applies to OpenMP target offloading when using Score-P compiler
-  instrumentation:
+  Applies to OMPT instrumentation only:
 
-  - When using an LLVM based compiler in an application using OpenMP
-    target directives the scorep compile command may fail with a
+  - When instrumenting an application using `#pragma omp sections` with
+    Intel oneAPI compilers, enabling OpenMP via `-fiopenmp` or `-qopenmp`
+    may result in an error reporting an `inconsistent profile`. This happens
+    because the runtime reports the end of the sections construct incorrectly.
+    For C / C++ only, you may switch to `-fopenmp` for instrumentation. For
+    Fortran applications, please use OPARI2 via `--thread=omp:opari2`.
+
+  - When instrumenting an application using `#pragma omp sections` with
+    NVHPC 23.7, running the instrumented application will abort reporting an
+    `inconsistent profile`. This happens because the runtime does not report
+    the end of the sections construct. If you want to instrument applications
+    using OpenMP sections with NVHPC, please use OPARI2 via `--thread=omp:opari2`
+    instead.
+
+  - When measuring an application using `#pragma omp ordered` with NVHPC,
+    running the application may result in an error message like
+    "Bug: 'task->workshare_regions_current == 0'" or crash with a segmentation
+    fault. As this is a runtime issue and cannot be worked around, please use
+    OPARI2 via `--thread=omp:opari2` to instrument applications using
+    `#pragma omp ordered`.
+
+  - When configuring Score-P with a Cray compiler and an accelerator
+    architecture loaded on a node without the respective accelerator,
+    configure checks might fail because no GPU was found. Please build
+    on a node with the accelerator being present.
+
+  Applies to OpenMP target offloading:
+
+  - When using an LLVM-based compiler in an application using OpenMP
+    target directives, the `scorep` compile command may fail with a
     linker error and the following error message:
 
       Undefined reference to '__cyg_profile_func_enter'
@@ -396,45 +425,68 @@ various Score-P components.
       scorep --nocompiler [llvm-based compiler] [args] \
       -Xarch_host -finstrument-functions-after-inlining
 
-  Applies to OMPT instrumentation only:
-
-  - Until device directives are supported by Score-P, device events
-    are ignored, if possible.
-
   - Runtimes have been reported creating helper threads for certain target
     directives. These helper threads may dispatch events in a non-conforming
     way. In addition, non-conforming tasking behavior has been observed.
     In these cases, Score-P can't ignore the device events, but aborts.
     As a workaround, please turn off these helper threads by setting the
     environment variable `LIBOMP_USE_HIDDEN_HELPER_TASK` to `0`. Known
-    nonconforming runtimes include LLVM/Clang (12.0.0 to 18.1.1) and
-    oneAPI (2024.0 and lower).
+    nonconforming runtimes include LLVM/Clang (12.0.0 to 18.1.7) and
+    oneAPI (2024.1 and earlier).
 
-  - When measuring an application using `#pragma omp sections` with
-    Intel oneAPI compilers, enabling OpenMP via `-fiopenmp` or `-qopenmp`
-    may result in an error reporting an `inconsistent profile`. This happens
-    because the runtime reports the end of the sections construct incorrectly.
-    For C / C++ only, you may switch to `-fopenmp` for the measurement. For
-    Fortran applications, please use OPARI2 via `--thread=omp:opari2`.
+  - For instrumentation of target directives, only runtimes having the OpenMP
+    Tools Interface device tracing interface available are supported.  This
+    includes recent ROCm and AOMP compilers. For other runtimes, please try to
+    use the native accelerator adapters for instrumentation.
 
-  - When measuring an application using `#pragma omp sections` with
-    NVHPC 23.7, running the application will abort reporting an
-    `inconsistent profile`. This happens because the runtime does not report
-    the end of the sections construct. If you want to measure applications
-    using OpenMP sections with NVHPC, please use OPARI2 via `--thread=omp:opari2`
-    instead.
+  - For best support, it is advised to use the latest compiler versions to
+    ensure the best support of the device tracing interface. In our testing,
+    AMDs ROCm 6.2.x and AOMP 20.0-0 offer the best support, with the following
+    limitations:
+      - AOMP 19.0-0 will report incorrect times for data transfers between
+        devices.
+      - AOMP 18.0-1 may deadlock for short programs when multiple accelerators
+        are initialized.
+      - ROCm 6.1.3 and earlier and AOMP 18.0-0 and earlier do not support
+        multiple devices per rank. If kernels are executed on more than one
+        device per process, execution may abort. Otherwise events may be
+        associated with the wrong accelerator.
+      - AOMP 18.0-0 incorrectly maps identifiers between callbacks and the
+        device tracing interface. This leads to data transfers being shown
+        incorrectly between the host threads and devices.
+      - ROCm 5.7.1 and earlier and AOMP 17.0-3 and earlier do not support
+        accessing a device from multiple threads. This may lead to issues
+        where events are associated with the incorrect host thread.
+      - ROCm 5.6 to 5.7.1 do not dispatch all callbacks for `#pragma omp
+        target enter/exit data`. Score-P will abort due to timestamp issues.
+      - When utilizing multiple accelerators with ROCm 5.5, execution will
+        dead lock at the end of the program execution when Score-P calls
+        `stop_trace` for the device tracing interface.
+      - ROCm 5.4 and earlier are not supported due to not having a way to
+        translate the device time to host time.
+    In addition, Cray CCE 17.0.1 and newer support the device tracing
+    interface, with the following known limitations. These limitations will be
+    improved in a future release of Score-P:
+      - Cray CCE 17.0.1 may not dispatch outstanding buffers at the end of the
+        program, and may not dispatch a device finalization event before the
+        measurement has already finished. This may lead to missing events.
+      - Cray CCE 17.0.1 may dispatch buffers twice for the same event, when
+        explicit flushes are done. This will lead to the measurement aborting
+        with an error message since too many events for one target region are
+        processed.
+    If the application crashes or hangs because of the mentioned issues,
+    please try to disable the device tracing interface by setting
+    `SCOREP_OMPT_TARGET_DEVICE_TRACING_ENABLE=false` and record events with
+    the respective native accelerator adapter.
 
-  - When measuring an application using `#pragma omp ordered` with NVHPC,
-    running the application may result in an error message like
-    "Bug: 'task->workshare_regions_current == 0'" or crash with a segmentation
-    fault. As this is a runtime issue and cannot be worked around, please use
-    OPARI2 via `--thread=omp:opari2` to instrument applications using
-    `#pragma omp ordered`.
-
-  - When configuring Score-P with a Cray compiler and an accelerator
-    architecture loaded on a node without the respective accelerator,
-    configure checks might fail because no GPU was found. Please build
-    on a node with the accelerator being present.
+  - Not all runtimes offering support for the OpenMP Tools Interface support
+    dispatching events for target directives and/or the device tracing
+    interface to report accelerator events. In our testing, LLVM/Clang 17.0,
+    oneAPI 2024.1, NVHPC 23.7, ROCm 5.4, and newer versions have at least
+    partial support for target directives. If the device tracing interface
+    cannot be enabled, Score-P will report a warning. In this case, please try
+    to record events using the respective native accelerator adapter, e.g.,
+    CUDA.
 
   - When instrumenting an application using OpenMP tasks within a teams region,
     using `#pragma omp single nowait` or `#pragma omp masked` might cause Score-P
@@ -486,10 +538,10 @@ various Score-P components.
     that the memory copy kind could not be identified. This includes
     2D/3D memory transfers. This will be improved in future Score-P versions.
 
-  - The CUDA adapter is not able to record OpenMP offloading to GPUs
-    with LLVM 18.1 or newer, as the runtime is creating streams
-    before the Score-P CUDA adapter can be initialized. Future versions
-    of Score-P will handle this more gracefully.
+  - The CUDA adapter is not able to record kernels associated with
+    OpenMP target directives to NVIDIA GPUs with LLVM 18.1 or newer, as the
+    runtime is creating streams before the Score-P CUDA adapter can be
+    initialized. Future versions of Score-P will handle this more gracefully.
 
 --------------------------------------------------------------------------------
 
