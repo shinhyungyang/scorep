@@ -29,6 +29,8 @@ Bugfixes:
   fails.
 - Fix handling of multiple or unknown values for `--enable-default` during
   configure.
+- Fix classification of various MPI functions (mostly introduced with
+  MPI 4.0) by the report post-processing.
 
 ------------------- Released version 8.3 -----------------------------
 
