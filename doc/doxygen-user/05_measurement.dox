@@ -32,6 +32,12 @@ recording for recording traces.
 See Appendix @secref{scorepmeasurementconfig} for a detailed description of how
 to configure the measurement.
 
+@note
+  This chapter primarily targets SPMD applications, however most of it is also
+  valid for MPMD applications. See Section @secref{mpmd_msa_measurement} for
+  any additional considerations in context of MPMD measurements with @scorep.
+
+
 @section profiling Profiling
 @seclabel{profiling}
 
@@ -1129,4 +1135,56 @@ SCOREP_SUBSTRATE_PLUGINS=PrintRegions
 
 @note Multiple substrate plugins can be loaded by listing them <tt>SCOREP_SUBSTRATE_PLUGINS=foo,bar</tt>, the default separator ',' can be changed by setting the environment variable \confvar{SCOREP_SUBSTRATE_PLUGINS_SEP}.
 @note Developers of plugins are highly encouraged to use environment variables in their plugins with the naming scheme <tt>SCOREP_SUBSTRATE_<substrate name>_<variable></tt>, e.g., <tt>SCOREP_SUBSTRATE_PRINTREGIONS_VERBOSE</tt>
+
+@section mpmd_msa_measurement MPMD and MSA Performance Measurements
+@seclabel{mpmd_msa_measurement}
+
+There are a few considerations and limitations one should keep in mind for measurements of MPMD or MSA applications.
+These are listed below describing the particular issue and potential workarounds---in no particular order as they are
+relatively independent from each other.
+
+To set up a @scorep measurement run with different settings per module or process group, one can employ @scorep environment
+variables like any other component-local environment variable. However, there are a few restrictions and side effects to
+consider.
+First, right now the <tt>scorep.cfg</tt> file stored in a measurement experiment directory will only contain the settings
+for rank 0. While this has no direct functional impact on the run, as all processes correctly use the settings targeted for
+them, it impacts the readability and usability of the stored settings for reproducibility.
+Second, there are some limitations on which variables can be set differently per process and which ones have to be set globally to
+the same value.
+Since the decision depends on the application and its use of a specific feature, it is difficult to provide a global list
+that is consistently correct.
+The main consideration is that no matter how many modules a MPMD or MSA application uses, this is still one single @scorep
+measurement.
+For example, using different values for \confvar{SCOREP_ENABLE_PROFILING} or \confvar{SCOREP_ENABLE_TRACING} across modules
+would cause a deadlock or lead to an aborted measurement.
+Therefore, it is mostly a question of impact beyond the local process.
+When in doubt, try a global setting first, unless it is truly necessary to differentiate.
+
+To visually separate the different modules in the system tree, one can set the \confvar{SCOREP_MACHINE_NAME}
+configuration variable to different values for process groups representing different modules.
+As a result, the system tree will be split at the root and have multiple trees, one per different machine name.
+
+Different compute modules can have different architectures, and collecting different hardware performance counters
+for each component is possible. When using counters, @scorep is dependent on counter sources like PAPI, rusage, or perf.
+Hardware counter metrics are distinguished by the name and description the counter sources provide. Thus, keep in mind
+that if you see two different metrics for a counter of the same name, this depends on the information provided.
+For example, with different hardware modules, PAPI currently creates multiple metrics because their counter description
+varies based on architecture. On the other hand, perf or rusage currently do not provide different descriptions,
+which will lead to single metrics that might or might not have the same exact semantic on all involved components
+depending on the architecture and the chosen counter. The information is still usable, as the system tree still
+separates values by module. However, users have to be careful with the interpretation of the values based on their
+knowledge of hardware and used counters.
+
+As different compute modules can also have different clock speeds, using the <tt>tsc</tt> timer for \confvar{SCOREP_TIMER} is
+usually unreliable. For these cases, it is preferable to choose <tt>getimeofday</tt> or <tt>clock_getime</tt> as \confvar{SCOREP_TIMER}.
+Even though <tt>tsc</tt> has the lowest overhead of the different timer alternatives, the difference nowadays is no longer as prominent
+as it used to be.
+
+Finally, keep in mind that <tt>scorep-score</tt> currently treats a measurement as a single whole. That is, currently all
+calculations and recommendations are upper bounds based on all regions independent of the modules. However, with enough knowledge
+about the application (e.g., which regions are from which modules) it might be possible to manually reduce these upper bounds using
+educated guesses.
+
+
+
 */
