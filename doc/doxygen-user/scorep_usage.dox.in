@@ -41,8 +41,6 @@ Common options are:
                   instrumentation.
               omp:ompt
                   OpenMP support using thread tracking via OMPT.
-                  It conflicts and, thus, automatically disables pdt
-                  instrumentation.
               pthread
                   Pthread support using thread tracking via library wrapping.
                   It requires and, thus, automatically enables linktime-wrapping
@@ -70,7 +68,6 @@ Common options are:
                   available. And the ISO C `FILE` handle based API (i.e.,
                   `fopen`/`fclose`).
   --compiler      Enables compiler instrumentation.
-                  By default, it disables pdt instrumentation.
   --nocompiler    Disables compiler instrumentation.
   --cuda          Enables CUDA instrumentation. Enabled by default, if the
                   nvcc compiler is in use. In this case it also conflicts and
@@ -97,21 +94,9 @@ Common options are:
                   to have finer control over the instrumentation process.
                   Please refer to the OPARI2 user documentation for more
                   details.
-  --pdt[=<parameter-list>]
-                  Deprecated, consider using compiler (--compiler) or manual region
-                  instrumentation (--user) instead. Enables pdt instrumentation.
-                  You may add additional parameters that are passed to pdt.
-                  It requires and, thus, automatically enables user instrumentation.
-                  It conflicts and, thus, automatically disables preprocess
-                  instrumentation.
-                  By default, it disables compiler instrumentation.
-  --nopdt         Deprecated, consider using compiler (--compiler) or manual region
-                  instrumentation (--user) instead. Disables pdt instrumentation.
   --preprocess    Enables preprocess instrumentation.
                   It cannot be enabled, if not at least one of the following is
                   enabled: OPARI2 instrumentation.
-                  It conflicts and, thus, automatically disables pdt
-                  instrumentation.
   --nopreprocess  Disables preprocess instrumentation.
   --user          Enables user instrumentation.
   --nouser        Disables user instrumentation.

@@ -251,8 +251,7 @@ in the experiment directory, along with the trace data.
 @section filtering Filtering
 @seclabel{filtering}
 
-When automatic compiler instrumentation or automated source code instrumentation with
-PDT (deprecated) has been used to instrument user-level source-program routines, there
+When automatic compiler instrumentation has been used to instrument user-level source-program routines, there
 are cases where measurement and associated analysis are degraded,
 e.g., by frequently-executed, small and/or generally uninteresting
 functions, methods and subroutines.
@@ -268,8 +267,6 @@ to restrict the recording of @mpi features and the @opari2 documentation of
 <tt>\--disable</tt> to restrict instrumentation of @openmp directives. This
 <tt>\--disable</tt> flag can than be passed on to the @opari2 invocation with the
 <tt>\--opari=<parameter-list></tt> flag of the @scorep instrumenter.
-Because PDT instrumentation (Section @secref{tau_instrumentation}) inserts
-@scorep user API instrumentation those regions can be filtered, too.
 Regions can be filtered based on their region name (e.g., their function name)
 or based on the source file, in which they are defined.
 

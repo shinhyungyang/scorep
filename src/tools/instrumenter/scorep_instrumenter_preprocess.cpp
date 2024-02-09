@@ -7,7 +7,7 @@
  * Copyright (c) 2014,
  * German Research School for Simulation Sciences GmbH, Juelich/Aachen, Germany
  *
- * Copyright (c) 2014, 2017,
+ * Copyright (c) 2014, 2017, 2024,
  * Technische Universitaet Dresden, Germany
  *
  * Copyright (c) 2016,
@@ -51,7 +51,6 @@
 SCOREP_Instrumenter_PreprocessAdapter::SCOREP_Instrumenter_PreprocessAdapter( void )
     : SCOREP_Instrumenter_Adapter( SCOREP_INSTRUMENTER_ADAPTER_PREPROCESS, "preprocess" )
 {
-    m_conflicts.push_back( SCOREP_INSTRUMENTER_ADAPTER_PDT );
     m_prerequisites.push_back( SCOREP_INSTRUMENTER_ADAPTER_OPARI );
 }
 

@@ -41,8 +41,6 @@ scorep_SOURCES = \
     $(SRC_ROOT)src/tools/instrumenter/scorep_instrumenter_opencl.hpp       \
     $(SRC_ROOT)src/tools/instrumenter/scorep_instrumenter_paradigm.cpp     \
     $(SRC_ROOT)src/tools/instrumenter/scorep_instrumenter_paradigm.hpp     \
-    $(SRC_ROOT)src/tools/instrumenter/scorep_instrumenter_pdt.cpp          \
-    $(SRC_ROOT)src/tools/instrumenter/scorep_instrumenter_pdt.hpp          \
     $(SRC_ROOT)src/tools/instrumenter/scorep_instrumenter_preprocess.cpp   \
     $(SRC_ROOT)src/tools/instrumenter/scorep_instrumenter_preprocess.hpp   \
     $(SRC_ROOT)src/tools/instrumenter/scorep_instrumenter_selector.cpp     \
@@ -71,10 +69,3 @@ scorep_LDADD = \
     libscorep_tools.la \
     libutils.la \
     libscorep_openmp_version.la
-
-if HAVE_SCOREP_PDT
-pkgdata_DATA += ../share/SCOREP_Pdt_Instrumentation.conf
-endif HAVE_SCOREP_PDT
-
-EXTRA_DIST += \
-    $(SRC_ROOT)share/SCOREP_Pdt_Instrumentation.conf

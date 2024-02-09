@@ -4,7 +4,7 @@
  * Copyright (c) 2013,
  * Forschungszentrum Juelich GmbH, Germany
  *
- * Copyright (c) 2013-2014, 2017,
+ * Copyright (c) 2013-2014, 2017, 2024,
  * Technische Universitaet Dresden, Germany
  *
  * This software may be modified and distributed under the terms of
@@ -60,10 +60,6 @@ SCOREP_Instrumenter_Mpi::SCOREP_Instrumenter_Mpi
 ) : SCOREP_Instrumenter_Paradigm( selector, "mpi", "",
                                   "MPI support using library wrapping" )
 {
-    if ( !SCOREP_HAVE_PDT_MPI_INSTRUMENTATION )
-    {
-        m_conflicts.push_back( SCOREP_INSTRUMENTER_ADAPTER_PDT );
-    }
 #if !( HAVE_BACKEND( MPI_SUPPORT ) )
     unsupported();
 #endif

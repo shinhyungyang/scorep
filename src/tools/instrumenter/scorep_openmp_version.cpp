@@ -4,7 +4,7 @@
  * Copyright (c) 2014,
  * German Research School for Simulation Sciences GmbH, Juelich/Aachen, Germany
  *
- * Copyright (c) 2019,
+ * Copyright (c) 2019, 2024,
  * Technische Universitaet Dresden, Germany
  *
  * This software may be modified and distributed under the terms of
@@ -15,8 +15,7 @@
 
 /**
  * @file
- *
- * Implements the class for PDT instrumentation.
+ * Exposes the OpenMP version as scorep_openmp_version.
  */
 
 #include <config.h>
