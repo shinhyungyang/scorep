@@ -42,6 +42,8 @@ Bugfixes:
 - Provide the missing wrapper for `MPI_Request_get_status` and properly
   handle the case where the operation hasn't been completed yet.
 - Fix abort of OMPT adapter with nested parallel regions inside of tasks.
+- Fix duplicate MPI inter-communicator definitions for cases with
+  distinct peer communicators.
 
 ------------------- Released version 8.3 -----------------------------
 
