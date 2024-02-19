@@ -13,7 +13,7 @@
  * Copyright (c) 2009-2013,
  * University of Oregon, Eugene, USA
  *
- * Copyright (c) 2009-2013, 2018,
+ * Copyright (c) 2009-2013, 2018, 2024,
  * Forschungszentrum Juelich GmbH, Germany
  *
  * Copyright (c) 2009-2014,
@@ -78,6 +78,21 @@ UTILS_BEGIN_C_DECLS
 bool
 SCOREP_IsInitialized( void );
 
+/**
+ * Initialize the configure variables from the adapter layer. This function
+ * needs to be called either from an (arbitrary) adapter or SCOREP_InitMeasurement
+ * before any configure variable is accessed. Accessing any configure variable
+ * before is seen as undefined behaviour. The first call to this function triggers
+ * the initialization of all configure variables.
+ *
+ * Calling this function several times does no harm to the measurement system.
+ *
+ * Each arising error leads to a fatal abortion of the program.
+ *
+ * @see SCOREP_InitMeasurement()
+ */
+void
+SCOREP_InitConfigVariables( void );
 
 /**
  * Initialize the measurement system from the adapter layer. This function
