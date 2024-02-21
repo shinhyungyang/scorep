@@ -2117,6 +2117,21 @@ scorep_ompt_cb_host_task_schedule( ompt_data_t*       prior_task_data,
         }
     }
 
+    /* A task may have executed a parallel region. During
+     * scorep_ompt_cb_parallel_end, we then set stored_data->task to
+     * the encountering_task i.e. the task itself. When we now switch to a
+     * different task and trigger overdue events, no event will be triggered,
+     * since the pointers do not match. To fix this, update stored_data->task
+     * on switching tasks. */
+    if ( next_task_data->ptr != prior_task )
+    {
+        SCOREP_Location* location = SCOREP_Location_GetCurrentCPULocation();
+        GET_SUBSYSTEM_DATA( location, stored_data, unused );
+        UTILS_MutexLock( &stored_data->protect_task_exchange );
+        stored_data->task = next_task_data->ptr;
+        UTILS_MutexUnlock( &stored_data->protect_task_exchange );
+    }
+
     UTILS_DEBUG_EXIT();
     SCOREP_IN_MEASUREMENT_DECREMENT();
 }
