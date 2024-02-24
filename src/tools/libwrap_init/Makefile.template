@@ -212,6 +212,9 @@ $(LIBWRAP_ANCHOR_FILE): Makefile
 	    if test x"$${MODULESHOME:+set}" = x"set"; then \
 	        echo "LIBWRAP_LOADEDMODULES=$$LOADEDMODULES"; \
 	    fi; \
+	    if test x"$${SPACK_ROOT:+set}" = x"set"; then \
+	        echo "LIBWRAP_LOADEDSPACKHASHES=$$SPACK_LOADED_HASHES"; \
+	    fi; \
 	) >$@
 
 $(LIBWRAP_SUMMARY_FILE): Makefile
@@ -248,6 +251,26 @@ $(LIBWRAP_SUMMARY_FILE): Makefile
 	            echo; \
 	        else \
 	            echo "  No modules loaded"; \
+	        fi; \
+	    fi; \
+	    if test x"$${SPACK_ROOT:+set}" = x"set"; then \
+	        echo; \
+	        echo "Spack packages loaded:"; \
+	        if test x"$${SPACK_LOADED_HASHES:+set}" = x"set"; then \
+	            prefix="  spack load "; \
+	            printf "%-32s" "$$prefix"; \
+	            padding=$$(printf "%32s" ""); \
+	            spack_modules=$$(spack find --format "{name}{@version}{%compiler}{arch=architecture}" --loaded); \
+	            IFS=': ' eval 'set x $$spack_modules'; \
+	            shift; \
+	            sep=""; \
+	            for module; do \
+	                printf "$$sep%s" "$$module"; \
+	                sep=" \\\\\n$$padding"; \
+	            done; \
+	            echo; \
+	        else \
+	            echo "  No spack packages loaded"; \
 	        fi; \
 	    fi; \
 	) >$@
