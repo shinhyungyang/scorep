@@ -13,7 +13,7 @@
  * Copyright (c) 2009-2013,
  * University of Oregon, Eugene, USA
  *
- * Copyright (c) 2009-2013, 2015, 2021-2023,
+ * Copyright (c) 2009-2013, 2015, 2021-2024,
  * Forschungszentrum Juelich GmbH, Germany
  *
  * Copyright (c) 2009-2013,
@@ -75,16 +75,6 @@ SCOREP_Instrumenter_OpariAdapter::SCOREP_Instrumenter_OpariAdapter( void )
 bool
 SCOREP_Instrumenter_OpariAdapter::checkOption( const std::string& arg )
 {
-    if ( arg == "--openmp" )
-    {
-        m_openmp = enabled;
-        return true;
-    }
-    if ( arg == "--noopenmp" )
-    {
-        m_openmp = disabled;
-        return true;
-    }
     if ( arg == "--pomp" )
     {
         m_pomp = enabled;
@@ -145,13 +135,15 @@ SCOREP_Instrumenter_OpariAdapter::printHelp( void )
     std::cout << "                  also enables preprocessing.\n";
     std::cout << "  --nopomp        Deprecated, consider using manual region instrumentation (--user)\n";
     std::cout << "                  instead. Disables OPARI2 pomp user instrumentation (Default).\n";
-    std::cout << "  --openmp        Enables OPARI2 instrumentation of OpenMP directives. By default,\n";
+    std::cout << "  --openmp        Deprecated, please use --thread=omp:opari2 instead.\n";
+    std::cout << "                  Enables OPARI2 instrumentation of OpenMP directives. By default,\n";
     std::cout << "                  it also enables preprocessing (Default for compile units\n";
     std::cout << "                  with enabled OpenMP support during the compilation).\n";
 #if HAVE( BACKEND_SCOREP_OMPT_SUPPORT )
     std::cout << "                  Conflicts with --thread=omp:ompt.\n";
 #endif // BACKEND_SCOREP_OMPT_SUPPORT
-    std::cout << "  --noopenmp      Disables OPARI2 instrumentation of OpenMP directives.\n";
+    std::cout << "  --noopenmp      Deprecated, please use --thread=none instead.\n";
+    std::cout << "                  Disables OPARI2 instrumentation of OpenMP directives.\n";
     std::cout << "                  Note: To ensure thread-safe execution of the measurement,\n";
     std::cout << "                  parallel regions still need to be tracked and will appear\n";
     std::cout << "                  in the results (Default for compile units without OpenMP\n";

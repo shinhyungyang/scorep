@@ -1,7 +1,7 @@
 /*
  * This file is part of the Score-P software (http://www.score-p.org)
  *
- * Copyright (c) 2013, 2019-2020,
+ * Copyright (c) 2013, 2019-2020, 2024,
  * Forschungszentrum Juelich GmbH, Germany
  *
  * Copyright (c) 2014,
@@ -289,8 +289,8 @@ SCOREP_Instrumenter_Selector::checkAllOption( const std::string& origArg )
     else if ( arg == "--openmp" )
     {
         std::cerr << "[Score-P] WARNING: You are using the deprecated option '--openmp'\n"
-                  << "                   Please use '--thread=omp' instead" << std::endl;
-        arg = "--thread=omp";
+                  << "                   Please use '--thread=omp:opari2' instead" << std::endl;
+        arg = "--thread=omp:opari2";
     }
     else if ( arg == "--noopenmp" )
     {

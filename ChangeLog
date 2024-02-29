@@ -41,6 +41,8 @@ User tools and API improvements and changes:
   using `-finstrument-functions`. The former allows for compile-time
   filtering. The Clang-based icx, icpx, and ifx will continue to use
   `-finstrument-functions`.
+- The option `--openmp` is deprecated. Please use `--thread=omp:opari2`
+  instead.
 
 Compatibility:
 

@@ -19,7 +19,7 @@
 ## Copyright (c) 2009-2011,
 ## University of Oregon, Eugene, USA
 ##
-## Copyright (c) 2009-2016, 2020, 2022,
+## Copyright (c) 2009-2016, 2020, 2022, 2024,
 ## Forschungszentrum Juelich GmbH, Germany
 ##
 ## Copyright (c) 2009-2011,
@@ -38,7 +38,6 @@
 comp_arg=""
 pomp_user_arg=""
 pdt_arg=""
-omp_i_arg=""
 omp_b_arg=""
 mpp_arg=""
 
@@ -48,13 +47,7 @@ file_prefix="../installcheck/instrumenter_checks/configurations_"
 # wrapping except for init/finalize". Still it makes no sense for
 # non-mpi sources.
 
-# noopenmp: if we model it like nompi, then we need to intercept just
-# the fork/join/thread_begin/thread_end. Everything else gets ignored.
-
 # pomp_user_arg: use HAVE_OPARI2_TRUE when it is implemented
-
-omp_instrumenter_args=
-@HAVE_OPENMP_C_SUPPORT_TRUE@omp_instrumenter_args="openmp noopenmp "
 
 omp_backend_args=
 @HAVE_OPENMP_C_SUPPORT_TRUE@@HAVE_SCOREP_OMPT_SUPPORT_FALSE@omp_backend_args="${omp_backend_args} thread=omp "
@@ -100,16 +93,11 @@ for comp_arg in $compilerargs; do
                 echo "$user_arg $comp_arg $pomp_user_arg $preprocess_user_arg $pdt_arg" >> ${file_prefix}serial
 
                 # omp -------------------------------#
-@HAVE_OPENMP_C_SUPPORT_TRUE@                for omp_i_arg in $omp_instrumenter_args; do
-@HAVE_OPENMP_C_SUPPORT_TRUE@                     for omp_b_arg in $omp_backend_args; do
-@HAVE_OPENMP_C_SUPPORT_TRUE@                         if test "$omp_i_arg" = "openmp" && test "$omp_b_arg" = "thread=omp:ompt"; then
-@HAVE_OPENMP_C_SUPPORT_TRUE@                             continue
-@HAVE_OPENMP_C_SUPPORT_TRUE@                         fi
-@HAVE_OPENMP_C_SUPPORT_TRUE@                         if test "$pdt_arg" = "pdt" && test "$omp_b_arg" = "thread=omp:ompt"; then
-@HAVE_OPENMP_C_SUPPORT_TRUE@                             continue
-@HAVE_OPENMP_C_SUPPORT_TRUE@                         fi
-@HAVE_OPENMP_C_SUPPORT_TRUE@                         echo "$user_arg $comp_arg $pomp_user_arg $preprocess_user_arg $pdt_arg $omp_i_arg $omp_b_arg " >> ${file_prefix}omp
-@HAVE_OPENMP_C_SUPPORT_TRUE@                     done
+@HAVE_OPENMP_C_SUPPORT_TRUE@                for omp_b_arg in $omp_backend_args; do
+@HAVE_OPENMP_C_SUPPORT_TRUE@                    if test "$pdt_arg" = "pdt" && test "$omp_b_arg" = "thread=omp:ompt"; then
+@HAVE_OPENMP_C_SUPPORT_TRUE@                        continue
+@HAVE_OPENMP_C_SUPPORT_TRUE@                    fi
+@HAVE_OPENMP_C_SUPPORT_TRUE@                    echo "$user_arg $comp_arg $pomp_user_arg $preprocess_user_arg $pdt_arg $omp_b_arg " >> ${file_prefix}omp
 @HAVE_OPENMP_C_SUPPORT_TRUE@                done
 
                 # mpi -------------------------------#
@@ -119,16 +107,11 @@ for comp_arg in $compilerargs; do
 
                 # mpi_omp ---------------------------#
 @HAVE_MPI_SUPPORT_TRUE@@HAVE_OPENMP_C_SUPPORT_TRUE@                for mpp_arg in "mpp=mpi"; do # add nompi when multilibs are ready, see above comment
-@HAVE_MPI_SUPPORT_TRUE@@HAVE_OPENMP_C_SUPPORT_TRUE@                    for omp_i_arg in $omp_instrumenter_args; do
-@HAVE_MPI_SUPPORT_TRUE@@HAVE_OPENMP_C_SUPPORT_TRUE@                         for omp_b_arg in $omp_backend_args; do
-@HAVE_MPI_SUPPORT_TRUE@@HAVE_OPENMP_C_SUPPORT_TRUE@                             if test "$omp_i_arg" = "openmp" && test "$omp_b_arg" = "thread=omp:ompt"; then
-@HAVE_MPI_SUPPORT_TRUE@@HAVE_OPENMP_C_SUPPORT_TRUE@                                 continue
-@HAVE_MPI_SUPPORT_TRUE@@HAVE_OPENMP_C_SUPPORT_TRUE@                             fi
-@HAVE_MPI_SUPPORT_TRUE@@HAVE_OPENMP_C_SUPPORT_TRUE@                             if test "$pdt_arg" = "pdt" && test "$omp_b_arg" = "thread=omp:ompt"; then
-@HAVE_MPI_SUPPORT_TRUE@@HAVE_OPENMP_C_SUPPORT_TRUE@                                 continue
-@HAVE_MPI_SUPPORT_TRUE@@HAVE_OPENMP_C_SUPPORT_TRUE@                             fi
-@HAVE_MPI_SUPPORT_TRUE@@HAVE_OPENMP_C_SUPPORT_TRUE@                             echo "$user_arg $comp_arg $pomp_user_arg $preprocess_user_arg $pdt_arg $mpp_arg $omp_i_arg $omp_b_arg" >> ${file_prefix}mpi_omp
-@HAVE_MPI_SUPPORT_TRUE@@HAVE_OPENMP_C_SUPPORT_TRUE@                         done
+@HAVE_MPI_SUPPORT_TRUE@@HAVE_OPENMP_C_SUPPORT_TRUE@                    for omp_b_arg in $omp_backend_args; do
+@HAVE_MPI_SUPPORT_TRUE@@HAVE_OPENMP_C_SUPPORT_TRUE@                        if test "$pdt_arg" = "pdt" && test "$omp_b_arg" = "thread=omp:ompt"; then
+@HAVE_MPI_SUPPORT_TRUE@@HAVE_OPENMP_C_SUPPORT_TRUE@                            continue
+@HAVE_MPI_SUPPORT_TRUE@@HAVE_OPENMP_C_SUPPORT_TRUE@                        fi
+@HAVE_MPI_SUPPORT_TRUE@@HAVE_OPENMP_C_SUPPORT_TRUE@                        echo "$user_arg $comp_arg $pomp_user_arg $preprocess_user_arg $pdt_arg $mpp_arg $omp_b_arg" >> ${file_prefix}mpi_omp
 @HAVE_MPI_SUPPORT_TRUE@@HAVE_OPENMP_C_SUPPORT_TRUE@                    done
 @HAVE_MPI_SUPPORT_TRUE@@HAVE_OPENMP_C_SUPPORT_TRUE@                done
 
@@ -139,16 +122,11 @@ for comp_arg in $compilerargs; do
 
                 # shmem_omp -------------------------#
 @HAVE_SHMEM_SUPPORT_TRUE@@HAVE_OPENMP_C_SUPPORT_TRUE@                for mpp_arg in "mpp=shmem"; do
-@HAVE_SHMEM_SUPPORT_TRUE@@HAVE_OPENMP_C_SUPPORT_TRUE@                    for omp_i_arg in $omp_instrumenter_args; do
-@HAVE_SHMEM_SUPPORT_TRUE@@HAVE_OPENMP_C_SUPPORT_TRUE@                        for omp_b_arg in $omp_backend_args; do
-@HAVE_SHMEM_SUPPORT_TRUE@@HAVE_OPENMP_C_SUPPORT_TRUE@                            if test "$omp_i_arg" = "openmp" && test "$omp_b_arg" = "thread=omp:ompt"; then
-@HAVE_SHMEM_SUPPORT_TRUE@@HAVE_OPENMP_C_SUPPORT_TRUE@                                continue
-@HAVE_SHMEM_SUPPORT_TRUE@@HAVE_OPENMP_C_SUPPORT_TRUE@                            fi
-@HAVE_SHMEM_SUPPORT_TRUE@@HAVE_OPENMP_C_SUPPORT_TRUE@                            if test "$pdt_arg" = "pdt" && test "$omp_b_arg" = "thread=omp:ompt"; then
-@HAVE_SHMEM_SUPPORT_TRUE@@HAVE_OPENMP_C_SUPPORT_TRUE@                                continue
-@HAVE_SHMEM_SUPPORT_TRUE@@HAVE_OPENMP_C_SUPPORT_TRUE@                            fi
-@HAVE_SHMEM_SUPPORT_TRUE@@HAVE_OPENMP_C_SUPPORT_TRUE@                            echo "$user_arg $comp_arg $pomp_user_arg $preprocess_user_arg $pdt_arg $mpp_arg $omp_i_arg $omp_b_arg" >> ${file_prefix}shmem_omp
-@HAVE_SHMEM_SUPPORT_TRUE@@HAVE_OPENMP_C_SUPPORT_TRUE@                        done
+@HAVE_SHMEM_SUPPORT_TRUE@@HAVE_OPENMP_C_SUPPORT_TRUE@                    for omp_b_arg in $omp_backend_args; do
+@HAVE_SHMEM_SUPPORT_TRUE@@HAVE_OPENMP_C_SUPPORT_TRUE@                        if test "$pdt_arg" = "pdt" && test "$omp_b_arg" = "thread=omp:ompt"; then
+@HAVE_SHMEM_SUPPORT_TRUE@@HAVE_OPENMP_C_SUPPORT_TRUE@                            continue
+@HAVE_SHMEM_SUPPORT_TRUE@@HAVE_OPENMP_C_SUPPORT_TRUE@                        fi
+@HAVE_SHMEM_SUPPORT_TRUE@@HAVE_OPENMP_C_SUPPORT_TRUE@                        echo "$user_arg $comp_arg $pomp_user_arg $preprocess_user_arg $pdt_arg $mpp_arg $omp_b_arg" >> ${file_prefix}shmem_omp
 @HAVE_SHMEM_SUPPORT_TRUE@@HAVE_OPENMP_C_SUPPORT_TRUE@                    done
 @HAVE_SHMEM_SUPPORT_TRUE@@HAVE_OPENMP_C_SUPPORT_TRUE@                done
 
