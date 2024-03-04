@@ -45,6 +45,9 @@ User tools and API improvements and changes:
 - The option `--openmp` is deprecated. Please use `--thread=omp:opari2`
   instead.
 - The deprecated PDT instrumentation mechanism has been removed.
+- OMPT configure checks are less strict when trying to register
+  non-essential callbacks. Thus, callbacks that report
+  `ompt_set_sometimes_paired` are considered where appropriate.
 
 Compatibility:
 

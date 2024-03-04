@@ -86,11 +86,14 @@ AS_IF([test "x${scorep_have_addr2line}" = xyes],
 dnl
 
 AS_IF([test "x$have_ompt_support" = xyes],
-      [_CHECK_OMPT_CRITICAL_ISSUES])
+    [_CHECK_OMPT_REGISTRATION_STATUS])
 
 AS_IF([test "x$have_ompt_support" = xyes],
-      [_CHECK_OMPT_REMEDIABLE_ISSUES
-       _ADD_COMPILER_SPECIFIC_COMPILE_FLAGS])
+    [_CHECK_OMPT_CRITICAL_ISSUES])
+
+AS_IF([test "x$have_ompt_support" = xyes],
+    [_CHECK_OMPT_REMEDIABLE_ISSUES
+     _ADD_COMPILER_SPECIFIC_COMPILE_FLAGS])
 
 AC_SCOREP_COND_HAVE([SCOREP_OMPT_SUPPORT],
     [test "x$have_ompt_support" = xyes],
@@ -475,9 +478,174 @@ AC_MSG_CHECKING([whether the OMPT runtime passes the []_OMPT_TEST[] test])
 AC_MSG_RESULT([$have_[]_OMPT_TEST[]])
 ]) dnl _TEST_OMPT_CALLBACK
 
+# ----------------------------------------
+# Section for callback registration checks
+# ----------------------------------------
+
+# _CHECK_OMPT_REGISTRATION_STATUS
 # -------------------------------
+# Run configure check to ensure that required callbacks
+# are registered with ompt_set_always or ompt_set_sometimes_paired,
+# if allowed by the specifications. Set have_ompt_support to no if
+# minimum requirements are not met.
+#
+m4_define([_CHECK_OMPT_REGISTRATION_STATUS], [
+# First, test the registration status of the callbacks which are required to report ompt_set_always.
+# Variable is named _OMPT_TEST as it is used in _TRY_RUN_OMPT_TEST.
+m4_foreach_w([_OMPT_TEST],
+    [thread_begin thread_end parallel_begin parallel_end task_create task_schedule implicit_task],
+    [m4_define([_TRY_RUN_OMPT_TEST_INPUT], [_INPUT_OMPT_TEST_CALLBACK_ALWAYS])
+     _TRY_RUN_OMPT_TEST
+     AS_IF([test "x${have_[]_OMPT_TEST}" != "xyes"],
+        [have_ompt_support=no
+         ompt_reason="[]_OMPT_TEST[] failed to register"])])
+# The sync_region callback may report any non-error code. For our
+# adapter to work, we require at least ompt_set_sometimes_paired.
+# Check this separately.
+m4_foreach_w([_OMPT_TEST],
+    [sync_region],
+    [m4_define([_TRY_RUN_OMPT_TEST_INPUT], [_INPUT_OMPT_TEST_CALLBACK_SOMETIMES_PAIRED])
+     _TRY_RUN_OMPT_TEST
+     AS_IF([test "x${have_[]_OMPT_TEST}" != "xyes"],
+        [have_ompt_support=no
+         ompt_reason="[]_OMPT_TEST[] failed to register"])])
+m4_undefine([_TRY_RUN_OMPT_TEST_INPUT])
+]) dnl _CHECK_OMPT_REGISTRATION_STATUS
+
+m4_define([_INPUT_OMPT_TEST_CALLBACK_ALWAYS], [[
+#include <omp.h>
+#include <omp-tools.h>
+#include <stdlib.h>
+
+#define CALLBACK_NAME( cb ) ompt_callback_ ## cb
+
+static int initialized = 0;
+
+void
+callback()
+{
+}
+
+static int
+ompt_initialize( ompt_function_lookup_t lookup,
+                 int                    initial_device_num,
+                 ompt_data_t*           tool_data )
+{
+    ompt_set_callback_t set_cb = ( ompt_set_callback_t )lookup( "ompt_set_callback" );
+    if ( !set_cb )
+    {
+        _Exit( 3 ); /* Tool got initialized but lookup of runtime-entry-point ompt_set_callback failed. */
+    }
+    ompt_set_result_t result = set_cb( CALLBACK_NAME( _OMPT_TEST ), ( ompt_callback_t )&callback );
+    if ( result != ompt_set_always )
+    {
+        _Exit( 5 ); /* Tool got initialized but cb couldn't be registered. */
+    }
+    initialized = 1;
+    return 1; /* non-zero indicates success for OMPT runtime. */
+}
+
+static void
+ompt_finalize( ompt_data_t* tool_data )
+{
+    if ( initialized == 1 )
+    {
+        _Exit( 0 ); /* Tool got initialized and finalized. */
+    }
+}
+
+ompt_start_tool_result_t*
+ompt_start_tool( unsigned int omp_version,
+                 const char*  runtime_version )
+{
+    static ompt_start_tool_result_t ompt_start_tool_result = { &ompt_initialize,
+                                                               &ompt_finalize,
+                                                               ompt_data_none };
+    return &ompt_start_tool_result;
+}
+
+void
+foo( int num )
+{
+}
+
+int
+main( void )
+{
+#pragma omp parallel num_threads( 2 )
+    {
+        foo( omp_get_thread_num() );
+    }
+    return 1;
+}
+]]) dnl _INPUT_OMPT_TEST_CALLBACK_ALWAYS
+
+m4_define([_INPUT_OMPT_TEST_CALLBACK_SOMETIMES_PAIRED], [[
+#include <omp.h>
+#include <omp-tools.h>
+#include <stdlib.h>
+
+#define CALLBACK_NAME( cb ) ompt_callback_ ## cb
+
+static int initialized = 0;
+
+void
+callback(){}
+
+static int
+ompt_initialize( ompt_function_lookup_t lookup,
+                 int                    initial_device_num,
+                 ompt_data_t*           tool_data )
+{
+    ompt_set_callback_t set_cb = ( ompt_set_callback_t )lookup( "ompt_set_callback" );
+    if ( !set_cb )
+    {
+        _Exit( 3 ); /* Tool got initialized but lookup of runtime-entry-point ompt_set_callback failed. */
+    }
+    ompt_set_result_t result = set_cb( CALLBACK_NAME( _OMPT_TEST ), ( ompt_callback_t )&callback );
+    if ( result < ompt_set_sometimes_paired )
+    {
+        _Exit( 5 ); /* Tool got initialized but cb couldn't be registered. */
+    }
+    initialized = 1;
+    return 1; /* non-zero indicates success for OMPT runtime. */
+}
+
+static void
+ompt_finalize( ompt_data_t* tool_data )
+{
+    if ( initialized == 1 )
+    {
+        _Exit( 0 ); /* Tool got initialized and finalized. */
+    }
+}
+
+ompt_start_tool_result_t*
+ompt_start_tool( unsigned int omp_version,
+                 const char*  runtime_version )
+{
+    static ompt_start_tool_result_t ompt_start_tool_result = { &ompt_initialize,
+                                                               &ompt_finalize,
+                                                               ompt_data_none };
+    return &ompt_start_tool_result;
+}
+
+void foo( int num )
+{}
+
+int main( void )
+{
+    #pragma omp parallel num_threads( 2 )
+    {
+        foo( omp_get_thread_num() );
+    }
+    return 1;
+}
+]]) dnl _INPUT_OMPT_TEST_CALLBACK_SOMETIMES_PAIRED
+
+# -----------------------------------
 # Section for specific problem checks
-# -------------------------------
+# -----------------------------------
 
 # _CHECK_OMPT_CRITICAL_ISSUES
 # ---------------------------
@@ -545,10 +713,20 @@ ompt_initialize( ompt_function_lookup_t lookup,
         _Exit( 4 ); /* Tool got initialized but lookup of runtime-entry-point ompt_finalize_tool failed. */
     }
     ompt_set_result_t result;
+
+    /* This test checks if ompt_callback_work is dispatched correctly. The test is only important if the callback
+     * itself will ever be dispatched. As this test is marked as critical, it causes the OMPT adapter to not be
+     * available if it fails. However, ompt_callback_work is not a mandatory callback for the OMPT interface to work.
+     * Therefore, continue the test if at least ompt_set_sometimes_paired is returned. If not, then skip this test,
+     * as the callback will be disabled anyway. */
     result = set_cb( ompt_callback_work, ( ompt_callback_t )&callback_ompt_work );
-    if ( result != ompt_set_always )
+    /* In the case where the runtimes fails to register the callback, exit the test.
+     * The activation failure is handled during OMPT adapter initialization.
+     * This is important for Cray CCE 17.0.0, which returns ompt_set_sometimes for the
+     * ompt_callback_work registration. */
+    if ( result < ompt_set_sometimes_paired )
     {
-        _Exit( 5 ); /* Tool got initialized but work cb couldn't be registered. */
+        _Exit( 0 );
     }
 
     initialized = 1;
@@ -679,17 +857,23 @@ ompt_initialize( ompt_function_lookup_t lookup,
     {
         _Exit( 4 ); /* Tool got initialized but lookup of runtime-entry-point ompt_finalize_tool failed. */
     }
+
+    /* In the case where the runtimes fails to register the callback, exit the test.
+     * The activation failure is handled during OMPT adapter initialization.
+     * This is important for Cray CCE 17.0.0, which returns ompt_set_sometimes for both
+     * registrations. */
     ompt_set_result_t result;
     result = set_cb( ompt_callback_mutex_acquire, ( ompt_callback_t )&callback_ompt_mutex_acquire );
-    if ( result != ompt_set_always )
+    if( result < ompt_set_sometimes_paired )
     {
-        _Exit( 5 ); /* Tool got initialized but cb couldn't be registered. */
+        _Exit( 0 );
     }
     result = set_cb( ompt_callback_mutex_acquired, ( ompt_callback_t )&callback_ompt_mutex_acquired );
-    if ( result != ompt_set_always )
+    if( result < ompt_set_sometimes_paired )
     {
-        _Exit( 5 ); /* Tool got initialized but cb couldn't be registered. */
+        _Exit( 0 );
     }
+
     initialized = 1;
     return 1; /* non-zero indicates success for OMPT runtime. */
 }
@@ -789,11 +973,16 @@ ompt_initialize( ompt_function_lookup_t lookup,
     {
         _Exit( 4 ); /* Tool got initialized but lookup of runtime-entry-point ompt_finalize_tool failed. */
     }
+
+    /* In the case where the runtimes fails to register the callback, exit the test.
+     * The activation failure is handled during OMPT adapter initialization.
+     * This is important for Cray CCE 17.0.0, which returns ompt_set_sometimes for the
+     * ompt_callback_work registration. */
     ompt_set_result_t result;
     result = set_cb( ompt_callback_work, ( ompt_callback_t )&callback_ompt_work );
-    if ( result != ompt_set_always )
+    if( result < ompt_set_sometimes_paired )
     {
-        _Exit( 5 ); /* Tool got initialized but cb couldn't be registered. */
+        _Exit( 0 );
     }
     initialized = 1;
     return 1; /* non-zero indicates success for OMPT runtime. */
@@ -887,11 +1076,16 @@ ompt_initialize( ompt_function_lookup_t lookup,
     {
         _Exit( 4 ); /* Tool got initialized but lookup of runtime-entry-point ompt_finalize_tool failed. */
     }
+
+    /* In the case where the runtimes fails to register the callback, exit the test.
+     * The activation failure is handled during OMPT adapter initialization.
+     * This is important for Cray CCE 17.0.0, which returns ompt_set_sometimes for the
+     * ompt_callback_work registration. */
     ompt_set_result_t result;
     result = set_cb( ompt_callback_work, ( ompt_callback_t )&callback_ompt_work );
-    if ( result != ompt_set_always )
+    if( result < ompt_set_sometimes_paired )
     {
-        _Exit( 5 ); /* Tool got initialized but work cb couldn't be registered. */
+        _Exit( 0 );
     }
 
     initialized = 1;
