@@ -196,13 +196,12 @@ $(CONFIG_EXTERNAL_LIBS_HPP): Makefile $(RPATHS_MAKEFILE)
 
 lib_lt_libraries = $(lib_LTLIBRARIES:.la=)
 $(lib_lt_libraries):
-	@for i in $(lib_lt_libraries); do \
-	    echo "    (*la_objects)[ \"$$i\" ] = la_object( \"$$i\"," \
-	         "$(AFS_PACKAGE_BUILD_NAME)_BUILDDIR," \
-	         "$(AFS_PACKAGE_BUILD_NAME)_LIBDIR," \
-	         "$(AFS_PACKAGE_BUILD_NAME)_$${i}_NEEDS_LIBS," \
-	         "$(AFS_PACKAGE_BUILD_NAME)_$${i}_NEEDS_LIBDIRS );"; \
-	done >> $(CONFIG_EXTERNAL_LIBS_HPP)
+	@echo "    (*la_objects)[ \"$@\" ] = la_object( \"$@\"," \
+	      "$(AFS_PACKAGE_BUILD_NAME)_BUILDDIR," \
+	      "$(AFS_PACKAGE_BUILD_NAME)_LIBDIR," \
+	      "$(AFS_PACKAGE_BUILD_NAME)_$@_NEEDS_LIBS," \
+	      "$(AFS_PACKAGE_BUILD_NAME)_$@_NEEDS_LIBDIRS );" \
+	      >> $(CONFIG_EXTERNAL_LIBS_HPP)
 
 
 if HAVE_BUILD_STATIC_LT_LIBRARIES
