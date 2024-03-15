@@ -239,7 +239,7 @@ SCOREP_Instrumenter::Run( void )
                     if ( m_command_line.getPreprocessMode() == SCOREP_Instrumenter_CmdLine::EXPLICIT_STEP )
                     {
                         std::string prep_file = m_command_line.getOutputName();
-                        if ( m_command_line.isCompiling() )
+                        if ( m_command_line.isCompiling() || prep_file.empty() )
                         {
                             prep_file = remove_extension( remove_path( *current_file ) )
                                         + ".prep"
@@ -300,6 +300,14 @@ SCOREP_Instrumenter::Run( void )
 
                     // Add object file to the input file list for the link command
                     object_files.push_back( object_file );
+                }
+                else if ( m_command_line.getPreprocessMode() == SCOREP_Instrumenter_CmdLine::EXPLICIT_STEP
+                          && m_command_line.getOutputName().empty() )
+                {
+                    /* Preprocessing to stdout */
+                    std::stringstream command;
+                    command << "cat " << *current_file;
+                    executeCommand( command.str() );
                 }
             }
             // If it is no source file, leave the file in the input list
