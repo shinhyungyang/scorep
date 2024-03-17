@@ -270,6 +270,25 @@ SCOREP_GetExecutableName( bool* executableNameIsFile )
 }
 
 
+const char*
+SCOREP_GetWorkingDirectory( void )
+{
+    static char* working_directory;
+    static bool  been_visited = false;
+    if ( !been_visited )
+    {
+        working_directory = UTILS_IO_GetCwd( NULL, 0 );
+        if ( working_directory == NULL )
+        {
+            UTILS_ERROR_POSIX( "Error while getting absolute path name of the current working directory." );
+            _Exit( EXIT_FAILURE );
+        }
+        been_visited = true;
+    }
+    return working_directory;
+}
+
+
 static void
 define_program_begin_end_region( int argc, char* argv[] )
 {
