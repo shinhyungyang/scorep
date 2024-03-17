@@ -7,7 +7,7 @@
  * Copyright (c) 2009-2013,
  * Gesellschaft fuer numerische Simulation mbH Braunschweig, Germany
  *
- * Copyright (c) 2009-2013,
+ * Copyright (c) 2009-2013, 2025,
  * Technische Universitaet Dresden, Germany
  *
  * Copyright (c) 2009-2013,
@@ -89,12 +89,5 @@ SCOREP_OnTracingBufferFlushBegin( bool final );
 void
 SCOREP_OnTracingBufferFlushEnd( uint64_t timestamp );
 
-
-/**
- * Returns the directory the application was started in. May abort if
- * directory cannot be obtained.
- */
-const char*
-SCOREP_GetWorkingDirectory( void );
 
 #endif /* SCOREP_INTERNAL_RUNTIME_MANAGEMENT_H */
