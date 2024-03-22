@@ -1,7 +1,7 @@
 /*
  * This file is part of the Score-P software (http://www.score-p.org)
  *
- * Copyright (c) 2022-2023,
+ * Copyright (c) 2022-2024,
  * Forschungszentrum Juelich GmbH, Germany
  *
  * This software may be modified and distributed under the terms of
@@ -39,7 +39,6 @@ static int initialize_tool( ompt_function_lookup_t lookup, int initialDeviceNum,
 static void register_event_callbacks_host( ompt_set_callback_t setCallback );
 static void register_event_callbacks_device( ompt_set_callback_t setCallback );
 static void finalize_tool( ompt_data_t *toolData );
-static void cb_registration_status( char* name, ompt_set_result_t status );
 /* *INDENT-ON* */
 
 
@@ -115,12 +114,6 @@ finalize_tool( ompt_data_t* toolData )
 }
 
 
-#define REGISTER_CALLBACK( PREFIX, NAME ) \
-    cb_registration_status( #NAME, \
-                            setCallback( ompt_callback_ ## NAME, \
-                                         ( ompt_callback_t )&scorep_ompt_cb_ ## PREFIX ## NAME ) )
-
-
 /* *INDENT-OFF* */
 #if 0
 callbacks available in 5.2:
@@ -166,48 +159,26 @@ callbacks available in 5.2:
 /* *INDENT-ON* */
 
 
-static void
-register_event_callbacks_host( ompt_set_callback_t setCallback )
+typedef struct registration_data_t
 {
-    /* sort alphabetically */
-    REGISTER_CALLBACK( host_, implicit_task );
-    REGISTER_CALLBACK( host_, parallel_begin );
-    REGISTER_CALLBACK( host_, parallel_end );
-    REGISTER_CALLBACK( host_, sync_region );
-    REGISTER_CALLBACK( host_, task_create );
-    REGISTER_CALLBACK( host_, task_schedule );
-    REGISTER_CALLBACK( host_, thread_begin );
-    REGISTER_CALLBACK( host_, thread_end );
-    REGISTER_CALLBACK( host_, work );
-    REGISTER_CALLBACK( host_, masked );
-    REGISTER_CALLBACK( host_, mutex_acquire );
-    REGISTER_CALLBACK( host_, mutex_acquired );
-    REGISTER_CALLBACK( host_, mutex_released );
-    #if !HAVE( SCOREP_OMPT_WRONG_TEST_LOCK_MUTEX )
-    REGISTER_CALLBACK( host_, lock_init );
-    REGISTER_CALLBACK( host_, lock_destroy );
-    REGISTER_CALLBACK( host_, nest_lock );
-    #endif /* !HAVE( SCOREP_OMPT_WRONG_TEST_LOCK_MUTEX ) */
-    REGISTER_CALLBACK( host_, dispatch );
-    REGISTER_CALLBACK( host_, flush );
-    REGISTER_CALLBACK( host_, reduction );
-}
+    ompt_callbacks_t  event;
+    ompt_callback_t   callback;
+    const char*       name;
+    ompt_set_result_t expected_result;
+    bool              critical_callback; /* If critical, disable all other related callbacks.
+                                          * If not, only this callback will be disabled and the others
+                                          * will stay active */
+} registration_data_t;
 
 
-static void
-register_event_callbacks_device( ompt_set_callback_t setCallback )
+static inline bool
+register_callback( ompt_set_callback_t       setCallback,
+                   const registration_data_t callbackInformation )
 {
-    REGISTER_CALLBACK(, device_initialize );
-}
-
-
-static void
-cb_registration_status( char*             name,
-                        ompt_set_result_t status )
-{
-#if HAVE( UTILS_DEBUG )
+    ompt_set_result_t result = setCallback( callbackInformation.event, callbackInformation.callback );
+    #if HAVE( UTILS_DEBUG )
     char* status_str = NULL;
-    switch ( status )
+    switch ( result )
     {
         case ompt_set_error:
             status_str = "error";
@@ -228,10 +199,163 @@ cb_registration_status( char*             name,
             status_str = "always";
             break;
     }
-#endif /* HAVE( UTILS_DEBUG ) */
+    #endif /* HAVE( UTILS_DEBUG ) */
     UTILS_DEBUG( "[%s] registering ompt_callback_%s: %s",
-                 UTILS_FUNCTION_NAME, name, status_str );
+                 UTILS_FUNCTION_NAME, callbackInformation.name, status_str );
+    return result >= callbackInformation.expected_result;
 }
+
+
+#define NO_EVENT ( ( ompt_callbacks_t )( -1 ) )
+/* Try to register entire group. If one callback in this group fails
+ * to register, abort. Abortion is not expected, as we check for the
+ * required group during configure already. Abortion can happen if a
+ * different OpenMP runtime is used at measurement time as compared to
+ * configure time. Switching the runtime can happen, e.g., on Cray
+ * systems, by changing the environment (loading modules) or via
+ * additional link flags. */
+#define REGISTER_REQUIRED_CALLBACK_GROUP( CALLBACK_GROUP )                                           \
+    do                                                                                               \
+    {                                                                                                \
+        for ( short i = 0; CALLBACK_GROUP[ i ].event != NO_EVENT; ++i )                              \
+        {                                                                                            \
+            if ( !register_callback( setCallback, CALLBACK_GROUP[ i ] ) )                            \
+            {                                                                                        \
+                UTILS_BUG( "[%s] Failed to register %s, which is mandatory! "                        \
+                           "Cannot use OMPT, consider instrumenting `--thread=omp:opari2` instead.", \
+                           UTILS_FUNCTION_NAME, CALLBACK_GROUP[ i ].name );                          \
+            }                                                                                        \
+        }                                                                                            \
+    } while ( 0 )
+
+
+/* Try to register entire group. If one callback fails to register, disable entire group */
+#define REGISTER_OPTIONAL_CALLBACK_GROUP( CALLBACK_GROUP )                                                            \
+    do                                                                                                                \
+    {                                                                                                                 \
+        short i;                                                                                                      \
+        for ( i = 0; CALLBACK_GROUP[ i ].event != NO_EVENT; ++i )                                                     \
+        {                                                                                                             \
+            if ( !register_callback( setCallback, CALLBACK_GROUP[ i ] ) )                                             \
+            {                                                                                                         \
+                if ( CALLBACK_GROUP[ i ].critical_callback )                                                           \
+                {                                                                                                     \
+                    UTILS_WARNING( "[%s] Failed to register %s, disabling related callbacks.",                        \
+                                   UTILS_FUNCTION_NAME, CALLBACK_GROUP[ i ].name );                                   \
+                    break;                                                                                            \
+                }                                                                                                     \
+                else                                                                                                  \
+                {                                                                                                     \
+                    UTILS_WARNING( "[%s] Failed to register %s, but callback is not critical for related callbacks.", \
+                                   UTILS_FUNCTION_NAME, CALLBACK_GROUP[ i ].name );                                   \
+                    setCallback( CALLBACK_GROUP[ i ].event, NULL );                                                   \
+                }                                                                                                     \
+            }                                                                                                         \
+        }                                                                                                             \
+        if ( CALLBACK_GROUP[ i ].event != NO_EVENT )                                                                  \
+        {                                                                                                             \
+            for ( i = 0; CALLBACK_GROUP[ i ].event != NO_EVENT; ++i )                                                 \
+            {                                                                                                         \
+                setCallback( CALLBACK_GROUP[ i ].event, NULL );                                                       \
+            }                                                                                                         \
+        }                                                                                                             \
+    } while ( 0 )
+
+
+/* Try to register callback. If it fails to register, disable it. */
+#define REGISTER_SINGLE_CALLBACK( CALLBACK_GROUP )                                  \
+    do {                                                                            \
+        for ( short i = 0; CALLBACK_GROUP[ i ].event != NO_EVENT; ++i )             \
+        {                                                                           \
+            if ( !register_callback( setCallback, CALLBACK_GROUP[ i ] ) )           \
+            {                                                                       \
+                UTILS_WARNING( "[%s] Failed to register %s, disabling callback.",   \
+                               UTILS_FUNCTION_NAME, CALLBACK_GROUP[ i ].name );     \
+                setCallback( CALLBACK_GROUP[ i ].event, NULL );                     \
+            }                                                                       \
+        }                                                                           \
+    } while ( 0 )
+
+
+static void
+register_event_callbacks_host( ompt_set_callback_t setCallback )
+{
+    #define CALLBACK( name, result ) { ompt_callback_ ## name, ( ompt_callback_t )&scorep_ompt_cb_host_ ## name, #name, result, true }
+    #define CALLBACK_NON_CRITICAL( name, result ) { ompt_callback_ ## name, ( ompt_callback_t )&scorep_ompt_cb_host_ ## name, #name, result, false }
+    #define END()         { NO_EVENT, NULL, "" } /* Indicates end of array */
+
+    const registration_data_t required_callbacks[] =
+    {
+        CALLBACK( thread_begin,   ompt_set_always ),
+        CALLBACK( thread_end,     ompt_set_always ),
+        CALLBACK( parallel_begin, ompt_set_always ),
+        CALLBACK( parallel_end,   ompt_set_always ),
+        CALLBACK( task_create,    ompt_set_always ),
+        CALLBACK( task_schedule,  ompt_set_always ),
+        CALLBACK( implicit_task,  ompt_set_always ),
+        CALLBACK( sync_region,    ompt_set_sometimes_paired ),
+        END()
+    };
+    const registration_data_t mutex_callbacks[] =
+    {
+        CALLBACK( mutex_acquire,  ompt_set_sometimes_paired ),
+        CALLBACK( mutex_acquired, ompt_set_sometimes_paired ),
+        CALLBACK( mutex_released, ompt_set_sometimes_paired ),
+        #if !HAVE( SCOREP_OMPT_WRONG_TEST_LOCK_MUTEX )
+        CALLBACK( lock_init,      ompt_set_sometimes_paired ),
+        CALLBACK( lock_destroy,   ompt_set_sometimes_paired ),
+        CALLBACK( nest_lock,      ompt_set_sometimes_paired ),
+        #endif /* !HAVE( SCOREP_OMPT_WRONG_TEST_LOCK_MUTEX ) */
+        END()
+    };
+    const registration_data_t work_callbacks[] =
+    {
+        CALLBACK( work,                  ompt_set_sometimes_paired ),
+        CALLBACK_NON_CRITICAL( dispatch, ompt_set_sometimes_paired ),
+        END()
+    };
+    const registration_data_t single_callbacks[] =
+    {
+        CALLBACK( masked,    ompt_set_sometimes_paired ),
+        CALLBACK( flush,     ompt_set_sometimes_paired ),
+        CALLBACK( reduction, ompt_set_sometimes_paired ),
+        END()
+    };
+
+    #undef END
+    #undef CALLBACK_NON_CRITICAL
+    #undef CALLBACK
+
+    REGISTER_REQUIRED_CALLBACK_GROUP( required_callbacks );
+    REGISTER_OPTIONAL_CALLBACK_GROUP( mutex_callbacks );
+    REGISTER_OPTIONAL_CALLBACK_GROUP( work_callbacks );
+    REGISTER_SINGLE_CALLBACK( single_callbacks );
+}
+
+
+static void
+register_event_callbacks_device( ompt_set_callback_t setCallback )
+{
+    #define CALLBACK( name, result ) { ompt_callback_ ## name, ( ompt_callback_t )&scorep_ompt_cb_ ## name, #name, result }
+    #define END()                    { NO_EVENT, NULL, "" } /* Indicate end of section */
+
+    const registration_data_t single_callbacks[] =
+    {
+        CALLBACK( device_initialize, ompt_set_always ),
+        END()
+    };
+
+    #undef CALLBACK
+    #undef END
+
+    REGISTER_SINGLE_CALLBACK( single_callbacks );
+}
+
+
+#undef REGISTER_REQUIRED_CALLBACK_GROUP
+#undef REGISTER_OPTIONAL_CALLBACK_GROUP
+#undef REGISTER_SINGLE_CALLBACK
+#undef NO_EVENT
 
 
 static SCOREP_ErrorCode

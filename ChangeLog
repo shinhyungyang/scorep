@@ -48,6 +48,11 @@ User tools and API improvements and changes:
 - OMPT configure checks are less strict when trying to register
   non-essential callbacks. Thus, callbacks that report
   `ompt_set_sometimes_paired` are considered where appropriate.
+- The OMPT adapter will disable individual callbacks or groups of related
+  callbacks during initialization if they cannot be registered properly.
+  If registration of required callbacks fails, the measurement will be
+  aborted. This is unlikely but can happen, if the OpenMP runtime used
+  at configure time, is changed.
 
 Compatibility:
 
