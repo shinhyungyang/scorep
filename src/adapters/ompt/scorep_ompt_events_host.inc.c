@@ -704,6 +704,8 @@ scorep_ompt_cb_host_parallel_end( ompt_data_t* parallel_data,
 
     tpd = tpd_from_now_on;
     release_parallel_region( parallel_data->ptr );
+    /* Explicitly set parallel_data->ptr to NULL, as Cray does reuse these for future parallel regions. */
+    parallel_data->ptr = NULL;
 
     UTILS_DEBUG_EXIT();
     SCOREP_IN_MEASUREMENT_DECREMENT();

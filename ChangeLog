@@ -91,6 +91,8 @@ Bugfixes:
 - Delayed exit events from the OMPT adapter won't cause aborts if
   there were no corresponding enter events, e.g., due to
   SCOREP_RECORDING_OFF.
+- Cray's OMPT implementation reuses data that is supposed to be
+  parallel-region local. Handle this gracefully.
 
 ------------------- Released version 8.4 -----------------------------
 
