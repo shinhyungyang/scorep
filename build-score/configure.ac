@@ -13,7 +13,7 @@ dnl
 dnl Copyright (c) 2009-2013,
 dnl University of Oregon, Eugene, USA
 dnl
-dnl Copyright (c) 2009-2013, 2015-2016, 2018, 2020-2022,
+dnl Copyright (c) 2009-2013, 2015-2016, 2018, 2020-2022, 2024,
 dnl Forschungszentrum Juelich GmbH, Germany
 dnl
 dnl Copyright (c) 2009-2014,
@@ -46,6 +46,9 @@ AS_IF([test "x${afs_cross_compiling}" != "xyes" && \
        test "x${afs_cross_compiling}" != "xno"],
     [AC_MSG_ERROR([invalid value '$afs_cross_compiling' for variable \$afs_cross_compiling.], [1])])
 
+adl_RECURSIVE_EVAL([${bindir}], [BINDIR])
+AC_SUBST([BINDIR])
+
 # Compilers etc. are set according to cubelib installation (see
 # below), so intentionally ignore environment variables set in the
 # environment. For CFLAGS, CXXFLAGS, and LDFLAGS see
@@ -68,15 +71,18 @@ AC_PROG_SED
 # Get CC and CXX (without leading whitespace) that was used to build
 # cubelib. Might contain language and architecture options like
 # '-std=c++11' or '-q64'.
-AS_IF([test -n "${scorep_cubelib_bindir}"],
+# Cubelib's CC and CXX need to be known at configure time. Obtaining
+# CPPFLAGS, LDFLAGS, and LIBS can be postponed to make time, see
+# build-config/m4/scorep_cube4.m4 and build-score/Makefile.am
+AS_IF([test "x${scorep_cubelib_bindir}" != x],
     [# Get from external cube installation
-     CC="`${scorep_cubelib_bindir}/cubelib-config --cc | ${SED} 's/^[ \t]*//'`"
-     CXX="`${scorep_cubelib_bindir}/cubelib-config --cxx | ${SED} 's/^[ \t]*//'`"
-     AM_CONDITIONAL([HAVE_SCOREP_EXTERNAL_CUBELIB], [test 1 -eq 1])],
+     cubelib_config_cmd="${scorep_cubelib_bindir}/cubelib-config"
+     CC="`$cubelib_config_cmd --cc | ${SED} 's/^[ \t]*//'`"
+     CXX="`$cubelib_config_cmd --cxx | ${SED} 's/^[ \t]*//'`"],
     [# Get from internal cubelib
      CC="`GREP_OPTIONS= ${GREP} ^CC= ../vendor/cubelib/build-frontend/config.log | ${AWK} -F\' '{gsub(/^ +/,"",$2); print $2}'`"
-     CXX="`GREP_OPTIONS= ${GREP} ^CXX= ../vendor/cubelib/build-frontend/config.log | ${AWK} -F\' '{gsub(/^ +/,"",$2); print $2}'`"
-     AM_CONDITIONAL([HAVE_SCOREP_EXTERNAL_CUBELIB], [test 1 -eq 0])])
+     CXX="`GREP_OPTIONS= ${GREP} ^CXX= ../vendor/cubelib/build-frontend/config.log | ${AWK} -F\' '{gsub(/^ +/,"",$2); print $2}'`"])
+AM_CONDITIONAL([HAVE_SCOREP_EXTERNAL_CUBELIB], [test "x${scorep_cubelib_bindir}" != x])
 
 # Provide CFLAGS, CXXFLAGS, ands LDFLAGS for build-score via
 # *FLAGS_FOR_BUILD_SCORE environment variables. If not set,
@@ -121,11 +127,6 @@ AC_SCOREP_GIT_CONTROLLED
 
 SCOREP_CUBELIB
 SCOREP_ESTIMATOR
-
-AS_IF([test -n "${scorep_cubelib_bindir}"],
-      [AC_SUBST([CUBELIB_BINDIR], [${scorep_cubelib_bindir}])],
-      [AC_SUBST([CUBELIB_BINDIR], [../vendor/cubelib/build-frontend])
-])
 
 AFS_COMMON_UTILS([build], [<SCOREP_ErrorCodes.h>], [../src/utils/include])
 

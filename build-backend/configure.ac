@@ -242,7 +242,7 @@ AM_CONDITIONAL([HAVE_SCOREP_EXTERNAL_CUBEW], [test "x${scorep_cubew_bindir}" != 
 
 AS_IF([test -n "${scorep_cubelib_bindir}"],
       [AC_SUBST([CUBELIB_BINDIR], ["${scorep_cubelib_bindir}"])],
-      [AC_SUBST([CUBELIB_BINDIR], ["../vendor/cubelib/build-frontend"])])
+      [AC_SUBST([CUBELIB_BINDIR], ["${BINDIR}"])])
 
 AFS_POSIX_ACCESS
 AFS_POSIX_CLOSE

@@ -190,6 +190,13 @@ alternatively, in a directory specified via `--with-package-cache=<path>`.
                directory. The URLs to the required packages can be listed
                via build-config/packages.sh.
 
+When using the internal components `cubew`, `cubelib`, and `otf2`, or
+external libraries via `--with-lib<foo>=download`, Score-P
+intentionally installs into prefix already during `make`, not
+during `make install`. If this is not supported by your workflow,
+please install the components and libraries upfront and provide the
+corresponding `--with` options at configure time.
+
 To enable support for CUDA measurement via the CUPTI interface we
 provide three configure options: the path to the CUDA runtime, the
 path to the CUPTI library, and the path to the CUDA library. Usually
