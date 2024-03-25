@@ -3,7 +3,7 @@
 ##
 ## This file is part of the Score-P software (http://www.score-p.org)
 ##
-## Copyright (c) 2023,
+## Copyright (c) 2023-2024,
 ## Forschungszentrum Juelich GmbH, Germany
 ##
 ## This software may be modified and distributed under the terms of
@@ -36,7 +36,7 @@ AC_SUBST([CONFIG_EXTERNAL_LIBS_HPP_INCLUDE_GUARD], [CONFIG_EXTERNAL_LIBS_]AFS_PA
 # Makefile-rpaths.inc.am.
 AC_SUBST([INLCUDE_RPATHS_MAKEFILE], "-include ./GEN_RPATHS_MAKEFILE")
 
-AC_CONFIG_COMMANDS(GEN_RPATHS_MAKEFILE, [make ]GEN_RPATHS_MAKEFILE)
+AC_CONFIG_COMMANDS(GEN_RPATHS_MAKEFILE, [make ]GEN_RPATHS_MAKEFILE[ || exit 1])
 
 m4_undefine([GEN_RPATHS_MAKEFILE])
 m4_undefine([GEN_EXTERNAL_LIBS_HPP])
