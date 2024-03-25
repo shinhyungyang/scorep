@@ -658,7 +658,7 @@ m4_define([_CHECK_OMPT_CRITICAL_ISSUES], [
 have_ompt_critical_checks_passed=yes
 AS_UNSET([issues_detected])
 m4_foreach_w([_OMPT_TEST],
-    [missing_ws_loop_end],
+    [missing_ws_loop_end using_sync_region_barrier incorrect_implicit_barrier_end],
     [m4_define([_TRY_RUN_OMPT_TEST_INPUT], [_INPUT_OMPT_KNOWN_ISSUE_[]m4_toupper(_OMPT_TEST)[]])
      _TRY_RUN_OMPT_TEST
      AS_IF([test "x${have_[]_OMPT_TEST[]}" != xyes],
@@ -777,6 +777,217 @@ main( void )
     return 1;
 }
 ]]) dnl _INPUT_OMPT_KNOWN_ISSUE_MISSING_WS_LOOP_END
+
+# _INPUT_OMPT_KNOWN_ISSUE_USING_SYNC_REGION_BARRIER
+# -------------------------------------------
+# Test code to check if deprecated (since 5.1) ompt_sync_region_t kind
+# `ompt_sync_region_barrier` is used in sync_region callbacks. Score-P
+# cannot handle this generic barrier as it needs to be able to
+# distinguish barrier types.
+#
+m4_define([_INPUT_OMPT_KNOWN_ISSUE_USING_SYNC_REGION_BARRIER], [[
+#include <omp-tools.h>
+#include <omp.h>
+#include <stdlib.h>
+
+static int                  initialized = 0;
+static ompt_finalize_tool_t finalize_tool;
+
+void
+callback_sync_region( ompt_sync_region_t    kind,
+                      ompt_scope_endpoint_t endpoint,
+                      ompt_data_t*          parallel_data,
+                      ompt_data_t*          task_data,
+                      const void*           codeptr_ra )
+{
+    if ( kind == ompt_sync_region_barrier )
+    {
+        _Exit( 2 ); /* sync_region callback used ompt_sync_region_barrier */
+    }
+}
+
+static int
+ompt_initialize( ompt_function_lookup_t lookup,
+                 int                    initial_device_num,
+                 ompt_data_t*           tool_data )
+{
+    ompt_set_callback_t set_cb = ( ompt_set_callback_t )lookup( "ompt_set_callback" );
+    if ( !set_cb )
+    {
+        _Exit( 3 ); /* Tool got initialized but lookup of runtime-entry-point ompt_set_callback failed. */
+    }
+    finalize_tool = ( ompt_finalize_tool_t )lookup( "ompt_finalize_tool" );
+    if ( !finalize_tool )
+    {
+        _Exit( 4 ); /* Tool got initialized but lookup of runtime-entry-point ompt_finalize_tool failed. */
+    }
+    ompt_set_result_t result;
+
+    /* This test checks if ompt_callback_sync_region is dispatched correctly. As this test is marked as critical,
+     * it causes the OMPT adapter to not be available if the registration fails. This should not happen though,
+     * as we check the registration result for this callback earlier in the OMPT configure. */
+    result = set_cb( ompt_callback_sync_region, ( ompt_callback_t )&callback_sync_region );
+    if ( result < ompt_set_sometimes_paired )
+    {
+        _Exit( 5 ); /* Tool got initialized but callback failed to register with at least ompt_set_sometimes_paired. */
+    }
+
+    initialized = 1;
+    return 1; /* non-zero indicates success for OMPT runtime. */
+}
+
+static void
+ompt_finalize( ompt_data_t* tool_data )
+{
+    if ( initialized == 1 )
+    {
+        _Exit( 0 ); /* Tool got initialized and finalized. */
+    }
+}
+
+ompt_start_tool_result_t*
+ompt_start_tool( unsigned int omp_version,                           /* == _OPENMP */
+                 const char*  runtime_version )
+{
+    static ompt_start_tool_result_t ompt_start_tool_result = { &ompt_initialize,
+                                                               &ompt_finalize,
+                                                               ompt_data_none };
+    return &ompt_start_tool_result;
+}
+
+int
+foo( int i )
+{
+    return i;
+}
+
+int
+main( void )
+{
+    /* CCE 16.0.1 and 17.0.0 dispatch ompt_sync_region_barrier on ompt_callback_sync_region callbacks
+     * for parallel implicit-barrier events. This ompt_sync_region_t field is too generic for Score-P.
+     * Therefore, we abort the measurement when we encounter this enum value. Check if a generic parallel
+     * region dispatches ompt_sync_region_barrier. If this is the case, we consider the OMPT runtime to
+     * be unusable for proper measurements (LUMI #4110). */
+#pragma omp parallel for collapse( 2 )
+    for ( int i = 0; i < 10; ++i )
+    {
+        for ( int j = 0; j < 10; ++j )
+        {
+            foo( omp_get_thread_num() );
+        }
+    }
+
+    /* Second test case which caused ompt_sync_region_barrier to appear while testing CCE 16.0.1 / 17.0.0 */
+#pragma omp parallel
+    {
+#pragma omp single
+        foo( omp_get_thread_num() );
+
+#pragma omp single nowait
+        foo( omp_get_thread_num() );
+    }
+    finalize_tool();
+    return 1;
+}
+]]) dnl _INPUT_OMPT_KNOWN_ISSUE_USING_SYNC_REGION_BARRIER
+
+# _INPUT_OMPT_KNOWN_ISSUE_INCORRECT_IMPLICIT_BARRIER_END
+# -------------------------------------------
+# Test code to check if implicit-barrier-end complies to the
+# specification and provides `parallel_data == NULL` for
+# the end of a parallel region.
+#
+m4_define([_INPUT_OMPT_KNOWN_ISSUE_INCORRECT_IMPLICIT_BARRIER_END], [[
+#include <omp-tools.h>
+#include <omp.h>
+#include <stdlib.h>
+
+static int                  initialized = 0;
+static ompt_finalize_tool_t finalize_tool;
+
+void
+callback_sync_region( ompt_sync_region_t    kind,
+                      ompt_scope_endpoint_t endpoint,
+                      ompt_data_t*          parallel_data,
+                      ompt_data_t*          task_data,
+                      const void*           codeptr_ra )
+{
+    if ( endpoint == ompt_scope_end )
+    {
+        if ( parallel_data != NULL )
+        {
+            _Exit( 2 ); /* parallel_data reqired to be NULL for implicit-barrier-end */
+        }
+    }
+}
+
+static int
+ompt_initialize( ompt_function_lookup_t lookup,
+                 int                    initial_device_num,
+                 ompt_data_t*           tool_data )
+{
+    ompt_set_callback_t set_cb = ( ompt_set_callback_t )lookup( "ompt_set_callback" );
+    if ( !set_cb )
+    {
+        _Exit( 3 ); /* Tool got initialized but lookup of runtime-entry-point ompt_set_callback failed. */
+    }
+    finalize_tool = ( ompt_finalize_tool_t )lookup( "ompt_finalize_tool" );
+    if ( !finalize_tool )
+    {
+        _Exit( 4 ); /* Tool got initialized but lookup of runtime-entry-point ompt_finalize_tool failed. */
+    }
+    ompt_set_result_t result;
+
+    /* This test checks if ompt_callback_sync_region is dispatched correctly. As this test is marked as critical,
+     * it causes the OMPT adapter to not be available if the registration fails. This should not happen though,
+     * as we check the registration result for this callback earlier in the OMPT configure. */
+    result = set_cb( ompt_callback_sync_region, ( ompt_callback_t )&callback_sync_region );
+    if ( result < ompt_set_sometimes_paired )
+    {
+        _Exit( 5 ); /* Tool got initialized but callback failed to register with at least ompt_set_sometimes_paired. */
+    }
+
+    initialized = 1;
+    return 1; /* non-zero indicates success for OMPT runtime. */
+}
+
+static void
+ompt_finalize( ompt_data_t* tool_data )
+{
+    if ( initialized == 1 )
+    {
+        _Exit( 0 ); /* Tool got initialized and finalized. */
+    }
+}
+
+ompt_start_tool_result_t*
+ompt_start_tool( unsigned int omp_version,                           /* == _OPENMP */
+                 const char*  runtime_version )
+{
+    static ompt_start_tool_result_t ompt_start_tool_result = { &ompt_initialize,
+                                                               &ompt_finalize,
+                                                               ompt_data_none };
+    return &ompt_start_tool_result;
+}
+
+int
+foo( int i )
+{
+    return i;
+}
+
+int
+main( void )
+{
+#pragma omp parallel
+    {
+        foo( omp_get_thread_num() );
+    }
+    finalize_tool();
+    return 1;
+}
+]]) dnl _INPUT_OMPT_KNOWN_ISSUE_INCORRECT_PARALLEL_BARRIER
 
 # _CHECK_OMPT_REMEDIABLE_ISSUES
 # -----------------------------
