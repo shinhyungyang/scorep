@@ -21,6 +21,7 @@
 /scorep_config_tool_mpi.h
 /scorep_config_tool_shmem.h
 /stamp-h*
-/scorep_config_library_dependencies_inc.hpp
-/scorep_config_library_dependencies_mpi_inc.hpp
-/scorep_config_library_dependencies_shmem_inc.hpp
+/config-external-libs-backend.hpp
+/config-external-libs-mpi_backend.hpp
+/config-external-libs-shmem_backend.hpp
+/config-external-libs-score.hpp

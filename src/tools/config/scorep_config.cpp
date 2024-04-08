@@ -13,7 +13,7 @@
  * Copyright (c) 2009-2013,
  * University of Oregon, Eugene, USA
  *
- * Copyright (c) 2009-2016, 2020, 2022,
+ * Copyright (c) 2009-2016, 2020, 2022, 2024,
  * Forschungszentrum Juelich GmbH, Germany
  *
  * Copyright (c) 2009-2014,
@@ -581,6 +581,10 @@ main( int    argc,
     SCOREP_Config_LibraryDependencies deps;
     std::string                       str;
 
+    /* Enabled adapters add their event lib, if any, and libscorep_measurement
+       to libs (i.e., event libs). deps (i.e., mgmt libs) usually contain a
+       dependency between libscorep_measurement and the adapter's mgmt lib. If
+       there is at least one adapter enabled, libs is not empty. */
     SCOREP_Config_Adapter::addLibsAll( libs, deps );
     SCOREP_Config_MppSystem::current->addLibs( libs, deps );
     SCOREP_Config_ThreadSystem::current->addLibs( libs, deps );
@@ -595,6 +599,11 @@ main( int    argc,
         libs.push_back( "libscorep_constructor" );
 #endif
     }
+
+    /* Adapters, mpp- and thread-systems might add libscorep_measurement
+       several times; remove all duplicates but the last one. libs then
+       contain the event libs. */
+    libs = remove_double_entries_keep_last( libs );
 
     switch ( action )
     {

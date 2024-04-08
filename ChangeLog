@@ -33,6 +33,11 @@ Features and improvements:
   usage will require setting LD_PRELOAD. See OPEN_ISSUES for more
   information.
 - Added support for MPI neighborhood collectives.
+- The dependencies of Score-P's and required libraries have been made
+  more explicit, as libtool does not work reliably on all systems of
+  interest. This change is transparent when `scorep` or a
+  Score-P wrapper is used, but manifests in the changed output of
+  `scorep-config --libs` and `--ldflags`.
 
 User tools and API improvements and changes:
 

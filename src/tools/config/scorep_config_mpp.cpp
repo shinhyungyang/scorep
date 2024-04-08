@@ -1,7 +1,7 @@
 /*
  * This file is part of the Score-P software (http://www.score-p.org)
  *
- * Copyright (c) 2013, 2015, 2023,
+ * Copyright (c) 2013, 2015, 2023-2024,
  * Forschungszentrum Juelich GmbH, Germany
  *
  * Copyright (c) 2013-2014, 2016-2017, 2019,
@@ -154,6 +154,7 @@ SCOREP_Config_MpiMppSystem::addLibs( std::deque<std::string>&           libs,
                                      SCOREP_Config_LibraryDependencies& deps )
 {
     libs.push_back( "libscorep_adapter_mpi_event" );
+    deps.addDependency( libs.back(), "libscorep_measurement" );
     deps.addDependency( "libscorep_measurement", "libscorep_adapter_mpi_mgmt" );
     deps.addDependency( "libscorep_measurement", "libscorep_mpp_mpi" );
 }
@@ -191,6 +192,7 @@ SCOREP_Config_ShmemMppSystem::addLibs( std::deque<std::string>&           libs,
                                        SCOREP_Config_LibraryDependencies& deps )
 {
     libs.push_back( "libscorep_adapter_shmem_event" );
+    deps.addDependency( libs.back(), "libscorep_measurement" );
     deps.addDependency( "libscorep_measurement", "libscorep_adapter_shmem_mgmt" );
     deps.addDependency( "libscorep_measurement", "libscorep_mpp_shmem" );
 }

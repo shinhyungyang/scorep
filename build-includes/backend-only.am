@@ -37,7 +37,6 @@ include ../src/services/sampling/Makefile.inc.am
 include ../src/services/timer/Makefile.inc.am
 include ../src/services/unwinding/Makefile.inc.am
 include ../src/tools/backend-info/Makefile.inc.am
-include ../src/tools/config/Makefile.la_dependencies.inc.am
 include ../src/tools/instrumenter/Makefile.backend-only.inc.am
 include ../src/tools/libwrap_init/Makefile.inc.am
 include ../src/tools/preload_init/Makefile.inc.am

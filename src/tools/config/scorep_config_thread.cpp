@@ -1,7 +1,7 @@
 /*
  * This file is part of the Score-P software (http://www.score-p.org)
  *
- * Copyright (c) 2013-2014, 2016, 2020, 2022,
+ * Copyright (c) 2013-2014, 2016, 2020, 2022, 2024,
  * Forschungszentrum Juelich GmbH, Germany
  *
  * Copyright (c) 2014, 2017,
@@ -210,6 +210,7 @@ SCOREP_Config_OmptThreadSystem::addLibs( std::deque<std::string>&           libs
                                          SCOREP_Config_LibraryDependencies& deps )
 {
     libs.push_back( "libscorep_adapter_ompt_event" );
+    deps.addDependency( libs.back(), "libscorep_measurement" );
     deps.addDependency( "libscorep_measurement", "libscorep_adapter_ompt_mgmt" );
     deps.addDependency( "libscorep_measurement", "libscorep_thread_fork_join_omp" );
 }
@@ -252,6 +253,7 @@ SCOREP_Config_Opari2ThreadSystem::addLibs( std::deque<std::string>&           li
                                            SCOREP_Config_LibraryDependencies& deps )
 {
     libs.push_back( "libscorep_adapter_opari2_openmp_event" );
+    deps.addDependency( libs.back(), "libscorep_measurement" );
     deps.addDependency( "libscorep_measurement", "libscorep_adapter_opari2_openmp_mgmt" );
     deps.addDependency( "libscorep_measurement", "libscorep_thread_fork_join_omp" );
 }
@@ -311,6 +313,7 @@ SCOREP_Config_PthreadThreadSystem::addLibs( std::deque<std::string>&           l
                                             SCOREP_Config_LibraryDependencies& deps )
 {
     libs.push_back( "libscorep_adapter_pthread_event" );
+    deps.addDependency( libs.back(), "libscorep_measurement" );
     deps.addDependency( "libscorep_measurement", "libscorep_adapter_pthread_mgmt" );
     deps.addDependency( "libscorep_thread_create_wait_pthread", "libscorep_adapter_pthread_mgmt" );
     deps.addDependency( "libscorep_measurement", "libscorep_thread_create_wait_pthread" );

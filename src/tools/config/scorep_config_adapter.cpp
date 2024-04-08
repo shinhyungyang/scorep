@@ -231,7 +231,10 @@ void
 SCOREP_Config_Adapter::addLibs( std::deque<std::string>&           libs,
                                 SCOREP_Config_LibraryDependencies& deps )
 {
+    // Event libraries need libscorep_measurement, which needs the
+    // corresponding mgmt libraries.
     libs.push_back( "lib" + m_library + "_event" );
+    deps.addDependency( libs.back(), "libscorep_measurement" );
     deps.addDependency( "libscorep_measurement", "lib" + m_library + "_mgmt" );
 }
 
@@ -509,16 +512,6 @@ SCOREP_Config_CudaAdapter::addCFlags( std::string& cflags,
 }
 
 void
-SCOREP_Config_CudaAdapter::addLibs( std::deque<std::string>&           libs,
-                                    SCOREP_Config_LibraryDependencies& deps )
-{
-    /* The event library is presently only NVTX callbacks */
-    libs.push_back( "lib" + m_library + "_event" );
-    libs.push_back( "libscorep_measurement" );
-    deps.addDependency( "libscorep_measurement", "lib" + m_library + "_mgmt" );
-}
-
-void
 SCOREP_Config_CudaAdapter::appendInitStructName( std::deque<std::string>& initStructs )
 {
     initStructs.push_back( "SCOREP_Subsystem_AcceleratorManagement" );
@@ -555,8 +548,8 @@ void
 SCOREP_Config_HipAdapter::addLibs( std::deque<std::string>&           libs,
                                    SCOREP_Config_LibraryDependencies& deps )
 {
-    /* there is no libscorep_adapter_hip_event.la, thus in case this is the
-       only adapter, we need to add libscorep_measurement.la to the needed libs. */
+    /* there is no libscorep_adapter_hip_event, thus in case this is the
+       only adapter, we need to add libscorep_measurement to the needed libs. */
     libs.push_back( "libscorep_measurement" );
     deps.addDependency( "libscorep_measurement", "lib" + m_library + "_mgmt" );
 }
@@ -574,14 +567,6 @@ SCOREP_Config_HipAdapter::appendInitStructName( std::deque<std::string>& initStr
 SCOREP_Config_OpenaccAdapter::SCOREP_Config_OpenaccAdapter()
     : SCOREP_Config_Adapter( "openacc", "scorep_adapter_openacc", false )
 {
-}
-
-void
-SCOREP_Config_OpenaccAdapter::addLibs( std::deque<std::string>&           libs,
-                                       SCOREP_Config_LibraryDependencies& deps )
-{
-    libs.push_back( "lib" + m_library + "_event" );
-    deps.addDependency( "libscorep_measurement", "lib" + m_library + "_mgmt" );
 }
 
 /* **************************************************************************************
@@ -657,6 +642,7 @@ SCOREP_Config_OpenclAdapter::addLibs( std::deque<std::string>&           libs,
                                       SCOREP_Config_LibraryDependencies& deps )
 {
     libs.push_back( "lib" + m_library + "_event_" + m_wrapmode );
+    deps.addDependency( libs.back(), "libscorep_measurement" );
     deps.addDependency( "libscorep_measurement", "lib" + m_library + "_mgmt_" + m_wrapmode );
 }
 
@@ -690,6 +676,10 @@ void
 SCOREP_Config_KokkosAdapter::addLibs( std::deque<std::string>&           libs,
                                       SCOREP_Config_LibraryDependencies& deps )
 {
+    /* there is no libscorep_adapter_kokkos_event that is linked into the
+       application, thus in case this is the only adapter, we need to add
+       libscorep_measurement to the needed libs. */
+    libs.push_back( "libscorep_measurement" );
     /* the Kokkos event library is loaded by the Kokkos runtime via
        KOKKOS_PROFILE_LIBRARY */
     deps.addDependency( "libscorep_measurement", "lib" + m_library + "_mgmt" );
@@ -962,6 +952,7 @@ void
 SCOREP_Config_MemoryAdapter::addLibs( std::deque<std::string>&           libs,
                                       SCOREP_Config_LibraryDependencies& deps )
 {
+    size_t n_libs = libs.size();
     if ( m_categories.count( "libc" ) )
     {
         libs.push_back( "lib" + m_library + "_event_libc" );
@@ -1017,7 +1008,11 @@ SCOREP_Config_MemoryAdapter::addLibs( std::deque<std::string>&           libs,
         libs.push_back( "lib" + m_library + "_event_hbwmalloc" );
     }
 
-    deps.addDependency( "libscorep_measurement", "lib" + m_library + "_mgmt" );
+    if ( libs.size() > n_libs )
+    {
+        deps.addDependency( libs.back(), "libscorep_measurement" );
+        deps.addDependency( "libscorep_measurement", "lib" + m_library + "_mgmt" );
+    }
 }
 
 void
@@ -1347,6 +1342,7 @@ SCOREP_Config_IoAdapter::addLibs( std::deque<std::string>&           libs,
         }
 
         libs.push_back( "libscorep_adapter_" + it->second.m_lib_name + "_event_" + m_selected_ios[ it->first ] );
+        deps.addDependency( libs.back(), "libscorep_measurement" );
         deps.addDependency( "libscorep_measurement", "libscorep_adapter_" + it->second.m_lib_name + "_mgmt_" + m_selected_ios[ it->first ] );
     }
 }
