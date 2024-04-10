@@ -213,10 +213,6 @@ AS_IF([test "x${scorep_shmem_has_pshmem_header}" = "xyes"],
 AC_MSG_RESULT([$scorep_shmem_has_pshmem_functions])
 
 AC_LANG_POP([C])
-
-# generating output
-AS_IF([test "x${scorep_shmem_has_pshmem_functions}" = "xyes"],
-      [touch scorep_have_pshmem_support.txt])
 ])
 
 dnl ----------------------------------------------------------------------------
@@ -508,27 +504,16 @@ AC_DEFUN([_SCOREP_SHMEM_CHECK_INTERCEPTION], [
 dnl check if we assume having the profiling interface
 _SCOREP_SHMEM_PROFILING_INTERFACE
 
-dnl check also if library wrapping is possible
-SCOREP_LIBRARY_WRAPPING
-
 dnl now check for all functions, depending on the previous check either the
 dnl p symbols or the normal symbols
 
 AS_IF([test "x${scorep_shmem_has_pshmem_functions}" = "xyes"],
-      [_SCOREP_SHMEM_CHECK_SYMBOLS([p])],
-      [scorep_shmem_wrap_symbols=""
-       _SCOREP_SHMEM_CHECK_SYMBOLS([], [scorep_shmem_wrap_symbols])
-       dnl Always ensure to wrap shmem_finalize, if absent from the SHMEM implementation.
-       dnl Score-P always provide one.
-       AS_CASE([" ${scorep_shmem_wrap_symbols} "],
-               [*" shmem_finalize "*], [: good, shmem_finalize is already in the list],
-               [AS_VAR_APPEND([scorep_shmem_wrap_symbols], [" shmem_finalize"])])])
+      [_SCOREP_SHMEM_CHECK_SYMBOLS([p])])
 ])
 
 dnl ----------------------------------------------------------------------------
 
 AC_DEFUN([SCOREP_SHMEM], [
-AC_REQUIRE([SCOREP_LIBRARY_WRAPPING])dnl
 
 AC_DEFINE_UNQUOTED([SCOREP_SHMEM_NAME], ["${SHMEM_NAME}"],
                    [Name of the implemented SHMEM specification.])
@@ -568,19 +553,8 @@ AS_IF([test "x${scorep_shmem_supported}" = "xno"],
        _SCOREP_SHMEM_COMPLIANCE
        AS_IF([test "x${scorep_shmem_has_pshmem_functions}" = "xyes"],
              [shmem_interception_summary="yes, using SHMEM profiling interface"],
-             [test "x${scorep_libwrap_linktime_support}" = "xyes"],
-             [shmem_interception_summary="yes, using linktime library wrapping"])
+             [scorep_shmem_supported="no"])
 ])
-
-AFS_SUMMARY([intercepting SHMEM calls], [${shmem_interception_summary}])
-
-AC_SCOREP_COND_HAVE([SHMEM_PROFILING_INTERFACE],
-                    [test "x${scorep_shmem_has_pshmem_functions}" = "xyes"],
-                    [Defined if SHMEM implementation provides a profiling interface.])
-
-AC_SCOREP_COND_HAVE([SHMEM_PROFILING_HEADER],
-                    [test "x${scorep_shmem_has_pshmem_header}" = "xyes"],
-                    [Defined if SHMEM implementation provides a profiling header file.])
 
 AM_CONDITIONAL([HAVE_SHMEM_SUPPORT],         [test "x${scorep_shmem_supported}" = "xyes" && test "x${shmem_interception_summary}" != "xno"])
 AM_CONDITIONAL([HAVE_SHMEM_FORTRAN_SUPPORT], [test "x${scorep_shmem_f77_supported}" = "xyes" && test "x${shmem_interception_summary}" != "xno"])

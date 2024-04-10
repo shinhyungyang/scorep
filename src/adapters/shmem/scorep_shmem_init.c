@@ -1,7 +1,7 @@
 /*
  * This file is part of the Score-P software (http://www.score-p.org)
  *
- * Copyright (c) 2013-2016, 2022,
+ * Copyright (c) 2013-2016, 2022, 2025,
  * Technische Universitaet Dresden, Germany
  *
  * Copyright (c) 2014-2015,
@@ -234,7 +234,7 @@ shmem_subsystem_deregister( void )
     SCOREP_FinalizeMppMeasurement();
 #if SHMEM_HAVE_DECL( SHMEM_FINALIZE )
     UTILS_DEBUG( "Calling shmem_finalize" );
-    CALL_SHMEM( shmem_finalize )();
+    pshmem_finalize();
 #endif
 }
 

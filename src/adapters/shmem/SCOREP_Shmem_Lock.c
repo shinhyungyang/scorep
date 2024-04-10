@@ -1,7 +1,7 @@
 /*
  * This file is part of the Score-P software (http://www.score-p.org)
  *
- * Copyright (c) 2013-2017,
+ * Copyright (c) 2013-2017, 2025,
  * Technische Universitaet Dresden, Germany
  *
  * This software may be modified and distributed under the terms of
@@ -25,141 +25,118 @@
 #include <SCOREP_Events.h>
 
 
-/* *INDENT-OFF* */
-
-#define SET_LOCK( FUNCNAME )                                                    \
-    void                                                                        \
-    SCOREP_LIBWRAP_FUNC_NAME( FUNCNAME ) SCOREP_SHMEM_SET_LOCK_PROTO_ARGS       \
-    {                                                                           \
-        SCOREP_IN_MEASUREMENT_INCREMENT();                                      \
-                                                                                \
-        const int event_gen_active = SCOREP_SHMEM_IS_EVENT_GEN_ON;              \
-                                                                                \
-        if ( event_gen_active )                                                 \
-        {                                                                       \
-            SCOREP_SHMEM_EVENT_GEN_OFF();                                       \
-                                                                                \
-            SCOREP_EnterWrappedRegion( scorep_shmem_region__ ## FUNCNAME );     \
-        }                                                                       \
-                                                                                \
-        SCOREP_ENTER_WRAPPED_REGION();                                          \
-        SCOREP_LIBWRAP_FUNC_CALL( FUNCNAME, ( lock ) );                         \
-        SCOREP_EXIT_WRAPPED_REGION();                                           \
-                                                                                \
-        if ( event_gen_active )                                                 \
-        {                                                                       \
-            SCOREP_RmaAcquireLock( scorep_shmem_world_window_handle,            \
-                                   NO_PROCESSING_ELEMENT,                       \
-                                   ( uint64_t )lock,                            \
-                                   SCOREP_LOCK_EXCLUSIVE );                     \
-                                                                                \
-            SCOREP_ExitRegion( scorep_shmem_region__ ## FUNCNAME );             \
-                                                                                \
-            SCOREP_SHMEM_EVENT_GEN_ON();                                        \
-        }                                                                       \
-                                                                                \
-        SCOREP_IN_MEASUREMENT_DECREMENT();                                      \
-    }
-
-/* *INDENT-ON* */
-
 #if SHMEM_HAVE_DECL( SHMEM_SET_LOCK ) && defined( SCOREP_SHMEM_SET_LOCK_PROTO_ARGS )
-SET_LOCK( shmem_set_lock )
-#endif
+void
+shmem_set_lock SCOREP_SHMEM_SET_LOCK_PROTO_ARGS
+{
+    SCOREP_IN_MEASUREMENT_INCREMENT();
 
+    const int event_gen_active = SCOREP_SHMEM_IS_EVENT_GEN_ON;
 
-/* *INDENT-OFF* */
+    if ( event_gen_active )
+    {
+        SCOREP_SHMEM_EVENT_GEN_OFF();
 
-#define CLEAR_LOCK( FUNCNAME )                                                  \
-    void                                                                        \
-    SCOREP_LIBWRAP_FUNC_NAME( FUNCNAME ) SCOREP_SHMEM_CLEAR_LOCK_PROTO_ARGS     \
-    {                                                                           \
-        SCOREP_IN_MEASUREMENT_INCREMENT();                                      \
-                                                                                \
-        const int event_gen_active = SCOREP_SHMEM_IS_EVENT_GEN_ON;              \
-                                                                                \
-        if ( event_gen_active )                                                 \
-        {                                                                       \
-            SCOREP_SHMEM_EVENT_GEN_OFF();                                       \
-                                                                                \
-            SCOREP_EnterWrappedRegion( scorep_shmem_region__ ## FUNCNAME );     \
-        }                                                                       \
-                                                                                \
-        SCOREP_ENTER_WRAPPED_REGION();                                          \
-        SCOREP_LIBWRAP_FUNC_CALL( FUNCNAME, ( lock ) );                         \
-        SCOREP_EXIT_WRAPPED_REGION();                                           \
-                                                                                \
-        if ( event_gen_active )                                                 \
-        {                                                                       \
-            SCOREP_RmaReleaseLock( scorep_shmem_world_window_handle,            \
-                                   NO_PROCESSING_ELEMENT,                       \
-                                   ( uint64_t )lock );                          \
-                                                                                \
-            SCOREP_ExitRegion( scorep_shmem_region__ ## FUNCNAME );             \
-                                                                                \
-            SCOREP_SHMEM_EVENT_GEN_ON();                                        \
-        }                                                                       \
-                                                                                \
-        SCOREP_IN_MEASUREMENT_DECREMENT();                                      \
+        SCOREP_EnterWrappedRegion( scorep_shmem_region__shmem_set_lock );
     }
 
-/* *INDENT-ON* */
+    SCOREP_ENTER_WRAPPED_REGION();
+    pshmem_set_lock( lock );
+    SCOREP_EXIT_WRAPPED_REGION();
+
+    if ( event_gen_active )
+    {
+        SCOREP_RmaAcquireLock( scorep_shmem_world_window_handle,
+                               NO_PROCESSING_ELEMENT,
+                               ( uint64_t )lock,
+                               SCOREP_LOCK_EXCLUSIVE );
+
+        SCOREP_ExitRegion( scorep_shmem_region__shmem_set_lock );
+
+        SCOREP_SHMEM_EVENT_GEN_ON();
+    }
+
+    SCOREP_IN_MEASUREMENT_DECREMENT();
+}
+#endif
 
 #if SHMEM_HAVE_DECL( SHMEM_CLEAR_LOCK ) && defined( SCOREP_SHMEM_CLEAR_LOCK_PROTO_ARGS )
-CLEAR_LOCK( shmem_clear_lock )
-#endif
+void
+shmem_clear_lock SCOREP_SHMEM_CLEAR_LOCK_PROTO_ARGS
+{
+    SCOREP_IN_MEASUREMENT_INCREMENT();
 
+    const int event_gen_active = SCOREP_SHMEM_IS_EVENT_GEN_ON;
 
-/* *INDENT-OFF* */
+    if ( event_gen_active )
+    {
+        SCOREP_SHMEM_EVENT_GEN_OFF();
 
-#define TEST_LOCK( FUNCNAME )                                                       \
-    int                                                                             \
-    SCOREP_LIBWRAP_FUNC_NAME( FUNCNAME ) SCOREP_SHMEM_TEST_LOCK_PROTO_ARGS          \
-    {                                                                               \
-        SCOREP_IN_MEASUREMENT_INCREMENT();                                          \
-        int ret;                                                                    \
-                                                                                    \
-        const int event_gen_active = SCOREP_SHMEM_IS_EVENT_GEN_ON;                  \
-                                                                                    \
-        if ( event_gen_active )                                                     \
-        {                                                                           \
-            SCOREP_SHMEM_EVENT_GEN_OFF();                                           \
-                                                                                    \
-            SCOREP_EnterWrappedRegion( scorep_shmem_region__ ## FUNCNAME );         \
-        }                                                                           \
-                                                                                    \
-        SCOREP_ENTER_WRAPPED_REGION();                                              \
-        ret = SCOREP_LIBWRAP_FUNC_CALL( FUNCNAME, ( lock ) );                       \
-        SCOREP_EXIT_WRAPPED_REGION();                                               \
-                                                                                    \
-        if ( event_gen_active )                                                     \
-        {                                                                           \
-            if ( ret == 0 )                                                         \
-            {                                                                       \
-                SCOREP_RmaRequestLock( scorep_shmem_world_window_handle,            \
-                                       NO_PROCESSING_ELEMENT,                       \
-                                       ( uint64_t )lock,                            \
-                                       SCOREP_LOCK_EXCLUSIVE );                     \
-            }                                                                       \
-            else                                                                    \
-            {                                                                       \
-                SCOREP_RmaTryLock( scorep_shmem_world_window_handle,                \
-                                   NO_PROCESSING_ELEMENT,                           \
-                                   ( uint64_t )lock,                                \
-                                   SCOREP_LOCK_EXCLUSIVE );                         \
-            }                                                                       \
-                                                                                    \
-            SCOREP_ExitRegion( scorep_shmem_region__ ## FUNCNAME );                 \
-                                                                                    \
-            SCOREP_SHMEM_EVENT_GEN_ON();                                            \
-        }                                                                           \
-                                                                                    \
-        SCOREP_IN_MEASUREMENT_DECREMENT();                                          \
-        return ret;                                                                 \
+        SCOREP_EnterWrappedRegion( scorep_shmem_region__shmem_clear_lock );
     }
 
-/* *INDENT-ON* */
+    SCOREP_ENTER_WRAPPED_REGION();
+    pshmem_clear_lock( lock );
+    SCOREP_EXIT_WRAPPED_REGION();
+
+    if ( event_gen_active )
+    {
+        SCOREP_RmaReleaseLock( scorep_shmem_world_window_handle,
+                               NO_PROCESSING_ELEMENT,
+                               ( uint64_t )lock );
+
+        SCOREP_ExitRegion( scorep_shmem_region__shmem_clear_lock );
+
+        SCOREP_SHMEM_EVENT_GEN_ON();
+    }
+
+    SCOREP_IN_MEASUREMENT_DECREMENT();
+}
+#endif
 
 #if SHMEM_HAVE_DECL( SHMEM_TEST_LOCK ) && defined( SCOREP_SHMEM_TEST_LOCK_PROTO_ARGS )
-TEST_LOCK( shmem_test_lock )
+int
+shmem_test_lock SCOREP_SHMEM_TEST_LOCK_PROTO_ARGS
+{
+    SCOREP_IN_MEASUREMENT_INCREMENT();
+    int ret;
+
+    const int event_gen_active = SCOREP_SHMEM_IS_EVENT_GEN_ON;
+
+    if ( event_gen_active )
+    {
+        SCOREP_SHMEM_EVENT_GEN_OFF();
+
+        SCOREP_EnterWrappedRegion( scorep_shmem_region__shmem_test_lock );
+    }
+
+    SCOREP_ENTER_WRAPPED_REGION();
+    ret = pshmem_test_lock( lock );
+    SCOREP_EXIT_WRAPPED_REGION();
+
+    if ( event_gen_active )
+    {
+        if ( ret == 0 )
+        {
+            SCOREP_RmaRequestLock( scorep_shmem_world_window_handle,
+                                   NO_PROCESSING_ELEMENT,
+                                   ( uint64_t )lock,
+                                   SCOREP_LOCK_EXCLUSIVE );
+        }
+        else
+        {
+            SCOREP_RmaTryLock( scorep_shmem_world_window_handle,
+                               NO_PROCESSING_ELEMENT,
+                               ( uint64_t )lock,
+                               SCOREP_LOCK_EXCLUSIVE );
+        }
+
+        SCOREP_ExitRegion( scorep_shmem_region__shmem_test_lock );
+
+        SCOREP_SHMEM_EVENT_GEN_ON();
+    }
+
+    SCOREP_IN_MEASUREMENT_DECREMENT();
+    return ret;
+}
 #endif

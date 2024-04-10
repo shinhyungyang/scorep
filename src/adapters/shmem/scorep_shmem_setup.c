@@ -1,7 +1,7 @@
 /*
  * This file is part of the Score-P software (http://www.score-p.org)
  *
- * Copyright (c) 2013-2014,
+ * Copyright (c) 2013-2014, 2025,
  * Technische Universitaet Dresden, Germany
  *
  * Copyright (c) 2017,
@@ -34,10 +34,6 @@
 #include <assert.h>
 
 
-#ifndef CALL_SHMEM
-#error Macro 'CALL_SHMEM' is not defined
-#endif
-
 /**
  *  @internal
  *  Number of SHMEM processing elements.
@@ -59,6 +55,6 @@ void
 scorep_shmem_rank_and_size( void )
 {
     /* Determine own SHMEM rank and number of all PEs. */
-    scorep_shmem_number_of_pes = XCALL_SHMEM( SCOREP_SHMEM_N_PES )();
-    scorep_shmem_my_rank       = XCALL_SHMEM( SCOREP_SHMEM_MY_PE )();
+    scorep_shmem_number_of_pes = pshmem_n_pes();
+    scorep_shmem_my_rank       = pshmem_my_pe();
 }

@@ -1,7 +1,7 @@
 /*
  * This file is part of the Score-P software (http://www.score-p.org)
  *
- * Copyright (c) 2013-2014, 2016, 2022,
+ * Copyright (c) 2013-2014, 2016, 2022, 2025,
  * Technische Universitaet Dresden, Germany
  *
  * Copyright (c) 2014, 2022,
@@ -36,10 +36,6 @@
 #include <UTILS_Debug.h>
 
 #include <jenkins_hash.h>
-
-#ifndef CALL_SHMEM
-#error Macro 'CALL_SHMEM' is not defined
-#endif
 
 /**
  * All interim communicator definitions for the SHMEM PE groups.
@@ -79,21 +75,21 @@ scorep_shmem_setup_comm_world( void )
     UTILS_BUG_ON( scorep_shmem_number_of_pes == 0,
                   "Can't allocate buffers for 0 PEs." );
 
-    barrier_psync = CALL_SHMEM( shmalloc )( sizeof( long ) * _SHMEM_BARRIER_SYNC_SIZE );
+    barrier_psync = pshmalloc( sizeof( long ) * _SHMEM_BARRIER_SYNC_SIZE );
     UTILS_ASSERT( barrier_psync );
     for ( int i = 0; i < _SHMEM_BARRIER_SYNC_SIZE; i++ )
     {
         barrier_psync[ i ] = _SHMEM_SYNC_VALUE;
     }
 
-    bcast_psync = CALL_SHMEM( shmalloc )( sizeof( long ) * _SHMEM_BCAST_SYNC_SIZE );
+    bcast_psync = pshmalloc( sizeof( long ) * _SHMEM_BCAST_SYNC_SIZE );
     UTILS_ASSERT( bcast_psync );
     for ( int i = 0; i < _SHMEM_BCAST_SYNC_SIZE; i++ )
     {
         bcast_psync[ i ] = _SHMEM_SYNC_VALUE;
     }
 
-    CALL_SHMEM( shmem_barrier_all )();
+    pshmem_barrier_all();
 
     /* Define the group of all SHMEM locations. */
     scorep_shmem_define_shmem_locations();
@@ -138,14 +134,14 @@ void
 scorep_shmem_teardown_comm_world( void )
 {
     UTILS_ASSERT( barrier_psync );
-    CALL_SHMEM( shfree )( barrier_psync );
+    pshfree( barrier_psync );
     barrier_psync = NULL;
 
     UTILS_ASSERT( bcast_psync );
-    CALL_SHMEM( shfree )( bcast_psync );
+    pshfree( bcast_psync );
     bcast_psync = NULL;
 
-    CALL_SHMEM( shmem_barrier_all )();
+    pshmem_barrier_all();
 
     free( scorep_shmem_pe_groups.hash_table );
 }

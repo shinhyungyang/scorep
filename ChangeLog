@@ -131,6 +131,8 @@ Compatibility:
   into the NVIDIA HPC SDK) and the configure option
   `--with-nocross-compiler-suite=pgi` are deprecated.
 - Allow to build for RISC-V 64-bit CPU architectures.
+- The SHMEM support now requires the Profiling API from the SHMEM
+  implementation.
 
 Bugfixes:
 

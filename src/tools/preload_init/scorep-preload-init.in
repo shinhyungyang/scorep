@@ -3,7 +3,7 @@
 ##
 ## This file is part of the Score-P software (http://www.score-p.org)
 ##
-## Copyright (c) 2017, 2022,
+## Copyright (c) 2017, 2022, 2025,
 ## Technische Universitaet Dresden, Germany
 ##
 ## Copyright (c) 2024,
@@ -96,7 +96,7 @@ MPI_SUPPORT=false
 @HAVE_MPI_SUPPORT_TRUE@MPI_SUPPORT=true
 
 SHMEM_SUPPORT=false
-@HAVE_SHMEM_SUPPORT_TRUE@@HAVE_SHMEM_PROFILING_INTERFACE_TRUE@SHMEM_SUPPORT=true
+@HAVE_SHMEM_SUPPORT_TRUE@SHMEM_SUPPORT=true
 
 OMPT_SUPPORT=false
 @HAVE_SCOREP_OMPT_SUPPORT_TRUE@OMPT_SUPPORT=true
