@@ -28,33 +28,33 @@
 
 /* *INDENT-OFF* */
 
-#define MANAGE_EVENT( FUNCNAME )                                            \
-    void                                                                    \
-    SCOREP_LIBWRAP_FUNC_NAME( FUNCNAME )( long* event )                     \
-    {                                                                       \
-        SCOREP_IN_MEASUREMENT_INCREMENT();                                  \
-                                                                            \
-        const int event_gen_active = SCOREP_SHMEM_IS_EVENT_GEN_ON;          \
-                                                                            \
-        if ( event_gen_active )                                             \
-        {                                                                   \
-            SCOREP_SHMEM_EVENT_GEN_OFF();                                   \
-                                                                            \
+#define MANAGE_EVENT( FUNCNAME ) \
+    void \
+    FUNCNAME( long* event ) \
+    { \
+        SCOREP_IN_MEASUREMENT_INCREMENT(); \
+ \
+        const int event_gen_active = SCOREP_SHMEM_IS_EVENT_GEN_ON; \
+ \
+        if ( event_gen_active ) \
+        { \
+            SCOREP_SHMEM_EVENT_GEN_OFF(); \
+ \
             SCOREP_EnterWrappedRegion( scorep_shmem_region__ ## FUNCNAME ); \
-        }                                                                   \
-                                                                            \
-        SCOREP_ENTER_WRAPPED_REGION();                                      \
-        SCOREP_LIBWRAP_FUNC_CALL( FUNCNAME, ( event ) );                    \
-        SCOREP_EXIT_WRAPPED_REGION();                                       \
-                                                                            \
-        if ( event_gen_active )                                             \
-        {                                                                   \
-            SCOREP_ExitRegion( scorep_shmem_region__ ## FUNCNAME );         \
-                                                                            \
-            SCOREP_SHMEM_EVENT_GEN_ON();                                    \
-        }                                                                   \
-                                                                            \
-        SCOREP_IN_MEASUREMENT_DECREMENT();                                  \
+        } \
+ \
+        SCOREP_ENTER_WRAPPED_REGION(); \
+        p ## FUNCNAME( event ); \
+        SCOREP_EXIT_WRAPPED_REGION(); \
+ \
+        if ( event_gen_active ) \
+        { \
+            SCOREP_ExitRegion( scorep_shmem_region__ ## FUNCNAME ); \
+ \
+            SCOREP_SHMEM_EVENT_GEN_ON(); \
+        } \
+ \
+        SCOREP_IN_MEASUREMENT_DECREMENT(); \
     }
 
 /* *INDENT-ON* */
@@ -72,35 +72,35 @@ MANAGE_EVENT( shmem_wait_event )
 
 /* *INDENT-OFF* */
 
-#define TEST_EVENT( FUNCNAME )                                              \
-    int                                                                     \
-    SCOREP_LIBWRAP_FUNC_NAME( FUNCNAME )( long* event )                     \
-    {                                                                       \
-        SCOREP_IN_MEASUREMENT_INCREMENT();                                  \
-        int ret;                                                            \
-                                                                            \
-        const int event_gen_active = SCOREP_SHMEM_IS_EVENT_GEN_ON;          \
-                                                                            \
-        if ( event_gen_active )                                             \
-        {                                                                   \
-            SCOREP_SHMEM_EVENT_GEN_OFF();                                   \
-                                                                            \
+#define TEST_EVENT( FUNCNAME ) \
+    int \
+    FUNCNAME( long* event ) \
+    { \
+        SCOREP_IN_MEASUREMENT_INCREMENT(); \
+        int ret; \
+ \
+        const int event_gen_active = SCOREP_SHMEM_IS_EVENT_GEN_ON; \
+ \
+        if ( event_gen_active ) \
+        { \
+            SCOREP_SHMEM_EVENT_GEN_OFF(); \
+ \
             SCOREP_EnterWrappedRegion( scorep_shmem_region__ ## FUNCNAME ); \
-        }                                                                   \
-                                                                            \
-        SCOREP_ENTER_WRAPPED_REGION();                                      \
-        ret = SCOREP_LIBWRAP_FUNC_CALL( FUNCNAME, ( event ) );              \
-        SCOREP_EXIT_WRAPPED_REGION();                                       \
-                                                                            \
-        if ( event_gen_active )                                             \
-        {                                                                   \
-            SCOREP_ExitRegion( scorep_shmem_region__ ## FUNCNAME );         \
-                                                                            \
-            SCOREP_SHMEM_EVENT_GEN_ON();                                    \
-        }                                                                   \
-                                                                            \
-        SCOREP_IN_MEASUREMENT_DECREMENT();                                  \
-        return ret;                                                         \
+        } \
+ \
+        SCOREP_ENTER_WRAPPED_REGION(); \
+        ret = p ## FUNCNAME( event ); \
+        SCOREP_EXIT_WRAPPED_REGION(); \
+ \
+        if ( event_gen_active ) \
+        { \
+            SCOREP_ExitRegion( scorep_shmem_region__ ## FUNCNAME ); \
+ \
+            SCOREP_SHMEM_EVENT_GEN_ON(); \
+        } \
+ \
+        SCOREP_IN_MEASUREMENT_DECREMENT(); \
+        return ret; \
     }
 
 /* *INDENT-ON* */

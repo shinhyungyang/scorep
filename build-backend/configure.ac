@@ -225,9 +225,6 @@ AC_SCOREP_COND_HAVE([MPI_SUPPORT],
 AC_SCOREP_COND_HAVE([SHMEM_SUPPORT],
                     [test -f ../build-shmem/Makefile],
                     [Defined if SHMEM support is available.])
-AC_SCOREP_COND_HAVE([SHMEM_PROFILING_INTERFACE],
-                    [test -f ../build-shmem/scorep_have_pshmem_support.txt],
-                    [Defined if SHMEM Profiling Interface support is available.])
 
 AC_SCOREP_PACKAGE_AND_LIBRARY_VERSION
 

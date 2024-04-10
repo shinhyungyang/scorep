@@ -27,42 +27,42 @@
 
 /* *INDENT-OFF* */
 
-#define ELEMENTAL_PUT_ROUTINE( FUNCNAME, DATATYPE )                                 \
-    void                                                                            \
-    SCOREP_LIBWRAP_FUNC_NAME( FUNCNAME )( DATATYPE* addr,                           \
-                                          DATATYPE  value,                          \
-                                          int       pe )                            \
-    {                                                                               \
-        SCOREP_IN_MEASUREMENT_INCREMENT();                                          \
-                                                                                    \
-        const int event_gen_active = SCOREP_SHMEM_IS_EVENT_GEN_ON;                  \
-                                                                                    \
-        if ( event_gen_active )                                                     \
-        {                                                                           \
-            SCOREP_SHMEM_EVENT_GEN_OFF();                                           \
-                                                                                    \
-            SCOREP_EnterWrappedRegion( scorep_shmem_region__ ## FUNCNAME );         \
-            SCOREP_RmaPut( scorep_shmem_world_window_handle,                        \
-                           pe, sizeof( DATATYPE ),                                  \
-                           scorep_shmem_rma_op_matching_id );                       \
-            SCOREP_SHMEM_RMA_OP_COMPLETE_RECORD_ON();                               \
-        }                                                                           \
-                                                                                    \
-        SCOREP_ENTER_WRAPPED_REGION();                                              \
-        SCOREP_LIBWRAP_FUNC_CALL( FUNCNAME, ( addr, value, pe ) );                  \
-        SCOREP_EXIT_WRAPPED_REGION();                                               \
-                                                                                    \
-        if ( event_gen_active )                                                     \
-        {                                                                           \
-            SCOREP_RmaOpCompleteBlocking( scorep_shmem_world_window_handle,         \
-                                          scorep_shmem_rma_op_matching_id );        \
-            SCOREP_ExitRegion( scorep_shmem_region__ ## FUNCNAME );                 \
-                                                                                    \
-            SCOREP_SHMEM_EVENT_GEN_ON();                                            \
-        }                                                                           \
-                                                                                    \
-        SCOREP_IN_MEASUREMENT_DECREMENT();                                          \
-    }                                                                               \
+#define ELEMENTAL_PUT_ROUTINE( FUNCNAME, DATATYPE ) \
+    void \
+    FUNCNAME( DATATYPE* addr, \
+              DATATYPE  value, \
+              int       pe ) \
+    { \
+        SCOREP_IN_MEASUREMENT_INCREMENT(); \
+ \
+        const int event_gen_active = SCOREP_SHMEM_IS_EVENT_GEN_ON; \
+ \
+        if ( event_gen_active ) \
+        { \
+            SCOREP_SHMEM_EVENT_GEN_OFF(); \
+ \
+            SCOREP_EnterWrappedRegion( scorep_shmem_region__ ## FUNCNAME ); \
+            SCOREP_RmaPut( scorep_shmem_world_window_handle, \
+                           pe, sizeof( DATATYPE ), \
+                           scorep_shmem_rma_op_matching_id ); \
+            SCOREP_SHMEM_RMA_OP_COMPLETE_RECORD_ON(); \
+        } \
+ \
+        SCOREP_ENTER_WRAPPED_REGION(); \
+        p ## FUNCNAME( addr, value, pe ); \
+        SCOREP_EXIT_WRAPPED_REGION(); \
+ \
+        if ( event_gen_active ) \
+        { \
+            SCOREP_RmaOpCompleteBlocking( scorep_shmem_world_window_handle, \
+                                          scorep_shmem_rma_op_matching_id ); \
+            SCOREP_ExitRegion( scorep_shmem_region__ ## FUNCNAME ); \
+ \
+            SCOREP_SHMEM_EVENT_GEN_ON(); \
+        } \
+ \
+        SCOREP_IN_MEASUREMENT_DECREMENT(); \
+    } \
 
 /* *INDENT-ON* */
 
@@ -110,42 +110,42 @@ ELEMENTAL_PUT_ROUTINE( shmem_longdouble_p, long double )
 
 /* *INDENT-OFF* */
 
-#define BLOCK_DATA_PUT_ROUTINE( FUNCNAME, DATATYPE, NBYTES )                            \
-    void                                                                                \
-    SCOREP_LIBWRAP_FUNC_NAME( FUNCNAME )( DATATYPE*       target,                       \
-                                          const DATATYPE* source,                       \
-                                          size_t          nElems,                       \
-                                          int             pe )                          \
-    {                                                                                   \
-        SCOREP_IN_MEASUREMENT_INCREMENT();                                              \
-                                                                                        \
-        const int event_gen_active = SCOREP_SHMEM_IS_EVENT_GEN_ON;                      \
-                                                                                        \
-        if ( event_gen_active )                                                         \
-        {                                                                               \
-            SCOREP_SHMEM_EVENT_GEN_OFF();                                               \
-                                                                                        \
-            SCOREP_EnterWrappedRegion( scorep_shmem_region__ ## FUNCNAME );             \
-            SCOREP_RmaPut( scorep_shmem_world_window_handle,                            \
-                           pe, nElems * NBYTES,                                         \
-                           scorep_shmem_rma_op_matching_id );                           \
-            SCOREP_SHMEM_RMA_OP_COMPLETE_RECORD_ON();                                   \
-        }                                                                               \
-                                                                                        \
-        SCOREP_ENTER_WRAPPED_REGION();                                                  \
-        SCOREP_LIBWRAP_FUNC_CALL( FUNCNAME, ( target, source, nElems, pe ) );           \
-        SCOREP_EXIT_WRAPPED_REGION();                                                   \
-                                                                                        \
-        if ( event_gen_active )                                                         \
-        {                                                                               \
-            SCOREP_RmaOpCompleteBlocking( scorep_shmem_world_window_handle,             \
-                                          scorep_shmem_rma_op_matching_id );            \
-            SCOREP_ExitRegion( scorep_shmem_region__ ## FUNCNAME );                     \
-                                                                                        \
-            SCOREP_SHMEM_EVENT_GEN_ON();                                                \
-        }                                                                               \
-                                                                                        \
-        SCOREP_IN_MEASUREMENT_DECREMENT();                                              \
+#define BLOCK_DATA_PUT_ROUTINE( FUNCNAME, DATATYPE, NBYTES ) \
+    void \
+    FUNCNAME( DATATYPE *       target, \
+              const DATATYPE * source, \
+              size_t           nElems, \
+              int              pe ) \
+    { \
+        SCOREP_IN_MEASUREMENT_INCREMENT(); \
+ \
+        const int event_gen_active = SCOREP_SHMEM_IS_EVENT_GEN_ON; \
+ \
+        if ( event_gen_active ) \
+        { \
+            SCOREP_SHMEM_EVENT_GEN_OFF(); \
+ \
+            SCOREP_EnterWrappedRegion( scorep_shmem_region__ ## FUNCNAME ); \
+            SCOREP_RmaPut( scorep_shmem_world_window_handle, \
+                           pe, nElems * NBYTES, \
+                           scorep_shmem_rma_op_matching_id ); \
+            SCOREP_SHMEM_RMA_OP_COMPLETE_RECORD_ON(); \
+        } \
+ \
+        SCOREP_ENTER_WRAPPED_REGION(); \
+        p ## FUNCNAME( target, source, nElems, pe ); \
+        SCOREP_EXIT_WRAPPED_REGION(); \
+ \
+        if ( event_gen_active ) \
+        { \
+            SCOREP_RmaOpCompleteBlocking( scorep_shmem_world_window_handle, \
+                                          scorep_shmem_rma_op_matching_id ); \
+            SCOREP_ExitRegion( scorep_shmem_region__ ## FUNCNAME ); \
+ \
+            SCOREP_SHMEM_EVENT_GEN_ON(); \
+        } \
+ \
+        SCOREP_IN_MEASUREMENT_DECREMENT(); \
     }
 
 /* *INDENT-ON* */
@@ -219,44 +219,44 @@ BLOCK_DATA_PUT_ROUTINE( shmem_putmem,         void,        1 )
 
 /* *INDENT-OFF* */
 
-#define STRIDED_PUT_ROUTINE( FUNCNAME, DATATYPE, NBYTES )                                       \
-    void                                                                                        \
-    SCOREP_LIBWRAP_FUNC_NAME( FUNCNAME )( DATATYPE*       target,                               \
-                                          const DATATYPE* source,                               \
-                                          ptrdiff_t       tst,                                  \
-                                          ptrdiff_t       sst,                                  \
-                                          size_t          nElems,                               \
-                                          int             pe )                                  \
-    {                                                                                           \
-        SCOREP_IN_MEASUREMENT_INCREMENT();                                                      \
-                                                                                                \
-        const int event_gen_active = SCOREP_SHMEM_IS_EVENT_GEN_ON;                              \
-                                                                                                \
-        if ( event_gen_active )                                                                 \
-        {                                                                                       \
-            SCOREP_SHMEM_EVENT_GEN_OFF();                                                       \
-                                                                                                \
-            SCOREP_EnterWrappedRegion( scorep_shmem_region__ ## FUNCNAME );                     \
-            SCOREP_RmaPut( scorep_shmem_world_window_handle,                                    \
-                           pe, nElems * NBYTES,                                                 \
-                           scorep_shmem_rma_op_matching_id );                                   \
-            SCOREP_SHMEM_RMA_OP_COMPLETE_RECORD_ON();                                           \
-        }                                                                                       \
-                                                                                                \
-        SCOREP_ENTER_WRAPPED_REGION();                                                          \
-        SCOREP_LIBWRAP_FUNC_CALL( FUNCNAME, ( target, source, tst, sst, nElems, pe ) );         \
-        SCOREP_EXIT_WRAPPED_REGION();                                                           \
-                                                                                                \
-        if ( event_gen_active )                                                                 \
-        {                                                                                       \
-            SCOREP_RmaOpCompleteBlocking( scorep_shmem_world_window_handle,                     \
-                                          scorep_shmem_rma_op_matching_id );                    \
-            SCOREP_ExitRegion( scorep_shmem_region__ ## FUNCNAME );                             \
-                                                                                                \
-            SCOREP_SHMEM_EVENT_GEN_ON();                                                        \
-        }                                                                                       \
-                                                                                                \
-        SCOREP_IN_MEASUREMENT_DECREMENT();                                                      \
+#define STRIDED_PUT_ROUTINE( FUNCNAME, DATATYPE, NBYTES ) \
+    void \
+    FUNCNAME( DATATYPE *       target, \
+              const DATATYPE * source, \
+              ptrdiff_t        tst, \
+              ptrdiff_t        sst, \
+              size_t           nElems, \
+              int              pe ) \
+    { \
+        SCOREP_IN_MEASUREMENT_INCREMENT(); \
+ \
+        const int event_gen_active = SCOREP_SHMEM_IS_EVENT_GEN_ON; \
+ \
+        if ( event_gen_active ) \
+        { \
+            SCOREP_SHMEM_EVENT_GEN_OFF(); \
+ \
+            SCOREP_EnterWrappedRegion( scorep_shmem_region__ ## FUNCNAME ); \
+            SCOREP_RmaPut( scorep_shmem_world_window_handle, \
+                           pe, nElems * NBYTES, \
+                           scorep_shmem_rma_op_matching_id ); \
+            SCOREP_SHMEM_RMA_OP_COMPLETE_RECORD_ON(); \
+        } \
+ \
+        SCOREP_ENTER_WRAPPED_REGION(); \
+        p ## FUNCNAME( target, source, tst, sst, nElems, pe ); \
+        SCOREP_EXIT_WRAPPED_REGION(); \
+ \
+        if ( event_gen_active ) \
+        { \
+            SCOREP_RmaOpCompleteBlocking( scorep_shmem_world_window_handle, \
+                                          scorep_shmem_rma_op_matching_id ); \
+            SCOREP_ExitRegion( scorep_shmem_region__ ## FUNCNAME ); \
+ \
+            SCOREP_SHMEM_EVENT_GEN_ON(); \
+        } \
+ \
+        SCOREP_IN_MEASUREMENT_DECREMENT(); \
     }
 
 /* *INDENT-ON* */
@@ -322,42 +322,42 @@ STRIDED_PUT_ROUTINE( shmem_iput128,         void,        16 )
 
 /* *INDENT-OFF* */
 
-#define ELEMENTAL_GET_ROUTINE( FUNCNAME, DATATYPE, DATATYPE_IN )                    \
-    DATATYPE                                                                        \
-    SCOREP_LIBWRAP_FUNC_NAME( FUNCNAME )( DATATYPE_IN* addr,                        \
-                                          int          pe )                         \
-    {                                                                               \
-        SCOREP_IN_MEASUREMENT_INCREMENT();                                          \
-        DATATYPE ret;                                                               \
-                                                                                    \
-        const int event_gen_active = SCOREP_SHMEM_IS_EVENT_GEN_ON;                  \
-                                                                                    \
-        if ( event_gen_active )                                                     \
-        {                                                                           \
-            SCOREP_SHMEM_EVENT_GEN_OFF();                                           \
-                                                                                    \
-            SCOREP_EnterWrappedRegion( scorep_shmem_region__ ## FUNCNAME );         \
-            SCOREP_RmaGet( scorep_shmem_world_window_handle,                        \
-                           pe, sizeof( DATATYPE ),                                  \
-                           scorep_shmem_rma_op_matching_id );                       \
-            SCOREP_SHMEM_RMA_OP_COMPLETE_RECORD_ON();                               \
-        }                                                                           \
-                                                                                    \
-        SCOREP_ENTER_WRAPPED_REGION();                                              \
-        ret = SCOREP_LIBWRAP_FUNC_CALL( FUNCNAME, ( addr, pe ) );                   \
-        SCOREP_EXIT_WRAPPED_REGION();                                               \
-                                                                                    \
-        if ( event_gen_active )                                                     \
-        {                                                                           \
-            SCOREP_RmaOpCompleteBlocking( scorep_shmem_world_window_handle,         \
-                                          scorep_shmem_rma_op_matching_id );        \
-            SCOREP_ExitRegion( scorep_shmem_region__ ## FUNCNAME );                 \
-                                                                                    \
-            SCOREP_SHMEM_EVENT_GEN_ON();                                            \
-        }                                                                           \
-                                                                                    \
-        SCOREP_IN_MEASUREMENT_DECREMENT();                                          \
-        return ret;                                                                 \
+#define ELEMENTAL_GET_ROUTINE( FUNCNAME, DATATYPE, DATATYPE_IN ) \
+    DATATYPE \
+    FUNCNAME( DATATYPE_IN * addr, \
+              int           pe ) \
+    { \
+        SCOREP_IN_MEASUREMENT_INCREMENT(); \
+        DATATYPE ret; \
+ \
+        const int event_gen_active = SCOREP_SHMEM_IS_EVENT_GEN_ON; \
+ \
+        if ( event_gen_active ) \
+        { \
+            SCOREP_SHMEM_EVENT_GEN_OFF(); \
+ \
+            SCOREP_EnterWrappedRegion( scorep_shmem_region__ ## FUNCNAME ); \
+            SCOREP_RmaGet( scorep_shmem_world_window_handle, \
+                           pe, sizeof( DATATYPE ), \
+                           scorep_shmem_rma_op_matching_id ); \
+            SCOREP_SHMEM_RMA_OP_COMPLETE_RECORD_ON(); \
+        } \
+ \
+        SCOREP_ENTER_WRAPPED_REGION(); \
+        ret = p ## FUNCNAME( addr, pe ); \
+        SCOREP_EXIT_WRAPPED_REGION(); \
+ \
+        if ( event_gen_active ) \
+        { \
+            SCOREP_RmaOpCompleteBlocking( scorep_shmem_world_window_handle, \
+                                          scorep_shmem_rma_op_matching_id ); \
+            SCOREP_ExitRegion( scorep_shmem_region__ ## FUNCNAME ); \
+ \
+            SCOREP_SHMEM_EVENT_GEN_ON(); \
+        } \
+ \
+        SCOREP_IN_MEASUREMENT_DECREMENT(); \
+        return ret; \
     }
 
 /* *INDENT-ON* */
@@ -439,42 +439,42 @@ ELEMENTAL_GET_ROUTINE( shmem_longdouble_g, long double, const long double )
 
 /* *INDENT-OFF* */
 
-#define BLOCK_DATA_GET_ROUTINE( FUNCNAME, DATATYPE, NBYTES )                            \
-    void                                                                                \
-    SCOREP_LIBWRAP_FUNC_NAME( FUNCNAME )( DATATYPE*       target,                       \
-                                          const DATATYPE* source,                       \
-                                          size_t          nElems,                       \
-                                          int             pe )                          \
-    {                                                                                   \
-        SCOREP_IN_MEASUREMENT_INCREMENT();                                              \
-                                                                                        \
-        const int event_gen_active = SCOREP_SHMEM_IS_EVENT_GEN_ON;                      \
-                                                                                        \
-        if ( event_gen_active )                                                         \
-        {                                                                               \
-            SCOREP_SHMEM_EVENT_GEN_OFF();                                               \
-                                                                                        \
-            SCOREP_EnterWrappedRegion( scorep_shmem_region__ ## FUNCNAME );             \
-            SCOREP_RmaGet( scorep_shmem_world_window_handle,                            \
-                           pe, nElems * NBYTES,                                         \
-                           scorep_shmem_rma_op_matching_id );                           \
-            SCOREP_SHMEM_RMA_OP_COMPLETE_RECORD_ON();                                   \
-        }                                                                               \
-                                                                                        \
-        SCOREP_ENTER_WRAPPED_REGION();                                                  \
-        SCOREP_LIBWRAP_FUNC_CALL( FUNCNAME, ( target, source, nElems, pe ) );           \
-        SCOREP_EXIT_WRAPPED_REGION();                                                   \
-                                                                                        \
-        if ( event_gen_active )                                                         \
-        {                                                                               \
-            SCOREP_RmaOpCompleteBlocking( scorep_shmem_world_window_handle,             \
-                                          scorep_shmem_rma_op_matching_id );            \
-            SCOREP_ExitRegion( scorep_shmem_region__ ## FUNCNAME );                     \
-                                                                                        \
-            SCOREP_SHMEM_EVENT_GEN_ON();                                                \
-        }                                                                               \
-                                                                                        \
-        SCOREP_IN_MEASUREMENT_DECREMENT();                                              \
+#define BLOCK_DATA_GET_ROUTINE( FUNCNAME, DATATYPE, NBYTES ) \
+    void \
+    FUNCNAME( DATATYPE *       target, \
+              const DATATYPE * source, \
+              size_t           nElems, \
+              int              pe ) \
+    { \
+        SCOREP_IN_MEASUREMENT_INCREMENT(); \
+ \
+        const int event_gen_active = SCOREP_SHMEM_IS_EVENT_GEN_ON; \
+ \
+        if ( event_gen_active ) \
+        { \
+            SCOREP_SHMEM_EVENT_GEN_OFF(); \
+ \
+            SCOREP_EnterWrappedRegion( scorep_shmem_region__ ## FUNCNAME ); \
+            SCOREP_RmaGet( scorep_shmem_world_window_handle, \
+                           pe, nElems * NBYTES, \
+                           scorep_shmem_rma_op_matching_id ); \
+            SCOREP_SHMEM_RMA_OP_COMPLETE_RECORD_ON(); \
+        } \
+ \
+        SCOREP_ENTER_WRAPPED_REGION(); \
+        p ## FUNCNAME( target, source, nElems, pe ); \
+        SCOREP_EXIT_WRAPPED_REGION(); \
+ \
+        if ( event_gen_active ) \
+        { \
+            SCOREP_RmaOpCompleteBlocking( scorep_shmem_world_window_handle, \
+                                          scorep_shmem_rma_op_matching_id ); \
+            SCOREP_ExitRegion( scorep_shmem_region__ ## FUNCNAME ); \
+ \
+            SCOREP_SHMEM_EVENT_GEN_ON(); \
+        } \
+ \
+        SCOREP_IN_MEASUREMENT_DECREMENT(); \
     }
 
 /* *INDENT-ON* */
@@ -548,44 +548,44 @@ BLOCK_DATA_GET_ROUTINE( shmem_getmem,         void,        1 )
 
 /* *INDENT-OFF* */
 
-#define STRIDED_GET_ROUTINE( FUNCNAME, DATATYPE, NBYTES )                                       \
-    void                                                                                        \
-    SCOREP_LIBWRAP_FUNC_NAME( FUNCNAME )( DATATYPE*       target,                               \
-                                          const DATATYPE* source,                               \
-                                          ptrdiff_t       tst,                                  \
-                                          ptrdiff_t       sst,                                  \
-                                          size_t          nElems,                               \
-                                          int             pe )                                  \
-    {                                                                                           \
-        SCOREP_IN_MEASUREMENT_INCREMENT();                                                      \
-                                                                                                \
-        const int event_gen_active = SCOREP_SHMEM_IS_EVENT_GEN_ON;                              \
-                                                                                                \
-        if ( event_gen_active )                                                                 \
-        {                                                                                       \
-            SCOREP_SHMEM_EVENT_GEN_OFF();                                                       \
-                                                                                                \
-            SCOREP_EnterWrappedRegion( scorep_shmem_region__ ## FUNCNAME );                     \
-            SCOREP_RmaGet( scorep_shmem_world_window_handle,                                    \
-                           pe, nElems * NBYTES,                                                 \
-                           scorep_shmem_rma_op_matching_id );                                   \
-            SCOREP_SHMEM_RMA_OP_COMPLETE_RECORD_ON();                                           \
-        }                                                                                       \
-                                                                                                \
-        SCOREP_ENTER_WRAPPED_REGION();                                                          \
-        SCOREP_LIBWRAP_FUNC_CALL( FUNCNAME, ( target, source, tst, sst, nElems, pe ) );         \
-        SCOREP_EXIT_WRAPPED_REGION();                                                           \
-                                                                                                \
-        if ( event_gen_active )                                                                 \
-        {                                                                                       \
-            SCOREP_RmaOpCompleteBlocking( scorep_shmem_world_window_handle,                     \
-                                          scorep_shmem_rma_op_matching_id );                    \
-            SCOREP_ExitRegion( scorep_shmem_region__ ## FUNCNAME );                             \
-                                                                                                \
-            SCOREP_SHMEM_EVENT_GEN_ON();                                                        \
-        }                                                                                       \
-                                                                                                \
-        SCOREP_IN_MEASUREMENT_DECREMENT();                                                      \
+#define STRIDED_GET_ROUTINE( FUNCNAME, DATATYPE, NBYTES ) \
+    void \
+    FUNCNAME( DATATYPE *       target, \
+              const DATATYPE * source, \
+              ptrdiff_t        tst, \
+              ptrdiff_t        sst, \
+              size_t           nElems, \
+              int              pe ) \
+    { \
+        SCOREP_IN_MEASUREMENT_INCREMENT(); \
+ \
+        const int event_gen_active = SCOREP_SHMEM_IS_EVENT_GEN_ON; \
+ \
+        if ( event_gen_active ) \
+        { \
+            SCOREP_SHMEM_EVENT_GEN_OFF(); \
+ \
+            SCOREP_EnterWrappedRegion( scorep_shmem_region__ ## FUNCNAME ); \
+            SCOREP_RmaGet( scorep_shmem_world_window_handle, \
+                           pe, nElems * NBYTES, \
+                           scorep_shmem_rma_op_matching_id ); \
+            SCOREP_SHMEM_RMA_OP_COMPLETE_RECORD_ON(); \
+        } \
+ \
+        SCOREP_ENTER_WRAPPED_REGION(); \
+        p ## FUNCNAME( target, source, tst, sst, nElems, pe ); \
+        SCOREP_EXIT_WRAPPED_REGION(); \
+ \
+        if ( event_gen_active ) \
+        { \
+            SCOREP_RmaOpCompleteBlocking( scorep_shmem_world_window_handle, \
+                                          scorep_shmem_rma_op_matching_id ); \
+            SCOREP_ExitRegion( scorep_shmem_region__ ## FUNCNAME ); \
+ \
+            SCOREP_SHMEM_EVENT_GEN_ON(); \
+        } \
+ \
+        SCOREP_IN_MEASUREMENT_DECREMENT(); \
     }
 
 /* *INDENT-ON* */

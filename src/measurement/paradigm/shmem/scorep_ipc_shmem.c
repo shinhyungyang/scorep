@@ -1,7 +1,7 @@
 /*
  * This file is part of the Score-P software (http://www.score-p.org)
  *
- * Copyright (c) 2014,
+ * Copyright (c) 2014, 2025,
  * Technische Universitaet Dresden, Germany
  *
  * Copyright (c) 2017,
@@ -33,11 +33,6 @@
 #include <scorep_shmem_internal.h>
 #include <stdlib.h>
 #include <string.h>
-
-
-#ifndef CALL_SHMEM
-#error Macro 'CALL_SHMEM' is not defined
-#endif
 
 
 #define CEIL( a, b )       ( ( ( a ) / ( b ) ) + ( ( ( a ) % ( b ) ) > 0 ? 1 : 0 ) )
@@ -114,7 +109,7 @@ SCOREP_Ipc_Init( void )
     /* Duplicate 'comm world' */
     scorep_ipc_group_world.pe_start      = 0;
     scorep_ipc_group_world.log_pe_stride = 0;
-    scorep_ipc_group_world.pe_size       = XCALL_SHMEM( SCOREP_SHMEM_N_PES )();
+    scorep_ipc_group_world.pe_size       = pshmem_n_pes();
     scorep_ipc_group_world.is_group_set  = 1;
 
     /* Assign data types */
@@ -147,46 +142,46 @@ SCOREP_Ipc_Init( void )
 #undef SCOREP_SHMEM_DOUBLE
 
     /* Allocate memory in symmetric heap */
-    symmetric_buffer_a = CALL_SHMEM( shmalloc )( BUFFER_SIZE );
+    symmetric_buffer_a = pshmalloc( BUFFER_SIZE );
     UTILS_ASSERT( symmetric_buffer_a );
 
-    symmetric_buffer_b = CALL_SHMEM( shmalloc )( BUFFER_SIZE );
+    symmetric_buffer_b = pshmalloc( BUFFER_SIZE );
     UTILS_ASSERT( symmetric_buffer_b );
 
-    transfer_status = ( int* )CALL_SHMEM( shmalloc )( sizeof( int ) );
+    transfer_status = ( int* )pshmalloc( sizeof( int ) );
     UTILS_ASSERT( transfer_status );
     *transfer_status = INVALID_TRANSFER_STATE;
 
-    current_ready_pe = ( int* )CALL_SHMEM( shmalloc )( sizeof( int ) );
+    current_ready_pe = ( int* )pshmalloc( sizeof( int ) );
     UTILS_ASSERT( current_ready_pe );
     *current_ready_pe = -1;
 
-    transfer_counter = ( int* )CALL_SHMEM( shmalloc )( scorep_ipc_group_world.pe_size * sizeof( int ) );
+    transfer_counter = ( int* )pshmalloc( scorep_ipc_group_world.pe_size * sizeof( int ) );
     UTILS_ASSERT( transfer_counter );
     memset( transfer_counter, 0, scorep_ipc_group_world.pe_size * sizeof( int ) );
 
-    barrier_psync = CALL_SHMEM( shmalloc )( _SHMEM_BARRIER_SYNC_SIZE * sizeof( long ) );
+    barrier_psync = pshmalloc( _SHMEM_BARRIER_SYNC_SIZE * sizeof( long ) );
     UTILS_ASSERT( barrier_psync );
     for ( uint32_t i = 0; i < _SHMEM_BARRIER_SYNC_SIZE; i++ )
     {
         barrier_psync[ i ] = _SHMEM_SYNC_VALUE;
     }
 
-    bcast_psync = CALL_SHMEM( shmalloc )( _SHMEM_BCAST_SYNC_SIZE * sizeof( long ) );
+    bcast_psync = pshmalloc( _SHMEM_BCAST_SYNC_SIZE * sizeof( long ) );
     UTILS_ASSERT( bcast_psync );
     for ( uint32_t i = 0; i < _SHMEM_BCAST_SYNC_SIZE; i++ )
     {
         bcast_psync[ i ] = _SHMEM_SYNC_VALUE;
     }
 
-    collect_psync = CALL_SHMEM( shmalloc )( _SHMEM_COLLECT_SYNC_SIZE * sizeof( long ) );
+    collect_psync = pshmalloc( _SHMEM_COLLECT_SYNC_SIZE * sizeof( long ) );
     UTILS_ASSERT( collect_psync );
     for ( uint32_t i = 0; i < _SHMEM_COLLECT_SYNC_SIZE; i++ )
     {
         collect_psync[ i ] = _SHMEM_SYNC_VALUE;
     }
 
-    reduce_psync = CALL_SHMEM( shmalloc )( _SHMEM_REDUCE_SYNC_SIZE * sizeof( long ) );
+    reduce_psync = pshmalloc( _SHMEM_REDUCE_SYNC_SIZE * sizeof( long ) );
     UTILS_ASSERT( reduce_psync );
     for ( uint32_t i = 0; i < _SHMEM_REDUCE_SYNC_SIZE; i++ )
     {
@@ -194,10 +189,10 @@ SCOREP_Ipc_Init( void )
     }
 
     current_pwork_size = _SHMEM_REDUCE_MIN_WRKDATA_SIZE * sizeof( double );
-    pwork              = CALL_SHMEM( shmalloc )( current_pwork_size );
+    pwork              = pshmalloc( current_pwork_size );
     UTILS_ASSERT( pwork );
 
-    CALL_SHMEM( shmem_barrier_all )();
+    pshmem_barrier_all();
 }
 
 
@@ -205,46 +200,46 @@ void
 SCOREP_Ipc_Finalize( void )
 {
     UTILS_ASSERT( symmetric_buffer_a );
-    CALL_SHMEM( shfree )( symmetric_buffer_a );
+    pshfree( symmetric_buffer_a );
     symmetric_buffer_a = NULL;
 
     UTILS_ASSERT( symmetric_buffer_b );
-    CALL_SHMEM( shfree )( symmetric_buffer_b );
+    pshfree( symmetric_buffer_b );
     symmetric_buffer_b = NULL;
 
     UTILS_ASSERT( transfer_status );
-    CALL_SHMEM( shfree )( transfer_status );
+    pshfree( transfer_status );
     transfer_status = NULL;
 
     UTILS_ASSERT( current_ready_pe );
-    CALL_SHMEM( shfree )( current_ready_pe );
+    pshfree( current_ready_pe );
     current_ready_pe = NULL;
 
     UTILS_ASSERT( transfer_counter );
-    CALL_SHMEM( shfree )( transfer_counter );
+    pshfree( transfer_counter );
     transfer_counter = NULL;
 
     UTILS_ASSERT( barrier_psync );
-    CALL_SHMEM( shfree )( barrier_psync );
+    pshfree( barrier_psync );
     barrier_psync = NULL;
 
     UTILS_ASSERT( bcast_psync );
-    CALL_SHMEM( shfree )( bcast_psync );
+    pshfree( bcast_psync );
     bcast_psync = NULL;
 
     UTILS_ASSERT( collect_psync );
-    CALL_SHMEM( shfree )( collect_psync );
+    pshfree( collect_psync );
     collect_psync = NULL;
 
     UTILS_ASSERT( reduce_psync );
-    CALL_SHMEM( shfree )( reduce_psync );
+    pshfree( reduce_psync );
     reduce_psync = NULL;
 
     UTILS_ASSERT( pwork );
-    CALL_SHMEM( shfree )( pwork );
+    pshfree( pwork );
     pwork = NULL;
 
-    CALL_SHMEM( shmem_barrier_all )();
+    pshmem_barrier_all();
 }
 
 
@@ -265,7 +260,7 @@ SCOREP_IpcGroup_GetSize( SCOREP_Ipc_Group* group )
 int
 SCOREP_IpcGroup_GetRank( SCOREP_Ipc_Group* group )
 {
-    return XCALL_SHMEM( SCOREP_SHMEM_MY_PE )();
+    return pshmem_my_pe();
 }
 
 
@@ -291,33 +286,33 @@ SCOREP_IpcGroup_Send( SCOREP_Ipc_Group*   group,
     int rank = SCOREP_Ipc_GetRank();
     do
     {
-        remote_transfer_counter = CALL_SHMEM( shmem_int_g )( &( transfer_counter[ rank ] ), dest );
+        remote_transfer_counter = pshmem_int_g( &( transfer_counter[ rank ] ), dest );
     }
     while ( remote_transfer_counter != ( ( volatile int* )transfer_counter )[ dest ] );
 
     /* Wait until receiver is ready */
-    CALL_SHMEM( shmem_int_wait_until )( transfer_status, SHMEM_CMP_EQ, TRANSFER_START );
+    pshmem_int_wait_until( transfer_status, SHMEM_CMP_EQ, TRANSFER_START );
 
     /* Use shmem_quiet operation to ensure ordering of put operations */
-    CALL_SHMEM( shmem_quiet )();
+    pshmem_quiet();
 
     /* Send operation */
-    CALL_SHMEM( shmem_putmem )( symmetric_buffer_a,
-                                buf,
-                                count * sizeof_ipc_datatypes[ datatype ],
-                                dest );
+    pshmem_putmem( symmetric_buffer_a,
+                   buf,
+                   count * sizeof_ipc_datatypes[ datatype ],
+                   dest );
 
     /* Use shmem_quiet operation to ensure ordering of put operations */
-    CALL_SHMEM( shmem_quiet )();
+    pshmem_quiet();
 
     /* Set transfer status of sender to completed */
-    CALL_SHMEM( shmem_int_p )( transfer_status, TRANSFER_SENDER_COMPLETE, dest );
+    pshmem_int_p( transfer_status, TRANSFER_SENDER_COMPLETE, dest );
 
     /* Use shmem_quiet operation to ensure ordering of put operations */
-    CALL_SHMEM( shmem_quiet )();
+    pshmem_quiet();
 
     /* Wait until receiver has finished */
-    CALL_SHMEM( shmem_int_wait_until )( transfer_status, SHMEM_CMP_EQ, TRANSFER_RECEIVER_COMPLETE );
+    pshmem_int_wait_until( transfer_status, SHMEM_CMP_EQ, TRANSFER_RECEIVER_COMPLETE );
 
     /* Reset status flags */
     *transfer_status = INVALID_TRANSFER_STATE;
@@ -344,30 +339,30 @@ SCOREP_IpcGroup_Recv( SCOREP_Ipc_Group*   group,
     int rank = SCOREP_Ipc_GetRank();
     do
     {
-        remote_transfer_counter = CALL_SHMEM( shmem_int_g )( &transfer_counter[ rank ], source );
+        remote_transfer_counter = pshmem_int_g( &transfer_counter[ rank ], source );
     }
     while ( remote_transfer_counter != ( ( volatile int* )transfer_counter )[ source ] );
 
     /* Use shmem_quiet operation to ensure ordering of put operations */
-    CALL_SHMEM( shmem_quiet )();
+    pshmem_quiet();
 
     /* Signal start of data transfer */
-    CALL_SHMEM( shmem_int_p )( transfer_status, TRANSFER_START, source );
+    pshmem_int_p( transfer_status, TRANSFER_START, source );
 
     /* Use shmem_quiet operation to ensure ordering of put operations */
-    CALL_SHMEM( shmem_quiet )();
+    pshmem_quiet();
 
     /* Wait until sender has finished data transfer */
-    CALL_SHMEM( shmem_int_wait_until )( transfer_status, SHMEM_CMP_EQ, TRANSFER_SENDER_COMPLETE );
+    pshmem_int_wait_until( transfer_status, SHMEM_CMP_EQ, TRANSFER_SENDER_COMPLETE );
 
     /* Copy symmetric memory block to buffer */
     memcpy( buf, symmetric_buffer_a, count * sizeof_ipc_datatypes[ datatype ] );
 
     /* Signal end of data transfer */
-    CALL_SHMEM( shmem_int_p )( transfer_status, TRANSFER_RECEIVER_COMPLETE, source );
+    pshmem_int_p( transfer_status, TRANSFER_RECEIVER_COMPLETE, source );
 
     /* Use shmem_quiet operation to ensure ordering of put operations */
-    CALL_SHMEM( shmem_quiet )();
+    pshmem_quiet();
 
     /* Reset status flags */
     *transfer_status = INVALID_TRANSFER_STATE;
@@ -385,7 +380,7 @@ SCOREP_IpcGroup_Barrier( SCOREP_Ipc_Group* group )
 
     UTILS_DEBUG_ENTRY( "(%d, %d, %d)", start, stride, size );
 
-    CALL_SHMEM( shmem_barrier )( start, stride, size, barrier_psync );
+    pshmem_barrier( start, stride, size, barrier_psync );
 
     return 0;
 }
@@ -423,7 +418,7 @@ SCOREP_IpcGroup_Bcast( SCOREP_Ipc_Group*   group,
         memcpy( symmetric_buffer_a, buf, count * sizeof_ipc_datatypes[ datatype ] );
     }
 
-    CALL_SHMEM( shmem_barrier )( start, stride, size, barrier_psync );
+    pshmem_barrier( start, stride, size, barrier_psync );
 
     /* Broadcast operation */
     int num_elements_sent;
@@ -433,39 +428,39 @@ SCOREP_IpcGroup_Bcast( SCOREP_Ipc_Group*   group,
         case SCOREP_IPC_CHAR:
         case SCOREP_IPC_UNSIGNED_CHAR:
             num_elements_sent = CEIL( count, 4 );
-            CALL_SHMEM( shmem_broadcast32 )( symmetric_buffer_a,
-                                             symmetric_buffer_a,
-                                             num_elements_sent,
-                                             root, start, stride, size,
-                                             bcast_psync );
+            pshmem_broadcast32( symmetric_buffer_a,
+                                symmetric_buffer_a,
+                                num_elements_sent,
+                                root, start, stride, size,
+                                bcast_psync );
             break;
 
         case SCOREP_IPC_INT:
         case SCOREP_IPC_UNSIGNED:
         case SCOREP_IPC_INT32_T:
         case SCOREP_IPC_UINT32_T:
-            CALL_SHMEM( shmem_broadcast32 )( symmetric_buffer_a,
-                                             symmetric_buffer_a,
-                                             count,
-                                             root, start, stride, size,
-                                             bcast_psync );
+            pshmem_broadcast32( symmetric_buffer_a,
+                                symmetric_buffer_a,
+                                count,
+                                root, start, stride, size,
+                                bcast_psync );
             break;
 
         case SCOREP_IPC_INT64_T:
         case SCOREP_IPC_UINT64_T:
         case SCOREP_IPC_DOUBLE:
-            CALL_SHMEM( shmem_broadcast64 )( symmetric_buffer_a,
-                                             symmetric_buffer_a,
-                                             count,
-                                             root, start, stride, size,
-                                             bcast_psync );
+            pshmem_broadcast64( symmetric_buffer_a,
+                                symmetric_buffer_a,
+                                count,
+                                root, start, stride, size,
+                                bcast_psync );
             break;
 
         default:
             UTILS_BUG( "Bcast: Invalid IPC datatype: %d", datatype );
     }
 
-    CALL_SHMEM( shmem_barrier )( start, stride, size, barrier_psync );
+    pshmem_barrier( start, stride, size, barrier_psync );
 
     if ( root != rank )
     {
@@ -473,7 +468,7 @@ SCOREP_IpcGroup_Bcast( SCOREP_Ipc_Group*   group,
         memcpy( buf, symmetric_buffer_a, count * sizeof_ipc_datatypes[ datatype ] );
     }
 
-    CALL_SHMEM( shmem_barrier )( start, stride, size, barrier_psync );
+    pshmem_barrier( start, stride, size, barrier_psync );
 
     return 0;
 }
@@ -509,7 +504,7 @@ SCOREP_IpcGroup_Gather( SCOREP_Ipc_Group*   group,
     /* Copy buffer to symmetric memory block */
     memcpy( symmetric_buffer_a, sendbuf, count * sizeof_ipc_datatypes[ datatype ] );
 
-    CALL_SHMEM( shmem_barrier )( start, stride, size, barrier_psync );
+    pshmem_barrier( start, stride, size, barrier_psync );
 
     /* Broadcast operation */
     int num_elements_sent;
@@ -519,39 +514,39 @@ SCOREP_IpcGroup_Gather( SCOREP_Ipc_Group*   group,
         case SCOREP_IPC_CHAR:
         case SCOREP_IPC_UNSIGNED_CHAR:
             num_elements_sent = CEIL( count, 4 );
-            CALL_SHMEM( shmem_fcollect32 )( symmetric_buffer_b,
-                                            symmetric_buffer_a,
-                                            num_elements_sent,
-                                            start, stride, size,
-                                            collect_psync );
+            pshmem_fcollect32( symmetric_buffer_b,
+                               symmetric_buffer_a,
+                               num_elements_sent,
+                               start, stride, size,
+                               collect_psync );
             break;
 
         case SCOREP_IPC_INT:
         case SCOREP_IPC_UNSIGNED:
         case SCOREP_IPC_INT32_T:
         case SCOREP_IPC_UINT32_T:
-            CALL_SHMEM( shmem_fcollect32 )( symmetric_buffer_b,
-                                            symmetric_buffer_a,
-                                            count,
-                                            start, stride, size,
-                                            collect_psync );
+            pshmem_fcollect32( symmetric_buffer_b,
+                               symmetric_buffer_a,
+                               count,
+                               start, stride, size,
+                               collect_psync );
             break;
 
         case SCOREP_IPC_INT64_T:
         case SCOREP_IPC_UINT64_T:
         case SCOREP_IPC_DOUBLE:
-            CALL_SHMEM( shmem_fcollect64 )( symmetric_buffer_b,
-                                            symmetric_buffer_a,
-                                            count,
-                                            start, stride, size,
-                                            collect_psync );
+            pshmem_fcollect64( symmetric_buffer_b,
+                               symmetric_buffer_a,
+                               count,
+                               start, stride, size,
+                               collect_psync );
             break;
 
         default:
             UTILS_BUG( "Gather: Invalid IPC datatype: %d", datatype );
     }
 
-    CALL_SHMEM( shmem_barrier )( start, stride, size, barrier_psync );
+    pshmem_barrier( start, stride, size, barrier_psync );
 
     /* Copy symmetric memory block to buffer */
     if ( rank == root )
@@ -575,7 +570,7 @@ SCOREP_IpcGroup_Gather( SCOREP_Ipc_Group*   group,
         }
     }
 
-    CALL_SHMEM( shmem_barrier )( start, stride, size, barrier_psync );
+    pshmem_barrier( start, stride, size, barrier_psync );
 
     return 0;
 }
@@ -652,7 +647,7 @@ SCOREP_IpcGroup_Gatherv( SCOREP_Ipc_Group*   group,
     memset( ( char* )symmetric_buffer_a + sendcount * sizeof_ipc_datatypes[ datatype ],
             0, sendcount_extra * sizeof_ipc_datatypes[ datatype ] );
 
-    CALL_SHMEM( shmem_barrier )( start, stride, size, barrier_psync );
+    pshmem_barrier( start, stride, size, barrier_psync );
 
     /* Broadcast operation */
     int num_elements_sent;
@@ -662,39 +657,39 @@ SCOREP_IpcGroup_Gatherv( SCOREP_Ipc_Group*   group,
         case SCOREP_IPC_CHAR:
         case SCOREP_IPC_UNSIGNED_CHAR:
             num_elements_sent = CEIL( sendcount + sendcount_extra, 4 );
-            CALL_SHMEM( shmem_collect32 )( symmetric_buffer_b,
-                                           symmetric_buffer_a,
-                                           num_elements_sent,
-                                           start, stride, size,
-                                           collect_psync );
+            pshmem_collect32( symmetric_buffer_b,
+                              symmetric_buffer_a,
+                              num_elements_sent,
+                              start, stride, size,
+                              collect_psync );
             break;
 
         case SCOREP_IPC_INT:
         case SCOREP_IPC_UNSIGNED:
         case SCOREP_IPC_INT32_T:
         case SCOREP_IPC_UINT32_T:
-            CALL_SHMEM( shmem_collect32 )( symmetric_buffer_b,
-                                           symmetric_buffer_a,
-                                           sendcount + sendcount_extra,
-                                           start, stride, size,
-                                           collect_psync );
+            pshmem_collect32( symmetric_buffer_b,
+                              symmetric_buffer_a,
+                              sendcount + sendcount_extra,
+                              start, stride, size,
+                              collect_psync );
             break;
 
         case SCOREP_IPC_INT64_T:
         case SCOREP_IPC_UINT64_T:
         case SCOREP_IPC_DOUBLE:
-            CALL_SHMEM( shmem_collect64 )( symmetric_buffer_b,
-                                           symmetric_buffer_a,
-                                           sendcount + sendcount_extra,
-                                           start, stride, size,
-                                           collect_psync );
+            pshmem_collect64( symmetric_buffer_b,
+                              symmetric_buffer_a,
+                              sendcount + sendcount_extra,
+                              start, stride, size,
+                              collect_psync );
             break;
 
         default:
             UTILS_BUG( "Gatherv: Invalid IPC datatype: %d", datatype );
     }
 
-    CALL_SHMEM( shmem_barrier )( start, stride, size, barrier_psync );
+    pshmem_barrier( start, stride, size, barrier_psync );
 
     /* Copy symmetric memory block to buffer */
     if ( rank == root )
@@ -729,7 +724,7 @@ SCOREP_IpcGroup_Gatherv( SCOREP_Ipc_Group*   group,
         }
     }
 
-    CALL_SHMEM( shmem_barrier )( start, stride, size, barrier_psync );
+    pshmem_barrier( start, stride, size, barrier_psync );
 
     return 0;
 }
@@ -768,7 +763,7 @@ SCOREP_IpcGroup_Allgather( SCOREP_Ipc_Group*   group,
     /* Copy buffer to symmetric memory block */
     memcpy( symmetric_buffer_a, sendbuf, count * sizeof_ipc_datatypes[ datatype ] );
 
-    CALL_SHMEM( shmem_barrier )( start, stride, size, barrier_psync );
+    pshmem_barrier( start, stride, size, barrier_psync );
 
     /* Broadcast operation */
     int num_elements_sent;
@@ -778,39 +773,39 @@ SCOREP_IpcGroup_Allgather( SCOREP_Ipc_Group*   group,
         case SCOREP_IPC_CHAR:
         case SCOREP_IPC_UNSIGNED_CHAR:
             num_elements_sent = CEIL( count, 4 );
-            CALL_SHMEM( shmem_fcollect32 )( symmetric_buffer_b,
-                                            symmetric_buffer_a,
-                                            num_elements_sent,
-                                            start, stride, size,
-                                            collect_psync );
+            pshmem_fcollect32( symmetric_buffer_b,
+                               symmetric_buffer_a,
+                               num_elements_sent,
+                               start, stride, size,
+                               collect_psync );
             break;
 
         case SCOREP_IPC_INT:
         case SCOREP_IPC_UNSIGNED:
         case SCOREP_IPC_INT32_T:
         case SCOREP_IPC_UINT32_T:
-            CALL_SHMEM( shmem_fcollect32 )( symmetric_buffer_b,
-                                            symmetric_buffer_a,
-                                            count,
-                                            start, stride, size,
-                                            collect_psync );
+            pshmem_fcollect32( symmetric_buffer_b,
+                               symmetric_buffer_a,
+                               count,
+                               start, stride, size,
+                               collect_psync );
             break;
 
         case SCOREP_IPC_INT64_T:
         case SCOREP_IPC_UINT64_T:
         case SCOREP_IPC_DOUBLE:
-            CALL_SHMEM( shmem_fcollect64 )( symmetric_buffer_b,
-                                            symmetric_buffer_a,
-                                            count,
-                                            start, stride, size,
-                                            collect_psync );
+            pshmem_fcollect64( symmetric_buffer_b,
+                               symmetric_buffer_a,
+                               count,
+                               start, stride, size,
+                               collect_psync );
             break;
 
         default:
             UTILS_BUG( "Allgather: Invalid IPC datatype: %d", datatype );
     }
 
-    CALL_SHMEM( shmem_barrier )( start, stride, size, barrier_psync );
+    pshmem_barrier( start, stride, size, barrier_psync );
 
     /* Copy symmetric memory block to buffer */
     if ( datatype == SCOREP_IPC_BYTE ||
@@ -831,7 +826,7 @@ SCOREP_IpcGroup_Allgather( SCOREP_Ipc_Group*   group,
         memcpy( recvbuf, symmetric_buffer_b, size * count * sizeof_ipc_datatypes[ datatype ] );
     }
 
-    CALL_SHMEM( shmem_barrier )( start, stride, size, barrier_psync );
+    pshmem_barrier( start, stride, size, barrier_psync );
 
     return 0;
 }
@@ -873,7 +868,7 @@ SCOREP_IpcGroup_Reduce( SCOREP_Ipc_Group*    group,
     /* Copy buffer to symmetric memory block */
     memcpy( symmetric_buffer_a, sendbuf, count * sizeof_ipc_datatypes[ datatype ] );
 
-    CALL_SHMEM( shmem_barrier )( start, stride, size, barrier_psync );
+    pshmem_barrier( start, stride, size, barrier_psync );
 
     /* Reduction operation */
     if ( datatype == SCOREP_IPC_BYTE ||
@@ -884,44 +879,44 @@ SCOREP_IpcGroup_Reduce( SCOREP_Ipc_Group*    group,
         switch ( operation )
         {
             case SCOREP_IPC_BAND:
-                CALL_SHMEM( shmem_short_and_to_all )( symmetric_buffer_b,
-                                                      symmetric_buffer_a,
-                                                      nreduce,
-                                                      start, stride, size,
-                                                      get_pwork( sizeof( short ), nreduce ),
-                                                      reduce_psync );
+                pshmem_short_and_to_all( symmetric_buffer_b,
+                                         symmetric_buffer_a,
+                                         nreduce,
+                                         start, stride, size,
+                                         get_pwork( sizeof( short ), nreduce ),
+                                         reduce_psync );
                 break;
             case SCOREP_IPC_BOR:
-                CALL_SHMEM( shmem_short_or_to_all )( symmetric_buffer_b,
-                                                     symmetric_buffer_a,
-                                                     nreduce,
-                                                     start, stride, size,
-                                                     get_pwork( sizeof( short ), nreduce ),
-                                                     reduce_psync );
+                pshmem_short_or_to_all( symmetric_buffer_b,
+                                        symmetric_buffer_a,
+                                        nreduce,
+                                        start, stride, size,
+                                        get_pwork( sizeof( short ), nreduce ),
+                                        reduce_psync );
                 break;
             case SCOREP_IPC_MIN:
-                CALL_SHMEM( shmem_short_min_to_all )( symmetric_buffer_b,
-                                                      symmetric_buffer_a,
-                                                      nreduce,
-                                                      start, stride, size,
-                                                      get_pwork( sizeof( short ), nreduce ),
-                                                      reduce_psync );
+                pshmem_short_min_to_all( symmetric_buffer_b,
+                                         symmetric_buffer_a,
+                                         nreduce,
+                                         start, stride, size,
+                                         get_pwork( sizeof( short ), nreduce ),
+                                         reduce_psync );
                 break;
             case SCOREP_IPC_MAX:
-                CALL_SHMEM( shmem_short_max_to_all )( symmetric_buffer_b,
-                                                      symmetric_buffer_a,
-                                                      nreduce,
-                                                      start, stride, size,
-                                                      get_pwork( sizeof( short ), nreduce ),
-                                                      reduce_psync );
+                pshmem_short_max_to_all( symmetric_buffer_b,
+                                         symmetric_buffer_a,
+                                         nreduce,
+                                         start, stride, size,
+                                         get_pwork( sizeof( short ), nreduce ),
+                                         reduce_psync );
                 break;
             case SCOREP_IPC_SUM:
-                CALL_SHMEM( shmem_short_sum_to_all )( symmetric_buffer_b,
-                                                      symmetric_buffer_a,
-                                                      nreduce,
-                                                      start, stride, size,
-                                                      get_pwork( sizeof( short ), nreduce ),
-                                                      reduce_psync );
+                pshmem_short_sum_to_all( symmetric_buffer_b,
+                                         symmetric_buffer_a,
+                                         nreduce,
+                                         start, stride, size,
+                                         get_pwork( sizeof( short ), nreduce ),
+                                         reduce_psync );
                 break;
             default:
                 UTILS_BUG( "Reduce: Invalid IPC operation: %d", operation );
@@ -935,44 +930,44 @@ SCOREP_IpcGroup_Reduce( SCOREP_Ipc_Group*    group,
         switch ( operation )
         {
             case SCOREP_IPC_BAND:
-                CALL_SHMEM( shmem_int_and_to_all )( symmetric_buffer_b,
-                                                    symmetric_buffer_a,
-                                                    count,
-                                                    start, stride, size,
-                                                    get_pwork( sizeof( int ), count ),
-                                                    reduce_psync );
+                pshmem_int_and_to_all( symmetric_buffer_b,
+                                       symmetric_buffer_a,
+                                       count,
+                                       start, stride, size,
+                                       get_pwork( sizeof( int ), count ),
+                                       reduce_psync );
                 break;
             case SCOREP_IPC_BOR:
-                CALL_SHMEM( shmem_int_or_to_all )( symmetric_buffer_b,
-                                                   symmetric_buffer_a,
-                                                   count,
-                                                   start, stride, size,
-                                                   get_pwork( sizeof( int ), count ),
-                                                   reduce_psync );
+                pshmem_int_or_to_all( symmetric_buffer_b,
+                                      symmetric_buffer_a,
+                                      count,
+                                      start, stride, size,
+                                      get_pwork( sizeof( int ), count ),
+                                      reduce_psync );
                 break;
             case SCOREP_IPC_MIN:
-                CALL_SHMEM( shmem_int_min_to_all )( symmetric_buffer_b,
-                                                    symmetric_buffer_a,
-                                                    count,
-                                                    start, stride, size,
-                                                    get_pwork( sizeof( int ), count ),
-                                                    reduce_psync );
+                pshmem_int_min_to_all( symmetric_buffer_b,
+                                       symmetric_buffer_a,
+                                       count,
+                                       start, stride, size,
+                                       get_pwork( sizeof( int ), count ),
+                                       reduce_psync );
                 break;
             case SCOREP_IPC_MAX:
-                CALL_SHMEM( shmem_int_max_to_all )( symmetric_buffer_b,
-                                                    symmetric_buffer_a,
-                                                    count,
-                                                    start, stride, size,
-                                                    get_pwork( sizeof( int ), count ),
-                                                    reduce_psync );
+                pshmem_int_max_to_all( symmetric_buffer_b,
+                                       symmetric_buffer_a,
+                                       count,
+                                       start, stride, size,
+                                       get_pwork( sizeof( int ), count ),
+                                       reduce_psync );
                 break;
             case SCOREP_IPC_SUM:
-                CALL_SHMEM( shmem_int_sum_to_all )( symmetric_buffer_b,
-                                                    symmetric_buffer_a,
-                                                    count,
-                                                    start, stride, size,
-                                                    get_pwork( sizeof( int ), count ),
-                                                    reduce_psync );
+                pshmem_int_sum_to_all( symmetric_buffer_b,
+                                       symmetric_buffer_a,
+                                       count,
+                                       start, stride, size,
+                                       get_pwork( sizeof( int ), count ),
+                                       reduce_psync );
                 break;
             default:
                 UTILS_BUG( "Reduce: Invalid IPC operation: %d", operation );
@@ -985,44 +980,44 @@ SCOREP_IpcGroup_Reduce( SCOREP_Ipc_Group*    group,
         switch ( operation )
         {
             case SCOREP_IPC_BAND:
-                CALL_SHMEM( shmem_longlong_and_to_all )( symmetric_buffer_b,
-                                                         symmetric_buffer_a,
-                                                         count,
-                                                         start, stride, size,
-                                                         ( long long* )pwork,
-                                                         reduce_psync );
+                pshmem_longlong_and_to_all( symmetric_buffer_b,
+                                            symmetric_buffer_a,
+                                            count,
+                                            start, stride, size,
+                                            ( long long* )pwork,
+                                            reduce_psync );
                 break;
             case SCOREP_IPC_BOR:
-                CALL_SHMEM( shmem_longlong_or_to_all )( symmetric_buffer_b,
-                                                        symmetric_buffer_a,
-                                                        count,
-                                                        start, stride, size,
-                                                        ( long long* )pwork,
-                                                        reduce_psync );
+                pshmem_longlong_or_to_all( symmetric_buffer_b,
+                                           symmetric_buffer_a,
+                                           count,
+                                           start, stride, size,
+                                           ( long long* )pwork,
+                                           reduce_psync );
                 break;
             case SCOREP_IPC_MIN:
-                CALL_SHMEM( shmem_longlong_min_to_all )( symmetric_buffer_b,
-                                                         symmetric_buffer_a,
-                                                         count,
-                                                         start, stride, size,
-                                                         ( long long* )pwork,
-                                                         reduce_psync );
+                pshmem_longlong_min_to_all( symmetric_buffer_b,
+                                            symmetric_buffer_a,
+                                            count,
+                                            start, stride, size,
+                                            ( long long* )pwork,
+                                            reduce_psync );
                 break;
             case SCOREP_IPC_MAX:
-                CALL_SHMEM( shmem_longlong_max_to_all )( symmetric_buffer_b,
-                                                         symmetric_buffer_a,
-                                                         count,
-                                                         start, stride, size,
-                                                         ( long long* )pwork,
-                                                         reduce_psync );
+                pshmem_longlong_max_to_all( symmetric_buffer_b,
+                                            symmetric_buffer_a,
+                                            count,
+                                            start, stride, size,
+                                            ( long long* )pwork,
+                                            reduce_psync );
                 break;
             case SCOREP_IPC_SUM:
-                CALL_SHMEM( shmem_longlong_sum_to_all )( symmetric_buffer_b,
-                                                         symmetric_buffer_a,
-                                                         count,
-                                                         start, stride, size,
-                                                         ( long long* )pwork,
-                                                         reduce_psync );
+                pshmem_longlong_sum_to_all( symmetric_buffer_b,
+                                            symmetric_buffer_a,
+                                            count,
+                                            start, stride, size,
+                                            ( long long* )pwork,
+                                            reduce_psync );
                 break;
             default:
                 UTILS_BUG( "Reduce: Invalid IPC operation: %d", operation );
@@ -1033,7 +1028,7 @@ SCOREP_IpcGroup_Reduce( SCOREP_Ipc_Group*    group,
         UTILS_BUG( "Reduce: Invalid IPC datatype: %d", datatype );
     }
 
-    CALL_SHMEM( shmem_barrier )( start, stride, size, barrier_psync );
+    pshmem_barrier( start, stride, size, barrier_psync );
 
     /* Copy symmetric memory block to buffer */
     if ( rank == root )
@@ -1041,7 +1036,7 @@ SCOREP_IpcGroup_Reduce( SCOREP_Ipc_Group*    group,
         memcpy( recvbuf, symmetric_buffer_b, count * sizeof_ipc_datatypes[ datatype ] );
     }
 
-    CALL_SHMEM( shmem_barrier )( start, stride, size, barrier_psync );
+    pshmem_barrier( start, stride, size, barrier_psync );
 
     return 0;
 }
@@ -1076,7 +1071,7 @@ SCOREP_IpcGroup_Allreduce( SCOREP_Ipc_Group*    group,
     /* Copy buffer to symmetric memory block */
     memcpy( symmetric_buffer_a, sendbuf, count * sizeof_ipc_datatypes[ datatype ] );
 
-    CALL_SHMEM( shmem_barrier )( start, stride, size, barrier_psync );
+    pshmem_barrier( start, stride, size, barrier_psync );
 
     /* Reduction operation */
     if ( datatype == SCOREP_IPC_BYTE ||
@@ -1087,44 +1082,44 @@ SCOREP_IpcGroup_Allreduce( SCOREP_Ipc_Group*    group,
         switch ( operation )
         {
             case SCOREP_IPC_BAND:
-                CALL_SHMEM( shmem_short_and_to_all )( symmetric_buffer_b,
-                                                      symmetric_buffer_a,
-                                                      nreduce,
-                                                      start, stride, size,
-                                                      get_pwork( sizeof( short ), nreduce ),
-                                                      reduce_psync );
+                pshmem_short_and_to_all( symmetric_buffer_b,
+                                         symmetric_buffer_a,
+                                         nreduce,
+                                         start, stride, size,
+                                         get_pwork( sizeof( short ), nreduce ),
+                                         reduce_psync );
                 break;
             case SCOREP_IPC_BOR:
-                CALL_SHMEM( shmem_short_or_to_all )( symmetric_buffer_b,
-                                                     symmetric_buffer_a,
-                                                     nreduce,
-                                                     start, stride, size,
-                                                     get_pwork( sizeof( short ), nreduce ),
-                                                     reduce_psync );
+                pshmem_short_or_to_all( symmetric_buffer_b,
+                                        symmetric_buffer_a,
+                                        nreduce,
+                                        start, stride, size,
+                                        get_pwork( sizeof( short ), nreduce ),
+                                        reduce_psync );
                 break;
             case SCOREP_IPC_MIN:
-                CALL_SHMEM( shmem_short_min_to_all )( symmetric_buffer_b,
-                                                      symmetric_buffer_a,
-                                                      nreduce,
-                                                      start, stride, size,
-                                                      get_pwork( sizeof( short ), nreduce ),
-                                                      reduce_psync );
+                pshmem_short_min_to_all( symmetric_buffer_b,
+                                         symmetric_buffer_a,
+                                         nreduce,
+                                         start, stride, size,
+                                         get_pwork( sizeof( short ), nreduce ),
+                                         reduce_psync );
                 break;
             case SCOREP_IPC_MAX:
-                CALL_SHMEM( shmem_short_max_to_all )( symmetric_buffer_b,
-                                                      symmetric_buffer_a,
-                                                      nreduce,
-                                                      start, stride, size,
-                                                      get_pwork( sizeof( short ), nreduce ),
-                                                      reduce_psync );
+                pshmem_short_max_to_all( symmetric_buffer_b,
+                                         symmetric_buffer_a,
+                                         nreduce,
+                                         start, stride, size,
+                                         get_pwork( sizeof( short ), nreduce ),
+                                         reduce_psync );
                 break;
             case SCOREP_IPC_SUM:
-                CALL_SHMEM( shmem_short_sum_to_all )( symmetric_buffer_b,
-                                                      symmetric_buffer_a,
-                                                      nreduce,
-                                                      start, stride, size,
-                                                      get_pwork( sizeof( short ), nreduce ),
-                                                      reduce_psync );
+                pshmem_short_sum_to_all( symmetric_buffer_b,
+                                         symmetric_buffer_a,
+                                         nreduce,
+                                         start, stride, size,
+                                         get_pwork( sizeof( short ), nreduce ),
+                                         reduce_psync );
                 break;
             default:
                 UTILS_BUG( "Allreduce: Invalid IPC operation: %d", operation );
@@ -1138,44 +1133,44 @@ SCOREP_IpcGroup_Allreduce( SCOREP_Ipc_Group*    group,
         switch ( operation )
         {
             case SCOREP_IPC_BAND:
-                CALL_SHMEM( shmem_int_and_to_all )( symmetric_buffer_b,
-                                                    symmetric_buffer_a,
-                                                    count,
-                                                    start, stride, size,
-                                                    get_pwork( sizeof( int ), count ),
-                                                    reduce_psync );
+                pshmem_int_and_to_all( symmetric_buffer_b,
+                                       symmetric_buffer_a,
+                                       count,
+                                       start, stride, size,
+                                       get_pwork( sizeof( int ), count ),
+                                       reduce_psync );
                 break;
             case SCOREP_IPC_BOR:
-                CALL_SHMEM( shmem_int_or_to_all )( symmetric_buffer_b,
-                                                   symmetric_buffer_a,
-                                                   count,
-                                                   start, stride, size,
-                                                   get_pwork( sizeof( int ), count ),
-                                                   reduce_psync );
+                pshmem_int_or_to_all( symmetric_buffer_b,
+                                      symmetric_buffer_a,
+                                      count,
+                                      start, stride, size,
+                                      get_pwork( sizeof( int ), count ),
+                                      reduce_psync );
                 break;
             case SCOREP_IPC_MIN:
-                CALL_SHMEM( shmem_int_min_to_all )( symmetric_buffer_b,
-                                                    symmetric_buffer_a,
-                                                    count,
-                                                    start, stride, size,
-                                                    get_pwork( sizeof( int ), count ),
-                                                    reduce_psync );
+                pshmem_int_min_to_all( symmetric_buffer_b,
+                                       symmetric_buffer_a,
+                                       count,
+                                       start, stride, size,
+                                       get_pwork( sizeof( int ), count ),
+                                       reduce_psync );
                 break;
             case SCOREP_IPC_MAX:
-                CALL_SHMEM( shmem_int_max_to_all )( symmetric_buffer_b,
-                                                    symmetric_buffer_a,
-                                                    count,
-                                                    start, stride, size,
-                                                    get_pwork( sizeof( int ), count ),
-                                                    reduce_psync );
+                pshmem_int_max_to_all( symmetric_buffer_b,
+                                       symmetric_buffer_a,
+                                       count,
+                                       start, stride, size,
+                                       get_pwork( sizeof( int ), count ),
+                                       reduce_psync );
                 break;
             case SCOREP_IPC_SUM:
-                CALL_SHMEM( shmem_int_sum_to_all )( symmetric_buffer_b,
-                                                    symmetric_buffer_a,
-                                                    count,
-                                                    start, stride, size,
-                                                    get_pwork( sizeof( int ), count ),
-                                                    reduce_psync );
+                pshmem_int_sum_to_all( symmetric_buffer_b,
+                                       symmetric_buffer_a,
+                                       count,
+                                       start, stride, size,
+                                       get_pwork( sizeof( int ), count ),
+                                       reduce_psync );
                 break;
             default:
                 UTILS_BUG( "Allreduce: Invalid IPC operation: %d", operation );
@@ -1188,44 +1183,44 @@ SCOREP_IpcGroup_Allreduce( SCOREP_Ipc_Group*    group,
         switch ( operation )
         {
             case SCOREP_IPC_BAND:
-                CALL_SHMEM( shmem_longlong_and_to_all )( symmetric_buffer_b,
-                                                         symmetric_buffer_a,
-                                                         count,
-                                                         start, stride, size,
-                                                         ( long long* )pwork,
-                                                         reduce_psync );
+                pshmem_longlong_and_to_all( symmetric_buffer_b,
+                                            symmetric_buffer_a,
+                                            count,
+                                            start, stride, size,
+                                            ( long long* )pwork,
+                                            reduce_psync );
                 break;
             case SCOREP_IPC_BOR:
-                CALL_SHMEM( shmem_longlong_or_to_all )( symmetric_buffer_b,
-                                                        symmetric_buffer_a,
-                                                        count,
-                                                        start, stride, size,
-                                                        ( long long* )pwork,
-                                                        reduce_psync );
+                pshmem_longlong_or_to_all( symmetric_buffer_b,
+                                           symmetric_buffer_a,
+                                           count,
+                                           start, stride, size,
+                                           ( long long* )pwork,
+                                           reduce_psync );
                 break;
             case SCOREP_IPC_MIN:
-                CALL_SHMEM( shmem_longlong_min_to_all )( symmetric_buffer_b,
-                                                         symmetric_buffer_a,
-                                                         count,
-                                                         start, stride, size,
-                                                         ( long long* )pwork,
-                                                         reduce_psync );
+                pshmem_longlong_min_to_all( symmetric_buffer_b,
+                                            symmetric_buffer_a,
+                                            count,
+                                            start, stride, size,
+                                            ( long long* )pwork,
+                                            reduce_psync );
                 break;
             case SCOREP_IPC_MAX:
-                CALL_SHMEM( shmem_longlong_max_to_all )( symmetric_buffer_b,
-                                                         symmetric_buffer_a,
-                                                         count,
-                                                         start, stride, size,
-                                                         ( long long* )pwork,
-                                                         reduce_psync );
+                pshmem_longlong_max_to_all( symmetric_buffer_b,
+                                            symmetric_buffer_a,
+                                            count,
+                                            start, stride, size,
+                                            ( long long* )pwork,
+                                            reduce_psync );
                 break;
             case SCOREP_IPC_SUM:
-                CALL_SHMEM( shmem_longlong_sum_to_all )( symmetric_buffer_b,
-                                                         symmetric_buffer_a,
-                                                         count,
-                                                         start, stride, size,
-                                                         ( long long* )pwork,
-                                                         reduce_psync );
+                pshmem_longlong_sum_to_all( symmetric_buffer_b,
+                                            symmetric_buffer_a,
+                                            count,
+                                            start, stride, size,
+                                            ( long long* )pwork,
+                                            reduce_psync );
                 break;
             default:
                 UTILS_BUG( "Allreduce: Invalid IPC operation: %d", operation );
@@ -1236,12 +1231,12 @@ SCOREP_IpcGroup_Allreduce( SCOREP_Ipc_Group*    group,
         UTILS_BUG( "Allreduce: Invalid IPC datatype: %d", datatype );
     }
 
-    CALL_SHMEM( shmem_barrier )( start, stride, size, barrier_psync );
+    pshmem_barrier( start, stride, size, barrier_psync );
 
     /* Copy symmetric memory block to buffer */
     memcpy( recvbuf, symmetric_buffer_b, count * sizeof_ipc_datatypes[ datatype ] );
 
-    CALL_SHMEM( shmem_barrier )( start, stride, size, barrier_psync );
+    pshmem_barrier( start, stride, size, barrier_psync );
 
     return 0;
 }
@@ -1271,7 +1266,7 @@ SCOREP_IpcGroup_Scatter( SCOREP_Ipc_Group*   group,
     {
         /* root is the only sender */
 
-        CALL_SHMEM( shmem_quiet )();
+        pshmem_quiet();
         for ( int receiver = start; receiver < start + size; receiver++ )
         {
             if ( receiver == root )
@@ -1284,27 +1279,27 @@ SCOREP_IpcGroup_Scatter( SCOREP_Ipc_Group*   group,
                 continue;
             }
 
-            CALL_SHMEM( shmem_putmem )( symmetric_buffer_b,
-                                        &( ( ( char* )sendbuf )[ receiver * count * sizeof_ipc_datatypes[ datatype ] ] ),
-                                        count * sizeof_ipc_datatypes[ datatype ],
-                                        receiver );
+            pshmem_putmem( symmetric_buffer_b,
+                           &( ( ( char* )sendbuf )[ receiver * count * sizeof_ipc_datatypes[ datatype ] ] ),
+                           count * sizeof_ipc_datatypes[ datatype ],
+                           receiver );
         }
-        CALL_SHMEM( shmem_quiet )();
-        CALL_SHMEM( shmem_barrier )( start, stride, size, barrier_psync );
+        pshmem_quiet();
+        pshmem_barrier( start, stride, size, barrier_psync );
     }
     else
     {
         /* All processing elements except root are receivers */
 
         /* Wait until data has arrived */
-        CALL_SHMEM( shmem_barrier )( start, stride, size, barrier_psync );
+        pshmem_barrier( start, stride, size, barrier_psync );
 
         /* Copy symmetric memory block to buffer */
         memcpy( recvbuf, symmetric_buffer_b, count * sizeof_ipc_datatypes[ datatype ] );
     }
 
     /* Wait until data has arrived */
-    CALL_SHMEM( shmem_barrier )( start, stride, size, barrier_psync );
+    pshmem_barrier( start, stride, size, barrier_psync );
 
     return 0;
 }
@@ -1338,7 +1333,7 @@ SCOREP_IpcGroup_Scatterv( SCOREP_Ipc_Group*   group,
         int size = SCOREP_IpcGroup_GetSize( group );
 
         /* Please note: at the moment SHMEM IPC groups consist of consecutive processing elements */
-        CALL_SHMEM( shmem_quiet )();
+        pshmem_quiet();
         int total    = 0;
         int receiver = start;
         for ( int i = 0; i < size; i++ )
@@ -1353,31 +1348,31 @@ SCOREP_IpcGroup_Scatterv( SCOREP_Ipc_Group*   group,
             }
             else
             {
-                CALL_SHMEM( shmem_putmem )( symmetric_buffer_b,
-                                            &( ( ( char* )sendbuf )[ total * sizeof_ipc_datatypes[ datatype ] ] ),
-                                            sendcounts[ i ] * sizeof_ipc_datatypes[ datatype ],
-                                            receiver );
+                pshmem_putmem( symmetric_buffer_b,
+                               &( ( ( char* )sendbuf )[ total * sizeof_ipc_datatypes[ datatype ] ] ),
+                               sendcounts[ i ] * sizeof_ipc_datatypes[ datatype ],
+                               receiver );
             }
 
             total += sendcounts[ i ];
             receiver++;
         }
-        CALL_SHMEM( shmem_quiet )();
-        CALL_SHMEM( shmem_barrier )( start, stride, size, barrier_psync );
+        pshmem_quiet();
+        pshmem_barrier( start, stride, size, barrier_psync );
     }
     else
     {
         /* All processing elements except root are receivers */
 
         /* Wait until data has arrived */
-        CALL_SHMEM( shmem_barrier )( start, stride, size, barrier_psync );
+        pshmem_barrier( start, stride, size, barrier_psync );
 
         /* Copy symmetric memory block to buffer */
         memcpy( recvbuf, symmetric_buffer_b, recvcount * sizeof_ipc_datatypes[ datatype ] );
     }
 
     /* Wait until data has arrived */
-    CALL_SHMEM( shmem_barrier )( start, stride, size, barrier_psync );
+    pshmem_barrier( start, stride, size, barrier_psync );
 
     return 0;
 }
@@ -1389,7 +1384,7 @@ get_pwork( size_t size,
     size_t nreduce_size = ( ( count / 2 ) + 1 ) * size;
     if ( nreduce_size < current_pwork_size )
     {
-        pwork = CALL_SHMEM( shrealloc )( pwork, nreduce_size );
+        pwork = pshrealloc( pwork, nreduce_size );
         UTILS_BUG_ON( !pwork, "Cannot allocate symmetric work array of size %zu",
                       nreduce_size );
         current_pwork_size = nreduce_size;

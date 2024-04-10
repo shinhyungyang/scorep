@@ -3,7 +3,7 @@
 ##
 ## This file is part of the Score-P software (http://www.score-p.org)
 ##
-## Copyright (c) 2013-2015, 2017,
+## Copyright (c) 2013-2015, 2017, 2025,
 ## Technische Universitaet Dresden, Germany
 ##
 ## Copyright (c) 2015, 2017-2018, 2022-2025,
@@ -84,21 +84,6 @@ AM_CPPFLAGS += -DCROSS_BUILD
 else !CROSS_BUILD
 AM_CPPFLAGS += -DNOCROSS_BUILD
 endif !CROSS_BUILD
-
-if HAVE_SHMEM_SUPPORT
-if !HAVE_SHMEM_PROFILING_INTERFACE
-pkgdata_DATA += \
-    ../share/shmem.wrap \
-    ../share/shmem.nvcc.wrap
-
-DISTCLEANFILES += ../share/shmem.nvcc.wrap
-
-else HAVE_SHMEM_PROFILING_INTERFACE
-
-DISTCLEANFILES += $(builddir)/scorep_have_pshmem_support.txt
-
-endif HAVE_SHMEM_PROFILING_INTERFACE
-endif HAVE_SHMEM_SUPPORT
 
 ## Determine how to handle tests
 if CROSS_BUILD
