@@ -46,9 +46,7 @@ dnl the runtime API version. Second, the library libcupti and the
 dnl corresponding header cupti.h to check the cupti API version. Cupti
 dnl comes with the toolkit and is located under <toolkit>/extras/CUPTI. As
 dnl the driver and the toolkit can be installed separatly, we provide the
-dnl user with the options --with-libcudart and --with-libcuda. There is no
-dnl need for a --with-libcupti as cupti resides within the toolkit
-dnl installation.
+dnl user with the options --with-libcudart and --with-libcuda.
 
 AC_DEFUN([SCOREP_CUDA], [
 AFS_SUMMARY_PUSH
@@ -86,9 +84,14 @@ AS_UNSET([cupti_root])
 AS_IF([test "x${with_libcudart_lib}" = "xyes"],
       [for path in ${sys_lib_search_path_spec}; do
            AS_IF([test -e ${path}/libcudart.a || test -e ${path}/libcudart.so || test -e ${path}/libcudart.dylib],
-                 [AS_IF([test -d "${path}/../extras/CUPTI"],
+                 [dnl Try the direct parent directory first
+                  AS_IF([test -d "${path}/../extras/CUPTI"],
                         [cupti_root="${path}/../extras/CUPTI"],
-                        [cupti_root="${path}"])
+                        [dnl Newer CUDA versions may have a symlink from lib64 to targets/x86_64-linux/lib.
+                         dnl Since the previous check failed, try this path as well.
+                         AS_IF([test -d "${path}/../../../extras/CUPTI"],
+                               [cupti_root="${path}/../../../extras/CUPTI"],
+                               [cupti_root="${path}"])])
                   break])
        done],
       [AS_IF([test "x${with_libcudart}" != "xnot_set"],
