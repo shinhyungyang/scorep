@@ -15,7 +15,7 @@
 ## Copyright (c) 2009-2012,
 ## University of Oregon, Eugene, USA
 ##
-## Copyright (c) 2009-2014, 2021,
+## Copyright (c) 2009-2014, 2021, 2024,
 ## Forschungszentrum Juelich GmbH, Germany
 ##
 ## Copyright (c) 2009-2012,
@@ -79,3 +79,7 @@ SCOREP_V_DEVNULL = $(scorep__v_DEVNULL_@AM_V@)
 scorep__v_DEVNULL_ = $(scorep__v_DEVNULL_@AM_DEFAULT_V@)
 scorep__v_DEVNULL_0 = >/dev/null
 scorep__v_DEVNULL_1 =
+
+# Provide target to trigger BUILT_SOURCES explicitly, e.g., from a different
+# directory as part of build_external_targets.
+scorep-built-sources: $(BUILT_SOURCES)

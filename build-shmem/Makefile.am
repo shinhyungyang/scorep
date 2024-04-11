@@ -6,7 +6,7 @@
 ## Copyright (c) 2013-2015, 2017,
 ## Technische Universitaet Dresden, Germany
 ##
-## Copyright (c) 2015, 2017-2018, 2022,
+## Copyright (c) 2015, 2017-2018, 2022, 2024,
 ## Forschungszentrum Juelich GmbH, Germany
 ##
 ## This software may be modified and distributed under the terms of
@@ -49,8 +49,9 @@ clean-local-experiment-directories:
 BACKEND_TARGETS =
 $(BACKEND_TARGETS): build_external_targets
 build_external_targets:
-	@targets=`echo $(BACKEND_TARGETS) | sed 's|^[ ^t]*||;s|[ ^]*$$||;s|$(LIB_DIR_SCOREP)||g'`; \
+	@targets=$$(echo $(BACKEND_TARGETS) | sed 's|^[ ^t]*||;s|[ ^]*$$||;s|$(LIB_DIR_SCOREP)||g' | tr ' ' '\n' | sort -u); \
 	if test "x$$targets" != x; then \
+		$(am__cd) $(LIB_DIR_SCOREP) && $(MAKE) $(AM_MAKEFLAGS) scorep-built-sources; \
 		$(am__cd) $(LIB_DIR_SCOREP) && $(MAKE) $(AM_MAKEFLAGS) $$targets; \
 	fi
 

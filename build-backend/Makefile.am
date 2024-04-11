@@ -63,16 +63,19 @@ MPI_TARGETS =
 SHMEM_TARGETS =
 $(MPI_TARGETS) $(SHMEM_TARGETS) $(SCORE_TARGETS): build_external_targets
 build_external_targets:
-	@targets=`echo $(MPI_TARGETS) | sed 's|^[ ^t]*||;s|[ ^]*$$||;s|$(LIB_DIR_SCOREP_MPI)||g'`; \
+	@targets=$$(echo $(MPI_TARGETS) | sed 's|^[ ^t]*||;s|[ ^]*$$||;s|$(LIB_DIR_SCOREP_MPI)||g' | tr ' ' '\n' | sort -u); \
 	if test "x$$targets" != x; then \
+		$(am__cd) $(LIB_DIR_SCOREP_MPI) && $(MAKE) $(AM_MAKEFLAGS) scorep-built-sources; \
 		$(am__cd) $(LIB_DIR_SCOREP_MPI) && $(MAKE) $(AM_MAKEFLAGS) $$targets; \
 	fi
-	@targets=`echo $(SHMEM_TARGETS) | sed 's|^[ ^t]*||;s|[ ^]*$$||;s|$(LIB_DIR_SCOREP_SHMEM)||g'`; \
+	@targets=$$(echo $(SHMEM_TARGETS) | sed 's|^[ ^t]*||;s|[ ^]*$$||;s|$(LIB_DIR_SCOREP_SHMEM)||g' | tr ' ' '\n' | sort -u); \
 	if test "x$$targets" != x; then \
+		$(am__cd) $(LIB_DIR_SCOREP_SHMEM) && $(MAKE) $(AM_MAKEFLAGS) scorep-built-sources; \
 		$(am__cd) $(LIB_DIR_SCOREP_SHMEM) && $(MAKE) $(AM_MAKEFLAGS) $$targets; \
 	fi
-	@targets=`echo $(SCORE_TARGETS) | sed 's|^[ ^t]*||;s|[ ^]*$$||;s|$(LIB_DIR_SCOREP_SCORE)||g'`; \
+	@targets=$$(echo $(SCORE_TARGETS) | sed 's|^[ ^t]*||;s|[ ^]*$$||;s|$(LIB_DIR_SCOREP_SCORE)||g' | tr ' ' '\n' | sort -u); \
 	if test "x$$targets" != x; then \
+		$(am__cd) $(LIB_DIR_SCOREP_SCORE) && $(MAKE) $(AM_MAKEFLAGS) scorep-built-sources; \
 		$(am__cd) $(LIB_DIR_SCOREP_SCORE) && $(MAKE) $(AM_MAKEFLAGS) $$targets; \
 	fi
 MPI_CHECK_TARGETS =
