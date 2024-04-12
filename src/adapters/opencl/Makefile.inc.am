@@ -157,8 +157,7 @@ libscorep_adapter_opencl_event_runtime_la_CPPFLAGS = \
     $(opencl_libwrap_runtime_cppflags)
 
 libscorep_adapter_opencl_event_runtime_la_LDFLAGS = \
-    $(libscorep_adapter_opencl_event_common_ldflags) \
-    -Wl,@../share/opencl.wrap
+    $(libscorep_adapter_opencl_event_common_ldflags)
 
 endif
 
