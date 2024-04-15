@@ -109,7 +109,7 @@ $(noinst_lt_needs_libs):
 
 $(RPATHS_MAKEFILE): Makefile
 	$(AM_V_GEN): > $(RPATHS_MAKEFILE); \
-	$(MAKE) $(lib_lt_ldflags)
+	test -z "$(lib_lt_ldflags)" || $(MAKE) $(lib_lt_ldflags)
 
 lib_lt_ldflags = $(lib_LTLIBRARIES:.la=_la_LDFLAGS)
 $(lib_lt_ldflags): ensure_ltlibraries_canonicalized
@@ -185,12 +185,12 @@ $(CONFIG_EXTERNAL_LIBS_HPP): Makefile $(RPATHS_MAKEFILE)
 	echo "#include <map>" >> $@; \
 	echo "#define $(AFS_PACKAGE_BUILD_NAME)_BUILDDIR \"$(abs_builddir)\"" >> $@; \
 	echo "#define $(AFS_PACKAGE_BUILD_NAME)_LIBDIR \"$(libdir)\"" >> $@; \
-	$(MAKE) $(lib_lt_needs_libdirs); \
-	$(MAKE) $(lib_lt_needs_libs); \
+	test -z "$(lib_lt_needs_libdirs)" || $(MAKE) $(lib_lt_needs_libdirs); \
+	test -z "$(lib_lt_needs_libs)" || $(MAKE) $(lib_lt_needs_libs); \
 	echo "static void" >> $@; \
 	echo "add_library_dependencies_$(AFS_PACKAGE_BUILD_name)( std::map<std::string, la_object>* la_objects )" >> $@; \
 	echo "{" >> $@; \
-	$(MAKE) $(lib_lt_libraries); \
+	test -z "$(lib_lt_libraries)" || $(MAKE) $(lib_lt_libraries); \
 	echo "}" >> $@; \
 	echo "#endif // $(CONFIG_EXTERNAL_LIBS_HPP_INCLUDE_GUARD)" >> $@;
 
