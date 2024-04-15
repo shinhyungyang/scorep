@@ -78,6 +78,9 @@ User tools and API improvements and changes:
   cluster_threads, thread_sum, thread_tuple, and none).
 - The deprecated `SCOREP_ENABLE_SYSTEM_TREE_SEQUENCE_DEFINITIONS` feature
   has been removed.
+- Score-P now adds every `--instrument-filter` file to the
+  `CCACHE_EXTRAFILES` environment variable to make `ccache` aware
+  of the filter file and its contents.
 
 Compatibility:
 

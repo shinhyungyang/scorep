@@ -122,6 +122,8 @@ SCOREP_Instrumenter::~SCOREP_Instrumenter()
 int
 SCOREP_Instrumenter::Run( void )
 {
+    append_list_to_env( m_command_line.getInstrumentFilterFiles(), "CCACHE_EXTRAFILES", ":" );
+
     m_input_files = *m_command_line.getInputFiles();
 
     /* If no compiling or linking happens, e.g., because the command performs only
