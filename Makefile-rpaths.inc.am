@@ -237,9 +237,6 @@ $(lib_lt_needs_libs):
 	echo "#define $(AFS_PACKAGE_BUILD_NAME)_$$needs_libs_var \"$$needs_libs_value $(LIBS)\"" | \
 	    tr -s ' ' | $(SED) 's/ *"$$/"/g' >> $(CONFIG_EXTERNAL_LIBS_HPP)
 
-# Nothing to in the pure-static case.
-shared-objects-self-contained:
-
 else !HAVE_BUILD_STATIC_LT_LIBRARIES
 
 lib_lt_needs_libdirs = $(lib_LTLIBRARIES:.la=_NEEDS_LIBDIRS)
@@ -250,15 +247,34 @@ lib_lt_needs_libs = $(lib_LTLIBRARIES:.la=_NEEDS_LIBS)
 $(lib_lt_needs_libs):
 	@echo "#define $(AFS_PACKAGE_BUILD_NAME)_$@ \"\"" >> $(CONFIG_EXTERNAL_LIBS_HPP)
 
+endif !HAVE_BUILD_STATIC_LT_LIBRARIES
+
+
+# ---
+# Try to check with `ldd` if installed shared libraries are
+# self-contained, i.e., all NEEDED entries can be resolved at
+# load-time, either via the current environment or the RUNPATH or
+# RPATH entries in the shared object.
+#
+# To abort `make installcheck` if not all shared lib_LTLIBRARIES are
+# self-contained, add `shared-objects-self-contained` as prerequisite
+# to `installcheck-local`.
+
+if HAVE_BUILD_STATIC_LT_LIBRARIES
+
+# Nothing to do in the pure-static case.
+shared-objects-self-contained:
+
+else !HAVE_BUILD_STATIC_LT_LIBRARIES
+
 if AFS_BUILD_EQUALS_HOST
 
-# To abort installcheck if not all shared lib_LTLIBRARIES are self-contained,
-# add shared-objects-self-contained to INSTALLCHECK_LOCAL.
 lib_lt_so = $(lib_LTLIBRARIES:.la=.so)
 shared-objects-self-contained:
-	selfcontained=yes; \
-	for so in $(lib_lt_so); do \
-	    if ldd "$(libdir)/$$so" | $(GREP) 'not found' >/dev/null; then \
+	@selfcontained=yes; \
+	list='$(lib_lt_so)'; test -n "$(libdir)" || list=; \
+	for so in $$list; do \
+	    if LC_ALL=C ldd "$(libdir)/$$so" 2>/dev/null | ${GREP} 'not found' >/dev/null; then \
 	        selfcontained=no; \
 	        echo "not selfcontained: ldd $(libdir)/$$so"; \
 	        ldd "$(libdir)/$$so"; \
