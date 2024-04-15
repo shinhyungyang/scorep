@@ -91,6 +91,12 @@ build_external_targets:
 		$(am__cd) $(LIB_DIR_SCOREP_SCORE) && $(MAKE) $(AM_MAKEFLAGS) $$targets; \
 	fi
 
+# When using external targets, also use corresponding exported data, if any.
+-include $(LIB_DIR_SCOREP)Makefile.export
+-include $(LIB_DIR_SCOREP_MPI)Makefile.export
+-include $(LIB_DIR_SCOREP_SHMEM)Makefile.export
+-include $(LIB_DIR_SCOREP_SCORE)Makefile.export
+
 AM_CPPFLAGS += -DFRONTEND_BUILD -DCROSS_BUILD
 
 include ../build-includes/frontend-only.am

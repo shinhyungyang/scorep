@@ -91,6 +91,11 @@ build_external_check_targets:
 		$(am__cd) $(LIB_DIR_SCOREP_SHMEM) && $(MAKE) $(AM_MAKEFLAGS) $$targets; \
 	fi
 
+# When using external targets, also use corresponding exported data, if any.
+-include $(LIB_DIR_SCOREP_MPI)Makefile.export
+-include $(LIB_DIR_SCOREP_SHMEM)Makefile.export
+-include $(LIB_DIR_SCOREP_SCORE)Makefile.export
+
 AM_CPPFLAGS += -DBACKEND_BUILD_NOMPI
 
 frontend_bindir = @bindir@
