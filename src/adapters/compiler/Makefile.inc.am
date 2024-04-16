@@ -173,7 +173,6 @@ EXTRA_DIST += \
     $(SRC_ROOT)src/adapters/compiler/scorep_compiler_event_func_trace.inc.c \
     $(SRC_ROOT)src/adapters/compiler/scorep_compiler_event_plugin.inc.c \
     $(SRC_ROOT)src/adapters/compiler/scorep_compiler_event_vt_intel.inc.c \
-    $(SRC_ROOT)src/adapters/compiler/scorep_compiler_func_addr_hash.h \
     $(SRC_ROOT)src/adapters/compiler/scorep_compiler_plugin_begin.c \
     $(SRC_ROOT)src/adapters/compiler/scorep_compiler_plugin_end.c \
     $(SRC_ROOT)src/adapters/compiler/scorep_compiler_plugin.h \
