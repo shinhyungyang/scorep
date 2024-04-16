@@ -70,6 +70,7 @@ libscorep_measurement_la_LIBADD =        \
     libscorep_io_management.la           \
     libscorep_accelerator_management.la  \
     libutils.la                          \
+    $(libutils_la_needs_LIBS)            \
     libjenkins_hash.la                   \
     libscorep_addr2line.la               \
     $(libscorep_addr2line_la_needs_LIBS) \

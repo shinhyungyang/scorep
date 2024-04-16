@@ -38,7 +38,8 @@ libscorep_adapter_openacc_mgmt_la_LDFLAGS = \
     $(library_api_version_ldflags)
 
 libscorep_adapter_openacc_mgmt_la_LIBADD = \
-    $(LIB_DIR_SCOREP)libutils.la
+    libutils.la \
+    $(libutils_la_needs_LIBS)
 
 # event library for the OpenACC adapter
 

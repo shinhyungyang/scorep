@@ -15,7 +15,7 @@
 ## Copyright (c) 2009-2011,
 ## University of Oregon, Eugene, USA
 ##
-## Copyright (c) 2009-2011, 2017,
+## Copyright (c) 2009-2011, 2017, 2024,
 ## Forschungszentrum Juelich GmbH, Germany
 ##
 ## Copyright (c) 2009-2011,
@@ -37,7 +37,8 @@ allocator_test_SOURCES = $(SRC_ROOT)test/memory/scorep_allocator_test.c \
                          $(SRC_ROOT)common/utils/test/cutest/CuTest.h
 allocator_test_LDADD = \
     $(LIB_ROOT)libscorep_allocator.la \
-    $(LIB_ROOT)libutils.la
+    $(LIB_ROOT)libutils.la \
+    $(libutils_la_needs_LIBS)
 allocator_test_CPPFLAGS = $(AM_CPPFLAGS) \
                           -I$(PUBLIC_INC_DIR) \
                           $(UTILS_CPPFLAGS) \
@@ -53,6 +54,8 @@ bitset_test_CPPFLAGS = $(AM_CPPFLAGS) \
                        -I$(INC_ROOT)src/utils \
                        -I$(INC_DIR_COMMON_CUTEST) \
                        $(UTILS_CPPFLAGS)
-bitset_test_LDADD = $(LIB_ROOT)libutils.la
+bitset_test_LDADD = \
+    $(LIB_ROOT)libutils.la \
+    $(libutils_la_needs_LIBS)
 
 TESTS_SERIAL += bitset_test

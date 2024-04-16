@@ -6,7 +6,7 @@
 ## Copyright (c) 2022,
 ## Technische Universitaet Dresden, Germany
 ##
-## Copyright (c) 2023,
+## Copyright (c) 2023-2024,
 ## Forschungszentrum Juelich GmbH, Germany
 ##
 ## This software may be modified and distributed under the terms of
@@ -22,7 +22,8 @@ fasthashtab_monotonic_test_SOURCES = \
     $(SRC_ROOT)common/utils/test/cutest/CuTest.c \
     $(SRC_ROOT)common/utils/test/cutest/CuTest.h
 fasthashtab_monotonic_test_LDADD = \
-    $(LIB_ROOT)libutils.la
+    $(LIB_ROOT)libutils.la \
+    $(libutils_la_needs_LIBS)
 fasthashtab_monotonic_test_CPPFLAGS = \
     $(AM_CPPFLAGS) \
     -I$(PUBLIC_INC_DIR) \
@@ -37,7 +38,8 @@ fasthashtab_monotonic_jenkins_test_SOURCES = \
     $(SRC_ROOT)common/utils/test/cutest/CuTest.c \
     $(SRC_ROOT)common/utils/test/cutest/CuTest.h
 fasthashtab_monotonic_jenkins_test_LDADD = \
-    $(LIB_ROOT)libutils.la
+    $(LIB_ROOT)libutils.la \
+    $(libutils_la_needs_LIBS)
 fasthashtab_monotonic_jenkins_test_CPPFLAGS = \
     $(AM_CPPFLAGS) \
     -I$(PUBLIC_INC_DIR) \
@@ -55,7 +57,8 @@ fasthashtab_monotonic_header_definition_split_test_SOURCES = \
     $(SRC_ROOT)common/utils/test/cutest/CuTest.c \
     $(SRC_ROOT)common/utils/test/cutest/CuTest.h
 fasthashtab_monotonic_header_definition_split_test_LDADD = \
-    $(LIB_ROOT)libutils.la
+    $(LIB_ROOT)libutils.la \
+    $(libutils_la_needs_LIBS)
 fasthashtab_monotonic_header_definition_split_test_CPPFLAGS = \
     $(AM_CPPFLAGS) \
     -I$(PUBLIC_INC_DIR) \
@@ -71,7 +74,8 @@ fasthashtab_non_monotonic_test_SOURCES = \
     $(SRC_ROOT)common/utils/test/cutest/CuTest.c \
     $(SRC_ROOT)common/utils/test/cutest/CuTest.h
 fasthashtab_non_monotonic_test_LDADD = \
-    $(LIB_ROOT)libutils.la
+    $(LIB_ROOT)libutils.la \
+    $(libutils_la_needs_LIBS)
 fasthashtab_non_monotonic_test_CPPFLAGS = \
     $(AM_CPPFLAGS) \
     -I$(PUBLIC_INC_DIR) \
@@ -86,7 +90,8 @@ fasthashtab_non_monotonic_jenkins_test_SOURCES = \
     $(SRC_ROOT)common/utils/test/cutest/CuTest.c \
     $(SRC_ROOT)common/utils/test/cutest/CuTest.h
 fasthashtab_non_monotonic_jenkins_test_LDADD = \
-    $(LIB_ROOT)libutils.la
+    $(LIB_ROOT)libutils.la \
+    $(libutils_la_needs_LIBS)
 fasthashtab_non_monotonic_jenkins_test_CPPFLAGS = \
     $(AM_CPPFLAGS) \
     -I$(PUBLIC_INC_DIR) \
@@ -104,7 +109,8 @@ fasthashtab_non_monotonic_header_definition_split_test_SOURCES = \
     $(SRC_ROOT)common/utils/test/cutest/CuTest.c \
     $(SRC_ROOT)common/utils/test/cutest/CuTest.h
 fasthashtab_non_monotonic_header_definition_split_test_LDADD = \
-    $(LIB_ROOT)libutils.la
+    $(LIB_ROOT)libutils.la \
+    $(libutils_la_needs_LIBS)
 fasthashtab_non_monotonic_header_definition_split_test_CPPFLAGS = \
     $(AM_CPPFLAGS) \
     -I$(PUBLIC_INC_DIR) \
