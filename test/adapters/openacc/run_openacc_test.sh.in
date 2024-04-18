@@ -40,7 +40,7 @@ SRC_ROOT="@abs_top_srcdir@/.."
 # Get otf2print tool
 OTF2_PRINT="@OTF2_BINDIR@/otf2-print"
 
-./scorep -v --build-check --nocompiler --openacc @CC@ @OPENACC_CFLAGS@ $SRC_ROOT/test/adapters/openacc/openacc_test.c -o "$OPENACC_EXE" -I.
+./scorep -v --build-check --nocompiler --openacc @CC@ @OPENACC_CFLAGS@ $SRC_ROOT/test/adapters/openacc/openacc_test.c -o "$OPENACC_EXE" -I. -lm
 
 features=""
 for region in "" "regions"
