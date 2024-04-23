@@ -13,7 +13,7 @@
  * Copyright (c) 2009-2013,
  * University of Oregon, Eugene, USA
  *
- * Copyright (c) 2009-2016, 2019-2021, 2023,
+ * Copyright (c) 2009-2016, 2019-2021, 2023-2024,
  * Forschungszentrum Juelich GmbH, Germany
  *
  * Copyright (c) 2009-2013, 2015,
@@ -309,6 +309,14 @@ SCOREP_Score_Estimator::SCOREP_Score_Estimator( SCOREP_Score_Profile*    profile
     registerEvent( new SCOREP_Score_NameMatchEvent( "MpiCollectiveEnd",
                                                     region_set,
                                                     true ) );
+
+    region_set.clear();
+    SCOREP_SCORE_EVENT_COMM_CREATE;
+    registerEvent( new SCOREP_Score_NameMatchEvent( "CommCreate", region_set, true ) );
+
+    region_set.clear();
+    SCOREP_SCORE_EVENT_COMM_DESTROY;
+    registerEvent( new SCOREP_Score_NameMatchEvent( "CommDestroy", region_set, true ) );
 
     region_set.clear();
     SCOREP_SCORE_EVENT_MPI_NON_BLOCKING_COLLECTIVE;

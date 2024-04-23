@@ -13,7 +13,7 @@
  * Copyright (c) 2009-2013,
  * University of Oregon, Eugene, USA
  *
- * Copyright (c) 2009-2014, 2019,
+ * Copyright (c) 2009-2014, 2019, 2024,
  * Forschungszentrum Juelich GmbH, Germany
  *
  * Copyright (c) 2009-2013,
@@ -81,6 +81,7 @@
     SCOREP_SCORE_EVENT( "MPI_Irecv" ) \
     SCOREP_SCORE_EVENT( "MPI_Irecv_init" )
 
+/* Contains all collective commmunication and communicator events. */
 #define SCOREP_SCORE_EVENT_MPI_COLLECTIVE \
     SCOREP_SCORE_EVENT( "MPI_Allgather" ) \
     SCOREP_SCORE_EVENT( "MPI_Allgatherv" ) \
@@ -98,7 +99,32 @@
     SCOREP_SCORE_EVENT( "MPI_Reduce_scatter_block" ) \
     SCOREP_SCORE_EVENT( "MPI_Scan" ) \
     SCOREP_SCORE_EVENT( "MPI_Scatter" ) \
-    SCOREP_SCORE_EVENT( "MPI_Scatterv" )
+    SCOREP_SCORE_EVENT( "MPI_Scatterv" ) \
+    SCOREP_SCORE_EVENT( "MPI_Init" ) \
+    SCOREP_SCORE_EVENT( "MPI_Init_thread" ) \
+    SCOREP_SCORE_EVENT( "MPI_Comm_create" ) \
+    SCOREP_SCORE_EVENT( "MPI_Comm_dup" ) \
+    SCOREP_SCORE_EVENT( "MPI_Comm_dup_with_info" ) \
+    SCOREP_SCORE_EVENT( "MPI_Comm_split" ) \
+    SCOREP_SCORE_EVENT( "MPI_Comm_split_type" ) \
+    SCOREP_SCORE_EVENT( "MPI_Comm_create_group" ) \
+    SCOREP_SCORE_EVENT( "MPI_Comm_create_from_group" ) \
+    SCOREP_SCORE_EVENT( "MPI_Intercomm_create" ) \
+    SCOREP_SCORE_EVENT( "MPI_Intercomm_create_from_groups" ) \
+    SCOREP_SCORE_EVENT( "MPI_Intercomm_merge" ) \
+    SCOREP_SCORE_EVENT( "MPI_Comm_accept" ) \
+    SCOREP_SCORE_EVENT( "MPI_Comm_connect" ) \
+    SCOREP_SCORE_EVENT( "MPI_Comm_spawn" ) \
+    SCOREP_SCORE_EVENT( "MPI_Comm_spawn_multiple" ) \
+    SCOREP_SCORE_EVENT( "MPI_Comm_join" ) \
+    SCOREP_SCORE_EVENT( "MPI_Cart_create" ) \
+    SCOREP_SCORE_EVENT( "MPI_Cart_sub" ) \
+    SCOREP_SCORE_EVENT( "MPI_Graph_create" ) \
+    SCOREP_SCORE_EVENT( "MPI_Dist_graph_create" ) \
+    SCOREP_SCORE_EVENT( "MPI_Dist_graph_create_adjacent" ) \
+    SCOREP_SCORE_EVENT( "MPI_Finalize" ) \
+    SCOREP_SCORE_EVENT( "MPI_Comm_free" ) \
+    SCOREP_SCORE_EVENT( "MPI_Comm_disconnect" )
 
 #define SCOREP_SCORE_EVENT_MPI_NON_BLOCKING_COLLECTIVE \
     SCOREP_SCORE_EVENT( "MPI_Iallgather" ) \
@@ -117,7 +143,49 @@
     SCOREP_SCORE_EVENT( "MPI_Ireduce_scatter_block" ) \
     SCOREP_SCORE_EVENT( "MPI_Iscan" ) \
     SCOREP_SCORE_EVENT( "MPI_Iscatter" ) \
-    SCOREP_SCORE_EVENT( "MPI_Iscatterv" )
+    SCOREP_SCORE_EVENT( "MPI_Iscatterv" ) \
+    SCOREP_SCORE_EVENT( "MPI_Comm_idup" ) \
+    SCOREP_SCORE_EVENT( "MPI_Comm_idup_with_info" )
+
+/* Regions which trigger a CommCreate event
+ * Note: MPI_Init technically triggers two events, but
+ *       as it is a singular event that can be ignored.
+ */
+#define SCOREP_SCORE_EVENT_COMM_CREATE \
+    SCOREP_SCORE_EVENT( "MPI_Init" ) \
+    SCOREP_SCORE_EVENT( "MPI_Init_thread" ) \
+    SCOREP_SCORE_EVENT( "MPI_Comm_create" ) \
+    SCOREP_SCORE_EVENT( "MPI_Comm_dup" ) \
+    SCOREP_SCORE_EVENT( "MPI_Comm_dup_with_info" ) \
+    SCOREP_SCORE_EVENT( "MPI_Comm_idup" ) \
+    SCOREP_SCORE_EVENT( "MPI_Comm_idup_with_info" ) \
+    SCOREP_SCORE_EVENT( "MPI_Comm_split" ) \
+    SCOREP_SCORE_EVENT( "MPI_Comm_split_type" ) \
+    SCOREP_SCORE_EVENT( "MPI_Comm_create_group" ) \
+    SCOREP_SCORE_EVENT( "MPI_Comm_create_from_group" ) \
+    SCOREP_SCORE_EVENT( "MPI_Intercomm_create" ) \
+    SCOREP_SCORE_EVENT( "MPI_Intercomm_create_from_groups" ) \
+    SCOREP_SCORE_EVENT( "MPI_Intercomm_merge" ) \
+    SCOREP_SCORE_EVENT( "MPI_Comm_accept" ) \
+    SCOREP_SCORE_EVENT( "MPI_Comm_connect" ) \
+    SCOREP_SCORE_EVENT( "MPI_Comm_spawn" ) \
+    SCOREP_SCORE_EVENT( "MPI_Comm_spawn_multiple" ) \
+    SCOREP_SCORE_EVENT( "MPI_Comm_join" ) \
+    SCOREP_SCORE_EVENT( "MPI_Cart_create" ) \
+    SCOREP_SCORE_EVENT( "MPI_Cart_sub" ) \
+    SCOREP_SCORE_EVENT( "MPI_Graph_create" ) \
+    SCOREP_SCORE_EVENT( "MPI_Dist_graph_create" ) \
+    SCOREP_SCORE_EVENT( "MPI_Dist_graph_create_adjacent" )
+
+/* Regions which trigger a CommDestroy event
+ * Note: MPI_Finalize technically triggers two events, but
+ *       as it is a singular event, that can be ignored.
+ */
+#define SCOREP_SCORE_EVENT_COMM_DESTROY \
+    SCOREP_SCORE_EVENT( "MPI_Finalize" ) \
+    SCOREP_SCORE_EVENT( "MPI_Comm_free" ) \
+    SCOREP_SCORE_EVENT( "MPI_Comm_disconnect" )
+
 
 #define SCOREP_SCORE_EVENT_CUDASTREAMCREATE \
     SCOREP_SCORE_EVENT( "cuStreamCreate" ) \
