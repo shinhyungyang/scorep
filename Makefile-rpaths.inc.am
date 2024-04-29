@@ -69,8 +69,6 @@ ensure_ltlibraries_canonicalized: Makefile
 	done; \
 	touch $@
 
-DISTCLEANFILES += $(RPATHS_MAKEFILE)
-
 
 # ---
 # Dump noinst_LTLIBRARIES's `lib<name>_la_needs_LDFLAGS` and
@@ -106,45 +104,6 @@ $(noinst_lt_needs_libs):
 	if test -n "$${value// }"; then \
 	    echo "$$var = $$value" >> Makefile.export; \
 	fi
-
-$(RPATHS_MAKEFILE): Makefile
-	$(AM_V_GEN): > $(RPATHS_MAKEFILE); \
-	test -z "$(lib_lt_ldflags)" || $(MAKE) $(lib_lt_ldflags)
-
-lib_lt_ldflags = $(lib_LTLIBRARIES:.la=_la_LDFLAGS)
-$(lib_lt_ldflags): ensure_ltlibraries_canonicalized
-	@needs_rpaths_var=$$(echo "$@" | $(SED) "s|_LDFLAGS|_needs_RPATHS|"); \
-	needs_rpaths_value=$$(echo "$($@) $(LDFLAGS)" | $(AWK) ' \
-	    { \
-	        gsub(/-R +/, "-R"); \
-	        for ( i=1; i<=NF; i++ ) { \
-	            if ( match( $$i, /^-R/ ) ) { \
-	                count[$$i]++; \
-	                if ( count[$$i] == 1 ) { \
-	                    paths[idx++]=$$i \
-	                } \
-	            } \
-	        } \
-	    } \
-	    END { \
-	        for ( i=0; i<idx; i++ ) { \
-	            if ( length( result ) == 0 ) { \
-	                result=paths[i] \
-	            } else { \
-	                result=result " " paths[i] \
-	            } \
-	        } \
-	        print result \
-	    } \
-	'); \
-	echo "$$needs_rpaths_var = $$needs_rpaths_value" >> $(RPATHS_MAKEFILE)
-
-
-if HAVE_BUILD_SHARED_LT_LIBRARIES
-# Include generated $(RPATHS_MAKEFILE). Prevent automake-time inclusion
-# by expanding at configure time rather than automake time.
-@INLCUDE_RPATHS_MAKEFILE@
-endif HAVE_BUILD_SHARED_LT_LIBRARIES
 
 
 # ---

@@ -34,20 +34,9 @@
 AC_DEFUN_ONCE([AFS_LT_RPATHS], [
 # Needed to perform shared-objects-self-contained check only if we can use ldd.
 AC_REQUIRE([AFS_CPU_INSTRUCTION_SETS])
-m4_define([GEN_RPATHS_MAKEFILE], [Makefile.rpaths])
 
-AC_SUBST([RPATHS_MAKEFILE], GEN_RPATHS_MAKEFILE)
 AC_SUBST([CONFIG_EXTERNAL_LIBS_HPP], AFS_PACKAGE_TO_TOP[src/config-external-libs-]AFS_PACKAGE_BUILD_name[.hpp])
 AC_SUBST([CONFIG_EXTERNAL_LIBS_HPP_INCLUDE_GUARD], [CONFIG_EXTERNAL_LIBS_]AFS_PACKAGE_BUILD_NAME[_HPP])
 
-# Use @INLCUDE_RPATHS_MAKEFILE@ in Makefile.am to prevent automake-time
-# include but do make-time include instead. Already done in
-# Makefile-rpaths.inc.am.
-AC_SUBST([INLCUDE_RPATHS_MAKEFILE], "-include ./GEN_RPATHS_MAKEFILE")
-
-AC_CONFIG_COMMANDS(GEN_RPATHS_MAKEFILE, [make ]GEN_RPATHS_MAKEFILE[ || exit 1])
-
 AC_CONFIG_COMMANDS([Makefile.export], [make Makefile.export || exit 1])
-
-m4_undefine([GEN_RPATHS_MAKEFILE])
 ]) # AFS_LT_RPATHS
