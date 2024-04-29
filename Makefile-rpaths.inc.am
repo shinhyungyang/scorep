@@ -147,55 +147,57 @@ if HAVE_BUILD_SHARED_LT_LIBRARIES
 endif HAVE_BUILD_SHARED_LT_LIBRARIES
 
 
-# Generate the C++-header file $(CONFIG_EXTERNAL_LIBS_HPP) containing
-# information for linking and rpathing. The information is fed into a
-# std::map<std::string, la_object> via the rule lib_lt_libraries (see
-# below and generate-library-dependencies-la-object.hpp) which is used
-# by the <pkg>-config tools.
+# ---
+# Generate the C++-header file $(CONFIG_EXTERNAL_LIBS_HPP), i.e.,
+# `../src/config-external-libs-<AFS_PACKAGE_BUILD_name>.hpp`,
+# containing information for linking and rpathing of installed
+# libraries, intended to be used by the <pkg>-config tools. The
+# information is provided via the rules $(lib_lt_needs_libdirs)`,
+# `$(lib_lt_needs_libs)` and inserted into a std::map<std::string,
+# la_object> via the rule `$(gen_config_external_libs_body)`, see
+# below and the file generate-library-dependencies-la-object.hpp.
 #
-# We feed the information into the map by generating two preprocessor
-# defines per installed libtool library, providing information about
-# all external libraries <ext-lib> residing in <dir>, that are
-# required to link a static <lib>.a into a non-libtool program:
+# For each installed static libtool library <lib>.a, we provide two
+# preprocessor defines, containing information about all external
+# libraries <ext-lib> residing in <dir>, that are required to link
+# this static <lib>.a into a non-libtool program:
 #
-#   #define $(AFS_PACKAGE_BUILD_NAME)_<lib>_NEEDS_LIBDIRS <dir>[:<dir>]
-#   #define $(AFS_PACKAGE_BUILD_NAME)_<lib>_NEEDS_LIBS -l<ext-lib>[ -l<ext-lib>]
+#   #define $(AFS_PACKAGE_BUILD_NAME)_<lib>_NEEDS_LIBDIRS "<dir>[:<dir>]"
+#   #define $(AFS_PACKAGE_BUILD_NAME)_<lib>_NEEDS_LIBS "-l<ext-lib>[ -l<ext-lib>]"
 #
-# For shared <LIB>.so, these preprocessor defines are generated empty,
-# as the installed shared libs are supposed to be self-contained.
-#
-# Here, <dir> is supposed to be used as '-L<dir> -Wl,-rpath -Wl,<dir>' (by
+# <dir> is supposed to be used as '-L<dir> -Wl,-rpath -Wl,<dir>' (by
 # the <pkg>-config tool).
 #
-# In the static case, we rely on $(RPATHS_MAKEFILE) for the
-# _NEEDS_LIBDIRS generation, and on *_la_LIBADD and the global LIBS
-# variables for the _NEEDS_LIBS generation. See lib_lt_needs_libdirs
-# and lib_lt_needs_libs rules.
-# We ignore .la files in *_la_LIBADD variables. They originate from
-# noinst libraries.
+# For installed shared libtool libraries <lib>.so, these preprocessor
+# defines are generated empty, as the installed shared libs are
+# supposed to be self-contained, see rule
+# `shared-objects-self-contained`.
 
-BUILT_SOURCES += $(CONFIG_EXTERNAL_LIBS_HPP)
 CLEANFILES += $(CONFIG_EXTERNAL_LIBS_HPP)
 
-$(CONFIG_EXTERNAL_LIBS_HPP): Makefile $(RPATHS_MAKEFILE)
+$(CONFIG_EXTERNAL_LIBS_HPP): Makefile ensure_ltlibraries_canonicalized
 	$(AM_V_GEN): > $@; \
-	echo "#ifndef $(CONFIG_EXTERNAL_LIBS_HPP_INCLUDE_GUARD)" >> $@; \
-	echo "#define $(CONFIG_EXTERNAL_LIBS_HPP_INCLUDE_GUARD)" >> $@; \
-	echo "#include <generate-library-dependencies-la-object.hpp>" >> $@; \
-	echo "#include <map>" >> $@; \
-	echo "#define $(AFS_PACKAGE_BUILD_NAME)_BUILDDIR \"$(abs_builddir)\"" >> $@; \
-	echo "#define $(AFS_PACKAGE_BUILD_NAME)_LIBDIR \"$(libdir)\"" >> $@; \
-	test -z "$(lib_lt_needs_libdirs)" || $(MAKE) $(lib_lt_needs_libdirs); \
-	test -z "$(lib_lt_needs_libs)" || $(MAKE) $(lib_lt_needs_libs); \
-	echo "static void" >> $@; \
-	echo "add_library_dependencies_$(AFS_PACKAGE_BUILD_name)( std::map<std::string, la_object>* la_objects )" >> $@; \
-	echo "{" >> $@; \
-	test -z "$(lib_lt_libraries)" || $(MAKE) $(lib_lt_libraries); \
-	echo "}" >> $@; \
-	echo "#endif // $(CONFIG_EXTERNAL_LIBS_HPP_INCLUDE_GUARD)" >> $@;
+	printf '%s\n%s\n%s\n%s\n%s\n%s\n' \
+	       "#ifndef $(CONFIG_EXTERNAL_LIBS_HPP_INCLUDE_GUARD)" \
+	       "#define $(CONFIG_EXTERNAL_LIBS_HPP_INCLUDE_GUARD)" \
+	       "#include <generate-library-dependencies-la-object.hpp>" \
+	       "#include <map>" \
+	       "#define $(AFS_PACKAGE_BUILD_NAME)_BUILDDIR \"$(abs_builddir)\"" \
+	       "#define $(AFS_PACKAGE_BUILD_NAME)_LIBDIR \"$(libdir)\"" >> $@; \
+	$(MAKE) gen_config_external_libs_defines; \
+	printf '%s\n%s\n%s\n' \
+	       "static void" \
+	       "add_library_dependencies_$(AFS_PACKAGE_BUILD_name)( std::map<std::string, la_object>* la_objects )" \
+	       "{" >> $@; \
+	test -z "$(gen_config_external_libs_body)" || $(MAKE) $(gen_config_external_libs_body); \
+	printf '%s\n%s\n' \
+	       "}" \
+	       "#endif // $(CONFIG_EXTERNAL_LIBS_HPP_INCLUDE_GUARD)" >> $@;
 
-lib_lt_libraries = $(lib_LTLIBRARIES:.la=)
-$(lib_lt_libraries):
+gen_config_external_libs_defines: $(lib_lt_needs_libdirs) $(lib_lt_needs_libs)
+
+gen_config_external_libs_body = $(lib_LTLIBRARIES:.la=)
+$(gen_config_external_libs_body):
 	@echo "    (*la_objects)[ \"$@\" ] = la_object( \"$@\"," \
 	      "$(AFS_PACKAGE_BUILD_NAME)_BUILDDIR," \
 	      "$(AFS_PACKAGE_BUILD_NAME)_LIBDIR," \
@@ -206,19 +208,37 @@ $(lib_lt_libraries):
 
 if HAVE_BUILD_STATIC_LT_LIBRARIES
 
-lib_lt_needs_libdirs = lib_lt_needs_libdirs
-lib_lt_needs_libdirs:
-	@cat $(RPATHS_MAKEFILE) | $(AWK) ' \
+lib_lt_needs_libdirs = $(lib_LTLIBRARIES:.la=_la_LDFLAGS)
+$(lib_lt_needs_libdirs):
+	@needs_rpaths_var=$$(echo "$@" | $(SED) "s|_la_LDFLAGS|_NEEDS_LIBDIRS|"); \
+	needs_rpaths_value=$$(echo "$($@) $(LDFLAGS)" | $(AWK) ' \
 	    { \
-	        gsub( /_la_needs_RPATHS/, "_NEEDS_LIBDIRS" ); \
-	        define="#define $(AFS_PACKAGE_BUILD_NAME)_" $$1 " "; \
-	        gsub( /^lib[a-zA-Z0-9_]+LIBDIRS =/, "" ); \
-	        gsub( /^ -R/,"" ); \
-	        gsub( / -R/, ":" ); \
-	        gsub( / /, "" ); \
-	        print define "\"" $$0 "\"" \
-	    }' >> $(CONFIG_EXTERNAL_LIBS_HPP)
+	        gsub(/-R +/, "-R"); \
+	        for ( i=1; i<=NF; i++ ) { \
+	            if ( match( $$i, /^-R/ ) ) { \
+	                count[$$i]++; \
+	                if ( count[$$i] == 1 ) { \
+	                    gsub("-R", "", $$i); \
+	                    paths[idx++]=$$i \
+	                } \
+	            } \
+	        } \
+	    } \
+	    END { \
+	        for ( i=0; i<idx; i++ ) { \
+	            if ( length( result ) == 0 ) { \
+	                result=paths[i] \
+	            } else { \
+	                result=result ":" paths[i] \
+	            } \
+	        } \
+	        print result \
+	    } \
+	'); \
+	echo "#define $(AFS_PACKAGE_BUILD_NAME)_$$needs_rpaths_var \"$$needs_rpaths_value\"" >> $(CONFIG_EXTERNAL_LIBS_HPP)
 
+# Below, we ignore .la files in *_la_LIBADD variables as they originate from
+# noinst libraries that will be squashed into the installed libraries.
 lib_lt_needs_libs = $(lib_LTLIBRARIES:.la=_la_LIBADD)
 $(lib_lt_needs_libs):
 	@needs_libs_var=$$(echo "$@" | $(AWK) ' \
