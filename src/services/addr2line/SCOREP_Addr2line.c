@@ -1,7 +1,7 @@
 /*
  * This file is part of the Score-P software (http://www.score-p.org)
  *
- * Copyright (c) 2021-2022,
+ * Copyright (c) 2021-2022, 2024,
  * Forschungszentrum Juelich GmbH, Germany
  *
  * This software may be modified and distributed under the terms of
@@ -90,7 +90,8 @@ static uintptr_t* lt_begin_addrs;
     bfd*        abfd; \
     asymbol**   symbols; \
     const char* name; \
-    uint16_t    token
+    uint16_t    token; \
+    UTILS_Mutex abfd_mutex
 typedef struct lt_object lt_object;
 struct lt_object
 {
@@ -224,13 +225,14 @@ fill_lt_arrays_cb( struct dl_phdr_info* info, size_t unused, void* cnt )
         }
     }
 
-    lt_begin_addrs[ insert ]       = begin_addr_min;
-    lt_objects[ insert ].end_addr  = end_addr_max;
-    lt_objects[ insert ].base_addr = base_addr;
-    lt_objects[ insert ].abfd      = abfd;
-    lt_objects[ insert ].symbols   = symbols;
-    lt_objects[ insert ].name      = name;
-    lt_objects[ insert ].token     = SCOREP_ADDR2LINE_LT_OBJECT_TOKEN;
+    lt_begin_addrs[ insert ]        = begin_addr_min;
+    lt_objects[ insert ].end_addr   = end_addr_max;
+    lt_objects[ insert ].base_addr  = base_addr;
+    lt_objects[ insert ].abfd       = abfd;
+    lt_objects[ insert ].symbols    = symbols;
+    lt_objects[ insert ].name       = name;
+    lt_objects[ insert ].token      = SCOREP_ADDR2LINE_LT_OBJECT_TOKEN;
+    lt_objects[ insert ].abfd_mutex = UTILS_MUTEX_INIT;
 
     UTILS_DEBUG( "Use %s: base=%" PRIuPTR "; begin=%" PRIuPTR "; end=%" PRIuPTR "",
                  name, base_addr, begin_addr_min, end_addr_max );
@@ -390,6 +392,7 @@ struct lookup_bfd_t
 /* *INDENT-OFF* */
 static lt_object* lookup_so( uintptr_t addr );
 static void section_iterator( bfd* abfd, asection* section, void* payload );
+static inline void map_over_sections_locked( lt_object* handle, void* data );
 /* *INDENT-ON* */
 
 
@@ -458,7 +461,29 @@ SCOREP_Addr2line_SoLookupAddr( uintptr_t    offset,
     *( data.scl_found_begin_addr ) = false;
     *( data.scl_found_end_addr )   = false;
 
-    bfd_map_over_sections( so_handle->abfd, section_iterator, &data );
+    map_over_sections_locked( so_handle, &data );
+}
+
+
+static inline void
+map_over_sections_locked( lt_object* handle, void* data )
+{
+    /* From the BFD documentation: A given BFD cannot safely be used
+       from two threads at the same time; it is up to the application
+       to do any needed locking. However, it is ok for different
+       threads to work on different BFD objects at the same time.
+
+       See #371
+
+       The performance impact should be ok, as the lookup is usually
+       triggered from a FastHashtab's value ctor, where concurrent
+       threads are already synchronized if they try to lookup the same
+       address. However, we need to synchronize lookups from distinct
+       FastHashtab's buckets that access the same lt_object.
+     */
+    UTILS_MutexLock( &handle->abfd_mutex );
+    bfd_map_over_sections( handle->abfd, section_iterator, data );
+    UTILS_MutexUnlock( &handle->abfd_mutex );
 }
 
 
@@ -506,7 +531,7 @@ SCOREP_Addr2line_SoLookupAddrRange( uintptr_t    beginOffset,
     *( data.scl_found_begin_addr ) = false;
     *( data.scl_found_end_addr )   = false;
 
-    bfd_map_over_sections( so_handle->abfd, section_iterator, &data );
+    map_over_sections_locked( so_handle, &data );
 }
 
 
@@ -555,7 +580,7 @@ SCOREP_Addr2line_LookupAddr( uintptr_t    programCounterAddr,
         *( data.scl_found_begin_addr ) = false;
         *( data.scl_found_end_addr )   = false;
 
-        bfd_map_over_sections( handle->abfd, section_iterator, &data );
+        map_over_sections_locked( handle, &data );
     }
     else
     {
@@ -633,7 +658,7 @@ SCOREP_Addr2line_LookupAddrRange( uintptr_t    beginProgramCounterAddr,
         *( data.scl_found_begin_addr ) = false;
         *( data.scl_found_end_addr )   = false;
 
-        bfd_map_over_sections( handle->abfd, section_iterator, &data );
+        map_over_sections_locked( handle, &data );
     }
     else
     {
@@ -1029,6 +1054,7 @@ insert_rt_object_cb( struct dl_phdr_info* info, size_t unused, void* data )
     new->symbols      = symbols;
     new->name         = UTILS_CStr_dup( name );
     new->token        = ++scorep_rt_objopen_calls_tracked;
+    new->abfd_mutex   = UTILS_MUTEX_INIT;
     new->begin_addr   = begin_addr_min;
     new->next         = NULL;
     new->audit_cookie = id->cookie;
