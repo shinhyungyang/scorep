@@ -162,6 +162,9 @@ is_obj_relevant( const char* name )
          || strstr( name, "libscorep" )
          || strstr( name, "libcube4w" )
          || strstr( name, "libotf2" )
+         /* Explicitly ignore ld-linux[x].so, as we encountered cases where
+            the address space overlaps with runtime loaded libraries. */
+         || strstr( name, "ld-linux" )
          /* Don't be too aggressive about excluding things
             1. Initial parsing time not relevant
             2. Space only relevant if library with line info is never queried
@@ -749,11 +752,11 @@ lookup_so( uintptr_t addr )
     {
         size_t i = 0;
         while ( i < lt_object_count - 1
-                && lt_begin_addrs[ i + 1 ] < addr )
+                && lt_begin_addrs[ i + 1 ] <= addr )
         {
             ++i;
         }
-        if ( lt_objects[ i ].end_addr > addr )
+        if ( lt_objects[ i ].end_addr >= addr )
         {
             /* found addr in loadtime objects */
             return &lt_objects[ i ];
@@ -769,11 +772,11 @@ lookup_so( uintptr_t addr )
     {
         rt_object* rt_obj = scorep_rt_objects_head;
         while ( rt_obj->next
-                && rt_obj->next->begin_addr < addr )
+                && rt_obj->next->begin_addr <= addr )
         {
             rt_obj = rt_obj->next;
         }
-        if ( rt_obj->end_addr > addr )
+        if ( rt_obj->end_addr >= addr )
         {
             /* found addr in runtime objects */
             SCOREP_RWLock_ReaderUnlock( &scorep_rt_objects_rwlock.pending,
