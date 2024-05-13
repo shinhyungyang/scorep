@@ -330,6 +330,7 @@ init_abfd( const char* name, bfd** abfd, asymbol*** symbols, long* nSyms )
         UTILS_DEBUG( "Could not bfd-open %s", name );
         return;
     }
+    ( *abfd )->flags |= BFD_DECOMPRESS;
     if ( !bfd_check_format( *abfd, bfd_object ) )
     {
         UTILS_DEBUG( "abfd of %s not of type bfd_object", name );
