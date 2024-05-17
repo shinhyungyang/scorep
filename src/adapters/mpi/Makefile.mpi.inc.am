@@ -85,10 +85,16 @@ libscorep_adapter_mpi_mgmt_la_LIBADD += \
 
 if SCOREP_COMPILER_FC_CRAY
 if SCOREP_COMPILER_CC_CLANG
+if HAVE_BUILD_STATIC_LT_LIBRARIES
 # cc/CC are Clang, ftn is Cray
-# FLIBS needed for static linking only, provides symbol 'mpi_' references
-# in SCOREP_Fmpi_Init.f
+# FLIBS needed for static linking only, it provides 'mpi_' symbol references
+# in SCOREP_Fmpi_Init.f.
+# With FLIBS, a shared build fails during installcheck on daint, as the
+# binary doesn't find libgfortran (part of FLIBS), because it was not
+# rpathed by the compiler. The same shared build on lumi succeeds as the
+# single RPATH provided by the compiler happens to host libgfortran.
 libscorep_adapter_mpi_mgmt_la_LIBADD += $(FLIBS)
+endif HAVE_BUILD_STATIC_LT_LIBRARIES
 endif SCOREP_COMPILER_CC_CLANG
 endif SCOREP_COMPILER_FC_CRAY
 
