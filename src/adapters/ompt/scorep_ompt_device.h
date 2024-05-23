@@ -1,7 +1,7 @@
 /*
  * This file is part of the Score-P software (http://www.score-p.org)
  *
- * Copyright (c) 2023,
+ * Copyright (c) 2023-2024,
  * Forschungszentrum Juelich GmbH, Germany
  *
  * This software may be modified and distributed under the terms of
@@ -27,6 +27,7 @@ typedef struct scorep_ompt_target_data_t
 {
     const void* codeptr_ra;
     ompt_id_t   target_id;
+    bool        supports_device_tracing;
 } scorep_ompt_target_data_t;
 
 
@@ -76,8 +77,6 @@ typedef struct scorep_ompt_target_device_t
     uint64_t                       timestamp_host_ref_begin;
     uint64_t                       timestamp_device_ref_begin;
     double                         timestamp_sync_factor;
-
-    bool                           record_events;
 } scorep_ompt_target_device_t;
 
 
