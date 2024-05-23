@@ -61,7 +61,58 @@ device_tracing_handle_submit_record( const ompt_record_target_kernel_t callbackR
         region );
 }
 
-/* Callback functions */
+/* Callback-related functions */
+
+static inline void
+target_submit_emi_host_only( ompt_scope_endpoint_t endpoint,
+                             ompt_data_t*          targetData,
+                             ompt_id_t*            hostOpId,
+                             unsigned int          requestedNumTeams )
+{
+    scorep_ompt_target_data_t* data = ( scorep_ompt_target_data_t* )targetData->ptr;
+    switch ( endpoint )
+    {
+        case ompt_scope_begin:
+            /* Even though we do not use host_op_id, set a unique value to ensure that
+             * the value differs from data transfers as the runtime might reuse pointers. */
+            *hostOpId = scorep_ompt_get_unique_id();
+            SCOREP_EnterRegion( get_region( data->codeptr_ra, TOOL_EVENT_TARGET_KERNEL_LAUNCH ) );
+            break;
+        case ompt_scope_end:
+            SCOREP_ExitRegion( get_region( data->codeptr_ra, TOOL_EVENT_TARGET_KERNEL_LAUNCH ) );
+            break;
+        default:
+            break;
+    }
+}
+
+
+static inline void
+target_submit_emi_device_tracing( ompt_scope_endpoint_t endpoint,
+                                  ompt_data_t*          targetData,
+                                  ompt_id_t*            hostOpId,
+                                  unsigned int          requestedNumTeams )
+{
+    scorep_ompt_target_data_t* data = ( scorep_ompt_target_data_t* )targetData->ptr;
+    switch ( endpoint )
+    {
+        case ompt_scope_begin:
+        {
+            /* Even though we do not use host_op_id, set a unique value to ensure that
+             * the value differs from data transfers as the runtime might reuse pointers. */
+            *hostOpId = scorep_ompt_get_unique_id();
+            SCOREP_EnterRegion( get_region( data->codeptr_ra, TOOL_EVENT_TARGET_KERNEL_LAUNCH ) );
+            SCOREP_TriggerParameterUint64( parameters.callsite_id, ( uintptr_t )data->codeptr_ra );
+            break;
+        }
+        case ompt_scope_end:
+            SCOREP_ExitRegion( get_region( data->codeptr_ra, TOOL_EVENT_TARGET_KERNEL_LAUNCH ) );
+            break;
+        default:
+            break;
+    }
+}
+
 
 void
 scorep_ompt_cb_target_submit_emi( ompt_scope_endpoint_t endpoint,
@@ -83,9 +134,8 @@ scorep_ompt_cb_target_submit_emi( ompt_scope_endpoint_t endpoint,
     SCOREP_OMPT_RETURN_ON_INVALID_EVENT();
     SCOREP_OMPT_ENSURE_TARGET_DATA_NON_NULL( "target_submit_emi" );
 
-    /* Submit callback is invoked even though no callback has set the
-     * target_data field. This means that the other callbacks did not finish as
-     * the device tracing interface is not available */
+    /* Submit callback is invoked even though no callback has set the target_data field.
+     * This means that the other callbacks did not finish correctly */
     if ( !target_data->ptr )
     {
         SCOREP_IN_MEASUREMENT_DECREMENT();
@@ -93,22 +143,19 @@ scorep_ompt_cb_target_submit_emi( ompt_scope_endpoint_t endpoint,
     }
 
     scorep_ompt_target_data_t* data = ( scorep_ompt_target_data_t* )target_data->ptr;
-    switch ( endpoint )
+    if ( !data->supports_device_tracing )
     {
-        case ompt_scope_begin:
-        {
-            /* Even though we do not use host_op_id, set a unique value to ensure that
-             * the value differs from data transfers as the runtime might reuse pointers. */
-            *host_op_id = scorep_ompt_get_unique_id();
-            SCOREP_EnterRegion( get_region( data->codeptr_ra, TOOL_EVENT_TARGET_KERNEL_LAUNCH ) );
-            SCOREP_TriggerParameterUint64( parameters.callsite_id, ( uintptr_t )data->codeptr_ra );
-            break;
-        }
-        case ompt_scope_end:
-            SCOREP_ExitRegion( get_region( data->codeptr_ra, TOOL_EVENT_TARGET_KERNEL_LAUNCH ) );
-            break;
-        default:
-            break;
+        target_submit_emi_host_only( endpoint,
+                                     target_data,
+                                     host_op_id,
+                                     requested_num_teams );
+    }
+    else
+    {
+        target_submit_emi_device_tracing( endpoint,
+                                          target_data,
+                                          host_op_id,
+                                          requested_num_teams );
     }
 
     SCOREP_IN_MEASUREMENT_DECREMENT();

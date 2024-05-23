@@ -280,7 +280,6 @@ scorep_ompt_device_table_value_ctor( scorep_ompt_device_table_key_t* key,
     new_device->streams = NULL;
     add_device_stream( new_device, SCOREP_Location_GetCurrentCPULocation() );
 
-    new_device->record_events = true;
     return new_device;
 }
 
