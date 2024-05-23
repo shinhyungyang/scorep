@@ -56,6 +56,7 @@ EXTRA_DIST += $(srcdir)/CITATION.cff                                      \
               $(srcdir)/README.md                                         \
               $(srcdir)/THANKS                                            \
               $(srcdir)/build-config/downloads                            \
+              $(srcdir)/build-config/packages.sh                          \
               $(srcdir)/doc/doxygen-user/main_1.dox.in                    \
               $(srcdir)/doc/doxygen-user/main_10.dox.in                   \
               $(srcdir)/doc/doxygen-user/main_11.dox.in                   \
