@@ -69,11 +69,6 @@ then
     then
         packages_directory="$1"
         shift
-
-        if ! mkdir -p "${packages_directory}"
-        then
-            die "cannot create download directory '%s'" "${packages_directory}"
-        fi
     fi
 
     fetch="$(which wget) $quiet --content-disposition --continue" ||
@@ -84,6 +79,11 @@ fi
 if test $# -ne 0
 then
     die "unused arguments '%s'" "$*"
+fi
+
+if ! mkdir -p "${packages_directory}"
+then
+    die "cannot create download directory '%s'" "${packages_directory}"
 fi
 
 test -r "$srcdir/downloads" ||
