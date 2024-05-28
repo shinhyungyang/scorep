@@ -57,6 +57,8 @@ if HAVE_OPENMP_C_SUPPORT
 
 if HAVE_SCOREP_OMP_TPD
 
+if !HAVE_SCOREP_OMP_ANCESTRY
+
 check_PROGRAMS       += jacobi_omp_c
 jacobi_omp_c_SOURCES  = $(SRC_ROOT)test/jacobi/OpenMP/C/jacobi.mod.c       \
                         $(SRC_ROOT)test/jacobi/OpenMP/C/jacobi.c.opari.inc \
@@ -77,6 +79,8 @@ jacobi_omp_c_uninstrumented_CFLAGS  = $(AM_CFLAGS) $(OPENMP_CFLAGS)
 jacobi_omp_c_uninstrumented_LDADD   = -lm
 
 TESTS_OMP += jacobi_omp_c
+
+endif !HAVE_SCOREP_OMP_ANCESTRY
 
 endif HAVE_SCOREP_OMP_TPD
 
@@ -106,6 +110,8 @@ if HAVE_OPENMP_CXX_SUPPORT
 
 if HAVE_SCOREP_OMP_TPD
 
+if !HAVE_SCOREP_OMP_ANCESTRY
+
 check_PROGRAMS         += jacobi_omp_cxx
 jacobi_omp_cxx_SOURCES  = $(SRC_ROOT)test/jacobi/OpenMP/C++/jacobi.mod.cpp       \
                           $(SRC_ROOT)test/jacobi/OpenMP/C++/jacobi.cpp.opari.inc \
@@ -126,6 +132,8 @@ jacobi_omp_cxx_uninstrumented_CXXFLAGS = $(OPENMP_CXXFLAGS)
 jacobi_omp_cxx_uninstrumented_LDADD    = -lm
 
 TESTS_OMP += jacobi_omp_cxx
+
+endif !HAVE_SCOREP_OMP_ANCESTRY
 
 endif HAVE_SCOREP_OMP_TPD
 
@@ -166,6 +174,8 @@ if HAVE_OPENMP_FC_SUPPORT
 
 if HAVE_SCOREP_OMP_TPD
 
+if !HAVE_SCOREP_OMP_ANCESTRY
+
 if ! SCOREP_COMPILER_FC_CRAY
 # The cray fortran compiler bails out on #line directives so we just
 # deactivate the tests with opari2-preinstrumented fortran sources.
@@ -203,6 +213,8 @@ jacobi_omp_f90_uninstrumented_LDADD    = -lm
 TESTS_OMP += jacobi_omp_f90
 
 endif ! SCOREP_COMPILER_FC_CRAY
+
+endif !HAVE_SCOREP_OMP_ANCESTRY
 
 endif HAVE_SCOREP_OMP_TPD
 
