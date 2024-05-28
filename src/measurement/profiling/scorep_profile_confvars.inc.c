@@ -13,7 +13,7 @@
  * Copyright (c) 2009-2012,
  * University of Oregon, Eugene, USA
  *
- * Copyright (c) 2009-2014,
+ * Copyright (c) 2009-2014, 2024,
  * Forschungszentrum Juelich GmbH, Germany
  *
  * Copyright (c) 2009-2012, 2014
@@ -126,11 +126,6 @@ static const SCOREP_ConfigType_SetEntry profile_format_table[] = {
         "thread_tuple",
         SCOREP_PROFILE_OUTPUT_THREAD_TUPLE,
         "Sums all locations within a location group and store in addition some statistical data about the distribution among the location of a location group."
-    },
-    {
-        "key_threads",
-        SCOREP_PROFILE_OUTPUT_KEY_THREADS,
-        "Stores the initial location, the slowest location and the fastest location per process. Sums all other locations within a location group. The result is stored in Cube4 format."
     },
     {
         "cluster_threads",

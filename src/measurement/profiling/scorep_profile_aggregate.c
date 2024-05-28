@@ -1,6 +1,9 @@
 /*
  * This file is part of the Score-P software (http://www.score-p.org)
  *
+ * Copyright (c) 2024,
+ * Forschungszentrum Juelich GmbH, Germany
+ *
  * Copyright (c) 2014,
  * German Research School for Simulation Sciences GmbH, Juelich/Aachen, Germany
  *
@@ -228,13 +231,6 @@ scorep_profile_init_layout( const scorep_cube_writing_data* writeSet,
             layout->metric_list       += SCOREP_CUBE_METRIC_VISITS;
             layout->dense_metric_type  = SCOREP_CUBE_DATA_TUPLE;
             layout->sparse_metric_type = SCOREP_CUBE_DATA_TUPLE;
-            return;
-
-        case SCOREP_PROFILE_OUTPUT_KEY_THREADS:
-            layout->location_layout    = SCOREP_CUBE_LOCATION_KEY_THREADS;
-            layout->metric_list       += SCOREP_CUBE_METRIC_VISITS;
-            layout->dense_metric_type  = SCOREP_CUBE_DATA_SCALAR;
-            layout->sparse_metric_type = SCOREP_CUBE_DATA_SCALAR;
             return;
 
         case SCOREP_PROFILE_OUTPUT_CLUSTER_THREADS:

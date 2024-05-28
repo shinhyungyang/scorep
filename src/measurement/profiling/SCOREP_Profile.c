@@ -13,7 +13,7 @@
  * Copyright (c) 2009-2013,
  * University of Oregon, Eugene, USA
  *
- * Copyright (c) 2009-2018, 2020-2022,
+ * Copyright (c) 2009-2018, 2020-2022, 2024,
  * Forschungszentrum Juelich GmbH, Germany
  *
  * Copyright (c) 2009-2014,
@@ -677,15 +677,8 @@ SCOREP_Profile_Process( void )
     scorep_profile_assign_callpath_to_master();
     scorep_profile_assign_callpath_to_workers();
 
-    /* Perform clustering */
-    if ( scorep_profile_output_format == SCOREP_PROFILE_OUTPUT_KEY_THREADS )
-    {
-        scorep_profile_cluster_key_threads();
-    }
-
     if ( scorep_profile_output_format == SCOREP_PROFILE_OUTPUT_CLUSTER_THREADS )
     {
-        scorep_profile_init_num_threads_metric();
         scorep_profile_cluster_same_location();
     }
 }
@@ -1664,11 +1657,6 @@ dump_manifest( FILE* manifestFile, const char* relativeSourceDir, const char* ta
             SCOREP_ConfigManifestSectionEntry( manifestFile, name,
                                                "Sums all locations within a location group and stores in addition some statistical"
                                                " data about the distribution among the locations of a location group." );
-            break;
-        case SCOREP_PROFILE_OUTPUT_KEY_THREADS:
-            SCOREP_ConfigManifestSectionEntry( manifestFile, name,
-                                               "Stores the initial location, the slowest location and the fastest location per process. "
-                                               "Sums all other locations within a location group. The result is stored in Cube4 format." );
             break;
         case SCOREP_PROFILE_OUTPUT_CLUSTER_THREADS:
             SCOREP_ConfigManifestSectionEntry( manifestFile, name,
