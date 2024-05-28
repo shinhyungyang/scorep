@@ -90,7 +90,6 @@ libscorep_profile_la_SOURCES =                                              \
     $(SRC_ROOT)src/measurement/profiling/scorep_profile_task_switch.h       \
     $(SRC_ROOT)src/measurement/profiling/scorep_profile_cube4_writer.c      \
     $(SRC_ROOT)src/measurement/profiling/scorep_profile_cube4_writer.h      \
-    $(SRC_ROOT)src/measurement/profiling/scorep_profile_post_cluster.c      \
     $(SRC_ROOT)src/measurement/profiling/scorep_profile_aggregate.c         \
     $(SRC_ROOT)src/measurement/profiling/scorep_profile_aggregate.h         \
     $(SRC_ROOT)src/measurement/profiling/scorep_profile_io.c                \

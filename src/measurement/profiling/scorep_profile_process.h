@@ -110,10 +110,4 @@ scorep_profile_process_tasks( void );
 void
 scorep_profile_inclusify_visits( void );
 
-/**
-   Aggregates locations that have the same calltree structure.
- */
-void
-scorep_profile_cluster_same_location( void );
-
 #endif /* SCOREP_PROFILE_PROCESS_H */

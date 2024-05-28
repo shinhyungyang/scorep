@@ -676,11 +676,6 @@ SCOREP_Profile_Process( void )
     /* Register callpath and assign callpath handles to every node */
     scorep_profile_assign_callpath_to_master();
     scorep_profile_assign_callpath_to_workers();
-
-    if ( scorep_profile_output_format == SCOREP_PROFILE_OUTPUT_CLUSTER_THREADS )
-    {
-        scorep_profile_cluster_same_location();
-    }
 }
 
 
@@ -1657,11 +1652,6 @@ dump_manifest( FILE* manifestFile, const char* relativeSourceDir, const char* ta
             SCOREP_ConfigManifestSectionEntry( manifestFile, name,
                                                "Sums all locations within a location group and stores in addition some statistical"
                                                " data about the distribution among the locations of a location group." );
-            break;
-        case SCOREP_PROFILE_OUTPUT_CLUSTER_THREADS:
-            SCOREP_ConfigManifestSectionEntry( manifestFile, name,
-                                               "Clusters locations within a location group if they have the same calltree structure. "
-                                               "Sums locations within a cluster. Stores the result in Cube4 format." );
             break;
         case SCOREP_PROFILE_OUTPUT_TAU_SNAPSHOT:
             SCOREP_ConfigManifestSectionEntry( manifestFile, "tau/snapshot.<rank>.0.0", "TAU snapshot files." );

@@ -232,13 +232,6 @@ scorep_profile_init_layout( const scorep_cube_writing_data* writeSet,
             layout->dense_metric_type  = SCOREP_CUBE_DATA_TUPLE;
             layout->sparse_metric_type = SCOREP_CUBE_DATA_TUPLE;
             return;
-
-        case SCOREP_PROFILE_OUTPUT_CLUSTER_THREADS:
-            layout->location_layout    = SCOREP_CUBE_LOCATION_CLUSTER;
-            layout->metric_list       += SCOREP_CUBE_METRIC_VISITS;
-            layout->dense_metric_type  = SCOREP_CUBE_DATA_SCALAR;
-            layout->sparse_metric_type = SCOREP_CUBE_DATA_SCALAR;
-            return;
     }
 
     UTILS_BUG( "Requested output format %d without layout description.",

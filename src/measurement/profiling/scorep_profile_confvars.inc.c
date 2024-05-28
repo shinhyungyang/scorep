@@ -128,11 +128,6 @@ static const SCOREP_ConfigType_SetEntry profile_format_table[] = {
         "Sums all locations within a location group and store in addition some statistical data about the distribution among the location of a location group."
     },
     {
-        "cluster_threads",
-        SCOREP_PROFILE_OUTPUT_CLUSTER_THREADS,
-        "Clusters locations within a location group if they have the same calltree structure. Sums locations within a cluster. Stores the result in Cube4 format."
-    },
-    {
         "default",
         SCOREP_PROFILE_OUTPUT_DEFAULT,
         "Default format. If Cube4 is supported, Cube4 is the default "
