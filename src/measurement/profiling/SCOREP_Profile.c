@@ -1644,10 +1644,6 @@ dump_manifest( FILE* manifestFile, const char* relativeSourceDir, const char* ta
         case SCOREP_PROFILE_OUTPUT_CUBE_TUPLE:
             SCOREP_ConfigManifestSectionEntry( manifestFile, name, "Extended set of statistics in CUBE4 format." );
             break;
-        case SCOREP_PROFILE_OUTPUT_THREAD_SUM:
-            SCOREP_ConfigManifestSectionEntry( manifestFile, name,
-                                               "Sums all locations within a location group and stores the data in Cube4 format." );
-            break;
         case SCOREP_PROFILE_OUTPUT_THREAD_TUPLE:
             SCOREP_ConfigManifestSectionEntry( manifestFile, name,
                                                "Sums all locations within a location group and stores in addition some statistical"

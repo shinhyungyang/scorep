@@ -118,11 +118,6 @@ static const SCOREP_ConfigType_SetEntry profile_format_table[] = {
         "Stores an extended set of statistics in Cube4 format."
     },
     {
-        "thread_sum",
-        SCOREP_PROFILE_OUTPUT_THREAD_SUM,
-        "Sums all locations within a location group and stores the data in Cube4 format."
-    },
-    {
         "thread_tuple",
         SCOREP_PROFILE_OUTPUT_THREAD_TUPLE,
         "Sums all locations within a location group and store in addition some statistical data about the distribution among the location of a location group."
