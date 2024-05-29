@@ -680,9 +680,11 @@ SCOREP_Profile_Process( void )
 
 
 /**
-   Writes the Profile. The output format can be set via environment variable
-   SCOREP_PROFILING_FORMAT. Possible values are TauSnapshot, Cube4, Default.
-   Should be called after unification.
+   Writes the Profile. The file is written either as a cubex file or in TAU
+   snapshot format. The output format can be set via environment variable
+   SCOREP_PROFILING_FORMAT. Possible values are tau_snapshot, cube4, cube_tuple,
+   and default.
+   This has to be called after unification.
  */
 static void
 write( void )

@@ -13,7 +13,7 @@
  * Copyright (c) 2009-2011,
  * University of Oregon, Eugene, USA
  *
- * Copyright (c) 2009-2011, 2013, 2019,
+ * Copyright (c) 2009-2011, 2013, 2019, 2024,
  * Forschungszentrum Juelich GmbH, Germany
  *
  * Copyright (c) 2009-2011, 2014
@@ -66,17 +66,6 @@ typedef struct
 } scorep_cube4_definitions_map;
 
 /**
- * Contains a list of possible CUBE location layouts.
- */
-typedef enum
-{
-    SCOREP_CUBE_LOCATION_ALL,
-    SCOREP_CUBE_LOCATION_ONE_PER_PROCESS,
-    SCOREP_CUBE_LOCATION_KEY_THREADS,
-    SCOREP_CUBE_LOCATION_CLUSTER
-} scorep_cube_location_layout;
-
-/**
  * Contains a list of possible CUBE data types.
  */
 typedef enum
@@ -102,10 +91,9 @@ typedef enum
  */
 typedef struct
 {
-    scorep_cube_location_layout location_layout;
-    scorep_cube_metric_list     metric_list;
-    scorep_cube_data_type       dense_metric_type;
-    scorep_cube_data_type       sparse_metric_type;
+    scorep_cube_metric_list metric_list;
+    scorep_cube_data_type   dense_metric_type;
+    scorep_cube_data_type   sparse_metric_type;
 } scorep_cube_layout;
 
 /**

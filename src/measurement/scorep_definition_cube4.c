@@ -1159,146 +1159,6 @@ write_all_location_definitions( cube_t*                   myCube,
     return locations;
 }
 
-/**
-   Writes key location definitions for one process to Cube.
-   @param myCube  Pointer to Cube instance.
-   @param process Pointer to CUBE location group definition for
-                  which it writes locations.
- */
-static void
-write_aggregated_locations_for_one_process( cube_t*              myCube,
-                                            cube_location_group* process )
-{
-    cube_def_location( myCube,
-                       "aggregated threads",
-                       0,
-                       CUBE_LOCATION_TYPE_CPU_THREAD,
-                       process );
-}
-
-/**
-   Writes one location definition per process to Cube.
-   @param myCube    Pointer to Cube instance.
-   @param manager   Pointer to Score-P definition manager with unified definitions.
- */
-static void
-write_one_location_per_process( cube_t*                   myCube,
-                                SCOREP_DefinitionManager* manager )
-{
-    /* Location group (processes) mapping of global ids to cube definitions */
-    cube_location_group** location_groups =
-        write_location_group_definitions( myCube, manager );
-
-    for ( uint32_t rank = 0; rank < manager->location_group.counter; rank++ )
-    {
-        write_aggregated_locations_for_one_process( myCube,
-                                                    location_groups[ rank ] );
-    }
-    free( location_groups );
-}
-
-/**
-   Writes key location definitions for one process to Cube.
-   @param myCube  Pointer to Cube instance.
-   @param process Pointer to CUBE location group definition for
-                  which it writes locations.
- */
-static void
-write_key_locations_for_one_process( cube_t*              myCube,
-                                     cube_location_group* process )
-{
-    cube_def_location( myCube,
-                       "master thread",
-                       0,
-                       CUBE_LOCATION_TYPE_CPU_THREAD,
-                       process );
-    cube_def_location( myCube,
-                       "fastest thread",
-                       1,
-                       CUBE_LOCATION_TYPE_CPU_THREAD,
-                       process );
-    cube_def_location( myCube,
-                       "slowest thread",
-                       2,
-                       CUBE_LOCATION_TYPE_CPU_THREAD,
-                       process );
-    cube_def_location( myCube,
-                       "aggregated worker threads",
-                       3,
-                       CUBE_LOCATION_TYPE_CPU_THREAD,
-                       process );
-}
-
-
-/**
-   Writes key location definitions for all processes to Cube.
-   @param myCube   Pointer to Cube instance.
-   @param manager  Pointer to Score-P definition manager with unified definitions.
- */
-static void
-write_key_locations( cube_t*                   myCube,
-                     SCOREP_DefinitionManager* manager )
-{
-    /* Location group (processes) mapping of global ids to cube definitions */
-    cube_location_group** location_groups =
-        write_location_group_definitions( myCube, manager );
-
-    for ( uint32_t rank = 0; rank < manager->location_group.counter; rank++ )
-    {
-        write_key_locations_for_one_process( myCube, location_groups[ rank ] );
-    }
-    free( location_groups );
-}
-
-/**
-   Writes cluster location definitions fro one process to Cube.
-   @param myCube  Pointer to Cube instance.
-   @param process Pointer to CUBE location group definition for
-                  which it writes locations.
-   @param number  The number of locations.
- */
-static void
-write_cluster_locations_per_process( cube_t*              myCube,
-                                     cube_location_group* process,
-                                     uint32_t             number )
-{
-    for ( uint32_t cluster = 0; cluster < number; cluster++ )
-    {
-        char name[ LOCATION_NAME_BUFFER_LENGTH ];
-        snprintf( name, LOCATION_NAME_BUFFER_LENGTH, "cluster %" PRIu32, cluster );
-        cube_def_location( myCube,
-                           name,
-                           cluster,
-                           CUBE_LOCATION_TYPE_CPU_THREAD,
-                           process );
-    }
-}
-
-/**
-   Writes one location definitions per process to Cube.
-   @param myCube    Pointer to Cube instance.
-   @param manager   Pointer to Score-P definition manager with unified definitions.
-   @param nCluster  List of number of clusters per process.
- */
-static void
-write_cluster_locations( cube_t*                   myCube,
-                         SCOREP_DefinitionManager* manager,
-                         uint32_t*                 nCluster )
-{
-    /* Location group (processes) mapping of global ids to cube definitions */
-    cube_location_group** location_groups =
-        write_location_group_definitions( myCube, manager );
-
-    for ( uint32_t rank = 0; rank < manager->location_group.counter; rank++ )
-    {
-        write_cluster_locations_per_process( myCube,
-                                             location_groups[ rank ],
-                                             nCluster[ rank ] );
-    }
-    free( location_groups );
-}
-
-
 static void
 scorep_write_cube_location_property( cube_t*                   myCube,
                                      SCOREP_DefinitionManager* manager,
@@ -1451,19 +1311,16 @@ write_location_to_cube( scorep_system_tree_seq*            definition,
 {
     cube_location* current = NULL;
 
-    if ( writerData->layout->location_layout == SCOREP_CUBE_LOCATION_ALL )
-    {
-        cube_location_group* parent   = forChildren.ptr;
-        uint64_t             sub_type = scorep_system_tree_seq_get_sub_type( definition );
-        cube_location_type   class    = convert_to_cube_location_type( sub_type );
+    cube_location_group* parent   = forChildren.ptr;
+    uint64_t             sub_type = scorep_system_tree_seq_get_sub_type( definition );
+    cube_location_type   class    = convert_to_cube_location_type( sub_type );
 
-        char* display_name = scorep_system_tree_seq_get_name( definition, copy,
-                                                              writerData->name_data );
+    char* display_name = scorep_system_tree_seq_get_name( definition, copy,
+                                                          writerData->name_data );
 
-        current = cube_def_location( writerData->my_cube,
-                                     display_name, copy, class, parent );
-        free( display_name );
-    }
+    current = cube_def_location( writerData->my_cube,
+                                 display_name, copy, class, parent );
+    free( display_name );
 
     scorep_system_tree_seq_child_param for_children;
     for_children.ptr = current;
@@ -1489,22 +1346,6 @@ write_location_group_to_cube( scorep_system_tree_seq*            definition,
                                                             sequence_no,
                                                             class,
                                                             parent );
-
-    switch ( writerData->layout->location_layout )
-    {
-        case SCOREP_CUBE_LOCATION_ONE_PER_PROCESS:
-            write_aggregated_locations_for_one_process( writerData->my_cube, current );
-            break;
-
-        case SCOREP_CUBE_LOCATION_KEY_THREADS:
-            write_key_locations_for_one_process( writerData->my_cube, current );
-            break;
-
-        case SCOREP_CUBE_LOCATION_CLUSTER:
-            write_cluster_locations_per_process( writerData->my_cube, current,
-                                                 writerData->num_locations[ index ] );
-            break;
-    }
 
     index++;
 
@@ -1618,27 +1459,11 @@ scorep_write_definitions_to_cube4( cube_t*                       myCube,
         }
         else
         {
-            switch ( layout->location_layout )
-            {
-                case SCOREP_CUBE_LOCATION_ALL:
-                    location_map = write_all_location_definitions( myCube, manager,
-                                                                   nLocations );
-                    scorep_write_cube_location_property( myCube, manager, location_map );
-                    write_cartesian_definitions( myCube, manager, map, location_map );
-                    free( location_map );
-                    break;
-
-                case SCOREP_CUBE_LOCATION_ONE_PER_PROCESS:
-                    write_one_location_per_process( myCube, manager );
-                    break;
-
-                case SCOREP_CUBE_LOCATION_KEY_THREADS:
-                    write_key_locations( myCube, manager );
-                    break;
-                case SCOREP_CUBE_LOCATION_CLUSTER:
-                    write_cluster_locations( myCube, manager, locationsPerRank );
-                    break;
-            }
+            location_map = write_all_location_definitions( myCube, manager,
+                                                           nLocations );
+            scorep_write_cube_location_property( myCube, manager, location_map );
+            write_cartesian_definitions( myCube, manager, map, location_map );
+            free( location_map );
         }
     }
 }
