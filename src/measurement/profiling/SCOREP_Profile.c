@@ -1644,11 +1644,6 @@ dump_manifest( FILE* manifestFile, const char* relativeSourceDir, const char* ta
         case SCOREP_PROFILE_OUTPUT_CUBE_TUPLE:
             SCOREP_ConfigManifestSectionEntry( manifestFile, name, "Extended set of statistics in CUBE4 format." );
             break;
-        case SCOREP_PROFILE_OUTPUT_THREAD_TUPLE:
-            SCOREP_ConfigManifestSectionEntry( manifestFile, name,
-                                               "Sums all locations within a location group and stores in addition some statistical"
-                                               " data about the distribution among the locations of a location group." );
-            break;
         case SCOREP_PROFILE_OUTPUT_TAU_SNAPSHOT:
             SCOREP_ConfigManifestSectionEntry( manifestFile, "tau/snapshot.<rank>.0.0", "TAU snapshot files." );
             break;

@@ -146,11 +146,6 @@ uint32_t
 scorep_profile_get_aggregated_items( uint32_t                    threadNum,
                                      SCOREP_Profile_OutputFormat format )
 {
-    switch ( format )
-    {
-        case SCOREP_PROFILE_OUTPUT_THREAD_TUPLE:
-            return 1;
-    }
     return threadNum;
 }
 
@@ -161,15 +156,6 @@ scorep_profile_aggregate_ ## type ( type** localValues,                         
                                     type** aggregatedValues,                        \
                                     scorep_cube_writing_data* writeSet )            \
 {                                                                                   \
-    switch( writeSet->format )                                                      \
-    {                                                                               \
-    case SCOREP_PROFILE_OUTPUT_THREAD_TUPLE:                                        \
-        aggregate_key_values_ ## type( *localValues,                                \
-                                       *aggregatedValues, writeSet );               \
-        return;                                                                     \
-                                                                                    \
-    }                                                                               \
-                                                                                    \
     /* No aggregation: avoid a copy by switching both pointers */                   \
     type* swap = *localValues;                                                      \
     *localValues = *aggregatedValues;                                               \
@@ -210,13 +196,6 @@ scorep_profile_init_layout( const scorep_cube_writing_data* writeSet,
             layout->location_layout    = SCOREP_CUBE_LOCATION_ALL;
             layout->metric_list       += SCOREP_CUBE_METRIC_VISITS;
             layout->dense_metric_type  = SCOREP_CUBE_DATA_SCALAR;
-            layout->sparse_metric_type = SCOREP_CUBE_DATA_TUPLE;
-            return;
-
-        case SCOREP_PROFILE_OUTPUT_THREAD_TUPLE:
-            layout->location_layout    = SCOREP_CUBE_LOCATION_ONE_PER_PROCESS;
-            layout->metric_list       += SCOREP_CUBE_METRIC_VISITS;
-            layout->dense_metric_type  = SCOREP_CUBE_DATA_TUPLE;
             layout->sparse_metric_type = SCOREP_CUBE_DATA_TUPLE;
             return;
     }

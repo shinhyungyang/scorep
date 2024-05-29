@@ -17,7 +17,7 @@
 ## directory for details.
 ##
 
-formats="TAU_SNAPSHOT CUBE_TUPLE THREAD_TUPLE"
+formats="TAU_SNAPSHOT CUBE_TUPLE"
 
 if test -f ./jacobi_mpi_omp_c; then
     for format in $formats; do
