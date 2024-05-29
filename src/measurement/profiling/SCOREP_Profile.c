@@ -681,17 +681,13 @@ SCOREP_Profile_Process( void )
 
 /**
    Writes the Profile. The output format can be set via environment variable
-   SCOREP_PROFILING_FORMAT. Possible values are None, TauSnapshot, Cube4, Default.
+   SCOREP_PROFILING_FORMAT. Possible values are TauSnapshot, Cube4, Default.
    Should be called after unification.
  */
 static void
 write( void )
 {
-    if ( scorep_profile_output_format == SCOREP_PROFILE_OUTPUT_NONE )
-    {
-        return;
-    }
-    else if ( scorep_profile_output_format == SCOREP_PROFILE_OUTPUT_TAU_SNAPSHOT )
+    if ( scorep_profile_output_format == SCOREP_PROFILE_OUTPUT_TAU_SNAPSHOT )
     {
         scorep_profile_write_tau_snapshot();
     }

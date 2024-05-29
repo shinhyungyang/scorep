@@ -98,11 +98,6 @@ bool scorep_profile_enable_core_files;
  */
 static const SCOREP_ConfigType_SetEntry profile_format_table[] = {
     {
-        "none",
-        SCOREP_PROFILE_OUTPUT_NONE,
-        "No profile output. This does not disable profile recording."
-    },
-    {
         "tau_snapshot",
         SCOREP_PROFILE_OUTPUT_TAU_SNAPSHOT,
         "Tau snapshot format."
