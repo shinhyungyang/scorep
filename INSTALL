@@ -630,6 +630,12 @@ variables:
               Path to libunwind headers: libunwind.h
   LIBUNWIND_LIB
               Path to libunwind libraries.
+  LIBUNWIND_EXTRA_LIBS
+              Extra libraries required to use libunwind
+  LIBUNWIND_EXTRA_LDFLAGS
+              Extra link flags required to use libunwind
+  LIBUNWIND_EXTRA_CPPFLAGS
+              Extra C preprocesser flags requried to use libunwind
   NVCC
               NVIDIA CUDA compiler command
   LIBCUDART_INCLUDE
@@ -653,10 +659,22 @@ variables:
               Path to liblustreapi headers: lustre/lustreapi.h
   LIBLUSTREAPI_LIB
               Path to liblustreapi libraries.
+  LIBLUSTREAPI_EXTRA_LIBS
+              Extra libraries required to use liblustreapi
+  LIBLUSTREAPI_EXTRA_LDFLAGS
+              Extra link flags required to use liblustreapi
+  LIBLUSTREAPI_EXTRA_CPPFLAGS
+              Extra C preprocesser flags requried to use liblustreapi
   LIBBFD_INCLUDE
               Path to libbfd headers: bfd.h. Superseded by --with-libbfd
               variants.
   LIBBFD_LIB  Path to libbfd libraries. Superseded by --with-libbfd variants.
+  LIBBFD_EXTRA_LIBS
+              Extra libraries required to use libbfd
+  LIBBFD_EXTRA_LDFLAGS
+              Extra link flags required to use libbfd
+  LIBBFD_EXTRA_CPPFLAGS
+              Extra C preprocesser flags requried to use libbfd
   ROCM_PATH   Base directory of the AMD ROCm installation
   LIBAMDHIP64_INCLUDE
               Path to libamdhip64 headers: hip/hip_runtime.h

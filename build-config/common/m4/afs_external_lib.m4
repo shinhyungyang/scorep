@@ -128,6 +128,9 @@ AC_ARG_WITH(_afs_lib_name[-lib],
 dnl
 m4_ifnblank([$3], [AC_ARG_VAR(_afs_lib_NAME[]_INCLUDE, [Path to ]_afs_lib_name[ headers: $3. Superseded by --with-]_afs_lib_name[ variants.])])dnl
 AC_ARG_VAR(_afs_lib_NAME[]_LIB, [Path to ]_afs_lib_name[ libraries. Superseded by --with-]_afs_lib_name[ variants.])dnl
+m4_ifnblank([$3], [AC_ARG_VAR(_afs_lib_NAME[]_EXTRA_CPPFLAGS, [Extra C preprocesser flags requried to use ]_afs_lib_name[.])])dnl
+AC_ARG_VAR(_afs_lib_NAME[]_EXTRA_LIBS, [Extra libraries required to use ]_afs_lib_name[.])dnl
+AC_ARG_VAR(_afs_lib_NAME[]_EXTRA_LDFLAGS, [Extra link flags required to use ]_afs_lib_name[.])dnl
 dnl
 # Supersede environment variables if --with-libLIBRARY-NAME option
 # given. Unset env variables to prevent further processing.
@@ -239,7 +242,7 @@ AS_IF([test "${_afs_lib_withval_include:+set}" != set],
     [AC_MSG_ERROR([internal: _afs_lib_withval_include not set])])])
 dnl
 dnl Execute either CHECK-MACRO or DOWNLOAD-MACRO
-_afs_lib_LIBS="-l[]_afs_lib"
+_afs_lib_LIBS="-l[]_afs_lib ${_afs_lib_NAME[]_EXTRA_LIBS}"
 m4_ifnblank([$4], [
 dnl CF: Cannot get AS_IF to work here
 if test "x${_afs_lib_download}" = xyes; then :
@@ -261,9 +264,9 @@ else])
              [dnl Search _afs_lib_withval_lib for LIBRARY-NAME (-Ldir).
               dnl Add _afs_lib_withval_lib to the run-time path of a program that
               dnl links LIBRARY-NAME either directly or via a libtool library (-Rdir).
-              _afs_lib_LDFLAGS="-L${_afs_lib_withval_lib} -R${_afs_lib_withval_lib}"])
+              _afs_lib_LDFLAGS="-L${_afs_lib_withval_lib} -R${_afs_lib_withval_lib} ${_afs_lib_NAME[]_EXTRA_LDFLAGS}"])
          m4_ifnblank([$3], [AS_IF([test "x${_afs_lib_withval_include}" != xyes],
-             [_afs_lib_CPPFLAGS="-I${_afs_lib_withval_include}"])])])
+             [_afs_lib_CPPFLAGS="-I${_afs_lib_withval_include} ${_afs_lib_NAME[]_EXTRA_CPPFLAGS}"])])])
     dnl
     dnl CHECK-MACRO can use and modify the AC_SUBST variables
     dnl _afs_lib_LIBS, _afs_lib_LDFLAGS, [_afs_lib_CPPFLAGS,] and is
