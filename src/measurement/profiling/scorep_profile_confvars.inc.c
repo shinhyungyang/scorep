@@ -100,7 +100,7 @@ static const SCOREP_ConfigType_SetEntry profile_format_table[] = {
     {
         "tau_snapshot",
         SCOREP_PROFILE_OUTPUT_TAU_SNAPSHOT,
-        "Tau snapshot format."
+        "Tau snapshot format. Limited to CPU locations (No Metric or GPU locations)."
     },
     {
         "cube4",
@@ -110,7 +110,7 @@ static const SCOREP_ConfigType_SetEntry profile_format_table[] = {
     {
         "cube_tuple",
         SCOREP_PROFILE_OUTPUT_CUBE_TUPLE,
-        "Stores an extended set of statistics in Cube4 format."
+        "Stores an extended set of statistics (min, avg, max, sum, sum of squares) in Cube4 format."
     },
     {
         "default",
