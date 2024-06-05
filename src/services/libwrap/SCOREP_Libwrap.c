@@ -76,6 +76,7 @@ struct SCOREP_LibwrapHandle
     UTILS_Mutex                     lock;
     struct scorep_gotcha_handle*    gotcha_head;
     struct scorep_gotcha_handle**   gotcha_tail;
+    char                            gotcha_tool_name[];
 };
 
 /** Library wrapper handles */
@@ -434,8 +435,11 @@ SCOREP_Libwrap_Create( SCOREP_LibwrapHandle**          outHandle,
      * to create the wrapper. Other threads may call libwrap_plugin_api_create
      * only if the handle is still NULL.
      */
-    SCOREP_LibwrapHandle* handle = calloc( 1, sizeof( *handle ) );
+    size_t                tool_name_length = strlen( "Score-P ()" ) + strlen( attributes->name ) + 1;
+    SCOREP_LibwrapHandle* handle           = calloc( 1, sizeof( *handle ) + tool_name_length );
     UTILS_ASSERT( handle );
+
+    snprintf( handle->gotcha_tool_name, tool_name_length, "Score-P (%s)", attributes->name );
 
     /* Initialize the new library wrapper handle */
     handle->attributes  = attributes;
@@ -501,7 +505,7 @@ SCOREP_Libwrap_EnableWrapper( SCOREP_LibwrapHandle*          handle,
     wrap_actions->name            = gotcha_handle->name;
     wrap_actions->wrapper_pointer = wrapper;
     wrap_actions->function_handle = &gotcha_handle->wrappee_handle;
-    enum gotcha_error_t ret = gotcha_wrap( wrap_actions, 1, "Score-P" );
+    enum gotcha_error_t ret = gotcha_wrap( wrap_actions, 1, handle->gotcha_tool_name );
     if ( GOTCHA_INTERNAL == ret )
     {
         /* some internal error, wrapping not done and wrap_actions not referenced */
