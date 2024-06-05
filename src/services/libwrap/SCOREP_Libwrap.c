@@ -65,7 +65,6 @@ struct scorep_gotcha_handle
     struct scorep_gotcha_handle* next;
     gotcha_wrappee_handle_t      wrappee_handle;
     gotcha_binding_t             wrap_actions;
-    char                         name[];
 };
 
 /** Data structure for library wrapper handle */
@@ -494,15 +493,27 @@ SCOREP_Libwrap_EnableWrapper( SCOREP_LibwrapHandle*          handle,
     }
 
     UTILS_DEBUG_ENTRY( "%s, %s, %s:%d", handle->attributes->name, symbolName, file, line );
+    if ( regionOut )
+    {
+        *regionOut = SCOREP_Definitions_NewRegion( prettyName,
+                                                   symbolName,
+                                                   file ? SCOREP_Definitions_NewSourceFile( file )
+                                                   : SCOREP_INVALID_SOURCE_FILE,
+                                                   line,
+                                                   SCOREP_INVALID_LINE_NO,
+                                                   paradigm,
+                                                   regionType );
+        symbolName = SCOREP_RegionHandle_GetCanonicalName( *regionOut );
+    }
+    else
+    {
+        SCOREP_StringHandle symbol_handle = SCOREP_Definitions_NewString( symbolName );
+        symbolName = SCOREP_StringHandle_Get( symbol_handle );
+    }
 
-    size_t                       funcname_length = strlen( symbolName ) + 1;
-    struct scorep_gotcha_handle* gotcha_handle   =
-        calloc( 1, sizeof( *gotcha_handle ) + funcname_length );
-    memcpy( gotcha_handle->name, symbolName, funcname_length );
-    gotcha_handle->next = NULL;
-
-    gotcha_binding_t* wrap_actions = &gotcha_handle->wrap_actions;
-    wrap_actions->name            = gotcha_handle->name;
+    struct scorep_gotcha_handle* gotcha_handle = calloc( 1, sizeof( *gotcha_handle ) );
+    gotcha_binding_t*            wrap_actions  = &gotcha_handle->wrap_actions;
+    wrap_actions->name            = symbolName;
     wrap_actions->wrapper_pointer = wrapper;
     wrap_actions->function_handle = &gotcha_handle->wrappee_handle;
     enum gotcha_error_t ret = gotcha_wrap( wrap_actions, 1, handle->gotcha_tool_name );
@@ -518,18 +529,6 @@ SCOREP_Libwrap_EnableWrapper( SCOREP_LibwrapHandle*          handle,
 
     *handle->gotcha_tail = gotcha_handle;
     handle->gotcha_tail  = &gotcha_handle->next;
-
-    if ( regionOut )
-    {
-        *regionOut = SCOREP_Definitions_NewRegion( prettyName,
-                                                   symbolName,
-                                                   file ? SCOREP_Definitions_NewSourceFile( file )
-                                                   : SCOREP_INVALID_SOURCE_FILE,
-                                                   line,
-                                                   SCOREP_INVALID_LINE_NO,
-                                                   paradigm,
-                                                   regionType );
-    }
 
     UTILS_Atomic_StoreN_void_ptr( originalHandleOut,
                                   gotcha_handle->wrappee_handle,
