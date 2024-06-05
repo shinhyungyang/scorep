@@ -60,20 +60,15 @@
 #endif
 #include <link.h>
 
-struct scorep_gotcha_handle
-{
-    struct scorep_gotcha_handle* next;
-    gotcha_binding_t             wrap_actions;
-};
-
 /** Data structure for library wrapper handle */
 struct SCOREP_LibwrapHandle
 {
     const SCOREP_LibwrapAttributes* attributes;
     SCOREP_LibwrapHandle*           next;
     UTILS_Mutex                     lock;
-    struct scorep_gotcha_handle*    gotcha_head;
-    struct scorep_gotcha_handle**   gotcha_tail;
+    gotcha_binding_t*               gotcha_bindings;
+    size_t                          gotcha_bindings_actions;  /* in #elements */
+    size_t                          gotcha_bindings_capacity; /* in bytes */
     char                            gotcha_tool_name[];
 };
 
@@ -344,27 +339,6 @@ libwrap_subsystem_initialize( void )
     return ret;
 }
 
-/**
- * This function will free the allocated memory and delete the wrapper
- * handle.
- *
- * @param handle            Library wrapper handle
- */
-static void
-delete_libwrap_handle( SCOREP_LibwrapHandle* handle )
-{
-    UTILS_ASSERT( handle );
-
-    while ( handle->gotcha_head )
-    {
-        struct scorep_gotcha_handle* gotcha_handle = handle->gotcha_head;
-        handle->gotcha_head = gotcha_handle->next;
-        free( gotcha_handle );
-    }
-    handle->gotcha_tail = &handle->gotcha_head;
-}
-
-
 static void
 libwrap_subsystem_finalize( void )
 {
@@ -373,7 +347,7 @@ libwrap_subsystem_finalize( void )
         SCOREP_LibwrapHandle* temp = libwrap_handles;
         libwrap_handles = temp->next;
 
-        delete_libwrap_handle( temp );
+        free( temp->gotcha_bindings );
         free( temp );
     }
 }
@@ -440,9 +414,7 @@ SCOREP_Libwrap_Create( SCOREP_LibwrapHandle**          outHandle,
     snprintf( handle->gotcha_tool_name, tool_name_length, "Score-P (%s)", attributes->name );
 
     /* Initialize the new library wrapper handle */
-    handle->attributes  = attributes;
-    handle->gotcha_head = NULL;
-    handle->gotcha_tail = &handle->gotcha_head;
+    handle->attributes = attributes;
 
     if ( attributes->init )
     {
@@ -496,8 +468,17 @@ SCOREP_Libwrap_EnableWrapper( SCOREP_LibwrapHandle*          handle,
         symbolName = SCOREP_StringHandle_Get( symbol_handle );
     }
 
-    struct scorep_gotcha_handle* gotcha_handle = calloc( 1, sizeof( *gotcha_handle ) );
-    gotcha_binding_t*            wrap_actions  = &gotcha_handle->wrap_actions;
+    if ( handle->gotcha_bindings_actions == ( handle->gotcha_bindings_capacity / sizeof( *handle->gotcha_bindings ) ) )
+    {
+        /* I/O and OpenCL have 100<#symbols<170 each.
+           4096 provides 170 elements on LP64, hence only one allocation needed. */
+        handle->gotcha_bindings_capacity += 4096;
+        handle->gotcha_bindings           = realloc( handle->gotcha_bindings,
+                                                     handle->gotcha_bindings_capacity );
+        UTILS_ASSERT( handle->gotcha_bindings );
+    }
+
+    gotcha_binding_t* wrap_actions = &handle->gotcha_bindings[ handle->gotcha_bindings_actions++ ];
     wrap_actions->name            = symbolName;
     wrap_actions->wrapper_pointer = wrapper;
     wrap_actions->function_handle = originalHandleOut;
@@ -505,15 +486,13 @@ SCOREP_Libwrap_EnableWrapper( SCOREP_LibwrapHandle*          handle,
     if ( GOTCHA_INTERNAL == ret )
     {
         /* some internal error, wrapping not done and wrap_actions not referenced */
-        free( gotcha_handle );
+        --handle->gotcha_bindings_actions;
         UTILS_MutexUnlock( &handle->lock );
         UTILS_DEBUG_EXIT( "gotcha_wrap failed" );
         return SCOREP_LIBWRAP_ENABLED_ERROR_NOT_WRAPPED;
     }
-    /* wrap_actions now referenced in GOTCHA internal data structures */
 
-    *handle->gotcha_tail = gotcha_handle;
-    handle->gotcha_tail  = &gotcha_handle->next;
+    /* wrap_actions now referenced in GOTCHA internal data structures */
 
     UTILS_MutexUnlock( &handle->lock );
 
