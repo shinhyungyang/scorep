@@ -59,16 +59,18 @@ scorep_posix_io_libwrap_init( void )
 
 #define SCOREP_POSIX_IO_PROCESS_FUNC( PARADIGM, TYPE, return_type, func, func_args ) \
     paradigm_name = SCOREP_IoMgmt_GetParadigmName( SCOREP_IO_PARADIGM_ ## PARADIGM ); \
-    SCOREP_Libwrap_EnableWrapper( posix_io_libwrap_handle, \
-                                  #return_type " " #func #func_args, \
-                                  #func, \
-                                  paradigm_name, \
-                                  SCOREP_INVALID_LINE_NO, \
-                                  SCOREP_PARADIGM_IO, \
-                                  SCOREP_REGION_ ## TYPE, \
-                                  ( void* )SCOREP_LIBWRAP_WRAPPER( func ), \
-                                  &SCOREP_LIBWRAP_ORIGINAL_HANDLE( func ), \
-                                  &SCOREP_LIBWRAP_REGION_HANDLE( func ) );
+    SCOREP_Libwrap_RegisterWrapper( posix_io_libwrap_handle, \
+                                    #return_type " " #func #func_args, \
+                                    #func, \
+                                    paradigm_name, \
+                                    SCOREP_INVALID_LINE_NO, \
+                                    SCOREP_PARADIGM_IO, \
+                                    SCOREP_REGION_ ## TYPE, \
+                                    ( void* )SCOREP_LIBWRAP_WRAPPER( func ), \
+                                    &SCOREP_LIBWRAP_ORIGINAL_HANDLE( func ), \
+                                    &SCOREP_LIBWRAP_REGION_HANDLE( func ) );
 
 #include "scorep_posix_io_function_list.inc.c"
+
+    SCOREP_Libwrap_Enable( posix_io_libwrap_handle );
 }

@@ -38,30 +38,36 @@ SCOREP_Libwrap_Create( SCOREP_LibwrapHandle**          handle,
 
 
 /**
- * Call this function to enable wrapping of one function.
+ * Call this after all wrappers were registered (@see SCOREP_Libwrap_RegisterWrapper)
  *
- * @param handle                  Score-P library wrapper object
- * @param prettyName              Region display name (i.e., demangled)
- * @param symbolName              Symbol name (i.e., mangled)
- * @param file                    Source file name
- * @param line                    Line number in source file
- * @param wrapper                 Function address of the wrapper
- * @param[out] originalHandleOut  Pointer to the orignal handle
- * @param[out] regionHandleOut    Pointer to the region handle
- *
- * @return                   @see SCOREP_LibwrapEnableErrorCode
+ * @param handle             Score-P library wrapper object
  */
-SCOREP_LibwrapEnableErrorCode
-SCOREP_Libwrap_EnableWrapper( SCOREP_LibwrapHandle*          handle,
-                              const char*                    prettyName,
-                              const char*                    symbolName,
-                              const char*                    file,
-                              int                            line,
-                              SCOREP_ParadigmType            paradigm,
-                              SCOREP_RegionType              regionType,
-                              void*                          wrapper,
-                              SCOREP_Libwrap_OriginalHandle* originalHandle,
-                              SCOREP_RegionHandle*           regionHandle );
+void
+SCOREP_Libwrap_Enable( SCOREP_LibwrapHandle* handle );
+
+/**
+ * Call this function to register a wrapper for one function.
+ *
+ * @param handle               Score-P library wrapper object
+ * @param prettyName           Region display name (i.e., demangled)
+ * @param symbolName           Symbol name (i.e., mangled)
+ * @param file                 Source file name
+ * @param line                 Line number in source file
+ * @param wrapper              Function address of the wrapper
+ * @param[out] originalHandle  Pointer to the orignal handle
+ * @param[out] regionHandle    Pointer to the region handle
+ */
+void
+SCOREP_Libwrap_RegisterWrapper( SCOREP_LibwrapHandle*          handle,
+                                const char*                    prettyName,
+                                const char*                    symbolName,
+                                const char*                    file,
+                                int                            line,
+                                SCOREP_ParadigmType            paradigm,
+                                SCOREP_RegionType              regionType,
+                                void*                          wrapper,
+                                SCOREP_Libwrap_OriginalHandle* originalHandle,
+                                SCOREP_RegionHandle*           regionHandle );
 
 #ifndef SCOREP_LIBWRAP_ORIGINAL
 
