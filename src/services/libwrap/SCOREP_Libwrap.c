@@ -63,7 +63,6 @@
 struct scorep_gotcha_handle
 {
     struct scorep_gotcha_handle* next;
-    gotcha_wrappee_handle_t      wrappee_handle;
     gotcha_binding_t             wrap_actions;
 };
 
@@ -476,21 +475,7 @@ SCOREP_Libwrap_EnableWrapper( SCOREP_LibwrapHandle*          handle,
 {
     UTILS_ASSERT( handle && symbolName && wrapper && originalHandleOut );
 
-    /* shoule only be called once */
-    if ( NULL != UTILS_Atomic_LoadN_void_ptr( originalHandleOut,
-                                              UTILS_ATOMIC_SEQUENTIAL_CONSISTENT ) )
-    {
-        return SCOREP_LIBWRAP_ENABLED_SUCCESS;
-    }
-
     UTILS_MutexLock( &handle->lock );
-
-    if ( NULL != UTILS_Atomic_LoadN_void_ptr( originalHandleOut,
-                                              UTILS_ATOMIC_SEQUENTIAL_CONSISTENT ) )
-    {
-        UTILS_MutexUnlock( &handle->lock );
-        return SCOREP_LIBWRAP_ENABLED_SUCCESS;
-    }
 
     UTILS_DEBUG_ENTRY( "%s, %s, %s:%d", handle->attributes->name, symbolName, file, line );
     if ( regionOut )
@@ -515,7 +500,7 @@ SCOREP_Libwrap_EnableWrapper( SCOREP_LibwrapHandle*          handle,
     gotcha_binding_t*            wrap_actions  = &gotcha_handle->wrap_actions;
     wrap_actions->name            = symbolName;
     wrap_actions->wrapper_pointer = wrapper;
-    wrap_actions->function_handle = &gotcha_handle->wrappee_handle;
+    wrap_actions->function_handle = originalHandleOut;
     enum gotcha_error_t ret = gotcha_wrap( wrap_actions, 1, handle->gotcha_tool_name );
     if ( GOTCHA_INTERNAL == ret )
     {
@@ -529,10 +514,6 @@ SCOREP_Libwrap_EnableWrapper( SCOREP_LibwrapHandle*          handle,
 
     *handle->gotcha_tail = gotcha_handle;
     handle->gotcha_tail  = &gotcha_handle->next;
-
-    UTILS_Atomic_StoreN_void_ptr( originalHandleOut,
-                                  gotcha_handle->wrappee_handle,
-                                  UTILS_ATOMIC_SEQUENTIAL_CONSISTENT );
 
     UTILS_MutexUnlock( &handle->lock );
 
