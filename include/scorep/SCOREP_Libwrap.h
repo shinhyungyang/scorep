@@ -60,15 +60,6 @@ struct SCOREP_LibwrapAttributes
     void ( * init )( SCOREP_LibwrapHandle* libwrapHandle );
 };
 
-/** @brief Return codes when enabling a wrapper. */
-typedef enum SCOREP_LibwrapEnableErrorCode
-{
-    SCOREP_LIBWRAP_ENABLED_ERROR_INVALID_ARGUMENTS = -2,
-    SCOREP_LIBWRAP_ENABLED_ERROR_NOT_WRAPPED       = -1,
-    SCOREP_LIBWRAP_ENABLED_SUCCESS                 = 0,
-    SCOREP_LIBWRAP_ENABLED_FILTERED                = 1
-} SCOREP_LibwrapEnableErrorCode;
-
 #ifdef __cplusplus
 };
 #endif

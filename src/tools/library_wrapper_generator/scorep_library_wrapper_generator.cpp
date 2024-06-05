@@ -192,20 +192,20 @@ public:
 
         if ( !generator.m_config.create_internal_wrapper_code_file )
         {
-            out << "        SCOREP_LIBWRAP_FUNC_INIT( handle, func, prettyname, file, line ); \\\n";
+            out << "        SCOREP_LIBWRAP_FUNC_REGISTER( handle, func, prettyname, file, line ); \\\n";
         }
         else
         {
-            out << "        SCOREP_Libwrap_EnableWrapper( handle, \\\n"
-                << "                                      prettyname, \\\n"
-                << "                                      #func, \\\n"
-                << "                                      " << make_string_literal( generator.m_config.display_name ) << ", \\\n"
-                << "                                      SCOREP_INVALID_LINE_NO, \\\n"
-                << "                                      SCOREP_PARADIGM_LIBWRAP, \\\n"
-                << "                                      SCOREP_REGION_ ## TYPE, \\\n"
-                << "                                      ( void* )SCOREP_LIBWRAP_WRAPPER( func ), \\\n"
-                << "                                      &SCOREP_LIBWRAP_ORIGINAL_HANDLE( func ), \\\n"
-                << "                                      &SCOREP_LIBWRAP_REGION_HANDLE( func ) ); \\\n";
+            out << "        SCOREP_Libwrap_RegisterWrapper( handle, \\\n"
+                << "                                        prettyname, \\\n"
+                << "                                        #func, \\\n"
+                << "                                        " << make_string_literal( generator.m_config.display_name ) << ", \\\n"
+                << "                                        SCOREP_INVALID_LINE_NO, \\\n"
+                << "                                        SCOREP_PARADIGM_LIBWRAP, \\\n"
+                << "                                        SCOREP_REGION_ ## TYPE, \\\n"
+                << "                                        ( void* )SCOREP_LIBWRAP_WRAPPER( func ), \\\n"
+                << "                                        &SCOREP_LIBWRAP_ORIGINAL_HANDLE( func ), \\\n"
+                << "                                        &SCOREP_LIBWRAP_REGION_HANDLE( func ) ); \\\n";
         }
 
         out << "    }\n"

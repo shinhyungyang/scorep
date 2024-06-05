@@ -48,7 +48,7 @@ SCOREP_LIBWRAP_REGION_HANDLE( foo );
 static void
 library_wrapper_init( SCOREP_LibwrapHandle* lw )
 {
-    SCOREP_LIBWRAP_FUNC_INIT( lw, foo, "foo()", "example.h", 1 );
+    SCOREP_LIBWRAP_FUNC_REGISTER( lw, foo, "foo()", "example.h", 1 );
 }
 
 /* Library wrapper object */

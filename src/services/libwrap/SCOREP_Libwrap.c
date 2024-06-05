@@ -60,12 +60,19 @@
 #endif
 #include <link.h>
 
+enum wrapping_state
+{
+    WRAPPING_DISABLED = 0,
+    WRAPPING_ENABLED
+};
+
 /** Data structure for library wrapper handle */
 struct SCOREP_LibwrapHandle
 {
     const SCOREP_LibwrapAttributes* attributes;
     SCOREP_LibwrapHandle*           next;
     UTILS_Mutex                     lock;
+    enum wrapping_state             wrapping_state;
     gotcha_binding_t*               gotcha_bindings;
     size_t                          gotcha_bindings_actions;  /* in #elements */
     size_t                          gotcha_bindings_capacity; /* in bytes */
@@ -366,6 +373,38 @@ const SCOREP_Subsystem SCOREP_Subsystem_LibwrapService =
 /* ****************************************************************** */
 
 void
+SCOREP_Libwrap_Enable( SCOREP_LibwrapHandle* handle )
+{
+    UTILS_ASSERT( handle );
+    UTILS_DEBUG_ENTRY( "%s with %zu wrappers",
+                       handle->attributes->display_name, handle->gotcha_bindings_actions );
+
+    UTILS_MutexLock( &handle->lock );
+
+    UTILS_BUG_ON( handle->wrapping_state == WRAPPING_ENABLED,
+                  "Enabling the already enabled libwrap handle %s",
+                  handle->attributes->display_name );
+
+    enum gotcha_error_t ret = gotcha_wrap( handle->gotcha_bindings,
+                                           handle->gotcha_bindings_actions,
+                                           handle->gotcha_tool_name );
+    UTILS_BUG_ON( GOTCHA_INTERNAL == ret,
+                  "Unexpected failure when enabling library wrapper %s",
+                  handle->attributes->display_name );
+
+    /*
+     * gotcha_wrap might return GOTCHA_FUNCTION_NOT_FOUND, but still tries to wrap
+     * all symbols, FOUND is only required if the original is actually called.
+     */
+
+    handle->wrapping_state = WRAPPING_ENABLED;
+
+    UTILS_MutexUnlock( &handle->lock );
+
+    UTILS_DEBUG_EXIT();
+}
+
+void
 SCOREP_Libwrap_Create( SCOREP_LibwrapHandle**          outHandle,
                        const SCOREP_LibwrapAttributes* attributes )
 {
@@ -419,6 +458,7 @@ SCOREP_Libwrap_Create( SCOREP_LibwrapHandle**          outHandle,
     if ( attributes->init )
     {
         attributes->init( handle );
+        SCOREP_Libwrap_Enable( handle );
     }
 
     /* Enqueue new library wrapper handle */
@@ -433,21 +473,25 @@ SCOREP_Libwrap_Create( SCOREP_LibwrapHandle**          outHandle,
     UTILS_DEBUG_EXIT();
 }
 
-SCOREP_LibwrapEnableErrorCode
-SCOREP_Libwrap_EnableWrapper( SCOREP_LibwrapHandle*          handle,
-                              const char*                    prettyName,
-                              const char*                    symbolName,
-                              const char*                    file,
-                              int                            line,
-                              SCOREP_ParadigmType            paradigm,
-                              SCOREP_RegionType              regionType,
-                              void*                          wrapper,
-                              SCOREP_Libwrap_OriginalHandle* originalHandleOut,
-                              SCOREP_RegionHandle*           regionOut )
+void
+SCOREP_Libwrap_RegisterWrapper( SCOREP_LibwrapHandle*          handle,
+                                const char*                    prettyName,
+                                const char*                    symbolName,
+                                const char*                    file,
+                                int                            line,
+                                SCOREP_ParadigmType            paradigm,
+                                SCOREP_RegionType              regionType,
+                                void*                          wrapper,
+                                SCOREP_Libwrap_OriginalHandle* originalHandleOut,
+                                SCOREP_RegionHandle*           regionOut )
 {
     UTILS_ASSERT( handle && symbolName && wrapper && originalHandleOut );
 
     UTILS_MutexLock( &handle->lock );
+
+    UTILS_BUG_ON( handle->wrapping_state == WRAPPING_ENABLED,
+                  "Registering a wrapper to the already enabled libwrap handle %s",
+                  handle->attributes->display_name );
 
     UTILS_DEBUG_ENTRY( "%s, %s, %s:%d", handle->attributes->name, symbolName, file, line );
     if ( regionOut )
@@ -482,50 +526,37 @@ SCOREP_Libwrap_EnableWrapper( SCOREP_LibwrapHandle*          handle,
     wrap_actions->name            = symbolName;
     wrap_actions->wrapper_pointer = wrapper;
     wrap_actions->function_handle = originalHandleOut;
-    enum gotcha_error_t ret = gotcha_wrap( wrap_actions, 1, handle->gotcha_tool_name );
-    if ( GOTCHA_INTERNAL == ret )
-    {
-        /* some internal error, wrapping not done and wrap_actions not referenced */
-        --handle->gotcha_bindings_actions;
-        UTILS_MutexUnlock( &handle->lock );
-        UTILS_DEBUG_EXIT( "gotcha_wrap failed" );
-        return SCOREP_LIBWRAP_ENABLED_ERROR_NOT_WRAPPED;
-    }
-
-    /* wrap_actions now referenced in GOTCHA internal data structures */
 
     UTILS_MutexUnlock( &handle->lock );
 
     UTILS_DEBUG_EXIT();
-
-    return SCOREP_LIBWRAP_ENABLED_SUCCESS;
 }
 
 /* ****************************************************************** */
 /* Plug-in API                                                        */
 /* ****************************************************************** */
 
-static SCOREP_LibwrapEnableErrorCode
-libwrap_plugin_api_enable_wrapper( SCOREP_LibwrapHandle* handle,
-                                   const char*           prettyName,
-                                   const char*           symbolName,
-                                   const char*           file,
-                                   int                   line,
-                                   void*                 wrapper,
-                                   void**                originalHandleOut,
-                                   SCOREP_RegionHandle*  regionOut )
+static void
+libwrap_plugin_api_register_wrapper( SCOREP_LibwrapHandle* handle,
+                                     const char*           prettyName,
+                                     const char*           symbolName,
+                                     const char*           file,
+                                     int                   line,
+                                     void*                 wrapper,
+                                     void**                originalHandleOut,
+                                     SCOREP_RegionHandle*  regionOut )
 {
     if ( !handle || !symbolName || !wrapper || !originalHandleOut || !regionOut )
     {
-        return SCOREP_LIBWRAP_ENABLED_ERROR_INVALID_ARGUMENTS;
+        return;
     }
 
     if ( SCOREP_Filtering_Match( file, prettyName, symbolName ) )
     {
-        return SCOREP_LIBWRAP_ENABLED_FILTERED;
+        return;
     }
 
-    SCOREP_LibwrapEnableErrorCode ret = SCOREP_Libwrap_EnableWrapper(
+    SCOREP_Libwrap_RegisterWrapper(
         handle,
         prettyName,
         symbolName,
@@ -536,12 +567,7 @@ libwrap_plugin_api_enable_wrapper( SCOREP_LibwrapHandle* handle,
         wrapper,
         originalHandleOut,
         regionOut );
-    if ( ret == SCOREP_LIBWRAP_ENABLED_SUCCESS )
-    {
-        SCOREP_RegionHandle_SetGroup( *regionOut, handle->attributes->display_name );
-    }
-
-    return ret;
+    SCOREP_RegionHandle_SetGroup( *regionOut, handle->attributes->display_name );
 }
 
 static void*
@@ -605,7 +631,7 @@ libwrap_plugin_api_exit_wrapped_region( int previous )
 const SCOREP_LibwrapAPI scorep_libwrap_plugin_api =
 {
     .create               = SCOREP_Libwrap_Create,
-    .enable_wrapper       = libwrap_plugin_api_enable_wrapper,
+    .register_wrapper     = libwrap_plugin_api_register_wrapper,
     .get_original         = libwrap_plugin_api_get_original,
     .enter_measurement    = libwrap_plugin_api_enter_measurement,
     .exit_measurement     = libwrap_plugin_api_exit_measurement,

@@ -109,23 +109,22 @@ enable_pthread_wrapper( void )
                            &pthread_libwrap_attributes );
 
 #define SCOREP_PTHREAD_REGION( rettype, name, NAME, TYPE, ARGS ) \
-    if ( 0 != SCOREP_Libwrap_EnableWrapper( pthread_libwrap_handle, \
-                                            #rettype " " #name #ARGS, \
-                                            #name, \
-                                            "PTHREAD", \
-                                            SCOREP_INVALID_LINE_NO, \
-                                            SCOREP_PARADIGM_PTHREAD, \
-                                            SCOREP_REGION_ ## TYPE, \
-                                            ( void* )SCOREP_LIBWRAP_WRAPPER( name ), \
-                                            &SCOREP_LIBWRAP_ORIGINAL_HANDLE( name ), \
-                                            &scorep_pthread_regions[ SCOREP_PTHREAD_ ## NAME ] ) ) \
-    { \
-        UTILS_FATAL( "Could not enable wrapping for function '" #name "'" ); \
-    }
+    SCOREP_Libwrap_RegisterWrapper( pthread_libwrap_handle, \
+                                    #rettype " " #name #ARGS, \
+                                    #name, \
+                                    "PTHREAD", \
+                                    SCOREP_INVALID_LINE_NO, \
+                                    SCOREP_PARADIGM_PTHREAD, \
+                                    SCOREP_REGION_ ## TYPE, \
+                                    ( void* )SCOREP_LIBWRAP_WRAPPER( name ), \
+                                    &SCOREP_LIBWRAP_ORIGINAL_HANDLE( name ), \
+                                    &scorep_pthread_regions[ SCOREP_PTHREAD_ ## NAME ] );
 
     SCOREP_PTHREAD_REGIONS
 
 #undef SCOREP_PTHREAD_REGION
+
+    SCOREP_Libwrap_Enable( pthread_libwrap_handle );
 }
 
 

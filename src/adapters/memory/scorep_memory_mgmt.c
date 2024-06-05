@@ -141,17 +141,19 @@ enable_memory_wrappers( void )
     SCOREP_MEMORY_REGIONS
 
 #define SCOREP_MEMORY_WRAPPER( RET, NAME, ARGS ) \
-    SCOREP_Libwrap_EnableWrapper( memory_libwrap_handle, \
-                                  NULL, \
-                                  #NAME, \
-                                  NULL, \
-                                  SCOREP_INVALID_LINE_NO, \
-                                  SCOREP_PARADIGM_MEMORY, \
-                                  SCOREP_REGION_UNKNOWN, \
-                                  ( void* )SCOREP_LIBWRAP_WRAPPER( NAME ), \
-                                  &SCOREP_LIBWRAP_ORIGINAL_HANDLE( NAME ), \
-                                  NULL );
+    SCOREP_Libwrap_RegisterWrapper( memory_libwrap_handle, \
+                                    NULL, \
+                                    #NAME, \
+                                    NULL, \
+                                    SCOREP_INVALID_LINE_NO, \
+                                    SCOREP_PARADIGM_MEMORY, \
+                                    SCOREP_REGION_UNKNOWN, \
+                                    ( void* )SCOREP_LIBWRAP_WRAPPER( NAME ), \
+                                    & SCOREP_LIBWRAP_ORIGINAL_HANDLE( NAME ), \
+                                    NULL );
 #include "scorep_memory_wrappers.inc.c"
+
+    SCOREP_Libwrap_Enable( memory_libwrap_handle );
 }
 
 
