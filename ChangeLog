@@ -61,6 +61,9 @@ Compatibility:
   at configure time, can now be provided via `build-config/packages` or
   `--with-package-cache=<path>`. Run `build-config/packages.sh` to list
   all packages and their respective download URL.
+- For unwind, bfd and lustreapi additional `LIBS`, `LDFLAGS` and
+  `CPPFLAGS` can be passed during configure (e.g. via `LIBBFD_EXTRA_LIBS`) to
+  ensure that these libraries are detected correctly.
 
 Bugfixes:
 
