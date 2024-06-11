@@ -13,7 +13,7 @@
  * Copyright (c) 2009-2013,
  * University of Oregon, Eugene, USA
  *
- * Copyright (c) 2009-2013,
+ * Copyright (c) 2009-2013, 2024,
  * Forschungszentrum Juelich GmbH, Germany
  *
  * Copyright (c) 2009-2013,
@@ -130,6 +130,15 @@ is_library( const std::string& filename,
  */
 std::string
 get_library_name( const std::string& filename );
+
+/**
+    Given a file name, returns the preprocessed extension. If no special
+    extension is known, return the extension of the file.
+    @param filename A file name.
+    @returns The preprocessed extension.
+ */
+std::string
+get_preprocessed_extension( const std::string& filename );
 
 /**
     Check if the given value is the specified library.

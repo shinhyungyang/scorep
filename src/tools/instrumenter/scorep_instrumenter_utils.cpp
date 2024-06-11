@@ -13,7 +13,7 @@
  * Copyright (c) 2009-2013,
  * University of Oregon, Eugene, USA
  *
- * Copyright (c) 2009-2013,
+ * Copyright (c) 2009-2013, 2024,
  * Forschungszentrum Juelich GmbH, Germany
  *
  * Copyright (c) 2009-2015,
@@ -37,6 +37,7 @@
 
 #include <config.h>
 #include "scorep_instrumenter_utils.hpp"
+#include <scorep_config_tool_backend.h>
 #include <scorep_config_tool_shmem.h>
 
 #include <scorep_tools_utils.hpp>
@@ -91,6 +92,8 @@ is_c_file( const std::string& filename )
     #define SCOREP_CHECK_EXT( ext ) if ( extension == ext ) return true
     SCOREP_CHECK_EXT( ".c" );
     SCOREP_CHECK_EXT( ".C" );
+    SCOREP_CHECK_EXT( ".i" );
+    SCOREP_CHECK_EXT( ".I" );
     #undef SCOREP_CHECK_EXT
     return false;
 }
@@ -110,6 +113,8 @@ is_cpp_file( const std::string& filename )
     SCOREP_CHECK_EXT( ".CXX" );
     SCOREP_CHECK_EXT( ".cc" );
     SCOREP_CHECK_EXT( ".CC" );
+    SCOREP_CHECK_EXT( ".ii" );
+    SCOREP_CHECK_EXT( ".II" );
     #undef SCOREP_CHECK_EXT
     return false;
 }
@@ -130,6 +135,8 @@ is_cuda_file( const std::string& filename )
     #define SCOREP_CHECK_EXT( ext ) if ( extension == ext ) return true
     SCOREP_CHECK_EXT( ".cu" );
     SCOREP_CHECK_EXT( ".CU" );
+    SCOREP_CHECK_EXT( ".cpp.ii" );
+    SCOREP_CHECK_EXT( ".CPP.II" );
     #undef SCOREP_CHECK_EXT
     return false;
 }
@@ -254,6 +261,40 @@ get_library_name( const std::string& filename )
     /* Drop "lib" prefix and entension */
     return basename.substr( 3, dot - 3 );
 }
+
+
+std::string
+get_preprocessed_extension( const std::string& filename )
+{
+    if ( is_c_file( filename ) )
+    {
+        return ".i";
+    }
+    else if ( is_cpp_file( filename ) )
+    {
+        /* NVHPC fails to recognize .ii as a pre-processed C++ file.
+         * Fall back to using the C extension, as it is recognized just fine. */
+        #if SCOREP_BACKEND_COMPILER_CXX_PGI
+        return ".i";
+        #else
+        return ".ii";
+        #endif
+    }
+
+    else if ( is_fortran_file( filename ) )
+    {
+        return scorep_tolower( get_extension( filename ) );
+    }
+    else if ( is_cuda_file( filename ) )
+    {
+        return ".cpp.ii";
+    }
+    else
+    {
+        return get_extension( filename );
+    }
+}
+
 
 bool
 check_lib_name( const std::string& libraryName,

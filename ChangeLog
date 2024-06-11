@@ -150,6 +150,8 @@ Bugfixes:
   flags and the system configuration, on some others. Oftentimes, this
   issue has been hidden by LD_LIBRARY_PATH settings provided by module
   systems.
+- Prevent build errors for OpenMP programs with Cray wrappers when
+  preprocessing is used and an accelerator architecture is loaded.
 
 ------------------- Released version 8.4 -----------------------------
 

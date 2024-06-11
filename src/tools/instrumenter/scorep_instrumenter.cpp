@@ -269,7 +269,32 @@ SCOREP_Instrumenter::Run( void )
                     }
                     #endif
 
-                    compile_source_file( *current_file, object_file );
+                    // Even though Score-P has an explicit pre-processing step, this may not sufficient
+                    // when OPARI2 is invoked. The source file with code added by OPARI2 needs to be
+                    // pre-processed again. Normally, this is done implicitly. However, this may
+                    // break for Cray wrappers with GPU architectures loaded. Those compilers get confused by
+                    // the duplicate appearance of code for both the host and accelerator architecture if
+                    // they aren't aware that the code is pre-processed. Explicitly pre-processing the file
+                    // again AND changing the file extension to represent a pre-processed file solves this issue.
+                    // This solution turned out to be portable and more reliable than adding flags for
+                    // affected compilers (it also works for PrgEnv-amd on CPE 23.09 whereas flags failed
+                    // for example). Changing the file extension earlier breaks GCC for example, because
+                    // it strictly refuses to pre-process a file which is already marked as pre-processed
+                    // because of its file extension.
+                    // We need to disable this step for CUDA & HIP compilers, since both pre-process host
+                    // and device code at the same time and are confused by the re-pre-processing.
+                    std::string prep_file = *current_file;
+                    if ( m_opari_adapter->isEnabled() &&
+                         !m_cuda_adapter->isNvcc() &&
+                         !m_hip_adapter->isHipcc() &&
+                         m_command_line.getPreprocessMode() == SCOREP_Instrumenter_CmdLine::EXPLICIT_STEP )
+                    {
+                        prep_file = remove_extension(  remove_path( *current_file ) )
+                                    + get_preprocessed_extension( *current_file );
+                        preprocess_source_file( *current_file, prep_file );
+                        addTempFile( prep_file );
+                    }
+                    compile_source_file( prep_file, object_file );
 
                     // Add object file to the input file list for the link command
                     object_files.push_back( object_file );
