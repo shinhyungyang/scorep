@@ -279,7 +279,7 @@ SCOREP::Compiler::LLVMPlugin::FunctionInstrumentation::instrument( Function& fun
         {
             if ( auto called_function = call_instruction->getCalledFunction() )
             {
-                if ( called_function->hasName() && called_function->getName().equals( "__cxa_rethrow" ) )
+                if ( called_function->hasName() && called_function->getName() == StringRef( "__cxa_rethrow" ) )
                 {
                     add_exit_region( function, instruction, region_id );
                 }
