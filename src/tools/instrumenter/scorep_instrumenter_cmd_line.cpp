@@ -13,7 +13,7 @@
  * Copyright (c) 2009-2013,
  * University of Oregon, Eugene, USA
  *
- * Copyright (c) 2009-2013, 2015, 2018-2020, 2023,
+ * Copyright (c) 2009-2013, 2015, 2018-2020, 2023-2024,
  * Forschungszentrum Juelich GmbH, Germany
  *
  * Copyright (c) 2009-2014,
@@ -473,12 +473,12 @@ SCOREP_Instrumenter_CmdLine::parse_parameter( const std::string& arg )
     }
 
     /* Check for instrumentation and paradigms */
-    else if ( SCOREP_Instrumenter_Adapter::checkAllOption( arg ) )
+    else if ( SCOREP_Instrumenter_Selector::checkAllOption( arg ) )
     {
         return scorep_parse_mode_param;
     }
 
-    else if ( SCOREP_Instrumenter_Selector::checkAllOption( arg ) )
+    else if ( SCOREP_Instrumenter_Adapter::checkAllOption( arg ) )
     {
         return scorep_parse_mode_param;
     }

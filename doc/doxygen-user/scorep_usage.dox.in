@@ -81,11 +81,13 @@ Common options are:
                   also enables preprocessing.
   --nopomp        Deprecated, consider using manual region instrumentation (--user)
                   instead. Disables OPARI2 pomp user instrumentation (Default).
-  --openmp        Enables OPARI2 instrumentation of OpenMP directives. By default,
+  --openmp        Deprecated, please use --thread=omp:opari2 instead.
+                  Enables OPARI2 instrumentation of OpenMP directives. By default,
                   it also enables preprocessing (Default for compile units
                   with enabled OpenMP support during the compilation).
                   Conflicts with --thread=omp:ompt.
-  --noopenmp      Disables OPARI2 instrumentation of OpenMP directives.
+  --noopenmp      Deprecated, please use --thread=none instead.
+                  Disables OPARI2 instrumentation of OpenMP directives.
                   Note: To ensure thread-safe execution of the measurement,
                   parallel regions still need to be tracked and will appear
                   in the results (Default for compile units without OpenMP
