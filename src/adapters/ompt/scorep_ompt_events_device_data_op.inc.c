@@ -247,7 +247,7 @@ target_data_op_emi_host_only( ompt_scope_endpoint_t endpoint,
     /* If the data transfer is contained within a target region, we are able to
      * receive some information from the passed target_data->ptr to record a
      * callsite id. */
-    scorep_ompt_target_data_t* data = ( scorep_ompt_target_data_t* )targetData->ptr;
+    scorep_ompt_target_data_t* data = get_target_data( targetData->value );
     /* If the target_data is NULL, we are not in a target region. Allocate
     * the struct anyway to ensure that Enter and Exit work correctly.
     * If there's already a pointer without a target region, the target_data
@@ -259,6 +259,7 @@ target_data_op_emi_host_only( ompt_scope_endpoint_t endpoint,
         data->codeptr_ra              = codeptrRa;
         data->target_id               = ompt_id_none;
         data->supports_device_tracing = false;
+        set_target_data( &targetData->value, data );
     }
     UTILS_BUG_ON( !data, "[OMPT] Expected data to be non-NULL" );
 
@@ -267,7 +268,7 @@ target_data_op_emi_host_only( ompt_scope_endpoint_t endpoint,
     {
         if ( data->target_id == ompt_id_none )
         {
-            SCOREP_Memory_AlignedFree( data );
+            free_target_data( &targetData->value );
         }
         return;
     }
@@ -280,7 +281,7 @@ target_data_op_emi_host_only( ompt_scope_endpoint_t endpoint,
         case ompt_scope_end:
             if ( data->target_id == ompt_id_none )
             {
-                SCOREP_Memory_AlignedFree( data );
+                free_target_data( &targetData->value );
             }
             SCOREP_ExitRegion( target_region );
             break;
@@ -306,7 +307,7 @@ target_data_op_emi_device_tracing( ompt_scope_endpoint_t endpoint,
     /* If the data transfer is contained within a target region, we are able to
      * receive some information from the passed target_data->ptr to record a
      * callsite id. */
-    scorep_ompt_target_data_t* data = ( scorep_ompt_target_data_t* )targetData->ptr;
+    scorep_ompt_target_data_t* data = get_target_data( targetData->value );
     /* If the target_data is NULL, we are not in a target region. Allocate
     * the struct anyway to ensure that Enter and Exit work correctly.
     * If there's already a pointer without a target region, the target_data
@@ -318,6 +319,7 @@ target_data_op_emi_device_tracing( ompt_scope_endpoint_t endpoint,
         data->codeptr_ra              = codeptrRa;
         data->target_id               = ompt_id_none;
         data->supports_device_tracing = true;
+        set_target_data( &targetData->value, data );
     }
     UTILS_BUG_ON( !data, "[OMPT] Expected data to be non-NULL" );
 
@@ -327,7 +329,7 @@ target_data_op_emi_device_tracing( ompt_scope_endpoint_t endpoint,
     {
         if ( data->target_id == ompt_id_none )
         {
-            SCOREP_Memory_AlignedFree( data );
+            free_target_data( &targetData->value );
         }
         return;
     }

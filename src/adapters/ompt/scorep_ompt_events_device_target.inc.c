@@ -75,9 +75,10 @@ target_emi_host_only( ompt_target_t         kind,
         {
             scorep_ompt_target_data_t* data = SCOREP_Memory_AlignedMalloc( SCOREP_ALLOCATOR_ALIGNMENT, sizeof( *data ) );
             memset( data, 0, sizeof( *data ) );
-            data->codeptr_ra = codeptrRa;
-            data->target_id  = scorep_ompt_get_unique_id();
-            targetData->ptr  = data;
+            data->codeptr_ra              = codeptrRa;
+            data->target_id               = scorep_ompt_get_unique_id();
+            data->supports_device_tracing = false;
+            set_target_data( &targetData->value, data );
 
             SCOREP_EnterRegion( get_region( data->codeptr_ra, TOOL_EVENT_TARGET_HOST ) );
             SCOREP_TriggerParameterString( parameters.target_type, target_kind2string( kind ) );
@@ -85,9 +86,9 @@ target_emi_host_only( ompt_target_t         kind,
         }
         case ompt_scope_end:
         {
-            scorep_ompt_target_data_t* data = ( scorep_ompt_target_data_t* )targetData->ptr;
+            scorep_ompt_target_data_t* data = get_target_data( targetData->value );
             SCOREP_ExitRegion( get_region( data->codeptr_ra, TOOL_EVENT_TARGET_HOST ) );
-            SCOREP_Memory_AlignedFree( data );
+            free_target_data( &targetData->value );
             break;
         }
         default:
@@ -111,9 +112,10 @@ target_emi_device_tracing( ompt_target_t         kind,
         {
             scorep_ompt_target_data_t* data = SCOREP_Memory_AlignedMalloc( SCOREP_ALLOCATOR_ALIGNMENT, sizeof( *data ) );
             memset( data, 0, sizeof( *data ) );
-            data->codeptr_ra = codeptrRa;
-            data->target_id  = scorep_ompt_get_unique_id();
-            targetData->ptr  = data;
+            data->codeptr_ra              = codeptrRa;
+            data->target_id               = scorep_ompt_get_unique_id();
+            data->supports_device_tracing = true;
+            set_target_data( &targetData->value, data );
 
             SCOREP_EnterRegion( get_region( data->codeptr_ra, TOOL_EVENT_TARGET_HOST ) );
             SCOREP_TriggerParameterString( parameters.target_type, target_kind2string( kind ) );
@@ -121,7 +123,7 @@ target_emi_device_tracing( ompt_target_t         kind,
         }
         case ompt_scope_end:
         {
-            scorep_ompt_target_data_t* data = ( scorep_ompt_target_data_t* )targetData->ptr;
+            scorep_ompt_target_data_t* data = get_target_data( targetData->value );
             SCOREP_ExitRegion( get_region( data->codeptr_ra, TOOL_EVENT_TARGET_HOST ) );
             break;
         }
