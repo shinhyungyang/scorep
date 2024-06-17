@@ -103,6 +103,7 @@ target_submit_emi_device_tracing( ompt_scope_endpoint_t endpoint,
             *hostOpId = scorep_ompt_get_unique_id();
             SCOREP_EnterRegion( get_region( data->codeptr_ra, TOOL_EVENT_TARGET_KERNEL_LAUNCH ) );
             SCOREP_TriggerParameterUint64( parameters.callsite_id, ( uintptr_t )data->codeptr_ra );
+            data->num_records++;
             break;
         }
         case ompt_scope_end:
