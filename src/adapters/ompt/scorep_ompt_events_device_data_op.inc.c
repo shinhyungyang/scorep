@@ -350,6 +350,7 @@ target_data_op_emi_device_tracing( ompt_scope_endpoint_t endpoint,
             *hostOpId = get_mapped_id( get_host_local_rank(), operation_id );
             /* Write host event */
             SCOREP_EnterRegion( target_region );
+            data->num_records++;
         }
         break;
         case ompt_scope_end:

@@ -1,7 +1,7 @@
 /*
  * This file is part of the Score-P software (http://www.score-p.org)
  *
- * Copyright (c) 2023,
+ * Copyright (c) 2023-2024,
  * Forschungszentrum Juelich GmbH, Germany
  *
  * This software may be modified and distributed under the terms of
@@ -93,10 +93,6 @@ device_tracing_initialize( scorep_ompt_target_device_t* device,
      * target region has finished on the device. ompt_callback_target_map is missing both because it isn't
      * implemented and because it doesn't provide useful information for Score-P specifically. */
     #define REGISTER( callback ) device_tracing_register_callback( device, callback, #callback )
-    if ( scorep_ompt_target_features > 0 )
-    {
-        REGISTER( ompt_callback_target_emi );
-    }
     if ( scorep_ompt_target_features & SCOREP_OMPT_TARGET_FEATURE_KERNEL )
     {
         REGISTER( ompt_callback_target_submit_emi );
@@ -125,36 +121,110 @@ device_tracing_initialize( scorep_ompt_target_device_t* device,
 }
 
 
+static int
+compare_ompt_records( const void* lhs, const void* rhs )
+{
+    ompt_record_ompt_t* lhs_record = *( ompt_record_ompt_t** )lhs;
+    ompt_record_ompt_t* rhs_record = *( ompt_record_ompt_t** )rhs;
+
+    if ( lhs_record->time < rhs_record->time )
+    {
+        return -1;
+    }
+    if ( lhs_record->time > rhs_record->time )
+    {
+        return 1;
+    }
+    return 0;
+}
+
+
 static inline void
 device_tracing_evaluate_buffer( scorep_ompt_target_device_t* bufferDevice,
                                 ompt_buffer_t*               buffer,
                                 size_t                       bytes,
                                 ompt_buffer_cursor_t         begin )
 {
-    // TODO: Buffers might not be sorted by beginning time. We just experience this with AOMP right now.
-    // TODO: We should sort the buffer by time before processing it.
-    // TODO: We may also want to move data transfers to separate locations for easier post-processing.
+    /* We need to keep track of target regions and actual records we will write to locations */
+    ompt_record_ompt_t** accelerator_records     = NULL;
+    uint64_t             num_accelerator_records = 0;
+
+    /* First step: Count the number of records for both buffers */
+    ompt_buffer_cursor_t current_cursor = begin;
     do
     {
-        ompt_record_ompt_t*        record      = bufferDevice->device_functions.get_record_ompt( buffer, begin );
-        scorep_ompt_target_data_t* target_data = get_target_data( record->target_id );
-
-        /* If we reach the end of a target region, we can free our allocated structure to transfer information */
-        if ( ( record->type == ompt_callback_target_emi || record->type == ompt_callback_target ) &&
-             record->record.target.endpoint == ompt_scope_end )
+        ompt_record_ompt_t* record = bufferDevice->device_functions.get_record_ompt( buffer, current_cursor );
+        switch ( record->type )
         {
-            free_target_data( &record->target_id );
-            continue;
+            case ompt_callback_target_submit:
+            case ompt_callback_target_submit_emi:
+            case ompt_callback_target_data_op:
+            case ompt_callback_target_data_op_emi:
+                ++num_accelerator_records;
+                break;
+            default:
+                break;
         }
+    }
+    while ( bufferDevice->device_functions.advance_buffer_cursor(
+                bufferDevice->address,
+                buffer,
+                bytes,
+                current_cursor,
+                &current_cursor ) );
+
+    /* Allocate memory to store the accelerator records. Use of SCOREP_Memory_AlignedMalloc, as
+     * buffer handling may be done on runtime helper threads (e.g. for ROCm), which do not have a location object. */
+    accelerator_records = SCOREP_Memory_AlignedMalloc(
+        SCOREP_CACHELINESIZE,
+        num_accelerator_records * sizeof( ompt_record_ompt_t* ) );
+
+    /* Transfer records to respective buffer */
+    current_cursor = begin;
+    uint64_t accelerator_index = 0;
+    do
+    {
+        ompt_record_ompt_t* record = bufferDevice->device_functions.get_record_ompt( buffer, current_cursor );
         /* Ignore events without a valid timestamp as they will cause issues. */
         if ( record->time == ompt_time_none )
         {
             continue;
         }
 
+        switch ( record->type )
+        {
+            case ompt_callback_target_submit:
+            case ompt_callback_target_submit_emi:
+            case ompt_callback_target_data_op:
+            case ompt_callback_target_data_op_emi:
+                accelerator_records[ accelerator_index++ ] = record;
+                break;
+            default:
+                break;
+        }
+    }
+    while ( bufferDevice->device_functions.advance_buffer_cursor(
+                bufferDevice->address,
+                buffer,
+                bytes,
+                current_cursor,
+                &current_cursor ) );
+
+    /* We need to sort the accelerator records by time */
+    qsort(
+        accelerator_records,
+        num_accelerator_records,
+        sizeof( ompt_record_ompt_t* ),
+        compare_ompt_records );
+
+    /* Next, we can write the accelerator records */
+    for ( uint64_t i = 0; i < num_accelerator_records; ++i )
+    {
+        ompt_record_ompt_t*        record      = accelerator_records[ i ];
+        scorep_ompt_target_data_t* target_data = get_target_data( record->target_id );
+        UTILS_BUG_ON( !target_data, "Expected to get a target data struct for %d, but did not", record->target_id );
+
         record->time = translate_to_host_time( bufferDevice, record->time );
-        scorep_ompt_device_stream_t* current_stream = get_or_add_device_stream( bufferDevice, record->time );
-        UTILS_MutexLock( &current_stream->stream_lock );
         switch ( record->type )
         {
             case ompt_callback_target_data_op:
@@ -170,6 +240,9 @@ device_tracing_evaluate_buffer( scorep_ompt_target_device_t* bufferDevice,
                 {
                     break;
                 }
+                scorep_ompt_device_stream_t* current_stream =
+                    get_or_add_device_stream( bufferDevice, record->time );
+                UTILS_MutexLock( &current_stream->stream_lock );
                 record->record.target_data_op.end_time = translate_to_host_time(
                     bufferDevice,
                     record->record.target_data_op.end_time );
@@ -177,6 +250,7 @@ device_tracing_evaluate_buffer( scorep_ompt_target_device_t* bufferDevice,
                                                              target_data,
                                                              current_stream,
                                                              record->time );
+                UTILS_MutexUnlock( &current_stream->stream_lock );
                 if ( target_data->target_id == ompt_id_none )
                 {
                     free_target_data( &record->target_id );
@@ -185,6 +259,10 @@ device_tracing_evaluate_buffer( scorep_ompt_target_device_t* bufferDevice,
             break;
             case ompt_callback_target_submit:
             case ompt_callback_target_submit_emi:
+            {
+                scorep_ompt_device_stream_t* current_stream =
+                    get_or_add_device_stream( bufferDevice, record->time );
+                UTILS_MutexLock( &current_stream->stream_lock );
                 record->record.target_kernel.end_time = translate_to_host_time(
                     bufferDevice,
                     record->record.target_kernel.end_time );
@@ -192,16 +270,24 @@ device_tracing_evaluate_buffer( scorep_ompt_target_device_t* bufferDevice,
                                                      target_data,
                                                      current_stream,
                                                      record->time );
-                break;
+                UTILS_MutexUnlock( &current_stream->stream_lock );
+            }
+            break;
             default:
                 break;
         }
-        UTILS_MutexUnlock( &current_stream->stream_lock );
+
+        target_data->processed_records++;
+        UTILS_BUG_ON( target_data->processed_records > target_data->num_records );
+        if ( target_data->processed_records == target_data->num_records )
+        {
+            UTILS_DEBUG( "Removing target data %d as all events are processed (%d/%d)",
+                         accelerator_records[ i ]->target_id,
+                         target_data->processed_records,
+                         target_data->num_records );
+            free_target_data( &accelerator_records[ i ]->target_id );
+        }
     }
-    while ( bufferDevice->device_functions.advance_buffer_cursor(
-                bufferDevice->address,
-                buffer,
-                bytes,
-                begin,
-                &begin ) );
+
+    SCOREP_Memory_AlignedFree( accelerator_records );
 }
