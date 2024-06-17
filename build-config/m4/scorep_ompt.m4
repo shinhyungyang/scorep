@@ -98,6 +98,12 @@ AS_IF([test "x$have_ompt_support" = xyes],
 AC_SCOREP_COND_HAVE([SCOREP_OMPT_SUPPORT],
     [test "x$have_ompt_support" = xyes],
     [Defined if OMPT is supported for at least one language])
+
+AC_SCOREP_COND_HAVE([SCOREP_OMPT_TARGET_NEEDS_HASHMAP],
+    [test "x$ac_cv_sizeof_ompt_id_t" != "x" &&
+     test "x$ac_cv_sizeof_voidp" != "x"     &&
+     test "$ac_cv_sizeof_voidp" -gt "$ac_cv_sizeof_ompt_id_t"],
+    [Defined if size of void pointer is larger than size of ompt_id_t type.])
 dnl
 ])dnl SCOREP_OMPT
 
@@ -145,7 +151,9 @@ ompt_sync_region_t foo3 = ompt_sync_region_barrier_teams;
                                ompt_work_scope,
                                ompt_dispatch_ws_loop_chunk,
                                ompt_dispatch_taskloop_chunk,
-                               ompt_dispatch_distribute_chunk], [], [], [[#include <omp-tools.h>]])],
+                               ompt_dispatch_distribute_chunk], [], [], [[#include <omp-tools.h>]])
+               AC_SCOREP_CHECK_SIZEOF([ompt_id_t], [], [[#include <omp-tools.h>]])
+               AC_SCOREP_CHECK_SIZEOF([void*], [], [[#include <omp-tools.h>]])],
               [# failure
                AC_MSG_WARN([OMPT header lacks version 5.1 enum values])
                ompt_reason_header="lacks version 5.1 enum values"

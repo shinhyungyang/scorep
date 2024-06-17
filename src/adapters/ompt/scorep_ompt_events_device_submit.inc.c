@@ -69,7 +69,7 @@ target_submit_emi_host_only( ompt_scope_endpoint_t endpoint,
                              ompt_id_t*            hostOpId,
                              unsigned int          requestedNumTeams )
 {
-    scorep_ompt_target_data_t* data = ( scorep_ompt_target_data_t* )targetData->ptr;
+    scorep_ompt_target_data_t* data = get_target_data( targetData->value );
     switch ( endpoint )
     {
         case ompt_scope_begin:
@@ -93,7 +93,7 @@ target_submit_emi_device_tracing( ompt_scope_endpoint_t endpoint,
                                   ompt_id_t*            hostOpId,
                                   unsigned int          requestedNumTeams )
 {
-    scorep_ompt_target_data_t* data = ( scorep_ompt_target_data_t* )targetData->ptr;
+    scorep_ompt_target_data_t* data = get_target_data( targetData->value );
     switch ( endpoint )
     {
         case ompt_scope_begin:
@@ -134,15 +134,15 @@ scorep_ompt_cb_target_submit_emi( ompt_scope_endpoint_t endpoint,
     SCOREP_OMPT_RETURN_ON_INVALID_EVENT();
     SCOREP_OMPT_ENSURE_TARGET_DATA_NON_NULL( "target_submit_emi" );
 
+    scorep_ompt_target_data_t* data = get_target_data( target_data->value );
     /* Submit callback is invoked even though no callback has set the target_data field.
      * This means that the other callbacks did not finish correctly */
-    if ( !target_data->ptr )
+    if ( !data )
     {
         SCOREP_IN_MEASUREMENT_DECREMENT();
         return;
     }
 
-    scorep_ompt_target_data_t* data = ( scorep_ompt_target_data_t* )target_data->ptr;
     if ( !data->supports_device_tracing )
     {
         target_submit_emi_host_only( endpoint,

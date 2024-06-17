@@ -137,13 +137,13 @@ device_tracing_evaluate_buffer( scorep_ompt_target_device_t* bufferDevice,
     do
     {
         ompt_record_ompt_t*        record      = bufferDevice->device_functions.get_record_ompt( buffer, begin );
-        scorep_ompt_target_data_t* target_data = ( scorep_ompt_target_data_t* )record->target_id;
+        scorep_ompt_target_data_t* target_data = get_target_data( record->target_id );
 
         /* If we reach the end of a target region, we can free our allocated structure to transfer information */
         if ( ( record->type == ompt_callback_target_emi || record->type == ompt_callback_target ) &&
              record->record.target.endpoint == ompt_scope_end )
         {
-            SCOREP_Memory_AlignedFree( target_data );
+            free_target_data( &record->target_id );
             continue;
         }
         /* Ignore events without a valid timestamp as they will cause issues. */
@@ -179,7 +179,7 @@ device_tracing_evaluate_buffer( scorep_ompt_target_device_t* bufferDevice,
                                                              record->time );
                 if ( target_data->target_id == ompt_id_none )
                 {
-                    SCOREP_Memory_AlignedFree( target_data );
+                    free_target_data( &record->target_id );
                 }
             }
             break;
