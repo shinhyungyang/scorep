@@ -71,7 +71,7 @@ AS_IF([test ${have_cplus_demangle+set} != set],
 # though.
 #
 m4_define([_LIBBFD_DOWNLOAD], [
-_afs_lib_PREFIX="${libdir}${backend_suffix}/${PACKAGE}/[]_afs_lib_name"
+_afs_lib_PREFIX="${libdir}${backend_suffix}/${PACKAGE}/[]_afs_lib_name/${binutils_version}"
 _afs_lib_MAKEFILE="Makefile.[]_afs_lib_name"
 _afs_lib_LDFLAGS="-L$[]_afs_lib_PREFIX[]/lib -R$[]_afs_lib_PREFIX[]/lib"
 _afs_lib_CPPFLAGS="-I$[]_afs_lib_PREFIX/include"

@@ -173,7 +173,7 @@ dnl ----------------------------------------------------------------------------
 # build-backend/Makefile.
 #
 m4_define([_LIBUNWIND_DOWNLOAD], [
-_afs_lib_PREFIX="${libdir}${backend_suffix}/${PACKAGE}/[]_afs_lib_name"
+_afs_lib_PREFIX="${libdir}${backend_suffix}/${PACKAGE}/[]_afs_lib_name/${libunwind_version}"
 _afs_lib_MAKEFILE="Makefile.[]_afs_lib_name"
 _afs_lib_LDFLAGS="-L$[]_afs_lib_PREFIX[]/lib -R$[]_afs_lib_PREFIX[]/lib"
 _afs_lib_CPPFLAGS="-I$[]_afs_lib_PREFIX/include -D_GNU_SOURCE"

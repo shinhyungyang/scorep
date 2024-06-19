@@ -16,7 +16,8 @@ libunwind
 
 # Given --with-libbfd=download, we download this binutils tarball
 binutils_libname=bfd
-binutils_package=binutils-2.36.1
+binutils_version=2.36.1
+binutils_package=binutils-${binutils_version}
 binutils_base_url=https://ftp.gnu.org/gnu/binutils
 binutils_url=${binutils_base_url}/${binutils_package}.tar.gz
 
