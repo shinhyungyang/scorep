@@ -168,6 +168,10 @@ typedef struct parallel_t
     bool    belongs_to_league; /* Parallel object belongs to a league.
                                 * Such parallel objects wont create
                                 * events in the first installment. */
+    bool is_recorded;          /* Keep track of if recording events
+                                * was enabled at the beginning of
+                                * a parallel region to not write
+                                * overdue events */
 
     /* For explicit tasking: */
     /* Squeeze explicit task creation data into 64 bits, see also
@@ -594,11 +598,12 @@ init_parallel_obj( parallel_t*                        parallel,
     UTILS_BUG_ON( parallel == NULL );
     UTILS_BUG_ON( requestedParallelism == 0 );
 
-    parallel->parent     = parent;
-    parallel->team_size  = requestedParallelism;
-    parallel->codeptr_ra = ( uintptr_t )codeptrRa;
-    parallel->region     = get_region( codeptrRa, TOOL_EVENT_PARALLEL );
-    parallel->ref_count  = refCount;
+    parallel->parent      = parent;
+    parallel->team_size   = requestedParallelism;
+    parallel->codeptr_ra  = ( uintptr_t )codeptrRa;
+    parallel->region      = get_region( codeptrRa, TOOL_EVENT_PARALLEL );
+    parallel->ref_count   = refCount;
+    parallel->is_recorded = SCOREP_RecordingEnabled();
 
     /* For parallel_t corresponding to implicit parallel region (no parent), we
      * can stop here. Remaining members are 0/NULL. */
@@ -1167,10 +1172,14 @@ implicit_task_end_impl( task_t* task, char* utilsDebugCaller )
                  task, task->index, tpd, task->tpd, timestamp );
 
     /* event might be triggered from location different from the one that
-       executed itask_begin; so far, seen in finalize_tool only. */
-    SCOREP_Location_ExitRegion( task->scorep_location,
-                                timestamp,
-                                parallel_region->region );
+       executed itask_begin; so far, seen in finalize_tool only. Only record
+       event if parallel region was recorded. */
+    if ( parallel_region->is_recorded )
+    {
+        SCOREP_Location_ExitRegion( task->scorep_location,
+                                    timestamp,
+                                    parallel_region->region );
+    }
     /* itask_end might be triggered by a thread different from the one that
        triggered itask_begin. */
     SCOREP_ThreadForkJoin_Tpd_TeamEnd( SCOREP_PARADIGM_OPENMP,
@@ -1640,9 +1649,13 @@ barrier_implicit_parallel_end_impl( task_t* task, char* utilsDebugCaller )
                   "ibarrier_end %s : loc %" PRIu32 " | task %p ",
                   utilsDebugCaller, SCOREP_Location_GetId( task->scorep_location ),
                   task );
-    SCOREP_Location_ExitRegion( task->scorep_location,
-                                timestamp,
-                                sync_region_end( task ) );
+    /* Do not record the end of the sync region if the parallel region was not recorded */
+    if ( parallel_region->is_recorded )
+    {
+        SCOREP_Location_ExitRegion( task->scorep_location,
+                                    timestamp,
+                                    sync_region_end( task ) );
+    }
 }
 
 
