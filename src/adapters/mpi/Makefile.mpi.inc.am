@@ -152,13 +152,6 @@ if SCOREP_COMPILER_FC_PGI
 libscorep_adapter_mpi_fortran_conv_la_FFLAGS = $(AM_FFLAGS) -Mnoref_externals
 endif SCOREP_COMPILER_FC_PGI
 
-if SCOREP_COMPILER_FC_FUJITSU
-# due to the external declaration of MPI_WTIME, MPI_WTICK , PMPI_WTICK, and
-# PMPI_WTIME in the Fujitsu mpif.h we get four undeclared symbols when linking
-# applications to libscorep_adapter_mpi_mgmt.la.
-libscorep_adapter_mpi_fortran_conv_la_needs_LIBS = $(FLIBS)
-endif SCOREP_COMPILER_FC_FUJITSU
-
 else !HAVE_MPI_FORTRAN_SUPPORT
 
 libscorep_adapter_mpi_mgmt_la_LINK = $(LINK)
