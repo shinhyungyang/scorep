@@ -79,6 +79,9 @@ Bugfixes:
   lingering last error values.
 - Fix memory corruption in cases where the HIP communicator was not
   initialized before unification.
+- Delayed exit events from the OMPT adapter won't cause aborts if
+  there were no corresponding enter events, e.g., due to
+  SCOREP_RECORDING_OFF.
 
 ------------------- Released version 8.4 -----------------------------
 
