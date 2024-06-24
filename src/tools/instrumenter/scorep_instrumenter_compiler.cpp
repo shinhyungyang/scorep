@@ -4,7 +4,7 @@
  * Copyright (c) 2013, 2019-2020, 2022-2024,
  * Forschungszentrum Juelich GmbH, Germany
  *
- * Copyright (c) 2013-2016, 2019, 2021,
+ * Copyright (c) 2013-2016, 2019, 2021, 2024,
  * Technische Universitaet Dresden, Germany
  *
  * This software may be modified and distributed under the terms of
@@ -84,8 +84,6 @@ scorep_get_ibm_compiler_version( const std::string& compiler,
 SCOREP_Instrumenter_CompilerAdapter::SCOREP_Instrumenter_CompilerAdapter( void )
     : SCOREP_Instrumenter_Adapter( SCOREP_INSTRUMENTER_ADAPTER_COMPILER, "compiler" )
 {
-    m_default_off.push_back( SCOREP_INSTRUMENTER_ADAPTER_PDT );
-
 #if !HAVE_BACKEND( SCOREP_COMPILER_INSTRUMENTATION )
     unsupported();
 #endif /*!HAVE_BACKEND( SCOREP_COMPILER_INSTRUMENTATION )*/

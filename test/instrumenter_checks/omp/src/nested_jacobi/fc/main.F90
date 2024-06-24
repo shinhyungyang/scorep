@@ -157,11 +157,6 @@ subroutine InitializeMatrix (myData)
 
     ! Initialize initial condition and RHS
 
-    ! Workaround for  PDT instrumentation, PDT fails to recognize OpenMP
-    ! directives as commands and thus inserts declarations at the wrong
-    ! location. Put a statement before solves the issue.
-    xx=0
-
 !$omp parallel do private (j, i, xx, yy)
     do j = myData%iRowFirst, myData%iRowLast
         do i = 0, myData%iCols -1

@@ -7,7 +7,7 @@
  * Copyright (c) 2009-2013,
  * Gesellschaft fuer numerische Simulation mbH Braunschweig, Germany
  *
- * Copyright (c) 2009-2015, 2017, 2019,
+ * Copyright (c) 2009-2015, 2017, 2019, 2024,
  * Technische Universitaet Dresden, Germany
  *
  * Copyright (c) 2009-2013,
@@ -410,13 +410,8 @@ SCOREP_Instrumenter_OpariAdapter::invoke_opari( SCOREP_Instrumenter& instrumente
                    "--omp-tpd-mangling=" );
     }
 
-    SCOREP_Instrumenter_Adapter* adapter = getAdapter( SCOREP_INSTRUMENTER_ADAPTER_PDT );
-    if ( ( adapter != NULL ) && adapter->isEnabled() && is_fortran_file( input_file ) )
-    {
-        add_param( command, "--nosrc", "--nosrc" );
-    }
-
-    adapter = getAdapter( SCOREP_INSTRUMENTER_ADAPTER_PREPROCESS );
+    SCOREP_Instrumenter_Adapter*
+        adapter = getAdapter( SCOREP_INSTRUMENTER_ADAPTER_PREPROCESS );
     if ( ( adapter != NULL ) && adapter->isEnabled() )
     {
         add_param( command, "--preprocessed", "--preprocessed" );

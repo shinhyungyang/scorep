@@ -179,13 +179,6 @@ while test $# -ne 0; do
             fi
             ;;
 
-        --pdt)
-            USER=yes
-            ;;
-        --nopdt)
-            unset USER
-            ;;
-
         --openmp)
             ;;
 

@@ -7,7 +7,7 @@
  * Copyright (c) 2009-2013,
  * Gesellschaft fuer numerische Simulation mbH Braunschweig, Germany
  *
- * Copyright (c) 2009-2014, 2016-2017, 2021,
+ * Copyright (c) 2009-2014, 2016-2017, 2021, 2024,
  * Technische Universitaet Dresden, Germany
  *
  * Copyright (c) 2009-2013,
@@ -197,8 +197,6 @@ public:
     getVerbosity( void );
     bool
     isBuildCheck( void );
-    std::string
-    getPdtParams( void );
     bool
     enforceStaticLinking( void );
     bool

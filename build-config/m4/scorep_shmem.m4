@@ -3,7 +3,7 @@
 ##
 ## This file is part of the Score-P software (http://www.score-p.org)
 ##
-## Copyright (c) 2013-2014, 2016-2017, 2019,
+## Copyright (c) 2013-2014, 2016-2017, 2019, 2024,
 ## Technische Universitaet Dresden, Germany
 ##
 ## Copyright (c) 2015,
@@ -539,7 +539,6 @@ dnl ----------------------------------------------------------------------------
 
 AC_DEFUN([SCOREP_SHMEM], [
 AC_REQUIRE([SCOREP_LIBRARY_WRAPPING])dnl
-AC_REQUIRE([_SCOREP_PDT_SHMEM_INSTRUMENTATION])dnl
 
 AC_DEFINE_UNQUOTED([SCOREP_SHMEM_NAME], ["${SHMEM_NAME}"],
                    [Name of the implemented SHMEM specification.])
@@ -1056,19 +1055,4 @@ AC_LANG_POP([C])
 AS_IF([test "x${scorep_have_shmem_include}" = "xyes"],
       [AC_SUBST([SCOREP_SHMEM_INCLUDE], [${scorep_shmem_include}])],
       [])
-])
-
-
-dnl ----------------------------------------------------------------------------
-
-
-AC_DEFUN([_SCOREP_PDT_SHMEM_INSTRUMENTATION], [
-AC_REQUIRE([_SCOREP_SHMEM_INCLUDE])
-
-AS_IF([test "x${scorep_have_shmem_include}" = "xyes"],
-      [AC_SUBST([SCOREP_HAVE_PDT_SHMEM_INSTRUMENTATION], [1])
-       AFS_SUMMARY([PDT SHMEM instrumentation], [yes, if PDT available])],
-      [AC_SUBST([SCOREP_HAVE_PDT_SHMEM_INSTRUMENTATION], [0])
-       AC_MSG_WARN([cannot determine shmem.h include path. PDT SHMEM instrumentation will be disabled.])
-       AFS_SUMMARY([PDT SHMEM instrumentation], [no, shmem.h include path could not be determined.])])
 ])

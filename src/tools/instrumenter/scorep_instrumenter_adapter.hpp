@@ -4,7 +4,7 @@
  * Copyright (c) 2013, 2020,
  * Forschungszentrum Juelich GmbH, Germany
  *
- * Copyright (c) 2014-2017, 2020-2022,
+ * Copyright (c) 2014-2017, 2020-2022, 2024,
  * Technische Universitaet Dresden, Germany
  *
  * This software may be modified and distributed under the terms of
@@ -39,7 +39,6 @@ typedef enum
     SCOREP_INSTRUMENTER_ADAPTER_COMPILER,
     SCOREP_INSTRUMENTER_ADAPTER_CUDA,
     SCOREP_INSTRUMENTER_ADAPTER_OPARI,
-    SCOREP_INSTRUMENTER_ADAPTER_PDT,
     SCOREP_INSTRUMENTER_ADAPTER_PREPROCESS,
     SCOREP_INSTRUMENTER_ADAPTER_USER,
     SCOREP_INSTRUMENTER_ADAPTER_OPENCL,

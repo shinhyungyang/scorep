@@ -7,7 +7,7 @@
  * Copyright (c) 2014,
  * German Research School for Simulation Sciences GmbH, Juelich/Aachen, Germany
  *
- * Copyright (c) 2015, 2017,
+ * Copyright (c) 2015, 2017, 2024,
  * Technische Universitaet Dresden, Germany
  *
  * Copyright (c) 2017,
@@ -176,14 +176,6 @@ SCOREP_Instrumenter_OmpOmpt::SCOREP_Instrumenter_OmpOmpt
 ) : SCOREP_Instrumenter_Omp( selector, "ompt", "OpenMP support using thread tracking via OMPT." ),
     m_warn_intel_openmp_flags( false )
 {
-    // For Fortran, pdt inserts a specification statement into the executable
-    // section (omp parallel do), which is illegal. Subsequent opari2
-    // processing fixes this issue. With ompt instead of opari2 the error
-    // persists, thus, forbid the combination pdt + ompt (not only for Fortran,
-    // but also for C and C++ as there enough alternatives to pdt
-    // instrumentation)
-    m_conflicts.push_back( SCOREP_INSTRUMENTER_ADAPTER_PDT );
-
     // We conflict with OPARI2 OpenMP instrumentation, but not with OPARI2
     // POMP user instrumentation. We can't express this via
     // SCOREP_INSTRUMENTER_ADAPTER_OPARI.

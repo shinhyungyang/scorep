@@ -7,7 +7,7 @@
  * Copyright (c) 2009-2013,
  * Gesellschaft fuer numerische Simulation mbH Braunschweig, Germany
  *
- * Copyright (c) 2009-2017, 2020-2022,
+ * Copyright (c) 2009-2017, 2020-2022, 2024,
  * Technische Universitaet Dresden, Germany
  *
  * Copyright (c) 2009-2013,
@@ -58,7 +58,6 @@
 #include "scorep_instrumenter_io.hpp"
 #include "scorep_instrumenter_opari.hpp"
 #include "scorep_instrumenter_preprocess.hpp"
-#include "scorep_instrumenter_pdt.hpp"
 #include "scorep_instrumenter_thread.hpp"
 #include "scorep_instrumenter_user.hpp"
 #include "scorep_instrumenter_openacc.hpp"
@@ -88,7 +87,6 @@ SCOREP_Instrumenter::SCOREP_Instrumenter( SCOREP_Instrumenter_InstallData& insta
     m_cuda_adapter       = new SCOREP_Instrumenter_CudaAdapter();
     m_opari_adapter      = new SCOREP_Instrumenter_OpariAdapter();
     m_preprocess_adapter = new SCOREP_Instrumenter_PreprocessAdapter();
-    m_pdt_adapter        = new SCOREP_Instrumenter_PdtAdapter();
     m_user_adapter       = new SCOREP_Instrumenter_UserAdapter();
     m_openacc_adapter    = new SCOREP_Instrumenter_OpenACCAdapter();
     m_opencl_adapter     = new SCOREP_Instrumenter_OpenCLAdapter();
@@ -104,7 +102,6 @@ SCOREP_Instrumenter::SCOREP_Instrumenter( SCOREP_Instrumenter_InstallData& insta
     /* pre-compile adapter order */
     m_precompile_adapters.push_back( m_compiler_adapter );
     m_precompile_adapters.push_back( m_opari_adapter );
-    m_precompile_adapters.push_back( m_pdt_adapter );
 
     /* pre-link adapter order */
     m_prelink_adapters.push_back( m_compiler_adapter );
@@ -151,7 +148,7 @@ SCOREP_Instrumenter::Run( void )
     if ( m_command_line.isCompiling() ||
          m_command_line.getPreprocessMode() != SCOREP_Instrumenter_CmdLine::DISABLE )
     {
-        /* Because Opari and PDT perform source code modifications, and store
+        /* Because Opari performs source code modifications, and store
            the modified source file with a different name, we get object files
            with a different name. To avoid this, we need to compile every
            source file separately and explicitly specify the output file name.
@@ -216,7 +213,6 @@ SCOREP_Instrumenter::Run( void )
                      files may be included
                  */
                 std::string search_path                = extract_path( *current_file );
-                std::string pdt_include_search_path    = " -I" + search_path;
                 std::string opari2_include_search_path = " -I" +  search_path;
                 if ( !m_cuda_adapter->isNvcc() && is_c_file( *current_file ) )
                 {
@@ -258,12 +254,8 @@ SCOREP_Instrumenter::Run( void )
                 // Perform compile step
                 if ( m_command_line.isCompiling() )
                 {
-                    if ( m_pdt_adapter->isEnabled() )
-                    {
-                        m_compiler_flags += pdt_include_search_path;
-                    }
-                    else if ( m_opari_adapter->isEnabled() &&
-                              m_command_line.getPreprocessMode() != SCOREP_Instrumenter_CmdLine::EXPLICIT_STEP )
+                    if ( m_opari_adapter->isEnabled() &&
+                         m_command_line.getPreprocessMode() != SCOREP_Instrumenter_CmdLine::EXPLICIT_STEP )
                     {
                         m_compiler_flags += opari2_include_search_path;
                     }

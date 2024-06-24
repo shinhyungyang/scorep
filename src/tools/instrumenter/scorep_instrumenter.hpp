@@ -7,7 +7,7 @@
  * Copyright (c) 2009-2013,
  * Gesellschaft fuer numerische Simulation mbH Braunschweig, Germany
  *
- * Copyright (c) 2009-2017, 2020-2022,
+ * Copyright (c) 2009-2017, 2020-2022, 2024,
  * Technische Universitaet Dresden, Germany
  *
  * Copyright (c) 2009-2013,
@@ -52,7 +52,6 @@ class SCOREP_Instrumenter_CompilerAdapter;
 class SCOREP_Instrumenter_CudaAdapter;
 class SCOREP_Instrumenter_OpariAdapter;
 class SCOREP_Instrumenter_PreprocessAdapter;
-class SCOREP_Instrumenter_PdtAdapter;
 class SCOREP_Instrumenter_UserAdapter;
 class SCOREP_Instrumenter_OpenCLAdapter;
 class SCOREP_Instrumenter_OpenACCAdapter;
@@ -247,7 +246,6 @@ private:
     SCOREP_Instrumenter_CudaAdapter*       m_cuda_adapter;
     SCOREP_Instrumenter_OpariAdapter*      m_opari_adapter;
     SCOREP_Instrumenter_PreprocessAdapter* m_preprocess_adapter;
-    SCOREP_Instrumenter_PdtAdapter*        m_pdt_adapter;
     SCOREP_Instrumenter_UserAdapter*       m_user_adapter;
     SCOREP_Instrumenter_OpenACCAdapter*    m_openacc_adapter;
     SCOREP_Instrumenter_OpenCLAdapter*     m_opencl_adapter;

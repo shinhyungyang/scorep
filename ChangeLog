@@ -44,6 +44,7 @@ User tools and API improvements and changes:
   `-finstrument-functions`.
 - The option `--openmp` is deprecated. Please use `--thread=omp:opari2`
   instead.
+- The deprecated PDT instrumentation mechanism has been removed.
 
 Compatibility:
 

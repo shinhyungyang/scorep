@@ -9,7 +9,7 @@
 ## Copyright (c) 2009-2013,
 ##    Gesellschaft fuer numerische Simulation mbH Braunschweig, Germany
 ##
-## Copyright (c) 2009-2014, 2019,
+## Copyright (c) 2009-2014, 2019, 2024,
 ##    Technische Universitaet Dresden, Germany
 ##
 ## Copyright (c) 2009-2013,
@@ -268,7 +268,6 @@ dnl ----------------------------------------------------------------------------
 
 
 AC_DEFUN([AC_SCOREP_MPI], [
-AC_REQUIRE([_SCOREP_PDT_MPI_INSTRUMENTATION])
 
 AC_DEFINE([OMPI_WANT_MPI_INTERFACE_WARNING], [0], [Disable deprecation warnings in Open MPI])
 AC_DEFINE([OMPI_OMIT_MPI1_COMPAT_DECLS],     [0], [Possibly expose deprecated MPI-1 bindings in Open MPI 4.0+])
@@ -777,19 +776,4 @@ AC_LANG_POP([C])
 AS_IF([test "x${ac_scorep_have_mpi_include}" = "xyes"],
       [AC_SUBST([SCOREP_MPI_INCLUDE], [${scorep_mpi_include}])],
       [])
-])
-
-
-dnl ----------------------------------------------------------------------------
-
-
-AC_DEFUN([_SCOREP_PDT_MPI_INSTRUMENTATION], [
-AC_REQUIRE([_AC_SCOREP_MPI_INCLUDE])
-
-AS_IF([test "x${ac_scorep_have_mpi_include}" = "xyes"],
-      [AC_SUBST([SCOREP_HAVE_PDT_MPI_INSTRUMENTATION], [1])
-       AFS_SUMMARY([PDT MPI instrumentation], [yes, if PDT available])],
-      [AC_SUBST([SCOREP_HAVE_PDT_MPI_INSTRUMENTATION], [0])
-       AC_MSG_WARN([cannot determine mpi.h include path. PDT MPI instrumentation will be disabled.])
-       AFS_SUMMARY([PDT MPI instrumentation], [no, mpi.h include path could not be determined.])])
 ])
