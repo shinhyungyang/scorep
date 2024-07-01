@@ -51,7 +51,7 @@ scorep_ompt_device_tracing_finalize( scorep_ompt_target_device_t* device )
     {
         return;
     }
-    if ( !device->device_tracing_available )
+    if ( !device->device_tracing_available || device->finalized )
     {
         return;
     }

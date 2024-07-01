@@ -72,6 +72,7 @@ typedef struct scorep_ompt_target_device_t
     uint32_t                       num_streams;
     UTILS_Mutex                    stream_lock;
 
+    bool                           finalized;
     bool                           device_tracing_available;
     uint8_t                        device_tracing_buffers;
     scorep_ompt_device_functions_t device_functions;
