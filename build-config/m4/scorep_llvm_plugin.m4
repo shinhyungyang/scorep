@@ -6,7 +6,7 @@ dnl
 dnl Copyright (c) 2017,
 dnl Technische Universitaet Dresden, Germany
 dnl
-dnl Copyright (c) 2023,
+dnl Copyright (c) 2023, 2024,
 dnl Forschungszentrum Juelich GmbH, Germany
 dnl
 dnl This software may be modified and distributed under the terms of
@@ -304,6 +304,7 @@ int main( int argc, char** argv )
 m4_define([_INPUT_LLVM_PLUGIN], [[
 #undef PIC
 #include "llvm/IR/Function.h"
+#include "llvm/IR/Module.h"
 #include "llvm/Pass.h"
 #include "llvm/Passes/PassBuilder.h"
 #include "llvm/Passes/PassPlugin.h"
