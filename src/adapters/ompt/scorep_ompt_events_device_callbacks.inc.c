@@ -96,6 +96,7 @@ scorep_ompt_cb_device_finalize( int device_num )
                        "Some events may not be processed!",
                        device->name );
     }
+    device->finalized = true;
 
     SCOREP_IN_MEASUREMENT_DECREMENT();
 }
