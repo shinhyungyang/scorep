@@ -660,7 +660,7 @@ MPI_Intercomm_create( MPI_Comm local_comm, int local_leader, MPI_Comm peer_comm,
     if ( *newcomm != MPI_COMM_NULL )
     {
         /* The semantic of the peer communicator only requires a useful
-         * communicator on the respective local leader rank.
+         * communicator on the respective local leader ranks.
          * To avoid unnecessary duplicates use MPI_COMM_NULL for all other
          * ranks in the place of the parent/peer communicator.
          */
