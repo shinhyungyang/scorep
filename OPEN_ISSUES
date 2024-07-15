@@ -435,35 +435,46 @@ various Score-P components.
 
 * CUDA support
 
-  - CUDA device activities get lost for CUDA 5.5 (CUPTI 4). The last
-    activity in a CUPTI activity buffer gets lost, when the buffer is
-    full. The issue can be avoided by providing buffers, which are
-    large enough to store all CUDA device activities until the buffer
-    is flushed. The user can specify the CUPTI activity buffer (chunk)
-    size with the environment variable SCOREP_CUDA_BUFFER_CHUNK. In
-    CUDA 6.0 (CUPTI 5) this issue is fixed.
-  - Support for CUDA 4.2 and prior versions is deprecated. Score-P may
-    work in combination with these CUDA versions but it is not tested.
-    Support for CUDA 4.2 and prior versions will become officially
-    unsupported in a future release of Score-P.
-  - On Cray systems you need to 'module load cudatoolkit', otherwise
-    the CUDA related configure checks will fail, even if
-    --with-libcuda and --with-libcudart are given.
-  - The nvcc compiler preinclude its CUDA runtime header. This results
+  - Support for CUDA 4.2 and prior versions was deprecated in Score-P 7.0 and
+    removed in Score-P 8.0. Since 8.0, Score-P requires CUDA 7.0 or newer.
+    If an older CUDA version is used, the CUDA adapter will not be built.
+    This requirement will be bumped to CUDA 11.6 in a future release.
+
+  - The `nvcc` compiler preincludes its CUDA runtime header. This results
     in multiple defined symbols if the source file is preprocessed
-    before compilation. Thus this combination is not allowed by the
-    instrumenter.
-  - When building against a stubs-only CUDA installation (i.e., without
-    `libcuda.so` from the NVIDIA driver package), then `make check` will
-    likely fail. In this case, ensure that the library path is provided
-    to configure via the `--with-libcuda-lib=<cuda-sdk>/lib64/stubs` flag and
-    includes a `stubs`-directory component.
+    before compilation. Thus enabling preprocessing and CUDA simultaneously
+    is not allowed by the instrumenter.
+
   - Score-P's NVTX implementation does not support RangeStart/Stop APIs.
     They are supposed to cross locations and can overlap, which does not fit
     into Score-P's event model.
+
   - NVTX does consider different domains as disjoint range stacks, thus
     this does not fit into Score-P's event model as well. Score-P expect
     that regions from disjoint domains are properly nested.
+
+  - Thread migration of a context is not supported. Affected memory copies
+    are not recorded. This will be improved in future Score-P versions.
+
+  - Unified memory is not supported. The CUDA adapter might report that
+    memory allocations could not be found or memory was freed that has
+    not been allocated. Data transfers are not shown. This will be
+    improved in future Score-P versions.
+
+  - CUDA graphs are not supported. The CUDA adapter might report that
+    hash values could not be retrieved or matching failed. Kernels
+    are still recorded, but allocations and data transfers are not.
+    This will be improved in future Score-P versions.
+
+  - CUDA calls transferring memory introduced after CUDA 7.0
+    might not be supported correctly. The CUDA adapter might report
+    that the memory copy kind could not be identified. This includes
+    2D/3D memory transfers. This will be improved in future Score-P versions.
+
+  - The CUDA adapter is not able to record OpenMP offloading to GPUs
+    with LLVM 18.1 or newer, as the runtime is creating streams
+    before the Score-P CUDA adapter can be initialized. Future versions
+    of Score-P will handle this more gracefully.
 
 --------------------------------------------------------------------------------
 
