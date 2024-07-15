@@ -310,7 +310,7 @@ getScorePInstrumentationPluginInfo()
                  #endif
                  if ( SCOREP::Compiler::LLVMPlugin::EnableExceptionHandling )
                  {
-                     PB.registerPipelineStartEPCallback(
+                     PB.registerOptimizerLastEPCallback(
                          [ ]( llvm::ModulePassManager& PM, OptimizationLevel level ) -> void {
                     PM.addPass( SCOREP::Compiler::LLVMPlugin::ExceptionHandling() );
                 } );
