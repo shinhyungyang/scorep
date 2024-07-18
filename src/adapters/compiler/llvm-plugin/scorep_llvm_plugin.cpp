@@ -188,6 +188,7 @@ SCOREP::Compiler::LLVMPlugin::FunctionIsInstrumentable( Function&      F,
         && ( !strstr( basename.c_str(), "(anonymous namespace)::invokeMicrotask" ) )
         && ( strncmp( basename.c_str(), ".red_init.", 10 ) != 0 )
         && ( strncmp( basename.c_str(), ".red_comb.", 10 ) != 0 )
+        && ( !strstr( basename.c_str(), "..omp_par" ) )
         // MPI
         && ( strncmp( basename.c_str(), "MPI::", 5 ) != 0 )
         // CUDA
