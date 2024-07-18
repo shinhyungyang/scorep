@@ -425,12 +425,31 @@ SCOREP_Addr2line_LookupSo( uintptr_t    programCounterAddr,
 }
 
 
+/* The RW lock needed to safely access the linked lists for
+   runtime-loaded shared objects. */
+struct rwlock
+{
+    SCOREP_ALIGNAS( SCOREP_CACHELINESIZE ) int16_t pending;
+    int16_t     departing;
+    int16_t     release_n_readers;
+    int16_t     release_writer;
+    UTILS_Mutex writer_mutex;
+} scorep_rt_objects_rwlock =
+{
+    .pending           = 0,
+    .departing         = 0,
+    .release_n_readers = 0,
+    .release_writer    = 0,
+    .writer_mutex      = UTILS_MUTEX_INIT
+};
+
+
 void
 SCOREP_Addr2line_SoLookupAddr( uintptr_t    offset,
                                void*        soHandle,
+                               uint16_t     soToken,
                                /* shared object OUT parameters */
                                const char** soFileName,
-                               uint16_t*    soToken,
                                /* Source code location OUT parameters */
                                bool*        sclFound,
                                const char** sclFileName,
@@ -439,16 +458,30 @@ SCOREP_Addr2line_SoLookupAddr( uintptr_t    offset,
 {
     UTILS_BUG_ON( soHandle == NULL, "Need valid soHandle but NULL provided" );
     UTILS_BUG_ON( soFileName == NULL ||
-                  soToken == NULL ||
                   sclFound == NULL ||
                   sclFileName == NULL ||
                   sclFunctionName == NULL ||
                   sclLineNo == NULL,
                   "Need valid OUT handles but NULL provided." );
+
+    if ( soToken != SCOREP_ADDR2LINE_LT_OBJECT_TOKEN )
+    {
+        SCOREP_RWLock_ReaderLock( &scorep_rt_objects_rwlock.pending,
+                                  &scorep_rt_objects_rwlock.release_n_readers );
+        if ( !SCOREP_Addr2line_SoStillLoaded( soToken ) )
+        {
+            UTILS_WARNING( "Trying to lookup address using invalid token %" PRIu16 ".", soToken );
+            *sclFound = false;
+            SCOREP_RWLock_ReaderUnlock( &scorep_rt_objects_rwlock.pending,
+                                        &scorep_rt_objects_rwlock.departing,
+                                        &scorep_rt_objects_rwlock.release_writer );
+            return;
+        }
+    }
     lt_object* so_handle = ( lt_object* )soHandle;
+    UTILS_BUG_ON( so_handle->token != soToken, "Provided token does not match soHandle's token" );
 
     *soFileName = so_handle->name;
-    *soToken    = so_handle->token;
 
     bool         scl_found_unused;
     lookup_bfd_t data = {
@@ -466,6 +499,12 @@ SCOREP_Addr2line_SoLookupAddr( uintptr_t    offset,
     *( data.scl_found_end_addr )   = false;
 
     map_over_sections_locked( so_handle, &data );
+    if ( soToken != SCOREP_ADDR2LINE_LT_OBJECT_TOKEN )
+    {
+        SCOREP_RWLock_ReaderUnlock( &scorep_rt_objects_rwlock.pending,
+                                    &scorep_rt_objects_rwlock.departing,
+                                    &scorep_rt_objects_rwlock.release_writer );
+    }
 }
 
 
@@ -495,9 +534,9 @@ void
 SCOREP_Addr2line_SoLookupAddrRange( uintptr_t    beginOffset,
                                     uintptr_t    endOffset,
                                     void*        soHandle,
+                                    uint16_t     soToken,
                                     /* shared object OUT parameters */
                                     const char** soFileName,
-                                    uint16_t*    soToken,
                                     /* Source code location OUT parameters */
                                     bool*        sclFoundBegin,
                                     bool*        sclFoundEnd,
@@ -508,7 +547,6 @@ SCOREP_Addr2line_SoLookupAddrRange( uintptr_t    beginOffset,
 {
     UTILS_BUG_ON( soHandle == NULL, "Need valid soHandle but NULL provided" );
     UTILS_BUG_ON( soFileName == NULL ||
-                  soToken == NULL ||
                   sclFoundBegin == NULL ||
                   sclFoundEnd == NULL ||
                   sclFileName == NULL ||
@@ -516,10 +554,26 @@ SCOREP_Addr2line_SoLookupAddrRange( uintptr_t    beginOffset,
                   sclBeginLineNo == NULL ||
                   sclEndLineNo == NULL,
                   "Need valid OUT handles but NULL provided." );
+
+    if ( soToken != SCOREP_ADDR2LINE_LT_OBJECT_TOKEN )
+    {
+        SCOREP_RWLock_ReaderLock( &scorep_rt_objects_rwlock.pending,
+                                  &scorep_rt_objects_rwlock.release_n_readers );
+        if ( !SCOREP_Addr2line_SoStillLoaded( soToken ) )
+        {
+            UTILS_WARNING( "Trying to lookup address using invalid token %" PRIu16 ".", soToken );
+            *sclFoundBegin = false;
+            *sclFoundEnd   = false;
+            SCOREP_RWLock_ReaderUnlock( &scorep_rt_objects_rwlock.pending,
+                                        &scorep_rt_objects_rwlock.departing,
+                                        &scorep_rt_objects_rwlock.release_writer );
+            return;
+        }
+    }
     lt_object* so_handle = ( lt_object* )soHandle;
+    UTILS_BUG_ON( so_handle->token != soToken, "Provided token does not match soHandle's token" );
 
     *soFileName = so_handle->name;
-    *soToken    = so_handle->token;
 
     lookup_bfd_t data = {
         .begin_addr           = beginOffset,
@@ -536,6 +590,12 @@ SCOREP_Addr2line_SoLookupAddrRange( uintptr_t    beginOffset,
     *( data.scl_found_end_addr )   = false;
 
     map_over_sections_locked( so_handle, &data );
+    if ( soToken != SCOREP_ADDR2LINE_LT_OBJECT_TOKEN )
+    {
+        SCOREP_RWLock_ReaderUnlock( &scorep_rt_objects_rwlock.pending,
+                                    &scorep_rt_objects_rwlock.departing,
+                                    &scorep_rt_objects_rwlock.release_writer );
+    }
 }
 
 
@@ -724,22 +784,6 @@ rt_object* scorep_rt_objects_head     = NULL;
 unsigned   scorep_rt_object_count     = 0;
 uintptr_t  scorep_rt_objects_min_addr = UINTPTR_MAX;
 uintptr_t  scorep_rt_objects_max_addr = 0;
-struct rwlock
-{
-    SCOREP_ALIGNAS( SCOREP_CACHELINESIZE ) int16_t pending;
-    int16_t     departing;
-    int16_t     release_n_readers;
-    int16_t     release_writer;
-    UTILS_Mutex writer_mutex;
-} scorep_rt_objects_rwlock =
-{
-    .pending           = 0,
-    .departing         = 0,
-    .release_n_readers = 0,
-    .release_writer    = 0,
-    .writer_mutex      = UTILS_MUTEX_INIT
-};
-
 
 static lt_object*
 lookup_so( uintptr_t addr )
