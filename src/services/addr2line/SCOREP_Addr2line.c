@@ -98,6 +98,8 @@ struct lt_object
     SO_OBJECT_COMMON;
 };
 static lt_object* lt_objects;
+static uintptr_t  lt_objects_min_addr = UINTPTR_MAX;
+static uintptr_t  lt_objects_max_addr = 0;
 static uint32_t   n_overlapping_address_ranges;
 
 static bool addr2line_initialized;
@@ -233,6 +235,16 @@ fill_lt_arrays_cb( struct dl_phdr_info* info, size_t unused, void* cnt )
         {
             n_overlapping_address_ranges++;
         }
+    }
+
+    /* update lt address interval */
+    if ( lt_begin_addrs[ insert ] < lt_objects_min_addr )
+    {
+        lt_objects_min_addr = lt_begin_addrs[ insert ];
+    }
+    if ( lt_objects[ insert ].end_addr > lt_objects_max_addr )
+    {
+        lt_objects_max_addr = lt_objects[ insert ].end_addr;
     }
 
     UTILS_DEBUG( "Use %s: base=%" PRIuPTR "; begin=%" PRIuPTR "; end=%" PRIuPTR "",
@@ -933,15 +945,18 @@ static void
 lookup_so( uintptr_t addr, lrt_objects_container* matches )
 {
     /* search in loadtime objects */
-    for ( size_t i = 0; i < lt_object_count; ++i )
+    if ( lt_objects_min_addr <= addr && addr <= lt_objects_max_addr )
     {
-        if ( lt_begin_addrs[ i ] <= addr && addr <= lt_objects[ i ].end_addr )
+        for ( size_t i = 0; i < lt_object_count; ++i )
         {
-            /* found addr in loadtime objects */
-            UTILS_BUG_ON( matches->size + 1 > matches->capacity,
-                          "More address-ranges found than expected (%zu).",
-                          matches->capacity );
-            matches->objects[ matches->size++ ] = &lt_objects[ i ];
+            if ( lt_begin_addrs[ i ] <= addr && addr <= lt_objects[ i ].end_addr )
+            {
+                /* found addr in loadtime objects */
+                UTILS_BUG_ON( matches->size + 1 > matches->capacity,
+                              "More address-ranges found than expected (%zu).",
+                              matches->capacity );
+                matches->objects[ matches->size++ ] = &lt_objects[ i ];
+            }
         }
     }
 
