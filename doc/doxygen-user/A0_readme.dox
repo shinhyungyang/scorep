@@ -1,0 +1,7 @@
+/**
+@page readmefile  @scorep README
+@seclabel{readmefile}
+
+\verbinclude README.md
+
+*/
