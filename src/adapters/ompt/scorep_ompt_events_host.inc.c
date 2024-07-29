@@ -1949,6 +1949,7 @@ scorep_ompt_cb_host_task_create( ompt_data_t*        encountering_task_data,
      * means that new_task_data will be used as the prior_task in task_schedule with no
      * next_task_data being passed. Since this would cause a segmentation fault, when checking
      * for OpenMP leagues, we create an artifical task which is used for handling this directive. */
+    #if HAVE( DECL_OMPT_TASK_TASKWAIT ) && HAVE( DECL_OMPT_TASKWAIT_COMPLETE )
     if ( flags & ompt_task_taskwait )
     {
         task_t* next_task = get_task_from_pool();
@@ -1972,6 +1973,7 @@ scorep_ompt_cb_host_task_create( ompt_data_t*        encountering_task_data,
         SCOREP_IN_MEASUREMENT_DECREMENT();
         return;
     }
+    #endif /* HAVE( DECL_OMPT_TASK_TASKWAIT ) && HAVE( DECL_OMPT_TASKWAIT_COMPLETE ) */
 
     /* No scheduling events occur when switching to or from a merged task ... */
     if ( flags & ompt_task_merged )
@@ -2147,7 +2149,9 @@ scorep_ompt_cb_host_task_schedule( ompt_data_t*       prior_task_data,
      * Since we're handling undeferred tasks here, we do not need to switch
      * to the previous task. Therefore, return from the function and
      * continue execution normally. */
+    #if HAVE( DECL_OMPT_TASK_TASKWAIT ) && HAVE( DECL_OMPT_TASKWAIT_COMPLETE )
     if ( !( prior_task_status == ompt_taskwait_complete && next_task_data == NULL ) )
+    #endif /* HAVE( DECL_OMPT_TASK_TASKWAIT ) && HAVE( DECL_OMPT_TASKWAIT_COMPLETE ) */
     {
         task_schedule_handle_next_task( prior_task, next_task_data );
     }
@@ -2167,6 +2171,7 @@ task_schedule_handle_prior_task( task_t*            priorTask,
 {
     switch ( priorTaskStatus )
     {
+        #if HAVE( DECL_OMPT_TASK_TASKWAIT ) && HAVE( DECL_OMPT_TASKWAIT_COMPLETE )
         case ompt_taskwait_complete:
             /* See task_create for more information */
             if ( priorTask->undeferred_level > UNDEFERRED_TASK_INIT )
@@ -2179,6 +2184,7 @@ task_schedule_handle_prior_task( task_t*            priorTask,
             }
             priorTask->undeferred_level = UNDEFERRED_TASK_TO_BE_FREED; /* Task will be freed afterward */
             break;
+        #endif /* HAVE( DECL_OMPT_TASK_TASKWAIT ) && HAVE( DECL_OMPT_TASKWAIT_COMPLETE ) */
         case ompt_task_complete:
         case ompt_task_detach:
             if ( priorTask->undeferred_level == UNDEFERRED_TASK_INIT ) /* deferred task */

@@ -134,6 +134,7 @@ ompt_sync_region_t foo3 = ompt_sync_region_barrier_teams;
                #
                AC_CHECK_DECLS([ompt_scope_beginend,
                                ompt_task_taskwait,
+                               ompt_taskwait_complete,
                                ompt_sync_region_barrier_implicit_workshare,
                                ompt_sync_region_barrier_implicit_parallel,
                                ompt_sync_region_barrier_teams,
