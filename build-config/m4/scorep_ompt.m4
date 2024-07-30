@@ -142,6 +142,7 @@ ompt_sync_region_t foo3 = ompt_sync_region_barrier_teams;
                                ompt_work_loop_dynamic,
                                ompt_work_loop_guided,
                                ompt_work_loop_other,
+                               ompt_work_scope,
                                ompt_dispatch_ws_loop_chunk,
                                ompt_dispatch_taskloop_chunk,
                                ompt_dispatch_distribute_chunk], [], [], [[#include <omp-tools.h>]])],

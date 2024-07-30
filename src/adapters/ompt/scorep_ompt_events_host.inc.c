@@ -1764,11 +1764,13 @@ scorep_ompt_cb_host_work( ompt_work_t           work_type,
                     task->reduction_codeptr_ra = ( uintptr_t )codeptr_ra;
                     SCOREP_EnterRegion( work_begin( task, codeptr_ra, TOOL_EVENT_TASKLOOP ) );
                     break;
+                #if HAVE( DECL_OMPT_WORK_SCOPE )
                 case ompt_work_scope:
                     task->reduction_codeptr_ra = ( uintptr_t )codeptr_ra;
                     UTILS_WARN_ONCE( "ompt_work_t %s not implemented yet.",
                                      work2string( work_type ) );
                     break;
+                #endif /* HAVE( DECL_OMPT_WORK_SCOPE ) */
                 default:
                     UTILS_WARNING( "unknown ompt_work_t %d.",
                                    ( int )work_type );
@@ -1818,10 +1820,12 @@ scorep_ompt_cb_host_work( ompt_work_t           work_type,
                 case ompt_work_taskloop:
                     SCOREP_ExitRegion( work_end( task ) );
                     break;
+                #if HAVE( DECL_OMPT_WORK_SCOPE )
                 case ompt_work_scope:
                     UTILS_WARN_ONCE( "ompt_work_t %s not implemented yet.",
                                      work2string( work_type ) );
                     break;
+                #endif /* HAVE( DECL_OMPT_WORK_SCOPE ) */
                 default:
                     UTILS_WARNING( "unknown ompt_work_t %d.",
                                    ( int )work_type );
