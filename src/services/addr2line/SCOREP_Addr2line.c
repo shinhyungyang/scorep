@@ -1,7 +1,7 @@
 /*
  * This file is part of the Score-P software (http://www.score-p.org)
  *
- * Copyright (c) 2021-2022,
+ * Copyright (c) 2021-2022, 2024,
  * Forschungszentrum Juelich GmbH, Germany
  *
  * This software may be modified and distributed under the terms of
@@ -90,13 +90,17 @@ static uintptr_t* lt_begin_addrs;
     bfd*        abfd; \
     asymbol**   symbols; \
     const char* name; \
-    uint16_t    token
+    uint16_t    token; \
+    UTILS_Mutex abfd_mutex
 typedef struct lt_object lt_object;
 struct lt_object
 {
     SO_OBJECT_COMMON;
 };
 static lt_object* lt_objects;
+static uintptr_t  lt_objects_min_addr = UINTPTR_MAX;
+static uintptr_t  lt_objects_max_addr = 0;
+static uint32_t   n_overlapping_address_ranges;
 
 static bool addr2line_initialized;
 
@@ -161,6 +165,9 @@ is_obj_relevant( const char* name )
          || strstr( name, "libscorep" )
          || strstr( name, "libcube4w" )
          || strstr( name, "libotf2" )
+         /* Explicitly ignore ld-linux[x].so, as we encountered cases where
+            the address space overlaps with runtime loaded libraries. */
+         || strstr( name, "ld-linux" )
          /* Don't be too aggressive about excluding things
             1. Initial parsing time not relevant
             2. Space only relevant if library with line info is never queried
@@ -207,30 +214,38 @@ fill_lt_arrays_cb( struct dl_phdr_info* info, size_t unused, void* cnt )
         return 0;
     }
 
-    /* add shared object representation to array. keep arrays sorted by
-       begin-address */
+    /* add shared object representation to array. No need to keep array
+       sorted (e.g., by begin-address). As address ranges may overlap,
+       we later on search all load-time and run-time objects. */
     size_t insert = ( *( size_t* )cnt )++;
-    for ( size_t j = insert; j-- > 0; )
+    lt_begin_addrs[ insert ]        = begin_addr_min;
+    lt_objects[ insert ].end_addr   = end_addr_max;
+    lt_objects[ insert ].base_addr  = base_addr;
+    lt_objects[ insert ].abfd       = abfd;
+    lt_objects[ insert ].symbols    = symbols;
+    lt_objects[ insert ].name       = name;
+    lt_objects[ insert ].token      = SCOREP_ADDR2LINE_LT_OBJECT_TOKEN;
+    lt_objects[ insert ].abfd_mutex = UTILS_MUTEX_INIT;
+
+    /* Check for overlapping address ranges (no assumptions made). */
+    for ( size_t i = 0; i < insert; ++i )
     {
-        if ( lt_begin_addrs[ j ] > begin_addr_min )
+        if ( lt_begin_addrs[ i ] <= lt_objects[ insert ].end_addr
+             && lt_objects[ i ].end_addr >= lt_begin_addrs[ insert ] )
         {
-            lt_begin_addrs[ j + 1 ] = lt_begin_addrs[ j ];
-            lt_objects[ j + 1 ]     = lt_objects[ j ];
-            insert                  = j;
-        }
-        else
-        {
-            break;
+            n_overlapping_address_ranges++;
         }
     }
 
-    lt_begin_addrs[ insert ]       = begin_addr_min;
-    lt_objects[ insert ].end_addr  = end_addr_max;
-    lt_objects[ insert ].base_addr = base_addr;
-    lt_objects[ insert ].abfd      = abfd;
-    lt_objects[ insert ].symbols   = symbols;
-    lt_objects[ insert ].name      = name;
-    lt_objects[ insert ].token     = SCOREP_ADDR2LINE_LT_OBJECT_TOKEN;
+    /* update lt address interval */
+    if ( lt_begin_addrs[ insert ] < lt_objects_min_addr )
+    {
+        lt_objects_min_addr = lt_begin_addrs[ insert ];
+    }
+    if ( lt_objects[ insert ].end_addr > lt_objects_max_addr )
+    {
+        lt_objects_max_addr = lt_objects[ insert ].end_addr;
+    }
 
     UTILS_DEBUG( "Use %s: base=%" PRIuPTR "; begin=%" PRIuPTR "; end=%" PRIuPTR "",
                  name, base_addr, begin_addr_min, end_addr_max );
@@ -325,6 +340,7 @@ init_abfd( const char* name, bfd** abfd, asymbol*** symbols, long* nSyms )
         UTILS_DEBUG( "Could not bfd-open %s", name );
         return;
     }
+    ( *abfd )->flags |= BFD_DECOMPRESS;
     if ( !bfd_check_format( *abfd, bfd_object ) )
     {
         UTILS_DEBUG( "abfd of %s not of type bfd_object", name );
@@ -387,9 +403,28 @@ struct lookup_bfd_t
 };
 
 
+/* An lrt_objects_container is obtained from a thread-safe pool in
+   SCOREP_Addr2line_Lookup* and returned immediatly after use. A container
+   is needed as address-ranges potentially overlap, thus there is no 1:1
+   address to lt/rt_object mapping. */
+typedef struct lrt_objects_container lrt_objects_container;
+struct lrt_objects_container
+{
+    size_t                 capacity;  /* number of elements that can be held in
+                                         currently allocated objects[] storage */
+    size_t                 size;      /* number of elements in objects[] */
+    lrt_objects_container* next;      /* linked list */
+    bool                   unlock;    /* unlock after use in case of rt_objetcs */
+    lt_object*             objects[]; /* Flexible array member */
+};
+
+
 /* *INDENT-OFF* */
-static lt_object* lookup_so( uintptr_t addr );
+static lrt_objects_container* get_lrt_objects_container_from_pool( void );
+static inline void release_lrt_objects_container_to_pool( lrt_objects_container* container );
+static void lookup_so( uintptr_t addr, lrt_objects_container* matches );
 static void section_iterator( bfd* abfd, asection* section, void* payload );
+static inline void map_over_sections_locked( lt_object* handle, void* data );
 /* *INDENT-ON* */
 
 
@@ -406,24 +441,80 @@ SCOREP_Addr2line_LookupSo( uintptr_t    programCounterAddr,
                   soBaseAddr == NULL ||
                   soToken == NULL,
                   "Need valid OUT handles but NULL provided." );
-    lt_object* handle = lookup_so( programCounterAddr );
-    *soHandle = handle;
-    *soToken  = SCOREP_ADDR2LINE_SO_OBJECT_INVALID_TOKEN;
-    if ( handle )
+
+    /* We assume an address to be bfd-found in one lt_object only, even if
+       address is contained in more than one, potentially overlapping,
+       lt_object address-ranges. Obtain address-ranges first, then do
+       bfd-lookup to confirm. */
+    lrt_objects_container* matches = get_lrt_objects_container_from_pool();
+    lookup_so( programCounterAddr, matches );
+    bool addr_found = false;
+    for ( size_t i = 0; i < matches->size; ++i )
     {
+        lt_object* handle = matches->objects[ i ];
         *soFileName = handle->name;
         *soBaseAddr = handle->base_addr;
         *soToken    = handle->token;
+        bool         found_begin_addr;
+        bool         found_end_addr_unused;
+        const char*  function_name_unused;
+        unsigned     line_no_unused;
+        lookup_bfd_t data = {
+            .begin_addr           = programCounterAddr - handle->base_addr,
+            .end_addr             = 0,
+            .symbols              = handle->symbols,
+            .scl_found_begin_addr = &found_begin_addr,
+            .scl_found_end_addr   = &found_end_addr_unused,
+            .scl_file_name        = soFileName,
+            .scl_function_name    = &function_name_unused,
+            .scl_begin_lno        = &line_no_unused,
+            .scl_end_lno          = NULL
+        };
+        *( data.scl_found_begin_addr ) = false;
+        *( data.scl_found_end_addr )   = false;
+
+        map_over_sections_locked( handle, &data );
+        if ( *( data.scl_found_begin_addr ) )
+        {
+            addr_found = true;
+            *soHandle  = handle;
+            break;
+        }
+    }
+    release_lrt_objects_container_to_pool( matches );
+    if ( !addr_found )
+    {
+        *soToken  = SCOREP_ADDR2LINE_SO_OBJECT_INVALID_TOKEN;
+        *soHandle = NULL;
     }
 }
+
+
+/* The RW lock needed to safely access the linked lists for
+   runtime-loaded shared objects. */
+struct rwlock
+{
+    SCOREP_ALIGNAS( SCOREP_CACHELINESIZE ) int16_t pending;
+    int16_t     departing;
+    int16_t     release_n_readers;
+    int16_t     release_writer;
+    UTILS_Mutex writer_mutex;
+} scorep_rt_objects_rwlock =
+{
+    .pending           = 0,
+    .departing         = 0,
+    .release_n_readers = 0,
+    .release_writer    = 0,
+    .writer_mutex      = UTILS_MUTEX_INIT
+};
 
 
 void
 SCOREP_Addr2line_SoLookupAddr( uintptr_t    offset,
                                void*        soHandle,
+                               uint16_t     soToken,
                                /* shared object OUT parameters */
                                const char** soFileName,
-                               uint16_t*    soToken,
                                /* Source code location OUT parameters */
                                bool*        sclFound,
                                const char** sclFileName,
@@ -432,16 +523,30 @@ SCOREP_Addr2line_SoLookupAddr( uintptr_t    offset,
 {
     UTILS_BUG_ON( soHandle == NULL, "Need valid soHandle but NULL provided" );
     UTILS_BUG_ON( soFileName == NULL ||
-                  soToken == NULL ||
                   sclFound == NULL ||
                   sclFileName == NULL ||
                   sclFunctionName == NULL ||
                   sclLineNo == NULL,
                   "Need valid OUT handles but NULL provided." );
+
+    if ( soToken != SCOREP_ADDR2LINE_LT_OBJECT_TOKEN )
+    {
+        SCOREP_RWLock_ReaderLock( &scorep_rt_objects_rwlock.pending,
+                                  &scorep_rt_objects_rwlock.release_n_readers );
+        if ( !SCOREP_Addr2line_SoStillLoaded( soToken ) )
+        {
+            UTILS_WARNING( "Trying to lookup address using invalid token %" PRIu16 ".", soToken );
+            *sclFound = false;
+            SCOREP_RWLock_ReaderUnlock( &scorep_rt_objects_rwlock.pending,
+                                        &scorep_rt_objects_rwlock.departing,
+                                        &scorep_rt_objects_rwlock.release_writer );
+            return;
+        }
+    }
     lt_object* so_handle = ( lt_object* )soHandle;
+    UTILS_BUG_ON( so_handle->token != soToken, "Provided token does not match soHandle's token" );
 
     *soFileName = so_handle->name;
-    *soToken    = so_handle->token;
 
     bool         scl_found_unused;
     lookup_bfd_t data = {
@@ -458,7 +563,35 @@ SCOREP_Addr2line_SoLookupAddr( uintptr_t    offset,
     *( data.scl_found_begin_addr ) = false;
     *( data.scl_found_end_addr )   = false;
 
-    bfd_map_over_sections( so_handle->abfd, section_iterator, &data );
+    map_over_sections_locked( so_handle, &data );
+    if ( soToken != SCOREP_ADDR2LINE_LT_OBJECT_TOKEN )
+    {
+        SCOREP_RWLock_ReaderUnlock( &scorep_rt_objects_rwlock.pending,
+                                    &scorep_rt_objects_rwlock.departing,
+                                    &scorep_rt_objects_rwlock.release_writer );
+    }
+}
+
+
+static inline void
+map_over_sections_locked( lt_object* handle, void* data )
+{
+    /* From the BFD documentation: A given BFD cannot safely be used
+       from two threads at the same time; it is up to the application
+       to do any needed locking. However, it is ok for different
+       threads to work on different BFD objects at the same time.
+
+       See #371
+
+       The performance impact should be ok, as the lookup is usually
+       triggered from a FastHashtab's value ctor, where concurrent
+       threads are already synchronized if they try to lookup the same
+       address. However, we need to synchronize lookups from distinct
+       FastHashtab's buckets that access the same lt_object.
+     */
+    UTILS_MutexLock( &handle->abfd_mutex );
+    bfd_map_over_sections( handle->abfd, section_iterator, data );
+    UTILS_MutexUnlock( &handle->abfd_mutex );
 }
 
 
@@ -466,9 +599,9 @@ void
 SCOREP_Addr2line_SoLookupAddrRange( uintptr_t    beginOffset,
                                     uintptr_t    endOffset,
                                     void*        soHandle,
+                                    uint16_t     soToken,
                                     /* shared object OUT parameters */
                                     const char** soFileName,
-                                    uint16_t*    soToken,
                                     /* Source code location OUT parameters */
                                     bool*        sclFoundBegin,
                                     bool*        sclFoundEnd,
@@ -479,7 +612,6 @@ SCOREP_Addr2line_SoLookupAddrRange( uintptr_t    beginOffset,
 {
     UTILS_BUG_ON( soHandle == NULL, "Need valid soHandle but NULL provided" );
     UTILS_BUG_ON( soFileName == NULL ||
-                  soToken == NULL ||
                   sclFoundBegin == NULL ||
                   sclFoundEnd == NULL ||
                   sclFileName == NULL ||
@@ -487,10 +619,26 @@ SCOREP_Addr2line_SoLookupAddrRange( uintptr_t    beginOffset,
                   sclBeginLineNo == NULL ||
                   sclEndLineNo == NULL,
                   "Need valid OUT handles but NULL provided." );
+
+    if ( soToken != SCOREP_ADDR2LINE_LT_OBJECT_TOKEN )
+    {
+        SCOREP_RWLock_ReaderLock( &scorep_rt_objects_rwlock.pending,
+                                  &scorep_rt_objects_rwlock.release_n_readers );
+        if ( !SCOREP_Addr2line_SoStillLoaded( soToken ) )
+        {
+            UTILS_WARNING( "Trying to lookup address using invalid token %" PRIu16 ".", soToken );
+            *sclFoundBegin = false;
+            *sclFoundEnd   = false;
+            SCOREP_RWLock_ReaderUnlock( &scorep_rt_objects_rwlock.pending,
+                                        &scorep_rt_objects_rwlock.departing,
+                                        &scorep_rt_objects_rwlock.release_writer );
+            return;
+        }
+    }
     lt_object* so_handle = ( lt_object* )soHandle;
+    UTILS_BUG_ON( so_handle->token != soToken, "Provided token does not match soHandle's token" );
 
     *soFileName = so_handle->name;
-    *soToken    = so_handle->token;
 
     lookup_bfd_t data = {
         .begin_addr           = beginOffset,
@@ -506,7 +654,13 @@ SCOREP_Addr2line_SoLookupAddrRange( uintptr_t    beginOffset,
     *( data.scl_found_begin_addr ) = false;
     *( data.scl_found_end_addr )   = false;
 
-    bfd_map_over_sections( so_handle->abfd, section_iterator, &data );
+    map_over_sections_locked( so_handle, &data );
+    if ( soToken != SCOREP_ADDR2LINE_LT_OBJECT_TOKEN )
+    {
+        SCOREP_RWLock_ReaderUnlock( &scorep_rt_objects_rwlock.pending,
+                                    &scorep_rt_objects_rwlock.departing,
+                                    &scorep_rt_objects_rwlock.release_writer );
+    }
 }
 
 
@@ -532,14 +686,13 @@ SCOREP_Addr2line_LookupAddr( uintptr_t    programCounterAddr,
                   sclFunctionName == NULL ||
                   sclLineNo == NULL,
                   "Need valid OUT handles but NULL provided." );
-    lt_object* handle = lookup_so( programCounterAddr );
-    *soHandle = handle;
-    if ( handle )
-    {
-        *soFileName = handle->name;
-        *soBaseAddr = handle->base_addr;
-        *soToken    = handle->token;
 
+    lrt_objects_container* matches = get_lrt_objects_container_from_pool();
+    lookup_so( programCounterAddr, matches );
+    bool addr_found = false;
+    for ( size_t i = 0; i < matches->size; ++i )
+    {
+        lt_object*   handle = matches->objects[ i ];
         bool         found_end_addr_unused;
         lookup_bfd_t data = {
             .begin_addr           = programCounterAddr - handle->base_addr,
@@ -555,10 +708,21 @@ SCOREP_Addr2line_LookupAddr( uintptr_t    programCounterAddr,
         *( data.scl_found_begin_addr ) = false;
         *( data.scl_found_end_addr )   = false;
 
-        bfd_map_over_sections( handle->abfd, section_iterator, &data );
+        map_over_sections_locked( handle, &data );
+        if ( *sclFound )
+        {
+            addr_found  = true;
+            *soHandle   = handle;
+            *soFileName = handle->name;
+            *soBaseAddr = handle->base_addr;
+            *soToken    = handle->token;
+            break;
+        }
     }
-    else
+    release_lrt_objects_container_to_pool( matches );
+    if ( !addr_found )
     {
+        *soHandle = NULL;
         *soToken  = SCOREP_ADDR2LINE_SO_OBJECT_INVALID_TOKEN;
         *sclFound = false;
     }
@@ -611,15 +775,14 @@ SCOREP_Addr2line_LookupAddrRange( uintptr_t    beginProgramCounterAddr,
                   sclBeginLineNo == NULL ||
                   sclEndLineNo == NULL,
                   "Need valid OUT handles but NULL provided." );
-    lt_object* handle = lookup_so( beginProgramCounterAddr );
-    *soHandle = handle;
-    if ( handle )
-    {
-        *soFileName = handle->name;
-        *soBaseAddr = handle->base_addr;
-        *soToken    = handle->token;
 
-        lookup_bfd_t data = {
+    lrt_objects_container* matches = get_lrt_objects_container_from_pool();
+    lookup_so( beginProgramCounterAddr, matches );
+    bool addr_found = false;
+    for ( size_t i = 0; i < matches->size; ++i )
+    {
+        lt_object*   handle = matches->objects[ i ];
+        lookup_bfd_t data   = {
             .begin_addr           = beginProgramCounterAddr - handle->base_addr,
             .end_addr             = endProgramCounterAddr - handle->base_addr,
             .symbols              = handle->symbols,
@@ -633,10 +796,21 @@ SCOREP_Addr2line_LookupAddrRange( uintptr_t    beginProgramCounterAddr,
         *( data.scl_found_begin_addr ) = false;
         *( data.scl_found_end_addr )   = false;
 
-        bfd_map_over_sections( handle->abfd, section_iterator, &data );
+        map_over_sections_locked( handle, &data );
+        if ( *sclFoundBegin &&  *sclFoundEnd )
+        {
+            addr_found  = true;
+            *soHandle   = handle;
+            *soFileName = handle->name;
+            *soBaseAddr = handle->base_addr;
+            *soToken    = handle->token;
+            break;
+        }
     }
-    else
+    release_lrt_objects_container_to_pool( matches );
+    if ( !addr_found )
     {
+        *soHandle      = NULL;
         *soToken       = SCOREP_ADDR2LINE_SO_OBJECT_INVALID_TOKEN;
         *sclFoundBegin = false;
         *sclFoundEnd   = false;
@@ -695,73 +869,117 @@ rt_object* scorep_rt_objects_head     = NULL;
 unsigned   scorep_rt_object_count     = 0;
 uintptr_t  scorep_rt_objects_min_addr = UINTPTR_MAX;
 uintptr_t  scorep_rt_objects_max_addr = 0;
-struct rwlock
-{
-    SCOREP_ALIGNAS( SCOREP_CACHELINESIZE ) int16_t pending;
-    int16_t     departing;
-    int16_t     release_n_readers;
-    int16_t     release_writer;
-    UTILS_Mutex writer_mutex;
-} scorep_rt_objects_rwlock =
-{
-    .pending           = 0,
-    .departing         = 0,
-    .release_n_readers = 0,
-    .release_writer    = 0,
-    .writer_mutex      = UTILS_MUTEX_INIT
-};
 
 
-static lt_object*
-lookup_so( uintptr_t addr )
-{
-    /* addr to be in [begin_addr, end_addr] of shared object representation */
+/* free list of lrt_objects_container objects */
+static lrt_objects_container* lrt_objects_container_free_list;
+static UTILS_Mutex            lrt_objects_container_free_list_mutex = UTILS_MUTEX_INIT;
 
-    /* search linearly in loadtime objects */
-    if ( lt_object_count > 0
-         && addr >= lt_begin_addrs[ 0 ]
-         && addr <= lt_objects[ lt_object_count - 1 ].end_addr )
+
+static lrt_objects_container*
+get_lrt_objects_container_from_pool( void )
+{
+    bool unlock = false;
+    if ( UTILS_Atomic_LoadN_uint32( &scorep_rt_object_count,
+                                    UTILS_ATOMIC_SEQUENTIAL_CONSISTENT ) > 0 )
     {
-        size_t i = 0;
-        while ( i < lt_object_count - 1
-                && lt_begin_addrs[ i + 1 ] < addr )
+        SCOREP_RWLock_ReaderLock( &scorep_rt_objects_rwlock.pending,
+                                  &scorep_rt_objects_rwlock.release_n_readers );
+        unlock = true;
+    }
+    size_t needed_capacity = UTILS_Atomic_LoadN_uint32( &n_overlapping_address_ranges,
+                                                        UTILS_ATOMIC_SEQUENTIAL_CONSISTENT ) + 1;
+    lrt_objects_container* container;
+
+    UTILS_MutexLock( &lrt_objects_container_free_list_mutex );
+    bool alloc_container_required = lrt_objects_container_free_list == NULL;
+    if ( !alloc_container_required )
+    {
+        container                       =  lrt_objects_container_free_list;
+        lrt_objects_container_free_list =  lrt_objects_container_free_list->next;
+        if ( container->capacity < needed_capacity )
         {
-            ++i;
+            SCOREP_Memory_AlignedFree( container );
+            alloc_container_required = true;
         }
-        if ( lt_objects[ i ].end_addr > addr )
+    }
+    if ( alloc_container_required )
+    {
+        container = SCOREP_Memory_AlignedMalloc( SCOREP_CACHELINESIZE,
+                                                 sizeof( lrt_objects_container ) + needed_capacity * sizeof( lt_object* ) );
+        container->capacity = needed_capacity;
+    }
+    container->size   = 0;
+    container->next   = NULL;
+    container->unlock = unlock;
+    UTILS_MutexUnlock( &lrt_objects_container_free_list_mutex );
+
+    UTILS_DEBUG( "container->capacity=%zu", container->capacity );
+    return container;
+}
+
+
+static inline void
+release_lrt_objects_container_to_pool( lrt_objects_container* container )
+{
+    if ( container->unlock )
+    {
+        SCOREP_RWLock_ReaderUnlock( &scorep_rt_objects_rwlock.pending,
+                                    &scorep_rt_objects_rwlock.departing,
+                                    &scorep_rt_objects_rwlock.release_writer );
+    }
+    /* return to pool */
+    UTILS_MutexLock( &lrt_objects_container_free_list_mutex );
+    container->next                 =  lrt_objects_container_free_list;
+    lrt_objects_container_free_list = container;
+    UTILS_MutexUnlock( &lrt_objects_container_free_list_mutex );
+}
+
+
+/* lt_object/rt_object address ranges might overlap. Thus, we need to
+   map_over_sections-search all lt_object/rt_object that contain addr.
+   Here we collect all matching objects in @a matches array that is
+   guaranteed to be large enough. The actual search is done be the caller.
+ */
+static void
+lookup_so( uintptr_t addr, lrt_objects_container* matches )
+{
+    /* search in loadtime objects */
+    if ( lt_objects_min_addr <= addr && addr <= lt_objects_max_addr )
+    {
+        for ( size_t i = 0; i < lt_object_count; ++i )
         {
-            /* found addr in loadtime objects */
-            return &lt_objects[ i ];
+            if ( lt_begin_addrs[ i ] <= addr && addr <= lt_objects[ i ].end_addr )
+            {
+                /* found addr in loadtime objects */
+                UTILS_BUG_ON( matches->size + 1 > matches->capacity,
+                              "More address-ranges found than expected (%zu).",
+                              matches->capacity );
+                matches->objects[ matches->size++ ] = &lt_objects[ i ];
+            }
         }
     }
 
-    /* search linearly in runtime objects */
-    SCOREP_RWLock_ReaderLock( &scorep_rt_objects_rwlock.pending,
-                              &scorep_rt_objects_rwlock.release_n_readers );
-    if ( scorep_rt_objects_head != NULL
-         && addr >= scorep_rt_objects_min_addr
-         && addr <= scorep_rt_objects_max_addr )
+    if ( matches->unlock ) /* search rt objects only if caller decided to */
     {
-        rt_object* rt_obj = scorep_rt_objects_head;
-        while ( rt_obj->next
-                && rt_obj->next->begin_addr < addr )
+        /* search in runtime objects */
+        if ( scorep_rt_objects_min_addr <= addr && addr <= scorep_rt_objects_max_addr )
         {
-            rt_obj = rt_obj->next;
-        }
-        if ( rt_obj->end_addr > addr )
-        {
-            /* found addr in runtime objects */
-            SCOREP_RWLock_ReaderUnlock( &scorep_rt_objects_rwlock.pending,
-                                        &scorep_rt_objects_rwlock.departing,
-                                        &scorep_rt_objects_rwlock.release_writer );
-            return ( lt_object* )rt_obj;
+            rt_object* obj = scorep_rt_objects_head;
+            while ( obj )
+            {
+                if ( obj->begin_addr <= addr && addr <= obj->end_addr )
+                {
+                    /* found addr in runtime objects */
+                    UTILS_BUG_ON( matches->size + 1 > matches->capacity,
+                                  "More address-ranges found than expected (%zu).",
+                                  matches->capacity );
+                    matches->objects[ matches->size++ ] = ( lt_object* )obj;
+                }
+                obj = obj->next;
+            }
         }
     }
-    SCOREP_RWLock_ReaderUnlock( &scorep_rt_objects_rwlock.pending,
-                                &scorep_rt_objects_rwlock.departing,
-                                &scorep_rt_objects_rwlock.release_writer );
-    /* addr neither found in loadtime nor runtime objects */
-    return NULL;
 }
 
 
@@ -892,7 +1110,7 @@ SCOREP_Addr2line_Finalize( void )
 void
 scorep_la_preinit( uintptr_t* cookie )
 {
-    /* Called after ctors. Linktime shared objects already loaded and
+    /* Called after ctors. Load-time shared objects already loaded and
        dealt with at SCOREP_Addr2line_Initialize(). From now on,
        scorep_la_objopen and scorep_la_objclose are called. */
     UTILS_DEBUG_ENTRY();
@@ -1029,6 +1247,7 @@ insert_rt_object_cb( struct dl_phdr_info* info, size_t unused, void* data )
     new->symbols      = symbols;
     new->name         = UTILS_CStr_dup( name );
     new->token        = ++scorep_rt_objopen_calls_tracked;
+    new->abfd_mutex   = UTILS_MUTEX_INIT;
     new->begin_addr   = begin_addr_min;
     new->next         = NULL;
     new->audit_cookie = id->cookie;
@@ -1036,28 +1255,30 @@ insert_rt_object_cb( struct dl_phdr_info* info, size_t unused, void* data )
     UTILS_BUG_ON( scorep_rt_objopen_calls_tracked >= MAX_RT_OBJOPEN_CALLS_TRACKED );
     bitset_set( scorep_rt_objects_loaded, new->token );
 
-    /* add shared object into sorted (by begin_addr) singly-linked list */
     SCOREP_RWLock_WriterLock( &scorep_rt_objects_rwlock.writer_mutex,
                               &scorep_rt_objects_rwlock.pending,
                               &scorep_rt_objects_rwlock.departing,
                               &scorep_rt_objects_rwlock.release_writer );
-    if ( !scorep_rt_objects_head
-         || scorep_rt_objects_head->begin_addr > begin_addr_min )
+
+    /* Check for overlapping address ranges (no assumptions made). */
+    rt_object* obj = scorep_rt_objects_head;
+    while ( obj )
     {
-        new->next              = scorep_rt_objects_head;
-        scorep_rt_objects_head = new;
-    }
-    else
-    {
-        rt_object* obj = scorep_rt_objects_head;
-        while ( obj->next
-                && obj->next->begin_addr < begin_addr_min )
+        if ( obj->begin_addr <= new->end_addr
+             && obj->end_addr >= new->begin_addr )
         {
-            obj = obj->next;
+            UTILS_Atomic_AddFetch_uint32( &n_overlapping_address_ranges, 1,
+                                          UTILS_ATOMIC_SEQUENTIAL_CONSISTENT );
         }
-        new->next = obj->next;
-        obj->next = new;
+
+        obj = obj->next;
     }
+
+    /* Add shared object representation to list. No need to keep list
+       sorted (e.g., by begin-address). As address ranges may overlap,
+       we later on search all load-time and run-time objects. */
+    new->next              = scorep_rt_objects_head;
+    scorep_rt_objects_head = new;
     scorep_rt_object_count++;
     /* update rt address interval */
     if ( new->begin_addr < scorep_rt_objects_min_addr )

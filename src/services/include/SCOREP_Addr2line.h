@@ -1,7 +1,7 @@
 /*
  * This file is part of the Score-P software (http://www.score-p.org)
  *
- * Copyright (c) 2021-2022,
+ * Copyright (c) 2021-2022, 2024,
  * Forschungszentrum Juelich GmbH, Germany
  *
  * This software may be modified and distributed under the terms of
@@ -108,20 +108,21 @@ SCOREP_Addr2line_LookupSo( uintptr_t    programCounterAddr,
 
 /**
  * Calls to SCOREP_Addr2line_LookupSo() allow for caching @a soHandle
- * and @a offset=programCounterAddr-soBaseAddr. This pair can be used here to
- * retrieve source code information. @a sclFound indicates if the
- * (bfd) lookup was successful, in which case the other scl* out
- * parameters are populated accordingly. The so* out parameters are
- * populated even if @a sclFound returns false.
+ * and @a offset=programCounterAddr-soBaseAddr. This pair can be used
+ * here to retrieve source code information. In addition @a soToken
+ * needs to be provided to check if @a soHandle is still valid.
+ * @a sclFound indicates if the (bfd) lookup was successful, in which
+ * case the other scl* out parameters are populated accordingly. The
+ * so* out parameters are populated even if @a sclFound returns false.
  *
  * See SCOREP_Addr2line_LookupSo() for @a soToken.
  */
 void
 SCOREP_Addr2line_SoLookupAddr( uintptr_t    offset,
                                void*        soHandle,
+                               uint16_t     soToken,
                                /* shared object OUT parameters */
                                const char** soFileName,
-                               uint16_t*    soToken,
                                /* Source code location OUT parameters */
                                bool*        sclFound,
                                const char** sclFileName,
@@ -144,9 +145,9 @@ void
 SCOREP_Addr2line_SoLookupAddrRange( uintptr_t    beginOffset,
                                     uintptr_t    endOffset,
                                     void*        soHandle,
+                                    uint16_t     soToken,
                                     /* shared object OUT parameters */
                                     const char** soFileName,
-                                    uint16_t*    soToken,
                                     /* Source code location OUT parameters */
                                     bool*        sclFoundBegin,
                                     bool*        sclFoundEnd,
