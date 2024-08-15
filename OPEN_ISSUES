@@ -452,6 +452,11 @@ various Score-P components.
   - NVTX does consider different domains as disjoint range stacks, thus
     this does not fit into Score-P's event model as well. Score-P expect
     that regions from disjoint domains are properly nested.
+  - Score-P's NVTX implementation might require setting `LD_PRELOAD`
+    for instrumentation to work correctly if Score-P is built with NVTX
+    v2 or lower (CUDA 9.0 and lower). This happens because `libnvToolsExt.so`
+    might be loaded before Score-P's CUDA adapter. The required flags can
+    be obtained via `scorep-preload-init --cuda [app]`.
 
   - Thread migration of a context is not supported. Affected memory copies
     are not recorded. This will be improved in future Score-P versions.

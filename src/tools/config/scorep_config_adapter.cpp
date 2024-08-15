@@ -506,7 +506,6 @@ SCOREP_Config_CudaAdapter::addCFlags( std::string& cflags,
                                       SCOREP_Config_Language /* language */,
                                       bool /* nvcc */ )
 {
-    cflags += "-DNVTX_NO_IMPL ";
 }
 
 void
