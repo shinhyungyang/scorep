@@ -16,6 +16,8 @@
 
 #include <config.h>
 
+#if HAVE( NVTX_SUPPORT )
+
 #include "scorep_cuda_nvtx_mgmt.h"
 
 #include <SCOREP_Definitions.h>
@@ -467,3 +469,5 @@ scorep_cuda_nvtx_set_context_name( void*       context,
     scorep_cupti_context_set_name(
         scorep_cupti_context_get( ( CUcontext )context ), name );
 }
+
+#endif /* HAVE( NVTX_SUPPORT ) */

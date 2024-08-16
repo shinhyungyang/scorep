@@ -17,6 +17,7 @@
 #ifndef SCOREP_CUDA_NVTX_MGMT_H
 #define SCOREP_CUDA_NVTX_MGMT_H
 
+#if HAVE( NVTX_SUPPORT )
 
 #include <wchar.h>
 
@@ -68,5 +69,7 @@ scorep_cuda_nvtx_set_stream_name( void*       stream,
 void
 scorep_cuda_nvtx_set_context_name( void*       context,
                                    const char* name );
+
+#endif /* HAVE( NVTX_SUPPORT ) */
 
 #endif /* SCOREP_CUDA_NVTX_MGMT_H */

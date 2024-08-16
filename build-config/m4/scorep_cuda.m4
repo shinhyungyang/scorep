@@ -15,7 +15,7 @@
 ## Copyright (c) 2009-2012,
 ## University of Oregon, Eugene, USA
 ##
-## Copyright (c) 2009-2012, 2020, 2022-2023,
+## Copyright (c) 2009-2012, 2020, 2022-2024,
 ## Forschungszentrum Juelich GmbH, Germany
 ##
 ## Copyright (c) 2009-2012,
@@ -95,6 +95,7 @@ AS_IF([test "x${with_libcudart_lib}" = "xyes"],
              [cupti_root="${with_libcudart}/extras/CUPTI"])])
 AC_SCOREP_BACKEND_LIB([libcupti], [cupti.h], [${with_libcudart_cppflags}], [${cupti_root}])
 
+
 dnl Do not only check for the function but also for the declaration,
 dnl since some CUPTI libraries contain a non-functional symbol for
 dnl cuptiActivityRegisterTimestampCallback causing issues during Score-P runtime.
@@ -115,6 +116,7 @@ AS_IF([test "x${scorep_have_libcudart}" = "xyes" &&
        test "x${scorep_have_libcuda}"   = "xyes"],
        [scorep_have_cuda_libs="yes"
         _CUDA_NVCC_WORKS
+        _CHECK_NVTX
         AS_IF([test "x${scorep_nvcc_works}" = "xyes"],
               [scorep_have_cuda=yes])])
 
@@ -152,6 +154,14 @@ AS_CASE(["/${with_libnvidia_ml_lib}/"],
          AC_MSG_RESULT([yes])],
         [AC_MSG_RESULT([no])])
 
+AC_SCOREP_COND_HAVE([NVTX_SUPPORT],
+                    [test "x${scorep_have_nvtx}" != "xno"],
+                    [Defined if NVTX is available.])
+
+AC_SCOREP_COND_HAVE([NVTX_V3],
+                    [test "x${scorep_have_nvtx_v3}" = "xyes"],
+                    [Defined in NVTX v3 is available.])
+
 AC_SCOREP_COND_HAVE([CUDA_SUPPORT],
                     [test "x${scorep_have_cuda}" = "xyes"],
                     [Defined if cuda is available.],
@@ -175,8 +185,9 @@ AM_CONDITIONAL([HAVE_CUDA_TESTS_HAVE_GOLD], [false])
 
 dnl Add some entries to summary, if CUDA adapter is available
 AS_IF([test "x${scorep_have_cuda_libs}" = "xyes"],
-      [AFS_SUMMARY([nvcc works], [${scorep_nvcc_msg}])
-       AFS_SUMMARY([CUDA version], [${scorep_cuda_version}])])
+     [AFS_SUMMARY([NVTX found], [${scorep_have_nvtx}${scorep_have_nvtx_summary:+, $scorep_have_nvtx_summary}])
+      AFS_SUMMARY([nvcc works], [${scorep_nvcc_msg}])
+      AFS_SUMMARY([CUDA version], [${scorep_cuda_version}])])
 
 AFS_SUMMARY_POP([CUDA support], [${scorep_have_cuda}])
 
@@ -375,7 +386,6 @@ fi
 
 dnl ----------------------------------------------------------------------------
 
-
 AC_DEFUN([_AC_SCOREP_LIBNVIDIA_ML_LIB_CHECK], [
 scorep_nvidia_ml_error="no"
 scorep_nvidia_ml_lib_name="nvidia-ml"
@@ -400,3 +410,107 @@ else
     with_[]lib_name[]_libs=""
 fi
 ])
+
+dnl ----------------------------------------------------------------------------
+
+# _CHECK_NVTX()
+# ----------------
+# Check for libnvToolsExt by using the generic backend library check.
+#
+m4_define([_CHECK_NVTX], [
+AS_UNSET([nvtx_root])
+
+AS_IF([test "x${scorep_have_libcudart}" = "xyes"],
+    [AS_IF([test "x${with_libcudart}" != "xyes" &&
+            test "x${with_libcudart}" != "xnot_set"],
+        [nvtx_root="${with_libcudart}"],
+        [for path in ${sys_lib_search_path_spec}; do
+             AS_IF([test -e ${path}/libcudart.a || test -e ${path}/libcudart.so || test -e ${path}/libcudart.dylib],
+                 [nvtx_root=${path}/../
+                  break])
+         done])])
+
+# Only try to set nvToolsExt path when the user has not set nvToolsExt vars himself.
+AS_IF([test "x${with_libnvToolsExt}" = "x" &&
+       test "x${with_libnvToolsExt_include}" = "x" &&
+       test "x${with_libnvToolsExt_lib}" = "x"],
+    [with_libnvToolsExt="${nvtx_root}"])
+
+AFS_EXTERNAL_LIB([nvToolsExt], [_NVTX_LIB_CHECK])
+]) # _CHECK_NVTX
+
+# _NVTX_LIB_CHECK()
+# ------------------------------
+#
+m4_define([_NVTX_LIB_CHECK], [
+scorep_have_nvtx="no"
+scorep_have_nvtx_v3="no"
+
+AS_IF([test "x${_afs_lib_prevent_check}" = xyes],
+    [AS_IF([test "x${_afs_lib_prevent_check_reason}" = xdisabled],
+        [scorep_have_nvtx_summary="explicitly disabled"],
+        [test "x${_afs_lib_prevent_check_reason}" = xcrosscompile],
+        [scorep_have_nvtx_summary="--with-_afs_lib_name needs path in cross-compile mode"],
+        [AC_MSG_ERROR([Unknown _afs_lib_prevent_check_reason "${_afs_lib_prevent_check_reason}".])])],
+    [CPPFLAGS_save=$CPPFLAGS
+     CPPFLAGS="$CPPFLAGS ${_afs_lib_CPPFLAGS}"
+     AC_CHECK_HEADER([nvtx3/nvToolsExt.h],
+         [LTLDFLAGS=$_afs_lib_LDFLAGS
+          LTLIBS=$_afs_lib_LIBS
+          AFS_LTLINK_LA_IFELSE([_LIBNVTOOLSEXT_MAIN], [_LIBNVTOOLSEXT3_LA],
+              [scorep_have_nvtx="yes (v3)"
+               scorep_have_nvtx_v3="yes"
+               scorep_have_nvtx_summary="${_afs_lib_LDFLAGS:+using $_afs_lib_LDFLAGS}${_afs_lib_CPPFLAGS:+ and $_afs_lib_CPPFLAGS}"],
+              [scorep_have_nvtx_summary="cannot build test against $_afs_lib_LIBS"])],
+         [scorep_have_nvtx_summary="missing nvtx3/nvToolsExt.h"])
+     AS_IF([test "x${scorep_have_nvtx}" = "xno"],
+         [AC_CHECK_HEADER([nvToolsExt.h],
+              [LTLDFLAGS=$_afs_lib_LDFLAGS
+               LTLIBS=$_afs_lib_LIBS
+               AFS_LTLINK_LA_IFELSE([_LIBNVTOOLSEXT_MAIN], [_LIBNVTOOLSEXT_LA],
+                   [scorep_have_nvtx="yes (v1/v2)"
+                    scorep_have_nvtx_summary="${_afs_lib_LDFLAGS:+using $_afs_lib_LDFLAGS}${_afs_lib_CPPFLAGS:+ and $_afs_lib_CPPFLAGS}"],
+                   [scorep_have_nvtx_summary="cannot build test against $_afs_lib_LIBS"])],
+              [scorep_have_nvtx_summary="missing nvToolsExt.h"])])
+     CPPFLAGS=$CPPFLAGS_save])
+]) # _NVTX_LIB_CHECK
+
+m4_define([_LIBNVTOOLSEXT3_LA], [
+AC_LANG_SOURCE([[
+#include <nvtx3/nvToolsExt.h>
+
+#ifndef NVTX_VERSION
+#  ups__nvtx_version_not_defined
+#elif NVTX_VERSION < 3
+#  ups__nvtx_version_lt_3
+#endif
+
+void check_nvtx( void )
+{
+    nvtxRangePushA( "RANGE" );
+    nvtxRangePop();
+}
+]])]) # _LIBNVTOOLSEXT3_LA
+
+m4_define([_LIBNVTOOLSEXT_LA], [
+AC_LANG_SOURCE([[
+#include <nvToolsExt.h>
+
+#ifndef NVTX_VERSION
+#  ups__nvtx_version_not_defined
+#elif NVTX_VERSION > 2
+#  ups__nvtx_version_gt_2
+#endif
+
+void check_nvtx( void )
+{
+    nvtxRangePushA( "RANGE" );
+    nvtxRangePop();
+}
+]])]) # _LIBNVTOOLSEXT_LA
+
+m4_define([_LIBNVTOOLSEXT_MAIN], [
+AC_LANG_PROGRAM(dnl
+[[void check_nvtx();]],
+[[check_nvtx();]])
+]) # _LIBNVTOOLSEXT_MAIN

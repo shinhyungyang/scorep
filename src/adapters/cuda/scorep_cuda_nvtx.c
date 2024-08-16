@@ -18,6 +18,8 @@
 
 #include <config.h>
 
+#if HAVE( NVTX_SUPPORT )
+
 #include "scorep_cuda_nvtx_mgmt.h"
 
 #include <SCOREP_InMeasurement.h>

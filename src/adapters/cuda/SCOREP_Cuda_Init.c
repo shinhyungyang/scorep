@@ -211,6 +211,10 @@ cuda_subsystem_init( void )
     }
 #endif
 
+    /* Ensure NVTX is initialized before CUPTI has a chance to */
+    #if HAVE( NVTX_SUPPORT )
+    scorep_cuda_nvtx_init();
+    #endif
     if ( scorep_cuda_features > 0 )
     {
         scorep_cupti_callbacks_init();
