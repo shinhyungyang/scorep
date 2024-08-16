@@ -523,6 +523,13 @@ void
 scorep_cuda_nvtx_set_context_name( void*       context,
                                    const char* name )
 {
+    /* CUDA requires one context to be set. NULL means no currently bound context */
+    if ( !context )
+    {
+        UTILS_WARNING( "[%s] Tried to set name '%s' for a NULL context.",
+                       UTILS_FUNCTION_NAME, name );
+        return;
+    }
     scorep_cupti_context_set_name(
         scorep_cupti_context_get( ( CUcontext )context ), name );
 }

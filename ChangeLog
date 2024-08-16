@@ -111,6 +111,8 @@ Bugfixes:
 - Fix a race condition in BFD-based addr2line lookup.
 - Fix a crash with NVTX when trying to name a stream which is unknown
   to the CUDA adapter.
+- Fix a crash with NVTX when NULL is passed as the context when trying
+  to name a CUDA context.
 
 ------------------- Released version 8.4 -----------------------------
 
