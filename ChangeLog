@@ -113,6 +113,9 @@ Bugfixes:
   to the CUDA adapter.
 - Fix a crash with NVTX when NULL is passed as the context when trying
   to name a CUDA context.
+- Functions with the prefix "nvtx" are now filtered from automatic
+  compiler instrumentation, as they are known to cause measurement
+  failures when being combined with the CUDA adapter.
 
 ------------------- Released version 8.4 -----------------------------
 
