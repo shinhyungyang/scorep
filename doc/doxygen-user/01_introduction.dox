@@ -121,6 +121,28 @@ In addition, @scorep supports event recording for the following programming inte
  </dd>
 </dl>
 
+
+This user manual primarily focuses on the most common use case for @scorep, that is,
+Single Program, Multiple Data (SPMD) applications. However, the majority of the
+documented behavior and features also holds true for Multiple Program, Multiple
+Data (MPMD) and Modular Supercomputing Architecture
+(MSA) applications. The chapters @secref{instrumentation} and
+@secref{measurement} contain dedicated sections that cover potential deviations and
+peculiarities to consider in those cases. In the context of @scorep measurements, the main
+difference between MPMD and MSA is that MSA assumes that different computing
+modules are distinct hardware components, while generic MPMD applications are
+usually composed of separate software components, and thus hardware-independent.
+For the analysis in @scorep, it is therefore primarily a semantic
+distinction (opposed to having to deal with different usage options) that the
+user has to keep in mind when analyzing results.
+For the purposes of this document, the terms process group, module, or component
+are for the most part interchangeable and describe the different subsets of processes,
+unless explicitly stated otherwise.
+
+
+
+
+
 @section about_doc About this Document
 @seclabel{about_doc}
 

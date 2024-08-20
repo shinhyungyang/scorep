@@ -58,6 +58,7 @@ User tools and API improvements and changes:
   If registration of required callbacks fails, the measurement will be
   aborted. This is unlikely but can happen, if the OpenMP runtime used
   at configure time, is changed.
+- Added documentation of the current MPMD/MSA workflow.
 
 Compatibility:
 

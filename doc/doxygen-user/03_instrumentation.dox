@@ -9,6 +9,12 @@ provides manual instrumentation using the @scorep User API
 semi-automatic instrumentation using @pomp2 directives (deprecated)
 (Section @secref{pomp_instrumentation}).
 
+@note
+  This chapter primarily targets SPMD applications, however, most of it is also
+  valid for MPMD applications. See Section @secref{mpmd_msa_instrumentation} for
+  any additional considerations with respect to instrumentation of MPMD applications.
+
+
 As well as user routines and specified source regions, @scorep currently supports the
 following kinds of events:
 
@@ -970,4 +976,26 @@ the instrumenter will abort with an error. You can determine whether
 output of <tt>scorep \--help</tt>. If the <tt>\--static</tt> or
 <tt>\--dynamic</tt> flags are not shown, then they are not available.
 
+@section mpmd_msa_instrumentation Instrumentation of MPMD and MSA Applications
+@seclabel{mpmd_msa_instrumentation}
+
+Instrumentation in the MPMD/MSA case mostly follows the same principles as described in the previous
+sections for the SPMD case.
+The only difference is that, when choosing the instrumentation methods and paradigms, one has
+to ensure that @e all relevant instrumentation modes are active for @e all components, even if one (or more) of them is unused by a
+component.
+
+In this case, one should not rely on the automatic recognition of paradigms used and enforce
+them via explicit parameters during the build process of all executables, i.e., by adding the respective
+command-line options to the <tt>scorep</tt> instrumenter.
+For example, if one MPMD executable is MPI-only and the second uses hybrid MPI+OpenMP parallelization,
+then both executables should be built using <tt>\--mpp=mpi \--thread=omp</tt>.
+Adding unused @scorep features in an instrumented executable should not interfere during
+measurement, except for conflicting paradigms (e.g., SHMEM vs. MPI, OpenMP vs. POSIX threads).
+
+@note
+  For debugging one can run this command for each component:
+  <tt>nm <executable> | grep 'SCOREP.*Subsystem.*Adapter$'</tt>
+  The values from this command must be identical across all components to ensure that all relevant
+  instrumentation modes are active.
 */
