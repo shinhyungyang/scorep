@@ -121,14 +121,21 @@ AC_ARG_WITH(_afs_lib_name,
                --with-package-cache=<path> how to provide the tarball
                for an offline installation.])),
          [$5])])
-m4_ifnblank([$3], [AC_ARG_WITH(_afs_lib_name[-include],
-     AS_HELP_STRING([--with-_afs_lib_name-include=<Path to _afs_lib_name headers: $3>], [], [79]))])
+m4_ifnblank([$3],
+    [m4_ifset([$3],
+        [AC_ARG_WITH(_afs_lib_name[-include],
+             AS_HELP_STRING([--with-_afs_lib_name-include=<Path to _afs_lib_name headers: $3>], [], [79]))],
+        [AC_ARG_WITH(_afs_lib_name[-include],
+             AS_HELP_STRING([--with-_afs_lib_name-include=<Path to _afs_lib_name headers>], [], [79]))])])dnl
 AC_ARG_WITH(_afs_lib_name[-lib],
      AS_HELP_STRING([--with-_afs_lib_name-lib=<Path to _afs_lib_name libraries>], [], [79]))
 dnl
-m4_ifnblank([$3], [AC_ARG_VAR(_afs_lib_NAME[]_INCLUDE, [Path to ]_afs_lib_name[ headers: $3. Superseded by --with-]_afs_lib_name[ variants.])])dnl
+m4_ifnblank([$3],
+    [m4_ifset([$3],
+        [AC_ARG_VAR(_afs_lib_NAME[]_INCLUDE, [Path to ]_afs_lib_name[ headers: $3. Superseded by --with-]_afs_lib_name[ variants.])],
+        [AC_ARG_VAR(_afs_lib_NAME[]_INCLUDE, [Path to ]_afs_lib_name[ headers. Superseded by --with-]_afs_lib_name[ variants.])])])dnl
 AC_ARG_VAR(_afs_lib_NAME[]_LIB, [Path to ]_afs_lib_name[ libraries. Superseded by --with-]_afs_lib_name[ variants.])dnl
-m4_ifnblank([$3], [AC_ARG_VAR(_afs_lib_NAME[]_EXTRA_CPPFLAGS, [Extra C preprocesser flags requried to use ]_afs_lib_name[.])])dnl
+m4_ifnblank([$3], [AC_ARG_VAR(_afs_lib_NAME[]_EXTRA_CPPFLAGS, [Extra C preprocessor flags required to use ]_afs_lib_name[.])])dnl
 AC_ARG_VAR(_afs_lib_NAME[]_EXTRA_LIBS, [Extra libraries required to use ]_afs_lib_name[.])dnl
 AC_ARG_VAR(_afs_lib_NAME[]_EXTRA_LDFLAGS, [Extra link flags required to use ]_afs_lib_name[.])dnl
 dnl
