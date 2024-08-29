@@ -13,7 +13,7 @@
  * Copyright (c) 2009-2013,
  * University of Oregon, Eugene, USA
  *
- * Copyright (c) 2009-2015, 2021,
+ * Copyright (c) 2009-2015, 2021, 2024,
  * Forschungszentrum Juelich GmbH, Germany
  *
  * Copyright (c) 2009-2013,
@@ -211,12 +211,15 @@ cuda_subsystem_init( void )
     }
 #endif
 
+    /* Ensure NVTX is initialized before CUPTI has a chance to */
+    #if HAVE( NVTX_SUPPORT )
+    scorep_cuda_nvtx_init();
+    #endif
+
     if ( scorep_cuda_features > 0 )
     {
         scorep_cupti_callbacks_init();
     }
-
-    scorep_cuda_nvtx_init();
 
     return SCOREP_SUCCESS;
 }

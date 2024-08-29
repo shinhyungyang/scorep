@@ -274,6 +274,26 @@ can specify its location via:
   --with-libnvidia-ml-include=<Path to libnvidia-ml headers: nvml.h>
   --with-libnvidia-ml-lib=<Path to libnvidia-ml libraries>
 
+If libnvToolsExt, which provides the NVTX user instrumentation
+interface, isn't detected automatically, you can specify its location
+via:
+
+  --with-libnvToolsExt[=yes|no|<path to libnvToolsExt installation>]
+              Try to use libnvToolsExt. Defaults to [yes] on
+              non-cross-compile systems and expects library and
+              headers to be found in system locations. Defaults to
+              [no] on cross-compile systems. Provide
+              libnvToolsExt's installation prefix [path] to
+              override the defaults. --with-libnvToolsExt=<path>
+              is a shorthand for
+              --with-libnvToolsExt-include=<path/include> and
+              --with-libnvToolsExt-lib=<path/(lib64|lib)>. If this
+              is not the case, use the explicit options directly
+              or provide paths via LIBNVTOOLSEXT_LIB and
+              LIBNVTOOLSEXT_INCLUDE.
+  --with-libnvToolsExt-include=<Path to libnvToolsExt headers>
+  --with-libnvToolsExt-lib=<Path to libnvToolsExt libraries>
+
 To enable support for HIP measurement via ROCm configure with
 --with-rocm=<path-to-ROCm-installation>. By default, the value from
 $ROCM_PATH is used to check if ROCm is available.
@@ -543,7 +563,7 @@ variables:
               C++ compiler used for building library wrapper generator.
               Defaults to CXX from llvm-config or g++.
   CPPFLAGS_FOR_BUILD_LIBWRAP
-              C preprocesser flags for building library wrapper generator.
+              C preprocessor flags for building library wrapper generator.
               Will be amended with 'llvm-config --cppflags'.
   CFLAGS_FOR_BUILD_LIBWRAP
               C compiler flags for building library wrapper generator.
@@ -558,7 +578,7 @@ variables:
               C++ compiler flags for building LLVM plugin. Will be amended
               with 'llvm-config --cxxflags', if 'llvm-config' is found.
   CPPFLAGS_FOR_BUILD_LLVM_PLUGIN
-              C preprocesser flags for building LLVM plugin. Will be amended
+              C preprocessor flags for building LLVM plugin. Will be amended
               with 'llvm-config --cppflags', if 'llvm-config' is found.
   LDFLAGS_FOR_BUILD_LLVM_PLUGIN
               Linker flags for building LLVM plugin. Will be amended
@@ -632,7 +652,7 @@ variables:
   LIBUNWIND_EXTRA_LDFLAGS
               Extra link flags required to use libunwind
   LIBUNWIND_EXTRA_CPPFLAGS
-              Extra C preprocesser flags requried to use libunwind
+              Extra C preprocessor flags required to use libunwind
   NVCC
               NVIDIA CUDA compiler command
   LIBCUDART_INCLUDE
@@ -648,6 +668,18 @@ variables:
               Path to libnvidia-ml headers: nvml.h
   LIBNVIDIA_ML_LIB
               Path to libnvidia-ml libraries.
+  LIBNVTOOLSEXT_INCLUDE
+              Path to libnvToolsExt headers. Superseded by
+              --with-libnvToolsExt variants.
+  LIBNVTOOLSEXT_LIB
+              Path to libnvToolsExt libraries. Superseded by
+              --with-libnvToolsExt variants.
+  LIBNVTOOLSEXT_EXTRA_CPPFLAGS
+              Extra C preprocessor flags required to use libnvToolsExt.
+  LIBNVTOOLSEXT_EXTRA_LIBS
+              Extra libraries required to use libnvToolsExt.
+  LIBNVTOOLSEXT_EXTRA_LDFLAGS
+              Extra link flags required to use libnvToolsExt.
   LIBOPENCL_INCLUDE
               Path to libOpenCL headers: CL/cl.h OpenCL/opencl.h
   LIBOPENCL_LIB
@@ -661,7 +693,7 @@ variables:
   LIBLUSTREAPI_EXTRA_LDFLAGS
               Extra link flags required to use liblustreapi
   LIBLUSTREAPI_EXTRA_CPPFLAGS
-              Extra C preprocesser flags requried to use liblustreapi
+              Extra C preprocessor flags required to use liblustreapi
   LIBBFD_INCLUDE
               Path to libbfd headers: bfd.h. Superseded by --with-libbfd
               variants.
@@ -671,7 +703,7 @@ variables:
   LIBBFD_EXTRA_LDFLAGS
               Extra link flags required to use libbfd
   LIBBFD_EXTRA_CPPFLAGS
-              Extra C preprocesser flags requried to use libbfd
+              Extra C preprocessor flags required to use libbfd
   ROCM_PATH   Base directory of the AMD ROCm installation
   LIBAMDHIP64_INCLUDE
               Path to libamdhip64 headers: hip/hip_runtime.h

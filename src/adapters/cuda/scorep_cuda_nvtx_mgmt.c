@@ -4,6 +4,9 @@
  * Copyright (c) 2022,
  * Technische Universitaet Dresden, Germany
  *
+ * Copyright (c) 2024,
+ * Forschungszentrum Juelich GmbH, Germany
+ *
  * This software may be modified and distributed under the terms of
  * a BSD-style license. See the COPYING file in the package base
  * directory for details.
@@ -15,6 +18,8 @@
  */
 
 #include <config.h>
+
+#if HAVE( NVTX_SUPPORT )
 
 #include "scorep_cuda_nvtx_mgmt.h"
 
@@ -37,13 +42,25 @@
    opaque types used in the NVTX API */
 
 /* NVTX API: typedef struct nvtxStringHandle* nvtxStringHandle_t; */
-struct nvtxStringHandle
+#if HAVE( NVTX_V3 )
+#define SCOREP_NVTX_STRINGHANDLE_TYPE nvtxStringRegistration_st
+#else
+#define SCOREP_NVTX_STRINGHANDLE_TYPE nvtxStringHandle
+#endif /* HAVE( NVTX_V3 ) */
+
+struct SCOREP_NVTX_STRINGHANDLE_TYPE
 {
     SCOREP_StringHandle str;
 };
 
 /* NVTX API: typedef struct nvtxDomainHandle* nvtxDomainHandle_t; */
-struct nvtxDomainHandle
+#if HAVE( NVTX_V3 )
+#define SCOREP_NVTX_DOMAINHANDLE_TYPE nvtxDomainRegistration_st
+#else
+#define SCOREP_NVTX_DOMAINHANDLE_TYPE nvtxDomainHandle
+#endif /* HAVE( NVTX_V3 ) */
+
+struct SCOREP_NVTX_DOMAINHANDLE_TYPE
 {
     nvtxStringHandle_t name;
 };
@@ -66,6 +83,14 @@ static SCOREP_AttributeHandle nvtx_attribute_float;
 static SCOREP_AttributeHandle nvtx_attribute_double;
 
 static SCOREP_ParameterHandle nvtx_parameter_category;
+
+/*************** External functions ********************************************/
+#if defined( SCOREP_STATIC_BUILD ) && HAVE( NVTX_V3 )
+
+int
+scorep_cuda_initialize_injection_nvtx2( NvtxGetExportTableFunc_t getExportTable );
+
+#endif
 
 /*************** Widestring table *********************************************/
 
@@ -254,6 +279,31 @@ SCOREP_HASH_TABLE_MONOTONIC( category_table,
 
 /*************** Functions ****************************************************/
 
+#if HAVE( NVTX_V3 )
+void
+scorep_cuda_nvtx_inject( void )
+{
+    /* We need to inject our adapter to ensure that
+     * NVTX events are actually processed by Score-P. If we don't do that,
+     * events will end up in NVIDIA libraries instead and point to a
+     * no-op. This approach works as long as no NVTX event has triggered.
+     * If NVTX events are done during the static initializer, users
+     * need to set this NVTX_INJECTION{64,32}_PATH themselves.
+     * In case of a static build, they are out of luck, as we need
+     * to set a weak variable within NVTX here. */
+    #ifdef SCOREP_SHARED_BUILD
+    /* Path to libscorep_adapter_cuda_event.so */
+    static const char* path = SCOREP_BACKEND_LIBDIR "/libscorep_adapter_cuda_event.so";
+    setenv( "NVTX_INJECTION64_PATH", path, 1 );
+    setenv( "NVTX_INJECTION32_PATH", path, 1 );
+    #elif defined( SCOREP_STATIC_BUILD )
+    unsetenv( "NVTX_INJECTION64_PATH" );
+    unsetenv( "NVTX_INJECTION32_PATH" );
+    InitializeInjectionNvtx2_fnptr = &scorep_cuda_initialize_injection_nvtx2;
+    #endif
+}
+#endif /* HAVE( NVTX_V3 ) */
+
 void
 scorep_cuda_nvtx_init( void )
 {
@@ -282,6 +332,10 @@ scorep_cuda_nvtx_init( void )
 
     nvtx_parameter_category = SCOREP_Definitions_NewParameter(
         "NVTX Category", SCOREP_PARAMETER_STRING );
+
+    #if HAVE( NVTX_V3 )
+    scorep_cuda_nvtx_inject();
+    #endif /* HAVE( NVTX_V3 ) */
 }
 
 const char*
@@ -302,7 +356,7 @@ scorep_cuda_nvtx_unicode_to_ascii( const wchar_t* wide )
 static nvtxStringHandle_t
 create_nvtx_string_handle( SCOREP_StringHandle string )
 {
-    nvtxStringHandle_t result = SCOREP_Memory_AllocForMisc( sizeof( struct nvtxStringHandle ) );
+    nvtxStringHandle_t result = SCOREP_Memory_AllocForMisc( sizeof( struct SCOREP_NVTX_STRINGHANDLE_TYPE ) );
     result->str = string;
     return result;
 }
@@ -319,7 +373,7 @@ nvtxDomainHandle_t
 scorep_cuda_nvtx_create_domain( const char* name )
 {
     nvtxDomainHandle_t new_domain =
-        SCOREP_Memory_AllocForMisc( sizeof( struct nvtxDomainHandle ) );
+        SCOREP_Memory_AllocForMisc( sizeof( struct SCOREP_NVTX_DOMAINHANDLE_TYPE ) );
 
     if ( name )
     {
@@ -456,14 +510,28 @@ void
 scorep_cuda_nvtx_set_stream_name( void*       stream,
                                   const char* name )
 {
+    CUcontext cuda_context;
+    SCOREP_CUDA_DRIVER_CALL( cuStreamGetCtx( stream, &cuda_context ) );
+    uint32_t stream_id;
+    SCOREP_CUPTI_CALL( cuptiGetStreamId( cuda_context, stream, &stream_id ) );
+
     scorep_cupti_stream_set_name(
-        scorep_cupti_stream_get( ( CUstream )stream ), name );
+        scorep_cupti_stream_get_create( scorep_cupti_context_get( cuda_context ), stream_id ), name );
 }
 
 void
 scorep_cuda_nvtx_set_context_name( void*       context,
                                    const char* name )
 {
+    /* CUDA requires one context to be set. NULL means no currently bound context */
+    if ( !context )
+    {
+        UTILS_WARNING( "[%s] Tried to set name '%s' for a NULL context.",
+                       UTILS_FUNCTION_NAME, name );
+        return;
+    }
     scorep_cupti_context_set_name(
         scorep_cupti_context_get( ( CUcontext )context ), name );
 }
+
+#endif /* HAVE( NVTX_SUPPORT ) */

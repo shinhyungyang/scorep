@@ -23,6 +23,15 @@ Features and improvements:
   runtime-loaded libraries. In addition, take overlapping
   address-ranges into account. Previously, only the first matching
   address range was searched.
+- The NVTX portion of the CUDA adapter is now injected automatically
+  when NVTX v3 (CUDA 10.0+) was found during configure. For shared
+  builds, this works for applications using NVTX v2 and newer. For
+  static builds, NVTX v3 or newer is required, as no static
+  injection is possible. NVTX v2 may cause warnings to
+  appear, as there are differences in the supported functions and NVTX
+  tool features. When building Score-P with NVTX v2 or older,
+  usage will require setting LD_PRELOAD. See OPEN_ISSUES for more
+  information.
 
 User tools and API improvements and changes:
 
@@ -100,6 +109,13 @@ Bugfixes:
 - Cray's OMPT implementation reuses data that is supposed to be
   parallel-region local. Handle this gracefully.
 - Fix a race condition in BFD-based addr2line lookup.
+- Fix a crash with NVTX when trying to name a stream which is unknown
+  to the CUDA adapter.
+- Fix a crash with NVTX when NULL is passed as the context when trying
+  to name a CUDA context.
+- Functions with the prefix "nvtx" are now filtered from automatic
+  compiler instrumentation, as they are known to cause measurement
+  failures when being combined with the CUDA adapter.
 
 ------------------- Released version 8.4 -----------------------------
 

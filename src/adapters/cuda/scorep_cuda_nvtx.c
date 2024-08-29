@@ -4,6 +4,9 @@
  * Copyright (c) 2022,
  * Technische Universitaet Dresden, Germany
  *
+ * Copyright (c) 2024,
+ * Forschungszentrum Juelich GmbH, Germany
+ *
  * This software may be modified and distributed under the terms of
  * a BSD-style license. See the COPYING file in the package base
  * directory for details.
@@ -18,17 +21,15 @@
 
 #include <config.h>
 
+#if HAVE( NVTX_SUPPORT )
+
 #include "scorep_cuda_nvtx_mgmt.h"
 
 #include <SCOREP_InMeasurement.h>
 #include <SCOREP_RuntimeManagement.h>
-#include <SCOREP_Location.h>
-#include <SCOREP_Definitions.h>
 #include <SCOREP_Events.h>
 #include <SCOREP_Filtering.h>
 #include <SCOREP_Task.h>
-
-#include <nvToolsExt.h>
 
 /*************** Macros *******************************************************/
 
@@ -48,30 +49,28 @@
         .message.unicode = message \
     }
 
-/*************** Init functions ***********************************************/
+static UTILS_Mutex scorep_nvtx_mutex;
+#define SCOREP_NVTX_LOCK() UTILS_MutexLock( &scorep_nvtx_mutex )
+#define SCOREP_NVTX_UNLOCK() UTILS_MutexUnlock( &scorep_nvtx_mutex )
 
-NVTX_DECLSPEC int NVTX_API
-nvtxInitialize( const nvtxInitializationAttributes_t* initAttrib )
-{
-    SCOREP_IN_MEASUREMENT_INCREMENT();
-    if ( SCOREP_IS_MEASUREMENT_PHASE( PRE ) )
-    {
-        SCOREP_InitMeasurement();
-    }
-    if ( !SCOREP_IS_MEASUREMENT_PHASE( WITHIN ) )
-    {
-        SCOREP_IN_MEASUREMENT_DECREMENT();
-        return 0;
-    }
-    SCOREP_IN_MEASUREMENT_DECREMENT();
-    return 0;
-}
+#if HAVE( NVTX_V3 )
+#define DECLARE_NVTX_WRAPPER( returnType, origSignature, ... ) \
+    static returnType \
+    scorep_cuda_ ## origSignature( __VA_ARGS__ )
+#define CALL_NVTX_WRAPPER( call ) scorep_cuda_ ## call
+#else
+#define DECLARE_NVTX_WRAPPER( returnType, origSignature, ... ) \
+    NVTX_DECLSPEC returnType NVTX_API \
+    nvtx ## origSignature( __VA_ARGS__ )
+#define CALL_NVTX_WRAPPER( call ) call
+#endif
 
 /*************** Mark functions ***********************************************/
 
-NVTX_DECLSPEC void NVTX_API
-nvtxDomainMarkEx( nvtxDomainHandle_t           domain,
-                  const nvtxEventAttributes_t* eventAttrib )
+DECLARE_NVTX_WRAPPER( void,
+                      nvtxDomainMarkEx,
+                      nvtxDomainHandle_t domain,
+                      const nvtxEventAttributes_t * eventAttrib )
 {
     SCOREP_IN_MEASUREMENT_INCREMENT();
     if ( SCOREP_IS_MEASUREMENT_PHASE( PRE ) )
@@ -101,37 +100,39 @@ nvtxDomainMarkEx( nvtxDomainHandle_t           domain,
     SCOREP_IN_MEASUREMENT_DECREMENT();
 }
 
-NVTX_DECLSPEC void NVTX_API
-nvtxMarkEx( const nvtxEventAttributes_t* eventAttrib )
+DECLARE_NVTX_WRAPPER( void,
+                      nvtxMarkEx,
+                      const nvtxEventAttributes_t * eventAttrib )
 {
     SCOREP_IN_MEASUREMENT_INCREMENT();
-    nvtxDomainMarkEx( SCOREP_CUDA_NVTX_DEFAULT_DOMAIN, eventAttrib );
+    CALL_NVTX_WRAPPER( nvtxDomainMarkEx( SCOREP_CUDA_NVTX_DEFAULT_DOMAIN, eventAttrib ) );
     SCOREP_IN_MEASUREMENT_DECREMENT();
 }
 
-NVTX_DECLSPEC void NVTX_API
-nvtxMarkA( const char* message )
+DECLARE_NVTX_WRAPPER( void, nvtxMarkA, const char* message )
 {
     SCOREP_IN_MEASUREMENT_INCREMENT();
     nvtxEventAttributes_t attributes = SCOREP_CUDA_NVTX_MAKE_ASCII_ATTRIBUTES( message );
-    nvtxMarkEx( &attributes );
+    CALL_NVTX_WRAPPER( nvtxMarkEx( &attributes ) );
     SCOREP_IN_MEASUREMENT_DECREMENT();
 }
 
-NVTX_DECLSPEC void NVTX_API
-nvtxMarkW( const wchar_t* message )
+DECLARE_NVTX_WRAPPER( void,
+                      nvtxMarkW,
+                      const wchar_t* message )
 {
     SCOREP_IN_MEASUREMENT_INCREMENT();
     nvtxEventAttributes_t attributes = SCOREP_CUDA_NVTX_MAKE_UNICODE_ATTRIBUTES( message );
-    nvtxMarkEx( &attributes );
+    CALL_NVTX_WRAPPER( nvtxMarkEx( &attributes ) );
     SCOREP_IN_MEASUREMENT_DECREMENT();
 }
 
 /*************** Range start/stop functions ***********************************/
 
-NVTX_DECLSPEC nvtxRangeId_t NVTX_API
-nvtxDomainRangeStartEx( nvtxDomainHandle_t           domain,
-                        const nvtxEventAttributes_t* eventAttrib )
+DECLARE_NVTX_WRAPPER( nvtxRangeId_t,
+                      nvtxDomainRangeStartEx,
+                      nvtxDomainHandle_t domain,
+                      const nvtxEventAttributes_t * eventAttrib )
 {
     SCOREP_IN_MEASUREMENT_INCREMENT();
     if ( SCOREP_IS_MEASUREMENT_PHASE( PRE ) )
@@ -152,38 +153,42 @@ nvtxDomainRangeStartEx( nvtxDomainHandle_t           domain,
     return 0;
 }
 
-NVTX_DECLSPEC nvtxRangeId_t NVTX_API
-nvtxRangeStartEx( const nvtxEventAttributes_t* eventAttrib )
+DECLARE_NVTX_WRAPPER( nvtxRangeId_t,
+                      nvtxRangeStartEx,
+                      const nvtxEventAttributes_t * eventAttrib )
 {
     SCOREP_IN_MEASUREMENT_INCREMENT();
-    nvtxRangeId_t result = nvtxDomainRangeStartEx( SCOREP_CUDA_NVTX_DEFAULT_DOMAIN, eventAttrib );
+    nvtxRangeId_t result = CALL_NVTX_WRAPPER( nvtxDomainRangeStartEx( SCOREP_CUDA_NVTX_DEFAULT_DOMAIN, eventAttrib ) );
     SCOREP_IN_MEASUREMENT_DECREMENT();
     return result;
 }
 
-NVTX_DECLSPEC nvtxRangeId_t NVTX_API
-nvtxRangeStartA( const char* message )
+DECLARE_NVTX_WRAPPER( nvtxRangeId_t,
+                      nvtxRangeStartA,
+                      const char* message )
 {
     SCOREP_IN_MEASUREMENT_INCREMENT();
     nvtxEventAttributes_t attributes = SCOREP_CUDA_NVTX_MAKE_ASCII_ATTRIBUTES( message );
-    nvtxRangeId_t         result     = nvtxRangeStartEx( &attributes );
+    nvtxRangeId_t         result     = CALL_NVTX_WRAPPER( nvtxRangeStartEx( &attributes ) );
     SCOREP_IN_MEASUREMENT_DECREMENT();
     return result;
 }
 
-NVTX_DECLSPEC nvtxRangeId_t NVTX_API
-nvtxRangeStartW( const wchar_t* message )
+DECLARE_NVTX_WRAPPER( nvtxRangeId_t,
+                      nvtxRangeStartW,
+                      const wchar_t* message )
 {
     SCOREP_IN_MEASUREMENT_INCREMENT();
     nvtxEventAttributes_t attributes = SCOREP_CUDA_NVTX_MAKE_UNICODE_ATTRIBUTES( message );
-    nvtxRangeId_t         result     = nvtxRangeStartEx( &attributes );
+    nvtxRangeId_t         result     = CALL_NVTX_WRAPPER( nvtxRangeStartEx( &attributes ) );
     SCOREP_IN_MEASUREMENT_DECREMENT();
     return result;
 }
 
-NVTX_DECLSPEC void NVTX_API
-nvtxDomainRangeEnd( nvtxDomainHandle_t domain,
-                    nvtxRangeId_t      id )
+DECLARE_NVTX_WRAPPER( void,
+                      nvtxDomainRangeEnd,
+                      nvtxDomainHandle_t domain,
+                      nvtxRangeId_t id )
 {
     SCOREP_IN_MEASUREMENT_INCREMENT();
     if ( !SCOREP_IS_MEASUREMENT_PHASE( WITHIN ) )
@@ -197,19 +202,21 @@ nvtxDomainRangeEnd( nvtxDomainHandle_t domain,
     SCOREP_IN_MEASUREMENT_DECREMENT();
 }
 
-NVTX_DECLSPEC void NVTX_API
-nvtxRangeEnd( nvtxRangeId_t id )
+DECLARE_NVTX_WRAPPER( void,
+                      nvtxRangeEnd,
+                      nvtxRangeId_t id )
 {
     SCOREP_IN_MEASUREMENT_INCREMENT();
-    nvtxDomainRangeEnd( SCOREP_CUDA_NVTX_DEFAULT_DOMAIN, id );
+    CALL_NVTX_WRAPPER( nvtxDomainRangeEnd( SCOREP_CUDA_NVTX_DEFAULT_DOMAIN, id ) );
     SCOREP_IN_MEASUREMENT_DECREMENT();
 }
 
 /*************** Range push/pop functions *************************************/
 
-NVTX_DECLSPEC int NVTX_API
-nvtxDomainRangePushEx( nvtxDomainHandle_t           domain,
-                       const nvtxEventAttributes_t* eventAttrib )
+DECLARE_NVTX_WRAPPER( int,
+                      nvtxDomainRangePushEx,
+                      nvtxDomainHandle_t domain,
+                      const nvtxEventAttributes_t * eventAttrib )
 {
     SCOREP_IN_MEASUREMENT_INCREMENT();
     if ( SCOREP_IS_MEASUREMENT_PHASE( PRE ) )
@@ -241,37 +248,41 @@ nvtxDomainRangePushEx( nvtxDomainHandle_t           domain,
     return 0;
 }
 
-NVTX_DECLSPEC int NVTX_API
-nvtxRangePushEx( const nvtxEventAttributes_t* eventAttrib )
+DECLARE_NVTX_WRAPPER( int,
+                      nvtxRangePushEx,
+                      const nvtxEventAttributes_t * eventAttrib )
 {
     SCOREP_IN_MEASUREMENT_INCREMENT();
-    int result = nvtxDomainRangePushEx( SCOREP_CUDA_NVTX_DEFAULT_DOMAIN, eventAttrib );
+    int result = CALL_NVTX_WRAPPER( nvtxDomainRangePushEx( SCOREP_CUDA_NVTX_DEFAULT_DOMAIN, eventAttrib ) );
     SCOREP_IN_MEASUREMENT_DECREMENT();
     return result;
 }
 
-NVTX_DECLSPEC int NVTX_API
-nvtxRangePushA( const char* message )
+DECLARE_NVTX_WRAPPER( int,
+                      nvtxRangePushA,
+                      const char* message )
 {
     SCOREP_IN_MEASUREMENT_INCREMENT();
     nvtxEventAttributes_t attributes = SCOREP_CUDA_NVTX_MAKE_ASCII_ATTRIBUTES( message );
-    int                   result     = nvtxRangePushEx( &attributes );
+    int                   result     = CALL_NVTX_WRAPPER( nvtxRangePushEx( &attributes ) );
     SCOREP_IN_MEASUREMENT_DECREMENT();
     return result;
 }
 
-NVTX_DECLSPEC int NVTX_API
-nvtxRangePushW( const wchar_t* message )
+DECLARE_NVTX_WRAPPER( int,
+                      nvtxRangePushW,
+                      const wchar_t* message )
 {
     SCOREP_IN_MEASUREMENT_INCREMENT();
     nvtxEventAttributes_t attributes = SCOREP_CUDA_NVTX_MAKE_UNICODE_ATTRIBUTES( message );
-    int                   result     = nvtxRangePushEx( &attributes );
+    int                   result     = CALL_NVTX_WRAPPER( nvtxRangePushEx( &attributes ) );
     SCOREP_IN_MEASUREMENT_DECREMENT();
     return result;
 }
 
-NVTX_DECLSPEC int NVTX_API
-nvtxDomainRangePop( nvtxDomainHandle_t domain )
+DECLARE_NVTX_WRAPPER( int,
+                      nvtxDomainRangePop,
+                      nvtxDomainHandle_t domain )
 {
     SCOREP_IN_MEASUREMENT_INCREMENT();
 
@@ -297,19 +308,21 @@ nvtxDomainRangePop( nvtxDomainHandle_t domain )
     return 0;
 }
 
-NVTX_DECLSPEC int NVTX_API
-nvtxRangePop( void )
+DECLARE_NVTX_WRAPPER( int,
+                      nvtxRangePop,
+                      void )
 {
     SCOREP_IN_MEASUREMENT_INCREMENT();
-    int result = nvtxDomainRangePop( SCOREP_CUDA_NVTX_DEFAULT_DOMAIN );
+    int result = CALL_NVTX_WRAPPER( nvtxDomainRangePop( SCOREP_CUDA_NVTX_DEFAULT_DOMAIN ) );
     SCOREP_IN_MEASUREMENT_DECREMENT();
     return result;
 }
 
 /*************** Domain management ********************************************/
 
-NVTX_DECLSPEC nvtxDomainHandle_t NVTX_API
-nvtxDomainCreateA( const char* name )
+DECLARE_NVTX_WRAPPER( nvtxDomainHandle_t,
+                      nvtxDomainCreateA,
+                      const char* name )
 {
     SCOREP_IN_MEASUREMENT_INCREMENT();
     if ( SCOREP_IS_MEASUREMENT_PHASE( PRE ) )
@@ -329,8 +342,9 @@ nvtxDomainCreateA( const char* name )
     return result;
 }
 
-NVTX_DECLSPEC nvtxDomainHandle_t NVTX_API
-nvtxDomainCreateW( const wchar_t* name )
+DECLARE_NVTX_WRAPPER( nvtxDomainHandle_t,
+                      nvtxDomainCreateW,
+                      const wchar_t* name )
 {
     SCOREP_IN_MEASUREMENT_INCREMENT();
     if ( SCOREP_IS_MEASUREMENT_PHASE( PRE ) )
@@ -344,14 +358,15 @@ nvtxDomainCreateW( const wchar_t* name )
         return NULL;
     }
 
-    nvtxDomainHandle_t result = nvtxDomainCreateA( scorep_cuda_nvtx_unicode_to_ascii( name ) );
+    nvtxDomainHandle_t result = CALL_NVTX_WRAPPER( nvtxDomainCreateA( scorep_cuda_nvtx_unicode_to_ascii( name ) ) );
 
     SCOREP_IN_MEASUREMENT_DECREMENT();
     return result;
 }
 
-NVTX_DECLSPEC void NVTX_API
-nvtxDomainDestroy( nvtxDomainHandle_t domain )
+DECLARE_NVTX_WRAPPER( void,
+                      nvtxDomainDestroy,
+                      nvtxDomainHandle_t domain )
 {
     SCOREP_IN_MEASUREMENT_INCREMENT();
     SCOREP_IN_MEASUREMENT_DECREMENT();
@@ -359,9 +374,10 @@ nvtxDomainDestroy( nvtxDomainHandle_t domain )
 
 /*************** Domain resource management ***********************************/
 
-NVTX_DECLSPEC nvtxResourceHandle_t NVTX_API
-nvtxDomainResourceCreate( nvtxDomainHandle_t        domain,
-                          nvtxResourceAttributes_t* attribs )
+DECLARE_NVTX_WRAPPER( nvtxResourceHandle_t,
+                      nvtxDomainResourceCreate,
+                      nvtxDomainHandle_t domain,
+                      nvtxResourceAttributes_t * attribs )
 {
     SCOREP_IN_MEASUREMENT_INCREMENT();
     if ( SCOREP_IS_MEASUREMENT_PHASE( PRE ) )
@@ -380,8 +396,9 @@ nvtxDomainResourceCreate( nvtxDomainHandle_t        domain,
     return NULL;
 }
 
-NVTX_DECLSPEC void NVTX_API
-nvtxDomainResourceDestroy( nvtxResourceHandle_t resource )
+DECLARE_NVTX_WRAPPER( void,
+                      nvtxDomainResourceDestroy,
+                      nvtxResourceHandle_t resource )
 {
     SCOREP_IN_MEASUREMENT_INCREMENT();
     // Not implemented
@@ -390,10 +407,11 @@ nvtxDomainResourceDestroy( nvtxResourceHandle_t resource )
 
 /*************** Category naming **********************************************/
 
-NVTX_DECLSPEC void NVTX_API
-nvtxDomainNameCategoryA( nvtxDomainHandle_t domain,
-                         uint32_t           category,
-                         const char*        name )
+DECLARE_NVTX_WRAPPER( void,
+                      nvtxDomainNameCategoryA,
+                      nvtxDomainHandle_t domain,
+                      uint32_t category,
+                      const char* name )
 {
     SCOREP_IN_MEASUREMENT_INCREMENT();
     if ( SCOREP_IS_MEASUREMENT_PHASE( PRE ) )
@@ -412,10 +430,11 @@ nvtxDomainNameCategoryA( nvtxDomainHandle_t domain,
     SCOREP_IN_MEASUREMENT_DECREMENT();
 }
 
-NVTX_DECLSPEC void NVTX_API
-nvtxDomainNameCategoryW( nvtxDomainHandle_t domain,
-                         uint32_t           category,
-                         const wchar_t*     name )
+DECLARE_NVTX_WRAPPER( void,
+                      nvtxDomainNameCategoryW,
+                      nvtxDomainHandle_t domain,
+                      uint32_t category,
+                      const wchar_t* name )
 {
     SCOREP_IN_MEASUREMENT_INCREMENT();
     if ( SCOREP_IS_MEASUREMENT_PHASE( PRE ) )
@@ -429,26 +448,28 @@ nvtxDomainNameCategoryW( nvtxDomainHandle_t domain,
         return;
     }
 
-    nvtxDomainNameCategoryA( domain, category, scorep_cuda_nvtx_unicode_to_ascii( name ) );
+    CALL_NVTX_WRAPPER( nvtxDomainNameCategoryA( domain, category, scorep_cuda_nvtx_unicode_to_ascii( name ) ) );
 
     SCOREP_IN_MEASUREMENT_DECREMENT();
 }
 
-NVTX_DECLSPEC void NVTX_API
-nvtxNameCategoryA( uint32_t    category,
-                   const char* name )
+DECLARE_NVTX_WRAPPER( void,
+                      nvtxNameCategoryA,
+                      uint32_t category,
+                      const char* name )
 {
     SCOREP_IN_MEASUREMENT_INCREMENT();
-    nvtxDomainNameCategoryA( SCOREP_CUDA_NVTX_DEFAULT_DOMAIN, category, name );
+    CALL_NVTX_WRAPPER( nvtxDomainNameCategoryA( SCOREP_CUDA_NVTX_DEFAULT_DOMAIN, category, name ) );
     SCOREP_IN_MEASUREMENT_DECREMENT();
 }
 
-NVTX_DECLSPEC void NVTX_API
-nvtxNameCategoryW( uint32_t       category,
-                   const wchar_t* name )
+DECLARE_NVTX_WRAPPER( void,
+                      nvtxNameCategoryW,
+                      uint32_t category,
+                      const wchar_t* name )
 {
     SCOREP_IN_MEASUREMENT_INCREMENT();
-    nvtxDomainNameCategoryW( SCOREP_CUDA_NVTX_DEFAULT_DOMAIN, category, name );
+    CALL_NVTX_WRAPPER( nvtxDomainNameCategoryW( SCOREP_CUDA_NVTX_DEFAULT_DOMAIN, category, name ) );
     SCOREP_IN_MEASUREMENT_DECREMENT();
 }
 
@@ -474,9 +495,10 @@ nvtxNameCategoryW( uint32_t       category,
  * \endcode
  */
 
-NVTX_DECLSPEC void NVTX_API
-nvtxNameOsThreadA( uint32_t    threadId,
-                   const char* name )
+DECLARE_NVTX_WRAPPER( void,
+                      nvtxNameOsThreadA,
+                      uint32_t threadId,
+                      const char* name )
 {
     SCOREP_IN_MEASUREMENT_INCREMENT();
     if ( SCOREP_IS_MEASUREMENT_PHASE( PRE ) )
@@ -494,9 +516,11 @@ nvtxNameOsThreadA( uint32_t    threadId,
     SCOREP_IN_MEASUREMENT_DECREMENT();
 }
 
-NVTX_DECLSPEC void NVTX_API
-nvtxNameOsThreadW( uint32_t       threadId,
-                   const wchar_t* name )
+DECLARE_NVTX_WRAPPER( void,
+                      nvtxNameOsThreadW,
+                      uint32_t threadId,
+                      const wchar_t* name )
+
 {
     SCOREP_IN_MEASUREMENT_INCREMENT();
     if ( SCOREP_IS_MEASUREMENT_PHASE( PRE ) )
@@ -510,7 +534,7 @@ nvtxNameOsThreadW( uint32_t       threadId,
         return;
     }
 
-    nvtxNameOsThreadA( threadId, scorep_cuda_nvtx_unicode_to_ascii( name ) );
+    CALL_NVTX_WRAPPER( nvtxNameOsThreadA( threadId, scorep_cuda_nvtx_unicode_to_ascii( name ) ) );
 
     SCOREP_IN_MEASUREMENT_DECREMENT();
 }
@@ -523,9 +547,10 @@ nvtxNameOsThreadW( uint32_t       threadId,
  * They are just pointers, thus we can use `void*` to avoid additional includes
  */
 
-NVTX_DECLSPEC void NVTX_API
-nvtxNameCuStreamA( void*       stream,
-                   const char* name )
+DECLARE_NVTX_WRAPPER( void,
+                      nvtxNameCuStreamA,
+                      void* stream,
+                      const char* name )
 {
     SCOREP_IN_MEASUREMENT_INCREMENT();
     if ( SCOREP_IS_MEASUREMENT_PHASE( PRE ) )
@@ -543,9 +568,10 @@ nvtxNameCuStreamA( void*       stream,
     SCOREP_IN_MEASUREMENT_DECREMENT();
 }
 
-NVTX_DECLSPEC void NVTX_API
-nvtxNameCuStreamW( void*          stream,
-                   const wchar_t* name )
+DECLARE_NVTX_WRAPPER( void,
+                      nvtxNameCuStreamW,
+                      void* stream,
+                      const wchar_t* name )
 {
     SCOREP_IN_MEASUREMENT_INCREMENT();
     if ( SCOREP_IS_MEASUREMENT_PHASE( PRE ) )
@@ -559,14 +585,15 @@ nvtxNameCuStreamW( void*          stream,
         return;
     }
 
-    nvtxNameCuStreamA( stream, scorep_cuda_nvtx_unicode_to_ascii( name ) );
+    CALL_NVTX_WRAPPER( nvtxNameCuStreamA( stream, scorep_cuda_nvtx_unicode_to_ascii( name ) ) );
 
     SCOREP_IN_MEASUREMENT_DECREMENT();
 }
 
-NVTX_DECLSPEC void NVTX_API
-nvtxNameCudaStreamA( void*       stream,
-                     const char* name )
+DECLARE_NVTX_WRAPPER( void,
+                      nvtxNameCudaStreamA,
+                      void* stream,
+                      const char* name )
 {
     SCOREP_IN_MEASUREMENT_INCREMENT();
     if ( SCOREP_IS_MEASUREMENT_PHASE( PRE ) )
@@ -584,9 +611,10 @@ nvtxNameCudaStreamA( void*       stream,
     SCOREP_IN_MEASUREMENT_DECREMENT();
 }
 
-NVTX_DECLSPEC void NVTX_API
-nvtxNameCudaStreamW( void*          stream,
-                     const wchar_t* name )
+DECLARE_NVTX_WRAPPER( void,
+                      nvtxNameCudaStreamW,
+                      void* stream,
+                      const wchar_t* name )
 {
     SCOREP_IN_MEASUREMENT_INCREMENT();
     if ( SCOREP_IS_MEASUREMENT_PHASE( PRE ) )
@@ -600,7 +628,7 @@ nvtxNameCudaStreamW( void*          stream,
         return;
     }
 
-    nvtxNameCudaStreamA( stream, scorep_cuda_nvtx_unicode_to_ascii( name ) );
+    CALL_NVTX_WRAPPER( nvtxNameCudaStreamA( stream, scorep_cuda_nvtx_unicode_to_ascii( name ) ) );
 
     SCOREP_IN_MEASUREMENT_DECREMENT();
 }
@@ -611,9 +639,10 @@ nvtxNameCudaStreamW( void*          stream,
  * CUcontext is just a pointer, thus we can use `void*` to avoid additional includes
  */
 
-NVTX_DECLSPEC void NVTX_API
-nvtxNameCuContextA( void*       context,
-                    const char* name )
+DECLARE_NVTX_WRAPPER( void,
+                      nvtxNameCuContextA,
+                      void* context,
+                      const char* name )
 {
     SCOREP_IN_MEASUREMENT_INCREMENT();
     if ( SCOREP_IS_MEASUREMENT_PHASE( PRE ) )
@@ -631,9 +660,10 @@ nvtxNameCuContextA( void*       context,
     SCOREP_IN_MEASUREMENT_DECREMENT();
 }
 
-NVTX_DECLSPEC void NVTX_API
-nvtxNameCuContextW( void*          context,
-                    const wchar_t* name )
+DECLARE_NVTX_WRAPPER( void,
+                      nvtxNameCuContextW,
+                      void* context,
+                      const wchar_t* name )
 {
     SCOREP_IN_MEASUREMENT_INCREMENT();
     if ( SCOREP_IS_MEASUREMENT_PHASE( PRE ) )
@@ -647,16 +677,17 @@ nvtxNameCuContextW( void*          context,
         return;
     }
 
-    nvtxNameCuContextA( context, scorep_cuda_nvtx_unicode_to_ascii( name ) );
+    CALL_NVTX_WRAPPER( nvtxNameCuContextA( context, scorep_cuda_nvtx_unicode_to_ascii( name ) ) );
 
     SCOREP_IN_MEASUREMENT_DECREMENT();
 }
 
 /*************** String registration ******************************************/
 
-NVTX_DECLSPEC nvtxStringHandle_t NVTX_API
-nvtxDomainRegisterStringA( nvtxDomainHandle_t domain,
-                           const char*        string )
+DECLARE_NVTX_WRAPPER( nvtxStringHandle_t,
+                      nvtxDomainRegisterStringA,
+                      nvtxDomainHandle_t domain,
+                      const char* string )
 {
     SCOREP_IN_MEASUREMENT_INCREMENT();
     if ( SCOREP_IS_MEASUREMENT_PHASE( PRE ) )
@@ -676,9 +707,10 @@ nvtxDomainRegisterStringA( nvtxDomainHandle_t domain,
     return result;
 }
 
-NVTX_DECLSPEC nvtxStringHandle_t NVTX_API
-nvtxDomainRegisterStringW( nvtxDomainHandle_t domain,
-                           const wchar_t*     string )
+DECLARE_NVTX_WRAPPER( nvtxStringHandle_t,
+                      nvtxDomainRegisterStringW,
+                      nvtxDomainHandle_t domain,
+                      const wchar_t* string )
 {
     SCOREP_IN_MEASUREMENT_INCREMENT();
     if ( SCOREP_IS_MEASUREMENT_PHASE( PRE ) )
@@ -693,53 +725,204 @@ nvtxDomainRegisterStringW( nvtxDomainHandle_t domain,
     }
 
     nvtxStringHandle_t result =
-        nvtxDomainRegisterStringA( domain, scorep_cuda_nvtx_unicode_to_ascii( string ) );
+        CALL_NVTX_WRAPPER( nvtxDomainRegisterStringA( domain, scorep_cuda_nvtx_unicode_to_ascii( string ) ) );
 
     SCOREP_IN_MEASUREMENT_DECREMENT();
     return result;
 }
 
-/* Not implemented API: nvToolsExtCuda.h
- *
- * nvtxNameCuDeviceA
- * nvtxNameCuDeviceW
- * nvtxNameCuEventA
- * nvtxNameCuEventW
- */
+/*************** Init functions ***********************************************/
 
-/* Not implemented API: nvToolsExtCudaRt.h
- *
- * nvtxNameCudaDeviceA
- * nvtxNameCudaDeviceW
- * nvtxNameCudaEventA
- * nvtxNameCudaEventW
- */
+#if HAVE( NVTX_V3 )
+static void
+scorep_cuda_nvtxInitialize( const void* reserved )
+#else
+NVTX_DECLSPEC int NVTX_API
+nvtxInitialize( const nvtxInitializationAttributes_t* initAttrib )
+#endif /* HAVE( NVTX_V3 ) */
+{
+    SCOREP_IN_MEASUREMENT_INCREMENT();
+    if ( SCOREP_IS_MEASUREMENT_PHASE( PRE ) )
+    {
+        SCOREP_InitMeasurement();
+    }
+    if ( !SCOREP_IS_MEASUREMENT_PHASE( WITHIN ) )
+    {
+        SCOREP_IN_MEASUREMENT_DECREMENT();
+    }
+    #if !HAVE( NVTX_V3 )
+    return 0;
+    #endif
+}
 
-/* Not implemented API: nvToolsExtOpenCL.h
- *
- * nvtxNameClCommandQueueA
- * nvtxNameClCommandQueueW
- * nvtxNameClContextA
- * nvtxNameClContextW
- * nvtxNameClDeviceA
- * nvtxNameClDeviceW
- * nvtxNameClEventA
- * nvtxNameClEventW
- * nvtxNameClMemObjectA
- * nvtxNameClMemObjectW
- * nvtxNameClProgramA
- * nvtxNameClProgramW
- * nvtxNameClSamplerA
- * nvtxNameClSamplerW
- */
+#if HAVE( NVTX_V3 )
+int
+#ifdef SCOREP_SHARED_BUILD
+InitializeInjectionNvtx2( NvtxGetExportTableFunc_t getExportTable )
+#elif defined( SCOREP_STATIC_BUILD )
+scorep_cuda_initialize_injection_nvtx2( NvtxGetExportTableFunc_t getExportTable )
+#endif /* SCOREP_SHARED_BUILD */
+{
+    SCOREP_IN_MEASUREMENT_INCREMENT();
+    if ( SCOREP_IS_MEASUREMENT_PHASE( PRE ) )
+    {
+        SCOREP_InitMeasurement();
+    }
+    if ( !SCOREP_IS_MEASUREMENT_PHASE( WITHIN ) )
+    {
+        SCOREP_IN_MEASUREMENT_DECREMENT();
+        return 0;
+    }
+    SCOREP_NVTX_LOCK();
 
-/* Not implemented API: nvToolsExtSync.h
- *
- * nvtxDomainSyncUserAcquireFailed
- * nvtxDomainSyncUserAcquireStart
- * nvtxDomainSyncUserAcquireSuccess
- * nvtxDomainSyncUserCreate
- * nvtxDomainSyncUserDestroy
- * nvtxDomainSyncUserReleasing
- * nvtxGetExportTable
- */
+    const NvtxExportTableCallbacks* export_table = getExportTable( NVTX_ETID_CALLBACKS );
+    if ( !export_table )
+    {
+        UTILS_WARNING( "[%s] Could not get NVTX export table to inject functions.", UTILS_FUNCTION_NAME );
+        SCOREP_NVTX_UNLOCK();
+        SCOREP_IN_MEASUREMENT_DECREMENT();
+        return 0;
+    }
+
+    const NvtxExportTableVersionInfo* version_info = getExportTable( NVTX_ETID_VERSIONINFO );
+    if ( !version_info )
+    {
+        UTILS_WARNING( "[%s] Could not get NVTX version info. NVTX injection might cause issues.",
+                       UTILS_FUNCTION_NAME );
+    }
+    else if ( version_info->version != NVTX_VERSION )
+    {
+        UTILS_WARNING( "[%s] NVTX version mismatch: %u != %u. NVTX injection might cause issues.",
+                       UTILS_FUNCTION_NAME, version_info->version, NVTX_VERSION );
+    }
+
+    NvtxFunctionTable function_table;
+    unsigned int      out_size;
+
+    /* Test size of NVTX function tables first, to ensure that it matches our expectations */
+    #define CHECK_FUNCTION_TABLE_SIZE( module, size_name ) \
+    do \
+    { \
+        export_table->GetModuleFunctionTable( ( module ), NULL, &out_size ); \
+        if ( out_size != ( size_name ) ) \
+        { \
+            UTILS_WARNING( "[%s] NVTX function table %s size mismatch: %u != %u. " \
+                           "NVTX injection might cause issues.", \
+                           UTILS_FUNCTION_NAME, #module, out_size, size_name ); \
+        } \
+    } \
+    while ( 0 )
+    CHECK_FUNCTION_TABLE_SIZE( NVTX_CB_MODULE_CORE, NVTX_CBID_CORE_SIZE );
+    CHECK_FUNCTION_TABLE_SIZE( NVTX_CB_MODULE_CUDA, NVTX_CBID_CUDA_SIZE );
+    // not implemented: CHECK_FUNCTION_TABLE_SIZE( NVTX_CB_MODULE_OPENCL, NVTX_CBID_OPENCL_SIZE );
+    CHECK_FUNCTION_TABLE_SIZE( NVTX_CB_MODULE_CUDART, NVTX_CBID_CUDART_SIZE );
+    CHECK_FUNCTION_TABLE_SIZE( NVTX_CB_MODULE_CORE2, NVTX_CBID_CORE2_SIZE );
+    // not implemented: CHECK_FUNCTION_TABLE_SIZE( NVTX_CB_MODULE_SYNC, NVTX_CBID_SYNC_SIZE );
+    #undef CHECK_FUNCTION_TABLE_SIZE
+
+    #define INJECT_FUNCTION_IF_POSSBILE( id, func ) \
+    do \
+    { \
+        if ( function_table[ id ] ) \
+        { \
+            *function_table[ id ] = ( NvtxFunctionPointer )func; \
+        } \
+        else \
+        { \
+            UTILS_WARNING( "[%s] Could not inject %s.", UTILS_FUNCTION_NAME, #id ); \
+        } \
+    } while ( 0 )
+
+    export_table->GetModuleFunctionTable( NVTX_CB_MODULE_CORE, &function_table, NULL );
+    INJECT_FUNCTION_IF_POSSBILE( NVTX_CBID_CORE_MarkEx, scorep_cuda_nvtxMarkEx );
+    INJECT_FUNCTION_IF_POSSBILE( NVTX_CBID_CORE_MarkA, scorep_cuda_nvtxMarkA );
+    INJECT_FUNCTION_IF_POSSBILE( NVTX_CBID_CORE_MarkW, scorep_cuda_nvtxMarkW );
+    INJECT_FUNCTION_IF_POSSBILE( NVTX_CBID_CORE_RangeStartEx, scorep_cuda_nvtxRangeStartEx );
+    INJECT_FUNCTION_IF_POSSBILE( NVTX_CBID_CORE_RangeStartA, scorep_cuda_nvtxRangeStartA );
+    INJECT_FUNCTION_IF_POSSBILE( NVTX_CBID_CORE_RangeStartW, scorep_cuda_nvtxRangeStartW );
+    INJECT_FUNCTION_IF_POSSBILE( NVTX_CBID_CORE_RangeEnd, scorep_cuda_nvtxRangeEnd );
+    INJECT_FUNCTION_IF_POSSBILE( NVTX_CBID_CORE_RangePushEx, scorep_cuda_nvtxRangePushEx );
+    INJECT_FUNCTION_IF_POSSBILE( NVTX_CBID_CORE_RangePushA, scorep_cuda_nvtxRangePushA );
+    INJECT_FUNCTION_IF_POSSBILE( NVTX_CBID_CORE_RangePushW, scorep_cuda_nvtxRangePushW );
+    INJECT_FUNCTION_IF_POSSBILE( NVTX_CBID_CORE_RangePop, scorep_cuda_nvtxRangePop );
+    INJECT_FUNCTION_IF_POSSBILE( NVTX_CBID_CORE_NameCategoryA, scorep_cuda_nvtxNameCategoryA );
+    INJECT_FUNCTION_IF_POSSBILE( NVTX_CBID_CORE_NameCategoryW, scorep_cuda_nvtxNameCategoryW );
+    INJECT_FUNCTION_IF_POSSBILE( NVTX_CBID_CORE_NameOsThreadA, scorep_cuda_nvtxNameOsThreadA );
+    INJECT_FUNCTION_IF_POSSBILE( NVTX_CBID_CORE_NameOsThreadW, scorep_cuda_nvtxNameOsThreadW );
+
+    export_table->GetModuleFunctionTable( NVTX_CB_MODULE_CUDA, &function_table, NULL );
+    // not implemented: INJECT_FUNCTION_IF_POSSBILE( NVTX_CBID_CUDA_NameCuDeviceA, scorep_cuda_nvtxNameCuDeviceA );
+    // not implemented: INJECT_FUNCTION_IF_POSSBILE( NVTX_CBID_CUDA_NameCuDeviceW, scorep_cuda_nvtxNameCuDeviceW );
+    INJECT_FUNCTION_IF_POSSBILE( NVTX_CBID_CUDA_NameCuContextA, scorep_cuda_nvtxNameCuContextA );
+    INJECT_FUNCTION_IF_POSSBILE( NVTX_CBID_CUDA_NameCuContextW, scorep_cuda_nvtxNameCuContextW );
+    INJECT_FUNCTION_IF_POSSBILE( NVTX_CBID_CUDA_NameCuStreamA, scorep_cuda_nvtxNameCuStreamA );
+    INJECT_FUNCTION_IF_POSSBILE( NVTX_CBID_CUDA_NameCuStreamW, scorep_cuda_nvtxNameCuStreamW );
+    // not implemented: INJECT_FUNCTION_IF_POSSBILE( NVTX_CBID_CUDA_NameCuEventA, scorep_cuda_nvtxNameCuEventA );
+    // not implemented: INJECT_FUNCTION_IF_POSSBILE( NVTX_CBID_CUDA_NameCuEventW, scorep_cuda_nvtxNameCuEventW );
+
+    /* OpenCL, not yet implemented
+     * export_table->GetModuleFunctionTable( NVTX_CB_MODULE_OPENCL, function_table, &out_size );
+     * INJECT_FUNCTION_IF_POSSBILE( NVTX_CBID_OPENCL_NameClDeviceA, scorep_cuda_nvtxNameClDeviceA );
+     * INJECT_FUNCTION_IF_POSSBILE( NVTX_CBID_OPENCL_NameClDeviceW, scorep_cuda_nvtxNameClDeviceW );
+     * INJECT_FUNCTION_IF_POSSBILE( NVTX_CBID_OPENCL_NameClContextA, scorep_cuda_nvtxNameClContextA );
+     * INJECT_FUNCTION_IF_POSSBILE( NVTX_CBID_OPENCL_NameClContextW, scorep_cuda_nvtxNameClContextW );
+     * INJECT_FUNCTION_IF_POSSBILE( NVTX_CBID_OPENCL_NameClCommandQueueA, scorep_cuda_nvtxNameClCommandQueueA );
+     * INJECT_FUNCTION_IF_POSSBILE( NVTX_CBID_OPENCL_NameClCommandQueueW, scorep_cuda_nvtxNameClCommandQueueW );
+     * INJECT_FUNCTION_IF_POSSBILE( NVTX_CBID_OPENCL_NameClMemObjectA, scorep_cuda_nvtxNameClMemObjectA );
+     * INJECT_FUNCTION_IF_POSSBILE( NVTX_CBID_OPENCL_NameClMemObjectW, scorep_cuda_nvtxNameClMemObjectW );
+     * INJECT_FUNCTION_IF_POSSBILE( NVTX_CBID_OPENCL_NameClSamplerA, scorep_cuda_nvtxNameClSamplerA );
+     * INJECT_FUNCTION_IF_POSSBILE( NVTX_CBID_OPENCL_NameClSamplerW, scorep_cuda_nvtxNameClSamplerW );
+     * INJECT_FUNCTION_IF_POSSBILE( NVTX_CBID_OPENCL_NameClProgramA, scorep_cuda_nvtxNameClProgramA );
+     * INJECT_FUNCTION_IF_POSSBILE( NVTX_CBID_OPENCL_NameClProgramW, scorep_cuda_nvtxNameClProgramW );
+     * INJECT_FUNCTION_IF_POSSBILE( NVTX_CBID_OPENCL_NameClEventA, scorep_cuda_nvtxNameClEventA );
+     * INJECT_FUNCTION_IF_POSSBILE( NVTX_CBID_OPENCL_NameClEventW, scorep_cuda_nvtxNameClEventW ); */
+
+    export_table->GetModuleFunctionTable( NVTX_CB_MODULE_CUDART, &function_table, NULL );
+    // not implemented: *function_table[ NVTX_CBID_CUDART_NameCudaDeviceA ] = (NvtxFunctionPointer) scorep_cuda_nvtxNameCudaDeviceA;
+    // not implemented: *function_table[ NVTX_CBID_CUDART_NameCudaDeviceW ] = (NvtxFunctionPointer) scorep_cuda_nvtxNameCudaDeviceW;
+    INJECT_FUNCTION_IF_POSSBILE( NVTX_CBID_CUDART_NameCudaStreamA, scorep_cuda_nvtxNameCudaStreamA );
+    INJECT_FUNCTION_IF_POSSBILE( NVTX_CBID_CUDART_NameCudaStreamW, scorep_cuda_nvtxNameCudaStreamW );
+    // not implemented: *function_table[ NVTX_CBID_CUDART_NameCudaEventA ] = (NvtxFunctionPointer) scorep_cuda_nvtxNameCudaEventA;
+    // not implemented: *function_table[ NVTX_CBID_CUDART_NameCudaEventW ] = (NvtxFunctionPointer) scorep_cuda_nvtxNameCudaEventW;
+
+    export_table->GetModuleFunctionTable( NVTX_CB_MODULE_CORE2, &function_table, NULL );
+    INJECT_FUNCTION_IF_POSSBILE( NVTX_CBID_CORE2_DomainMarkEx, scorep_cuda_nvtxDomainMarkEx );
+    INJECT_FUNCTION_IF_POSSBILE( NVTX_CBID_CORE2_DomainRangeStartEx, scorep_cuda_nvtxDomainRangeStartEx );
+    INJECT_FUNCTION_IF_POSSBILE( NVTX_CBID_CORE2_DomainRangeEnd, scorep_cuda_nvtxDomainRangeEnd );
+    INJECT_FUNCTION_IF_POSSBILE( NVTX_CBID_CORE2_DomainRangePushEx, scorep_cuda_nvtxDomainRangePushEx );
+    INJECT_FUNCTION_IF_POSSBILE( NVTX_CBID_CORE2_DomainRangePop, scorep_cuda_nvtxDomainRangePop );
+    INJECT_FUNCTION_IF_POSSBILE( NVTX_CBID_CORE2_DomainResourceCreate, scorep_cuda_nvtxDomainResourceCreate );
+    INJECT_FUNCTION_IF_POSSBILE( NVTX_CBID_CORE2_DomainResourceDestroy, scorep_cuda_nvtxDomainResourceDestroy );
+    INJECT_FUNCTION_IF_POSSBILE( NVTX_CBID_CORE2_DomainNameCategoryA, scorep_cuda_nvtxDomainNameCategoryA );
+    INJECT_FUNCTION_IF_POSSBILE( NVTX_CBID_CORE2_DomainNameCategoryW, scorep_cuda_nvtxDomainNameCategoryW );
+    INJECT_FUNCTION_IF_POSSBILE( NVTX_CBID_CORE2_DomainRegisterStringA, scorep_cuda_nvtxDomainRegisterStringA );
+    INJECT_FUNCTION_IF_POSSBILE( NVTX_CBID_CORE2_DomainRegisterStringW, scorep_cuda_nvtxDomainRegisterStringW );
+    INJECT_FUNCTION_IF_POSSBILE( NVTX_CBID_CORE2_DomainCreateA, scorep_cuda_nvtxDomainCreateA );
+    INJECT_FUNCTION_IF_POSSBILE( NVTX_CBID_CORE2_DomainCreateW, scorep_cuda_nvtxDomainCreateW );
+    INJECT_FUNCTION_IF_POSSBILE( NVTX_CBID_CORE2_DomainDestroy, scorep_cuda_nvtxDomainDestroy );
+    INJECT_FUNCTION_IF_POSSBILE( NVTX_CBID_CORE2_Initialize, scorep_cuda_nvtxInitialize );
+
+    /* Sync, not yet implemented
+     * export_table->GetModuleFunctionTable( NVTX_CB_MODULE_SYNC, function_table, &out_size );
+     * INJECT_FUNCTION_IF_POSSBILE( NVTX_CBID_SYNC_DomainSyncUserCreate, nvtxDomainSyncUserCreate );
+     * INJECT_FUNCTION_IF_POSSBILE( NVTX_CBID_SYNC_DomainSyncUserDestroy, nvtxDomainSyncUserDestroy );
+     * INJECT_FUNCTION_IF_POSSBILE( NVTX_CBID_SYNC_DomainSyncUserAcquireStart, nvtxDomainSyncUserAcquireStart );
+     * INJECT_FUNCTION_IF_POSSBILE( NVTX_CBID_SYNC_DomainSyncUserAcquireFailed, nvtxDomainSyncUserAcquireFailed );
+     * INJECT_FUNCTION_IF_POSSBILE( NVTX_CBID_SYNC_DomainSyncUserAcquireSuccess, nvtxDomainSyncUserAcquireSuccess );
+     * INJECT_FUNCTION_IF_POSSBILE( NVTX_CBID_SYNC_DomainSyncUserReleasing, nvtxDomainSyncUserReleasing ); */
+
+    #undef INJECT_FUNCTION_IF_POSSBILE
+    SCOREP_NVTX_UNLOCK();
+    SCOREP_IN_MEASUREMENT_DECREMENT();
+    return 1;
+}
+
+#ifdef SCOREP_SHARED_BUILD
+int
+InitializeInjectionNvtx( NvtxGetExportTableFunc_t getExportTable )
+{
+    return InitializeInjectionNvtx2( getExportTable );
+}
+#endif /* SCOREP_SHARED_BUILD */
+#endif /* HAVE( NVTX_V3 ) */
+#endif /* HAVE( NVTX_SUPPORT ) */

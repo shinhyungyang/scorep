@@ -1,7 +1,7 @@
 /*
  * This file is part of the Score-P software (http://www.score-p.org)
  *
- * Copyright (c) 2021-2023,
+ * Copyright (c) 2021-2024,
  * Forschungszentrum Juelich GmbH, Germany
  *
  * This software may be modified and distributed under the terms of
@@ -64,7 +64,8 @@ func_addr_hash_match_function_name( const char* functionName )
            || ( strstr( functionName, ".omp_outlined" ) )
            || ( strstr( functionName, ".omp_outlined_debug__" ) )
            || ( fnmatch( "__nv_*_F[0-9]*L[0-9]*_[0-9]*", functionName, 0 ) == 0 )
-           || ( fnmatch( "__sti___[0-9]*__*", functionName, 0 ) == 0 );
+           || ( fnmatch( "__sti___[0-9]*__*", functionName, 0 ) == 0 )
+           || ( fnmatch( "nvtx*", functionName, 0 ) == 0 );
 }
 
 static inline bool
