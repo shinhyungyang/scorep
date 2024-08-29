@@ -436,7 +436,7 @@ AS_IF([test "x${with_libnvToolsExt}" = "x" &&
        test "x${with_libnvToolsExt_lib}" = "x"],
     [with_libnvToolsExt="${nvtx_root}"])
 
-AFS_EXTERNAL_LIB([nvToolsExt], [_NVTX_LIB_CHECK])
+AFS_EXTERNAL_LIB([nvToolsExt], [_NVTX_LIB_CHECK], [""])
 ]) # _CHECK_NVTX
 
 # _NVTX_LIB_CHECK()
