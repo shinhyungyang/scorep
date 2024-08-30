@@ -455,13 +455,19 @@ AS_IF([test "x${_afs_lib_prevent_check}" = xyes],
     [CPPFLAGS_save=$CPPFLAGS
      CPPFLAGS="$CPPFLAGS ${_afs_lib_CPPFLAGS}"
      AC_CHECK_HEADER([nvtx3/nvToolsExt.h],
-         [LTLDFLAGS=$_afs_lib_LDFLAGS
-          LTLIBS=$_afs_lib_LIBS
-          AFS_LTLINK_LA_IFELSE([_LIBNVTOOLSEXT_MAIN], [_LIBNVTOOLSEXT3_LA],
-              [scorep_have_nvtx="yes (v3)"
-               scorep_have_nvtx_v3="yes"
-               scorep_have_nvtx_summary="${_afs_lib_LDFLAGS:+using $_afs_lib_LDFLAGS}${_afs_lib_CPPFLAGS:+ and $_afs_lib_CPPFLAGS}"],
-              [scorep_have_nvtx_summary="cannot build test against $_afs_lib_LIBS"])],
+         [# Compilers are reported to inject --no-allow-shlib-undefined
+          # which requires to additionally link -ldl to let this NVTX v3
+          # check succeeed.
+          for extra_ldflags in "" "-ldl"; do
+              LTLDFLAGS="$_afs_lib_LDFLAGS $extra_ldflags"
+              LTLIBS=$_afs_lib_LIBS
+              AFS_LTLINK_LA_IFELSE([_LIBNVTOOLSEXT_MAIN], [_LIBNVTOOLSEXT3_LA],
+                  [scorep_have_nvtx="yes (v3)"
+                   scorep_have_nvtx_v3="yes"
+                   scorep_have_nvtx_summary="${_afs_lib_LDFLAGS:+using $_afs_lib_LDFLAGS}${_afs_lib_CPPFLAGS:+ and $_afs_lib_CPPFLAGS}"
+                   break],
+                  [scorep_have_nvtx_summary="cannot build test against $_afs_lib_LIBS"])
+          done],
          [scorep_have_nvtx_summary="missing nvtx3/nvToolsExt.h"])
      AS_IF([test "x${scorep_have_nvtx}" = "xno"],
          [AC_CHECK_HEADER([nvToolsExt.h],
