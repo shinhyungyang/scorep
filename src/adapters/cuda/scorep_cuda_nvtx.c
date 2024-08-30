@@ -61,7 +61,7 @@ static UTILS_Mutex scorep_nvtx_mutex;
 #else
 #define DECLARE_NVTX_WRAPPER( returnType, origSignature, ... ) \
     NVTX_DECLSPEC returnType NVTX_API \
-    nvtx ## origSignature( __VA_ARGS__ )
+    origSignature( __VA_ARGS__ )
 #define CALL_NVTX_WRAPPER( call ) call
 #endif
 
