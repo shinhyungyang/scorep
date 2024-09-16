@@ -123,8 +123,7 @@ scorep_openacc_handle_enter_region( acc_prof_info*  profInfo,
                                           profInfo->src_file );
 
     // pass Score-P region handle to corresponding leave
-    // causes compiler warning!!!
-    eventInfo->other_event.tool_info = ( void* )( long )region_handle;
+    eventInfo->other_event.tool_info = ( void* )( uintptr_t )region_handle;
 
     // add an attribute, if this is an implicit region
     if ( eventInfo->other_event.implicit )
@@ -165,7 +164,7 @@ handle_leave_region( acc_prof_info*  profInfo,
 
     if ( eventInfo )
     {
-        regionHandle = ( uint32_t )eventInfo->other_event.tool_info;
+        regionHandle = ( uintptr_t )eventInfo->other_event.tool_info;
     }
 
     if ( regionHandle )
