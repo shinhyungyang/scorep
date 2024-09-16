@@ -60,31 +60,31 @@ do
         do
 
           # kernel properties are not recorded if enqueue is not enabled
-          if [ "$kernelprops" = ",kernel_properties" -a x"$enqueue" = "x" ]; then
+          if [ "$kernelprops" = ",kernel_properties" ] && [ "$enqueue" = "" ]; then
             continue
           fi
 
           for varnames in "" ",variable_names"
           do
             # variable names are not recorded if neither regions nor upload/download are enabled
-            if [ "$varnames" = ",variable_names" -a "x$region" = "x" -a x"$enqueue" = "x" ]; then
+            if [ "$varnames" = ",variable_names" ] && [ "$region" = "" ] && [ "$enqueue" = "" ]; then
               continue
             fi
 
             features=${region}
 
             # check for leading commas
-            if [ "x$features" = "x" -a "$wait" = ",wait" ]; then
+            if [ "$features" = "" ] && [ "$wait" = ",wait" ]; then
               wait="wait"
             fi
             features="${features}${wait}"
 
-            if [ "x$features" = "x" -a "${enqueue}" = ",enqueue" ]; then
+            if [ "$features" = "" ] && [ "${enqueue}" = ",enqueue" ]; then
               enqueue="enqueue"
             fi
             features="${features}${enqueue}"
 
-            if [ "x$features" = "x" -a "${devicealloc}" = ",device_alloc" ]; then
+            if [ "$features" = "" ] && [ "${devicealloc}" = ",device_alloc" ]; then
               devicealloc="device_alloc"
             fi
             features="${features}${devicealloc}${kernelprops}${varnames}"
@@ -106,7 +106,7 @@ do
             num_acc_calls=$($OTF2_PRINT "$OPENACC_EXP_DIR"/traces.otf2 | LC_ALL=C grep -c 'acc_')
             rm -rf "$OPENACC_EXP_DIR"
 
-            if [ $num_acc_calls -eq 0 -a "x$features" != "x" ]; then
+            if [ "$num_acc_calls" -eq 0 ] && [ "$features" != "" ]; then
                 echo "OpenACC trace file does not contain OpenACC events"
                 #exit 1
             fi
