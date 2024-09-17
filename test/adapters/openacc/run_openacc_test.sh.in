@@ -14,9 +14,25 @@
 
 ## file       run_openacc_test.sh
 
+OPENACC_EXE=openacc_test
+OPENACC_OUT=openacc_test.out
+OPENACC_EXP_DIR=openacc_test_exp_dir
+
+cleanup()
+{
+    if [ "$1" != 0 ]; then
+        mv "$OPENACC_EXE" "$OPENACC_EXE".err
+        mv "$OPENACC_OUT" "$OPENACC_OUT".err
+        mv "$OPENACC_EXP_DIR" "$OPENACC_EXP_DIR".err
+        echo "run_openacc_test.sh failed, see openacc*.err files (to be removed manually)."
+    fi
+    rm -rf "$OPENACC_EXE" "$OPENACC_OUT" "$OPENACC_EXP_DIR" scorep-measurement-tmp
+}
+trap 'cleanup "$?"' EXIT
+
 echo "===== OpenACC Compile and Run Test ====="
 
-rm -f openacc_test
+cleanup 0
 
 # Get SRC_ROOT
 SRC_ROOT="@abs_top_srcdir@/.."
@@ -24,17 +40,12 @@ SRC_ROOT="@abs_top_srcdir@/.."
 # Get otf2print tool
 OTF2_PRINT="@OTF2_BINDIR@/otf2-print"
 
-RESULT_DIR=$PWD/scorep-openacc
-
 OTF2_LIBDIR="$PWD/../vendor/otf2/build-backend/@LT_OBJDIR@"
 CUBEW_LIBDIR="$PWD/../vendor/cubew/build-backend/@LT_OBJDIR@"
 CUBELIB_LIBDIR="$PWD/../vendor/cubelib/build-backend/@LT_OBJDIR@"
 export @SYS_LIB_SEARCH_PATH_VAR@="$PWD/@LT_OBJDIR@:${OTF2_LIBDIR}:${CUBEW_LIBDIR}:${CUBELIB_LIBDIR}${@SYS_LIB_SEARCH_PATH_VAR@:+:${@SYS_LIB_SEARCH_PATH_VAR@}}"
 
-./scorep -v --build-check --nocompiler --openacc @CC@ @OPENACC_CFLAGS@ $SRC_ROOT/test/adapters/openacc/openacc_test.c -o openacc_test -I.
-
-# Remove old result dir (if any)
-rm -rf $RESULT_DIR
+./scorep -v --build-check --nocompiler --openacc @CC@ @OPENACC_CFLAGS@ $SRC_ROOT/test/adapters/openacc/openacc_test.c -o "$OPENACC_EXE" -I.
 
 features=""
 for region in "" "regions"
@@ -49,45 +60,42 @@ do
         do
 
           # kernel properties are not recorded if enqueue is not enabled
-          if [ "$kernelprops" = ",kernel_properties" -a x"$enqueue" = "x" ]; then
+          if [ "$kernelprops" = ",kernel_properties" ] && [ "$enqueue" = "" ]; then
             continue
           fi
 
           for varnames in "" ",variable_names"
           do
             # variable names are not recorded if neither regions nor upload/download are enabled
-            if [ "$varnames" = ",variable_names" -a "x$region" = "x" -a x"$enqueue" = "x" ]; then
+            if [ "$varnames" = ",variable_names" ] && [ "$region" = "" ] && [ "$enqueue" = "" ]; then
               continue
             fi
 
             features=${region}
 
             # check for leading commas
-            if [ "x$features" = "x" -a "$wait" = ",wait" ]; then
+            if [ "$features" = "" ] && [ "$wait" = ",wait" ]; then
               wait="wait"
             fi
             features="${features}${wait}"
 
-            if [ "x$features" = "x" -a "${enqueue}" = ",enqueue" ]; then
+            if [ "$features" = "" ] && [ "${enqueue}" = ",enqueue" ]; then
               enqueue="enqueue"
             fi
             features="${features}${enqueue}"
 
-            if [ "x$features" = "x" -a "${devicealloc}" = ",device_alloc" ]; then
+            if [ "$features" = "" ] && [ "${devicealloc}" = ",device_alloc" ]; then
               devicealloc="device_alloc"
             fi
             features="${features}${devicealloc}${kernelprops}${varnames}"
 
-            # Remove old result dir (if any)
-            rm -rf $RESULT_DIR
-
-            echo "Testing combination '${features}':"
+            echo "Testing combination '${features}':" | tee -a "$OPENACC_OUT"
             SCOREP_OPENACC_ENABLE=${features} \
             ACC_PROFLIB=$PWD/.libs/libscorep_adapter_openacc_event.so \
             SCOREP_OVERWRITE_EXPERIMENT_DIRECTORY=true \
             SCOREP_ENABLE_TRACING=yes \
-            SCOREP_EXPERIMENT_DIRECTORY=$RESULT_DIR \
-            ./openacc_test > openacc_test.out 2>&1
+            SCOREP_EXPERIMENT_DIRECTORY=$OPENACC_EXP_DIR \
+            ./"$OPENACC_EXE" >> "$OPENACC_OUT" 2>&1
             res=$?
 
             if [ $res -ne 0 ]; then
@@ -95,11 +103,11 @@ do
                 exit $res
             fi
 
-            num_acc_calls=$($OTF2_PRINT $RESULT_DIR/traces.otf2 | LC_ALL=C grep -c 'acc_')
+            num_acc_calls=$($OTF2_PRINT "$OPENACC_EXP_DIR"/traces.otf2 | LC_ALL=C grep -c 'acc_')
+            rm -rf "$OPENACC_EXP_DIR"
 
-            if [ $num_acc_calls -eq 0 -a "x$features" != "x" ]; then
+            if [ "$num_acc_calls" -eq 0 ] && [ "$features" != "" ]; then
                 echo "OpenACC trace file does not contain OpenACC events"
-                rm -rf scorep-measurement-tmp
                 #exit 1
             fi
           done #kernelprops
