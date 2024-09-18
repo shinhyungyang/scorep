@@ -164,18 +164,27 @@ $(noinst_lt_needs_libs):
 # defines are generated empty, as the installed shared libs are
 # supposed to be self-contained, see rule
 # `shared-objects-self-contained`.
+#
+# Note that if <dir> is contained in $(SYS_LIB_DLSEARCH_PATH_SPEC), it will
+# be omitted in $(AFS_PACKAGE_BUILD_NAME)_LIBDIR and
+# $(AFS_PACKAGE_BUILD_NAME)_<lib>_NEEDS_LIBDIRS to prevent errors in sysroot
+# builds.
 
 CLEANFILES += $(CONFIG_EXTERNAL_LIBS_HPP)
 
 $(CONFIG_EXTERNAL_LIBS_HPP): Makefile ensure_ltlibraries_canonicalized
 	$(AM_V_GEN): > $@; \
+	config_libdir="$(libdir)"; \
+	for i in $(SYS_LIB_DLSEARCH_PATH_SPEC); do \
+	    if [ "$$i" = "$(libdir)" ]; then config_libdir=""; break; fi; \
+	done; \
 	printf '%s\n%s\n%s\n%s\n%s\n%s\n' \
 	       "#ifndef $(CONFIG_EXTERNAL_LIBS_HPP_INCLUDE_GUARD)" \
 	       "#define $(CONFIG_EXTERNAL_LIBS_HPP_INCLUDE_GUARD)" \
 	       "#include <generate-library-dependencies-la-object.hpp>" \
 	       "#include <map>" \
 	       "#define $(AFS_PACKAGE_BUILD_NAME)_BUILDDIR \"$(abs_builddir)\"" \
-	       "#define $(AFS_PACKAGE_BUILD_NAME)_LIBDIR \"$(libdir)\"" >> $@; \
+	       "#define $(AFS_PACKAGE_BUILD_NAME)_LIBDIR \"$$config_libdir\"" >> $@; \
 	$(MAKE) gen_config_external_libs_defines; \
 	printf '%s\n%s\n%s\n' \
 	       "static void" \
@@ -203,7 +212,8 @@ if HAVE_BUILD_STATIC_LT_LIBRARIES
 lib_lt_needs_libdirs = $(lib_LTLIBRARIES:.la=_la_LDFLAGS)
 $(lib_lt_needs_libdirs):
 	@needs_rpaths_var=$$(echo "$@" | $(SED) "s|_la_LDFLAGS|_NEEDS_LIBDIRS|"); \
-	needs_rpaths_value=$$(echo "$($@) $(LDFLAGS)" | $(AWK) ' \
+	needs_rpaths_value=$$(echo "$($@) $(LDFLAGS)" | $(AWK) \
+	    -v dlsearch_path="$(SYS_LIB_DLSEARCH_PATH_SPEC)" ' \
 	    { \
 	        gsub(/-R +/, "-R"); \
 	        for ( i=1; i<=NF; i++ ) { \
@@ -217,7 +227,16 @@ $(lib_lt_needs_libdirs):
 	        } \
 	    } \
 	    END { \
+	        split(dlsearch_path, dlsearch_arr); \
 	        for ( i=0; i<idx; i++ ) { \
+	            is_dlsearch_path = 0; \
+	            for ( j in dlsearch_arr ) { \
+	                if ( paths[i] == dlsearch_arr[j] ) { \
+	                    is_dlsearch_path = 1; \
+	                    break; \
+	                } \
+	            } \
+	            if ( is_dlsearch_path ) { continue } \
 	            if ( length( result ) == 0 ) { \
 	                result=paths[i] \
 	            } else { \
