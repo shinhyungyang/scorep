@@ -210,6 +210,7 @@ Bugfixes:
 - Avoid creating group/communicator/window definitions with no members
   and no global paradigm group. This affects the CUDA, Kokkos, and
   OpenCL adapters.
+- Do not fail writing a trace with too many definitions.
 
 ------------------- Released version 8.4 -----------------------------
 
