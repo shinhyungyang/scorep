@@ -146,8 +146,8 @@ $(noinst_lt_needs_libs):
 # libraries, intended to be used by the <pkg>-config tools. The
 # information is provided via the rules $(lib_lt_needs_libdirs)`,
 # `$(lib_lt_needs_libs)` and inserted into a std::map<std::string,
-# la_object> via the rule `$(gen_config_external_libs_body)`, see
-# below and the file generate-library-dependencies-la-object.hpp.
+# LibraryData> via the rule `$(gen_config_external_libs_body)`, see
+# below and the file library_data.hpp.
 #
 # For each installed static libtool library <lib>.a, we provide two
 # preprocessor defines, containing information about all external
@@ -181,14 +181,14 @@ $(CONFIG_EXTERNAL_LIBS_HPP): Makefile ensure_ltlibraries_canonicalized
 	printf '%s\n%s\n%s\n%s\n%s\n%s\n' \
 	       "#ifndef $(CONFIG_EXTERNAL_LIBS_HPP_INCLUDE_GUARD)" \
 	       "#define $(CONFIG_EXTERNAL_LIBS_HPP_INCLUDE_GUARD)" \
-	       "#include <generate-library-dependencies-la-object.hpp>" \
+	       "#include <library_data.hpp>" \
 	       "#include <map>" \
 	       "#define $(AFS_PACKAGE_BUILD_NAME)_BUILDDIR \"$(abs_builddir)\"" \
 	       "#define $(AFS_PACKAGE_BUILD_NAME)_LIBDIR \"$$config_libdir\"" >> $@; \
 	$(MAKE) gen_config_external_libs_defines; \
 	printf '%s\n%s\n%s\n' \
 	       "static void" \
-	       "add_library_dependencies_$(AFS_PACKAGE_BUILD_name)( std::map<std::string, la_object>* la_objects )" \
+	       "add_library_dependencies_$(AFS_PACKAGE_BUILD_name)( std::map<std::string, LibraryData>* library_objects )" \
 	       "{" >> $@; \
 	test -z "$(gen_config_external_libs_body)" || $(MAKE) $(gen_config_external_libs_body); \
 	printf '%s\n%s\n' \
@@ -199,7 +199,7 @@ gen_config_external_libs_defines: $(lib_lt_needs_libdirs) $(lib_lt_needs_libs)
 
 gen_config_external_libs_body = $(lib_LTLIBRARIES:.la=)
 $(gen_config_external_libs_body):
-	@echo "    (*la_objects)[ \"$@\" ] = la_object( \"$@\"," \
+	@echo "    (*library_objects)[ \"$@\" ] = LibraryData( \"$@\"," \
 	      "$(AFS_PACKAGE_BUILD_NAME)_BUILDDIR," \
 	      "$(AFS_PACKAGE_BUILD_NAME)_LIBDIR," \
 	      "$(AFS_PACKAGE_BUILD_NAME)_$@_NEEDS_LIBS," \

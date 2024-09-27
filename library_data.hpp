@@ -1,5 +1,5 @@
-#ifndef COMMON_GENERATE_LIBRARY_DEPENDENCIES_LA_OBJECT_HPP
-#define COMMON_GENERATE_LIBRARY_DEPENDENCIES_LA_OBJECT_HPP
+#ifndef COMMON_LIBRARY_DATA_HPP
+#define COMMON_LIBRARY_DATA_HPP
 
 /*
  * This file is part of the Score-P software ecosystem (http://www.score-p.org)
@@ -49,20 +49,20 @@
  * see Makefile-rpaths.inc.am) and the packages' config tools. To make
  * usage easier, members are public.
  */
-struct la_object
+struct LibraryData
 {
     /**
      * Empty constructor. Needed to allow copies of STL containers containing this
      * class
      */
-    la_object( void )
+    LibraryData( void )
     {
     }
 
     /**
      * Copy constructor.
      */
-    la_object( const la_object& source )
+    LibraryData( const LibraryData& source )
         :
         m_lib_name( source.m_lib_name ),
         m_build_dir( source.m_build_dir ),
@@ -89,11 +89,11 @@ struct la_object
      *        use libfoo's @a needsLibs. Empty for shared builds.
      *        Converted to a container of separate paths.
      */
-    la_object( const std::string& libName,
-               const std::string& buildDir,
-               const std::string& installDir,
-               const std::string& needsLibs,
-               const std::string& needsLibdirs )
+    LibraryData( const std::string& libName,
+                 const std::string& buildDir,
+                 const std::string& installDir,
+                 const std::string& needsLibs,
+                 const std::string& needsLibdirs )
         :
         m_lib_name( libName ),
         m_build_dir( buildDir ),
@@ -108,7 +108,7 @@ struct la_object
      * Destructor.
      */
     virtual
-    ~la_object()
+    ~LibraryData()
     {
     }
 
@@ -148,4 +148,4 @@ private:
     }
 };
 
-#endif /* COMMON_GENERATE_LIBRARY_DEPENDENCIES_LA_OBJECT_HPP */
+#endif /* COMMON_LIBRARY_DATA_HPP */

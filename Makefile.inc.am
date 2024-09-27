@@ -37,9 +37,9 @@ DISTCLEANFILES =
 
 # Testing framework
 EXTRA_DIST += $(srcdir)/build-config/common/generate-config-backend-for-frontend.sh \
-              $(srcdir)/build-config/common/generate-library-dependencies-la-object.hpp \
               $(srcdir)/build-config/common/generate-library-version.sh \
               $(srcdir)/build-config/common/generate-package-version.sh \
+              $(srcdir)/build-config/common/library-data.hpp \
               $(srcdir)/common/utils/test/cutest/CuTest.c \
               $(srcdir)/common/utils/test/cutest/CuTest.h \
               $(srcdir)/common/utils/test/cutest/license.txt \
