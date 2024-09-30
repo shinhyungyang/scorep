@@ -763,13 +763,6 @@ various Score-P components.
     to '_Unwind_Resume'. Adding -lstdc++ to the original link line
     solves this issue.
 
-  - In cases where Score-P was compiled with PAPI support, the
-    instrumenter option --static (only available for '--enable-shared
-    --enable-static' builds) explicitly adds the static PAPI library to
-    the link line which may cause 'undefined reference' errors. This
-    may happen for other libraries that were requested at configure time
-    as well.
-
   - The Cube metric hierarchy remapping specification file shipped with
     Score-P currently classifies all MPI request finalization calls (i.e.,
     MPI_Test[all|any|some] and MPI_Wait[all|any|some]) as point-to-point,

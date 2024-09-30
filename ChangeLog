@@ -98,6 +98,9 @@ Compatibility:
   but not the combination of both in one installation. The default
   changed to shared. For a pure static build, use `--enable-static
   --disable-shared`.
+  With an either shared or static installation, the `scorep` and
+  `scorep-config` options `--static` and `--dynamic` became
+  meaningless and were removed.
 
 Bugfixes:
 

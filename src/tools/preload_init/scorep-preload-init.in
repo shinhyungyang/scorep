@@ -345,7 +345,7 @@ libscorep_preload=${RESULTDIR}/$(
 
 # we still need to preload all event adapters, so that library interposition works
 LD_PRELOAD_VALUE="${libscorep_preload}"
-# --dynamic gives us full pathes to the shared objects
+# --preload-libs gives us full paths to the shared objects
 for event_lib in `${SCOREP_CONFIG} --preload-libs`
 do
     LD_PRELOAD_VALUE="${LD_PRELOAD_VALUE}:${event_lib}"

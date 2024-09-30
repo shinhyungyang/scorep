@@ -195,10 +195,6 @@ public:
     getVerbosity( void );
     bool
     isBuildCheck( void );
-    bool
-    enforceStaticLinking( void );
-    bool
-    enforceDynamicLinking( void );
 
     /**
        Returns true if the link target is a shared library.
@@ -414,15 +410,6 @@ private:
        does only dependency generation
      */
     bool m_do_nothing;
-
-    /**
-       Specification of static or dynamic linking of Score-P libraries into the
-       application.
-       Enabled:  link static.
-       Detect:   use compiler default.
-       Disabled: link dynamic libraries if possible.
-     */
-    instrumentation_usage_t m_link_static;
 
     /* --------------------------------------------
        Input command elements

@@ -67,7 +67,6 @@ SCOREP_Instrumenter_CmdLine::SCOREP_Instrumenter_CmdLine( SCOREP_Instrumenter_In
     m_is_compiling         = true; // Opposite recognized if no source files in input
     m_is_linking           = true; // Opposite recognized on existence of -c or -E flag
     m_do_nothing           = false;
-    m_link_static          = detect;
 
     /* Input command elements */
     m_compiler_name                  = "";
@@ -279,18 +278,6 @@ SCOREP_Instrumenter_CmdLine::isBuildCheck( void )
 }
 
 bool
-SCOREP_Instrumenter_CmdLine::enforceStaticLinking( void )
-{
-    return m_link_static == enabled;
-}
-
-bool
-SCOREP_Instrumenter_CmdLine::enforceDynamicLinking( void )
-{
-    return m_link_static == disabled;
-}
-
-bool
 SCOREP_Instrumenter_CmdLine::isTargetSharedLib( void )
 {
     return m_target_is_shared_lib;
@@ -475,42 +462,6 @@ SCOREP_Instrumenter_CmdLine::parse_parameter( const std::string& arg )
     {
         return scorep_parse_mode_param;
     }
-
-    /* Link options */
-#if defined( SCOREP_STATIC_BUILD ) && defined( SCOREP_SHARED_BUILD )
-    else if ( arg == "--static" )
-    {
-        m_link_static = enabled;
-        return scorep_parse_mode_param;
-    }
-    else if ( arg == "--dynamic" )
-    {
-        m_link_static = disabled;
-        return scorep_parse_mode_param;
-    }
-#elif defined( SCOREP_STATIC_BUILD )
-    else if ( arg == "--static" )
-    {
-        return scorep_parse_mode_param;
-    }
-    else if ( arg == "--dynamic" )
-    {
-        std::cerr << "[Score-P] ERROR: Dynamic linking is not possible\n"
-                  << "                 This installation contains no shared Score-P libraries" << std::endl;
-        exit( EXIT_FAILURE );
-    }
-#elif defined( SCOREP_SHARED_BUILD )
-    else if ( arg == "--static" )
-    {
-        std::cerr << "[Score-P] ERROR: Static linking is not possible\n"
-                  << "                 This installation contains no static Score-P libraries" << std::endl;
-        exit( EXIT_FAILURE );
-    }
-    else if ( arg == "--dynamic" )
-    {
-        return scorep_parse_mode_param;
-    }
-#endif
 
     /* Misc parameters */
     else if ( arg == "--version" )

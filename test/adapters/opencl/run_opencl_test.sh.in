@@ -6,6 +6,9 @@
 ## Copyright (c) 2014-2015, 2019, 2021-2022, 2024,
 ## Technische Universitaet Dresden, Germany
 ##
+## Copyright (c) 2024,
+## Forschungszentrum Juelich GmbH, Germany
+##
 ## See the COPYING file in the package base directory for details.
 ##
 
@@ -42,7 +45,7 @@ CUBEW_LIBDIR="$PWD/../vendor/cubew/build-backend/@LT_OBJDIR@"
 CUBELIB_LIBDIR="$PWD/../vendor/cubelib/build-backend/@LT_OBJDIR@"
 export @SYS_LIB_SEARCH_PATH_VAR@="$PWD/@LT_OBJDIR@:${OTF2_LIBDIR}:${CUBEW_LIBDIR}:${CUBELIB_LIBDIR}${@SYS_LIB_SEARCH_PATH_VAR@:+:${@SYS_LIB_SEARCH_PATH_VAR@}}"
 
-./scorep --static -v --build-check @CC@ $OPENCL_TEST_SRC_DIR/opencl_test.c -o opencl_test @OPENCL_CPPFLAGS@ @OPENCL_LDFLAGS_FOR_TESTS@ @OPENCL_LIBS@
+./scorep -v --build-check @CC@ $OPENCL_TEST_SRC_DIR/opencl_test.c -o opencl_test @OPENCL_CPPFLAGS@ @OPENCL_LDFLAGS_FOR_TESTS@ @OPENCL_LIBS@
 
 echo "Output of OpenCL test can be found in $RESULT_DIR"
 

@@ -7,7 +7,7 @@
  * Copyright (c) 2009-2013,
  * Gesellschaft fuer numerische Simulation mbH Braunschweig, Germany
  *
- * Copyright (c) 2009-2017, 2019, 2021,
+ * Copyright (c) 2009-2017, 2019, 2021, 2024,
  * Technische Universitaet Dresden, Germany
  *
  * Copyright (c) 2009-2013,
@@ -148,9 +148,7 @@ enum
     "   --ldaudit  Prints the linker auditing LD_AUDIT value if supported.\n" \
     "  Options:\n" \
     "   --target   Get flags for specified target, e.g., mic, score.\n" \
-    "   --nvcc     Convert flags to be suitable for the nvcc compiler.\n" \
-    "   --static   Use only static Score-P libraries if possible.\n" \
-    "   --dynamic  Use only dynamic Score-P libraries if possible.\n"
+    "   --nvcc     Convert flags to be suitable for the nvcc compiler.\n"
 
 std::string m_rpath_head      = "";
 std::string m_rpath_delimiter = "";
@@ -220,16 +218,12 @@ main( int    argc,
 {
     int i;
     /* set default mode to mpi */
-    int                    action        = 0;
-    int                    ret           = EXIT_SUCCESS;
-    SCOREP_Config_Language language      = SCOREP_CONFIG_LANGUAGE_C;
-    bool                   nvcc          = false;
-    bool                   install       = true;
-    bool                   allow_dynamic = true;
-    bool                   allow_static  = true;
-#if defined( SCOREP_SHARED_BUILD )
-    bool preload_libs = false;
-#endif
+    int                    action       = 0;
+    int                    ret          = EXIT_SUCCESS;
+    SCOREP_Config_Language language     = SCOREP_CONFIG_LANGUAGE_C;
+    bool                   nvcc         = false;
+    bool                   install      = true;
+    bool                   preload_libs = false;
 
     /* set default target to plain */
     int         target      = TARGET_PLAIN;
@@ -296,10 +290,8 @@ main( int    argc,
         else if ( strcmp( argv[ i ], "--preload-libs" ) == 0 )
         {
 #if defined( SCOREP_SHARED_BUILD )
-            allow_dynamic = true;
-            allow_static  = false;
-            preload_libs  = true;
-            action        = ACTION_EVENT_LIBS;
+            preload_libs = true;
+            action       = ACTION_EVENT_LIBS;
 #else
             std::cerr << "[Score-P] ERROR: Unsupported option: '" << argv[ i ] << "'.\n"
                       << "                 This installation contains no shared Score-P libraries." << std::endl;
@@ -422,14 +414,6 @@ main( int    argc,
         else if ( strcmp( argv[ i ], "--constructor" ) == 0 )
         {
             action = ACTION_CONSTRUCTOR;
-        }
-        else if ( strcmp( argv[ i ], "--dynamic" ) == 0 )
-        {
-            allow_static = false;
-        }
-        else if ( strcmp( argv[ i ], "--static" ) == 0 )
-        {
-            allow_dynamic = false;
         }
         else if ( strcmp( argv[ i ], "--adapter-init" ) == 0 )
         {
@@ -564,18 +548,7 @@ main( int    argc,
 
             case ACTION_LIBS:
             {
-                if ( !allow_dynamic || !allow_static )
-                {
-                    std::deque<std::string> rpath = deps.getRpathFlags( libs, install );
-                    libs = get_full_library_names( deps.getLibraries( libs ),
-                                                   rpath,
-                                                   allow_static,
-                                                   allow_dynamic );
-                }
-                else
-                {
-                    libs = deps.getLibraries( libs );
-                }
+                libs = deps.getLibraries( libs );
                 std::cout << deque_to_string( libs, " ", " ", "" );
                 std::cout.flush();
             }
@@ -612,7 +585,6 @@ main( int    argc,
     SCOREP_Config_MppSystem::current->addLibs( libs, deps );
     SCOREP_Config_ThreadSystem::current->addLibs( libs, deps );
 
-#if defined( SCOREP_SHARED_BUILD )
     if ( preload_libs )
     {
         /* libscorep_measurement.so must be in the event libs */
@@ -623,7 +595,6 @@ main( int    argc,
         libs.push_back( "libscorep_constructor" );
 #endif
     }
-#endif
 
     switch ( action )
     {
@@ -663,13 +634,13 @@ main( int    argc,
         {
             bool honor_libs = !!( action & ACTION_EVENT_LIBS );
             bool honor_deps = !!( action & ACTION_MGMT_LIBS );
-            if ( !allow_dynamic || !allow_static )
+            if ( preload_libs )
             {
                 std::deque<std::string> rpath = deps.getRpathFlags( libs, install, honor_libs, honor_deps );
                 libs = get_full_library_names( deps.getLibraries( libs, honor_libs, honor_deps ),
                                                rpath,
-                                               allow_static,
-                                               allow_dynamic );
+                                               false,
+                                               true );
             }
             else
             {
