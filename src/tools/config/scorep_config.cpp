@@ -150,10 +150,6 @@ enum
     "   --target   Get flags for specified target, e.g., mic, score.\n" \
     "   --nvcc     Convert flags to be suitable for the nvcc compiler.\n"
 
-std::string m_rpath_head      = "";
-std::string m_rpath_delimiter = "";
-std::string m_rpath_tail      = "";
-
 enum
 {
     TARGET_PLAIN = 0,
@@ -173,19 +169,10 @@ print_help( void )
 }
 
 static void
-get_rpath_struct_data( void );
-
-static void
-append_ld_run_path_to_rpath( std::deque<std::string>& rpath );
-
-static void
 treat_linker_flags_for_nvcc( std::string& flags );
 
 static void
 treat_compiler_flags_for_nvcc( std::string& flags );
-
-static std::deque<std::string>
-remove_system_path( const std::deque<std::string>& path_list );
 
 static std::deque<std::string>
 get_full_library_names( const std::deque<std::string>& library_list,
@@ -529,19 +516,11 @@ main( int    argc,
         switch ( action )
         {
             case ACTION_LDFLAGS:
-                get_rpath_struct_data();
                 std::cout << deps.getLDFlags( libs, install );
                 if ( USE_LIBDIR_FLAG )
                 {
-                    std::deque<std::string> libdirs = deps.getLibdirs( libs, install );
-                    append_ld_run_path_to_rpath( libdirs );
-                    libdirs = remove_system_path( libdirs );
-                    str     = deque_to_string( libdirs,
-                                               m_rpath_head + m_rpath_delimiter,
-                                               m_rpath_delimiter,
-                                               m_rpath_tail );
+                    std::cout << deps.getRpathFlags( libs, install );
                 }
-                std::cout << str;
                 std::cout.flush();
                 break;
 
@@ -607,17 +586,10 @@ main( int    argc,
     switch ( action )
     {
         case ACTION_LDFLAGS:
-            get_rpath_struct_data();
             std::cout << deps.getLDFlags( libs, install );
             if ( USE_LIBDIR_FLAG )
             {
-                std::deque<std::string> libdirs = deps.getLibdirs( libs, install );
-                append_ld_run_path_to_rpath( libdirs );
-                libdirs = remove_system_path( libdirs );
-                str     = deque_to_string( libdirs,
-                                           m_rpath_head + m_rpath_delimiter,
-                                           m_rpath_delimiter,
-                                           m_rpath_tail );
+                str = deps.getRpathFlags( libs, install );
             }
             if ( SCOREP_Config_Adapter::isActive() )
             {
@@ -822,76 +794,6 @@ main( int    argc,
     return ret;
 }
 
-
-/** constructor and destructor */
-void
-get_rpath_struct_data( void )
-{
-    // Replace $wl by LIBDIR_FLAG_WL and erase everything from
-    // $libdir on in order to create m_rpath_head and
-    // m_rpath_delimiter. This will work for most and for the relevant
-    // (as we know in 2012-07) values of LIBDIR_FLAG_CC. Some possible
-    // values are (see also ticket 530,
-    // https://silc.zih.tu-dresden.de/trac-silc/ticket/530):
-    // '+b $libdir'
-    // '-L$libdir'
-    // '-R$libdir'
-    // '-rpath $libdir'
-    // '$wl-blibpath:$libdir:'"$aix_libpath"
-    // '$wl+b $wl$libdir'
-    // '$wl-R,$libdir'
-    // '$wl-R $libdir:/usr/lib:/lib'
-    // '$wl-rpath,$libdir'
-    // '$wl--rpath $wl$libdir'
-    // '$wl-rpath $wl$libdir'
-    // '$wl-R $wl$libdir'
-    // For a complete list, check the currently used libtool.m4.
-    std::string            rpath_flag = LIBDIR_FLAG_CC;
-    std::string::size_type index      = 0;
-    while ( true )
-    {
-        index = rpath_flag.find( "$wl", index );
-        if ( index == std::string::npos )
-        {
-            break;
-        }
-        rpath_flag.replace( index, strlen( "$wl" ), LIBDIR_FLAG_WL );
-        ++index;
-    }
-    index = rpath_flag.find( "$libdir", 0 );
-    if ( index != std::string::npos )
-    {
-        rpath_flag.erase( index );
-    }
-
-#if HAVE( PLATFORM_AIX )
-    m_rpath_head      = " " + rpath_flag;
-    m_rpath_delimiter = ":";
-    m_rpath_tail      = ":" LIBDIR_AIX_LIBPATH;
-#else
-    m_rpath_head      = "";
-    m_rpath_delimiter = " " + rpath_flag;
-    m_rpath_tail      = "";
-#endif
-}
-
-/**
- * Add content of the environment variable LD_RUN_PATH to rpath
- */
-static void
-append_ld_run_path_to_rpath( std::deque<std::string>& rpath )
-{
-    /* Get variable values */
-    const char* ld_run_path = getenv( "LD_RUN_PATH" );
-    if ( ld_run_path == NULL || *ld_run_path == '\0' )
-    {
-        return;
-    }
-
-    std::deque<std::string> run_path = string_to_deque( ld_run_path, ":" );
-    rpath.insert( rpath.end(), run_path.begin(), run_path.end() );
-}
-
 static bool
 is_scorep_lib( const std::string& name )
 {
@@ -989,35 +891,6 @@ treat_compiler_flags_for_nvcc( std::string& flags )
     flags = " -Xcompiler " + flags;
 }
 
-
-static std::deque<std::string>
-remove_system_path( const std::deque<std::string>& path_list )
-{
-    std::string             dlsearch_path = SCOREP_BACKEND_SYS_LIB_DLSEARCH_PATH;
-    std::deque<std::string> system_paths  = string_to_deque( dlsearch_path, " " );
-    std::deque<std::string> result_paths;
-
-    std::deque<std::string>::iterator       sys_path;
-    std::deque<std::string>::const_iterator app_path;
-
-    for ( app_path = path_list.begin(); app_path != path_list.end(); app_path++ )
-    {
-        bool is_sys_path = false;
-        for ( sys_path = system_paths.begin();
-              sys_path != system_paths.end(); sys_path++ )
-        {
-            if ( *app_path == *sys_path )
-            {
-                is_sys_path = true;
-            }
-        }
-        if ( !is_sys_path )
-        {
-            result_paths.push_back( *app_path );
-        }
-    }
-    return result_paths;
-}
 
 static void
 print_adapter_init_source( void )

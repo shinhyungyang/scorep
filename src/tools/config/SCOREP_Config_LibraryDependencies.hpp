@@ -103,9 +103,20 @@ public:
                 bool                           install );
 
     /**
+     * Returns a duplicate-free list containing the -Wl,-rpath linker
+     * flags for the @p input_libs and its dependencies.
+     * @param libs    A list of library names.
+     * @param install If true, the install paths are used. If false, the
+     *                build path are prepended (to allow the config tool
+     *                to generate valid link lines at make check time).
+     */
+    std::string
+    getRpathFlags( const std::deque<std::string>& libs,
+                   bool                           install );
+
+    /**
      * Returns a duplicate-free container of paths an executable should search
-     * to find NEEDED libraries. It can be used to construct the rpath flags for
-     * the @a input and its dependencies.
+     * to find NEEDED libraries.
      * @param libs      A list of library names.
      * @param install   If true, the install paths are used. If false, the
      *                  build path are prepended (to allow the config tool
@@ -134,6 +145,19 @@ public:
     addDependency( const std::string& dependentLib,
                    const std::string& dependency );
 
+
+    static std::deque<std::string>
+    RemoveSystemPath( const std::deque<std::string>& paths );
+
+    /**
+     * Append contents of the environment variable LD_RUN_PATH as
+     * container of strings to @p paths, ommitting system linker
+     * search paths, non-absolute paths and those containing
+     * whitespace.
+     */
+    static void
+    AppendLdRunPath( std::deque<std::string>& paths );
+
     // ------------------------------------- Protected functions
 protected:
     /**
@@ -148,6 +172,10 @@ protected:
     // ------------------------------------- Public members
 private:
     std::map< std::string, LibraryData> m_library_objects;
+
+    static std::string m_rpath_head;
+    static std::string m_rpath_delimiter;
+    static std::string m_rpath_tail;
 };
 
 #endif // SCOREP_CONFIG_LIBRARY_DEPENDENCIES_HPP
