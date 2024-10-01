@@ -65,34 +65,27 @@ using namespace std;
 
 SCOREP_Config_LibraryDependencies::SCOREP_Config_LibraryDependencies( void )
 {
-    add_library_dependencies_backend( &m_la_objects );
+    add_library_dependencies_backend( &m_library_objects );
     #if HAVE( MPI_SUPPORT )
-    add_library_dependencies_mpi_backend( &m_la_objects );
+    add_library_dependencies_mpi_backend( &m_library_objects );
     #endif /* MPI_SUPPORT */
     #if HAVE( SHMEM_SUPPORT )
-    add_library_dependencies_shmem_backend( &m_la_objects );
+    add_library_dependencies_shmem_backend( &m_library_objects );
     #endif /* SHMEM_SUPPORT */
-    add_library_dependencies_score( &m_la_objects );
+    add_library_dependencies_score( &m_library_objects );
 }
 
 void
-SCOREP_Config_LibraryDependencies::insert( const string&        libName,
-                                           const string&        buildDir,
-                                           const string&        installDir,
-                                           const deque<string>& libs,
-                                           const deque<string>& ldflags,
-                                           const deque<string>& rpath,
-                                           const deque<string>& dependencyLas )
+SCOREP_Config_LibraryDependencies::insert( const string& libName,
+                                           const string& libInstallDir )
 {
-    m_la_objects.insert(
+    m_library_objects.insert(
         std::make_pair( libName,
-                        la_object( libName,
-                                   buildDir,
-                                   installDir,
-                                   libs,
-                                   ldflags,
-                                   rpath,
-                                   dependencyLas ) ) );
+                        LibraryData( libName,
+                                     "",    // buildDir of no use for libwrapped lib
+                                     libInstallDir,
+                                     "", "" // libwrapped libs are supposed to be self-contained
+                                     ) ) );
 }
 
 deque<string>
@@ -110,13 +103,13 @@ SCOREP_Config_LibraryDependencies::getLibraries( const deque<string>& inputLibs,
     deque<string>::reverse_iterator i;
     for ( i = deps.rbegin(); i != deps.rend(); i++ )
     {
-        const la_object& obj = m_la_objects[ *i ];
+        const LibraryData& obj = m_library_objects[ *i ];
         libs.push_front( "-l" + obj.m_lib_name.substr( 3 ) );
         if ( honorDeps )
         {
             libs.insert( libs.end(),
-                         obj.m_libs.begin(),
-                         obj.m_libs.end() );
+                         obj.m_needs_libs.begin(),
+                         obj.m_needs_libs.end() );
         }
     }
 
@@ -130,67 +123,59 @@ SCOREP_Config_LibraryDependencies::getLibraries( const deque<string>& inputLibs,
     return libs;
 }
 
-deque<string>
+string
 SCOREP_Config_LibraryDependencies::getLDFlags( const deque<string>& libs,
                                                bool                 install )
 {
     deque<string>           deps = get_dependencies( libs );
-    deque<string>           flags;
+    deque<string>           libdirs;
     deque<string>::iterator i;
     for ( i = deps.begin(); i != deps.end(); i++ )
     {
-        const la_object& obj = m_la_objects[ *i ];
+        const LibraryData& obj = m_library_objects[ *i ];
         if ( install )
         {
-            flags.push_back( "-L" + obj.m_install_dir );
+            libdirs.push_back( obj.m_install_dir );
         }
         else
         {
-            flags.push_back( "-L" + obj.m_build_dir + "/.libs" );
+            libdirs.push_back( obj.m_build_dir + "/.libs" );
         }
-        flags.insert( flags.end(),
-                      obj.m_ldflags.begin(),
-                      obj.m_ldflags.end() );
+        libdirs.insert( libdirs.end(),
+                        obj.m_needs_libdirs.begin(),
+                        obj.m_needs_libdirs.end() );
     }
-    return remove_double_entries_keep_first( flags );
+    return deque_to_string( remove_double_entries_keep_first( libdirs ), "-L", " -L", "" );
 }
 
 deque<string>
-SCOREP_Config_LibraryDependencies::getRpathFlags( const deque<string>& libs,
-                                                  bool                 install,
-                                                  bool                 honorLibs,
-                                                  bool                 honorDeps )
+SCOREP_Config_LibraryDependencies::getLibdirs( const deque<string>& libs,
+                                               bool                 install,
+                                               bool                 honorLibs,
+                                               bool                 honorDeps )
 {
     deque<string>                 deps = get_dependencies( libs, honorLibs, honorDeps );
-    deque<string>                 flags;
+    deque<string>                 libdirs;
     deque<string>::const_iterator i;
-    deque<string>::const_iterator j;
     for ( i = deps.begin(); i != deps.end(); i++ )
     {
-        const la_object& obj = m_la_objects[ *i ];
+        const LibraryData& obj = m_library_objects[ *i ];
         if ( install )
         {
-            flags.push_back( obj.m_install_dir );
+            libdirs.push_back( obj.m_install_dir );
         }
         else
         {
-            flags.push_back( obj.m_build_dir + "/.libs" );
+            libdirs.push_back( obj.m_build_dir + "/.libs" );
             // to support pre-installed components we need to add m_build_dir too.
-            flags.push_back( obj.m_build_dir );
+            libdirs.push_back( obj.m_build_dir );
         }
-        for ( j = obj.m_rpath.begin(); j != obj.m_rpath.end(); j++ )
-        {
-            if ( 0 == j->compare( 0, 2, "-R" ) )
-            {
-                flags.push_back( j->substr( 2 ) );
-            }
-            else
-            {
-                flags.push_back( *j );
-            }
-        }
+        libdirs.push_back( obj.m_install_dir );
+        libdirs.insert( libdirs.end(),
+                        obj.m_needs_libdirs.begin(),
+                        obj.m_needs_libdirs.end() );
     }
-    return remove_double_entries_keep_first( flags );
+    return remove_double_entries_keep_first( libdirs );
 }
 
 deque<string>
@@ -206,16 +191,16 @@ SCOREP_Config_LibraryDependencies::get_dependencies( const deque<string>& libs,
     deque<string> deps = libs;
     for ( int i = 0; i < deps.size(); i++ )
     {
-        if ( m_la_objects.find( deps[ i ] ) == m_la_objects.end() )
+        if ( m_library_objects.find( deps[ i ] ) == m_library_objects.end() )
         {
             cerr << "[Score-P] ERROR: Cannot resolve dependency '" << deps[ i ] << "'" << endl;
             exit( EXIT_FAILURE );
         }
-        const la_object& obj = m_la_objects[ deps[ i ] ];
+        const LibraryData& obj = m_library_objects[ deps[ i ] ];
 
         deps.insert( deps.end(),
-                     obj.m_dependency_las.begin(),
-                     obj.m_dependency_las.end() );
+                     obj.m_dependencies.begin(),
+                     obj.m_dependencies.end() );
     }
     deps = remove_double_entries_keep_last( deps );
 
@@ -230,16 +215,16 @@ void
 SCOREP_Config_LibraryDependencies::addDependency( const std::string& dependentLib,
                                                   const std::string& dependency )
 {
-    if ( m_la_objects.find( dependentLib ) == m_la_objects.end() )
+    if ( m_library_objects.find( dependentLib ) == m_library_objects.end() )
     {
         cerr << "[Score-P] ERROR: Cannot add dependency to '" << dependentLib << "'" << endl;
         exit( EXIT_FAILURE );
     }
-    if ( m_la_objects.find( dependency ) == m_la_objects.end() )
+    if ( m_library_objects.find( dependency ) == m_library_objects.end() )
     {
         cerr << "[Score-P] ERROR: Cannot add dependency '" << dependency << "'" << endl;
         exit( EXIT_FAILURE );
     }
 
-    m_la_objects[ dependentLib ].m_dependency_las.push_back( dependency );
+    m_library_objects[ dependentLib ].m_dependencies.push_back( dependency );
 }

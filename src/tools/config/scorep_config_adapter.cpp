@@ -1183,18 +1183,10 @@ SCOREP_Config_LibwrapAdapter::addLibs( std::deque<std::string>&           libs,
         /* we point to <prefix>/share/scorep/<name>.libwrap */
         std::string libdir = join_path( extract_path( extract_path( extract_path( libwrap ) ) ), "lib" SCOREP_BACKEND_SUFFIX );
 
-        std::deque<std::string> empty;
-        std::deque<std::string> dependency_las;
-        dependency_las.push_back( "libscorep_measurement" );
-
 #if HAVE_BACKEND( LIBWRAP_LINKTIME_SUPPORT )
         if ( exists_file( join_path( libdir, "libscorep_libwrap_" + name + "_linktime.la" ) ) )
         {
-            deps.insert( "libscorep_libwrap_" + name + "_linktime",
-                         "",
-                         libdir,
-                         empty, empty, empty,
-                         dependency_las );
+            deps.insert( "libscorep_libwrap_" + name + "_linktime", libdir );
         }
         else
 #endif
@@ -1207,11 +1199,7 @@ SCOREP_Config_LibwrapAdapter::addLibs( std::deque<std::string>&           libs,
 #if HAVE_BACKEND( LIBWRAP_RUNTIME_SUPPORT )
         if ( exists_file( join_path( libdir, "libscorep_libwrap_" + name + "_runtime.la" ) ) )
         {
-            deps.insert( "libscorep_libwrap_" + name + "_runtime",
-                         "",
-                         libdir,
-                         empty, empty, empty,
-                         dependency_las );
+            deps.insert( "libscorep_libwrap_" + name + "_runtime", libdir );
         }
         else
 #endif
@@ -1222,6 +1210,7 @@ SCOREP_Config_LibwrapAdapter::addLibs( std::deque<std::string>&           libs,
         }
 
         libs.push_back( "libscorep_libwrap_" + name + "_" + wrapmode );
+        deps.addDependency( libs.back(), "libscorep_measurement" );
     }
 }
 

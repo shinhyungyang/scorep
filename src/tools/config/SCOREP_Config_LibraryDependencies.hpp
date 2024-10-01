@@ -40,7 +40,7 @@
 #include <map>
 #include <deque>
 #include <string>
-#include <generate-library-dependencies-la-object.hpp>
+#include <library_data.hpp>
 
 
 /**
@@ -64,28 +64,26 @@ public:
     ~SCOREP_Config_LibraryDependencies() = default;
 
     /**
-     * Inserts a new @a la_object into the @a m_la_objects database.
-     *
-     * Used by the library wrapper adapter to add la_objects for the wrapper
-     * libraries.
-     *
-     * See @a la_object constructor for the parameters.
+     * Inserts a new @a libName that is installed in @a installDir into the
+     * @a m_la_objects database. Intended to be used by the library wrapper
+     * only. Here, libs are known only at instrumentation time and need to be
+     * introduced by a mechanism different from add_library_dependencies_*.
+     * See SCOREP_Config_LibwrapAdapter
      */
     void
-    insert( const std::string&             lib_name,
-            const std::string&             build_dir,
-            const std::string&             install_dir,
-            const std::deque<std::string>& libs,
-            const std::deque<std::string>& ldflags,
-            const std::deque<std::string>& rpaths,
-            const std::deque<std::string>& dependency_las );
+    insert( const std::string& libName,
+            const std::string& libInstallDir );
 
     /**
-     * Returns a list of libraries containing the @a inputLibs and its dependencies.
-     * @param inputLibs   A list of libraries, that should be linked.
-     * @param honorLibs   Includes libraries listed in @p inputLibs
-     * @param honorDeps   Includes dependencies from libraries listed in @p
-     *                    inputLibs
+     * Returns a container of -l prefixed libraries containing the @p
+     * inputLibs (if @p honorLibs == true) and their needed libraries
+     * and its dependencies (if @p HonorDeps == true) and their needed
+     * libraries.
+     * @param inputLibs   A list of library names.
+     * @param honorLibs   Takes libraries listed in @p libs into account.
+     * @param honorDeps   Takes dependencies from libraries listed in @p
+     *                    libs into account.
+     * @see addDependency()
      */
     std::deque<std::string>
     getLibraries( const std::deque<std::string>& inputLibs,
@@ -93,38 +91,41 @@ public:
                   bool                           honorDeps = true );
 
     /**
-     * Returns a list of library path flags for the @a inputLibs and
-     * its dependencies.
+     * Returns a duplicate-free list containing the -L library
+     * path flags for the @p input_libs and its dependencies.
      * @param libs    A list of library names.
-     * @param install If true the install paths are used. If false the
-     *                build path are used.
+     * @param install If true, the install paths are used. If false, the
+     *                build path are prepended (to allow the config tool
+     *                to generate valid link lines at make check time).
      */
-    std::deque<std::string>
+    std::string
     getLDFlags( const std::deque<std::string>& libs,
                 bool                           install );
 
     /**
-     * Returns a list of paths in which the executable should look at runtime
-     * to find the libraries. It can be used to construct the rpath flags for
-     * the @a inputLibs and its dependencies.
-     * @param libs       A list of library names.
-     * @param install    If true the install paths are used. If false the
-     *                   build path are used.
-     * @param honorLibs  Includes libraries listed in @p libs
-     * @param honorDeps  Includes dependencies from libraries listed in @p
-     *                   libs
+     * Returns a duplicate-free container of paths an executable should search
+     * to find NEEDED libraries. It can be used to construct the rpath flags for
+     * the @a input and its dependencies.
+     * @param libs      A list of library names.
+     * @param install   If true, the install paths are used. If false, the
+     *                  build path are prepended (to allow the config tool
+     *                  to generate valid link lines at make check time).
+     * @param honorLibs Takes libraries listed in @p libs into account.
+     * @param honorDeps Takes dependencies from libraries listed in @p
+     *                  libs into account.
      */
     std::deque<std::string>
-    getRpathFlags( const std::deque<std::string>& libs,
-                   bool                           install,
-                   bool                           honorLibs = true,
-                   bool                           honorDeps = true );
+    getLibdirs( const std::deque<std::string>& libs,
+                bool                           install,
+                bool                           honorLibs = true,
+                bool                           honorDeps = true );
 
     /**
-     * This function adds a dependency to a library. For both libraries the .la
-     * must be available. It is used to add the selected version of modules,
-     * for which Score-P provides more than one implementation, e.g. threading
-     * system, mutex.
+     * This function adds a @p dependency to an @p dependentLib. Both
+     * must be available in @a m_library_objects. Intended to add a @a
+     * libscorep_measurenment depenency to events libs and
+     * corresponding mgmt dependencies as well as threading and MPP
+     * dependencies to @a libscorep_measurenment.
      * @param dependentLib  The library which depends on @a dependency.
      * @param dependency    The library which is added to the dependencies of
      *                      @a dependentLib.
@@ -146,7 +147,7 @@ protected:
 
     // ------------------------------------- Public members
 private:
-    std::map< std::string, la_object> m_la_objects;
+    std::map< std::string, LibraryData> m_library_objects;
 };
 
 #endif // SCOREP_CONFIG_LIBRARY_DEPENDENCIES_HPP

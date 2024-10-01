@@ -530,17 +530,16 @@ main( int    argc,
         {
             case ACTION_LDFLAGS:
                 get_rpath_struct_data();
-                std::cout << deque_to_string( deps.getLDFlags( libs, install ),
-                                              " ", " ", "" );
+                std::cout << deps.getLDFlags( libs, install );
                 if ( USE_LIBDIR_FLAG )
                 {
-                    std::deque<std::string> rpath = deps.getRpathFlags( libs, install );
-                    append_ld_run_path_to_rpath( rpath );
-                    rpath = remove_system_path( rpath );
-                    str   = deque_to_string( rpath,
-                                             m_rpath_head + m_rpath_delimiter,
-                                             m_rpath_delimiter,
-                                             m_rpath_tail );
+                    std::deque<std::string> libdirs = deps.getLibdirs( libs, install );
+                    append_ld_run_path_to_rpath( libdirs );
+                    libdirs = remove_system_path( libdirs );
+                    str     = deque_to_string( libdirs,
+                                               m_rpath_head + m_rpath_delimiter,
+                                               m_rpath_delimiter,
+                                               m_rpath_tail );
                 }
                 std::cout << str;
                 std::cout.flush();
@@ -609,17 +608,16 @@ main( int    argc,
     {
         case ACTION_LDFLAGS:
             get_rpath_struct_data();
-            std::cout << deque_to_string( deps.getLDFlags( libs, install ),
-                                          " ", " ", "" );
+            std::cout << deps.getLDFlags( libs, install );
             if ( USE_LIBDIR_FLAG )
             {
-                std::deque<std::string> rpath = deps.getRpathFlags( libs, install );
-                append_ld_run_path_to_rpath( rpath );
-                rpath = remove_system_path( rpath );
-                str   = deque_to_string( rpath,
-                                         m_rpath_head + m_rpath_delimiter,
-                                         m_rpath_delimiter,
-                                         m_rpath_tail );
+                std::deque<std::string> libdirs = deps.getLibdirs( libs, install );
+                append_ld_run_path_to_rpath( libdirs );
+                libdirs = remove_system_path( libdirs );
+                str     = deque_to_string( libdirs,
+                                           m_rpath_head + m_rpath_delimiter,
+                                           m_rpath_delimiter,
+                                           m_rpath_tail );
             }
             if ( SCOREP_Config_Adapter::isActive() )
             {
@@ -645,9 +643,9 @@ main( int    argc,
             bool honor_deps = !!( action & ACTION_MGMT_LIBS );
             if ( preload_libs )
             {
-                std::deque<std::string> rpath = deps.getRpathFlags( libs, install, honor_libs, honor_deps );
+                std::deque<std::string> libdirs = deps.getLibdirs( libs, install, honor_libs, honor_deps );
                 libs = get_full_library_names( deps.getLibraries( libs, honor_libs, honor_deps ),
-                                               rpath,
+                                               libdirs,
                                                false,
                                                true );
             }
