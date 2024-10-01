@@ -136,14 +136,11 @@ SCOREP_Config_LibraryDependencies::getLDFlags( const deque<string>& libs,
     for ( i = deps.begin(); i != deps.end(); i++ )
     {
         const LibraryData& obj = m_library_objects[ *i ];
-        if ( install )
-        {
-            libdirs.push_back( obj.m_install_dir );
-        }
-        else
+        if ( !install )
         {
             libdirs.push_back( obj.m_build_dir + "/.libs" );
         }
+        libdirs.push_back( obj.m_install_dir );
         libdirs.insert( libdirs.end(),
                         obj.m_needs_libdirs.begin(),
                         obj.m_needs_libdirs.end() );
@@ -161,16 +158,11 @@ SCOREP_Config_LibraryDependencies::getRpathFlags( const deque<string>& libs,
     for ( i = deps.begin(); i != deps.end(); i++ )
     {
         const LibraryData& obj = m_library_objects[ *i ];
-        if ( install )
-        {
-            libdirs.push_back( obj.m_install_dir );
-        }
-        else
+        if ( !install )
         {
             libdirs.push_back( obj.m_build_dir + "/.libs" );
-            // to support pre-installed components we need to add m_build_dir too.
-            libdirs.push_back( obj.m_build_dir );
         }
+        libdirs.push_back( obj.m_install_dir );
         libdirs.insert( libdirs.end(),
                         obj.m_needs_libdirs.begin(),
                         obj.m_needs_libdirs.end() );
@@ -194,15 +186,9 @@ SCOREP_Config_LibraryDependencies::getLibdirs( const deque<string>& libs,
     for ( i = deps.begin(); i != deps.end(); i++ )
     {
         const LibraryData& obj = m_library_objects[ *i ];
-        if ( install )
-        {
-            libdirs.push_back( obj.m_install_dir );
-        }
-        else
+        if ( !install )
         {
             libdirs.push_back( obj.m_build_dir + "/.libs" );
-            // to support pre-installed components we need to add m_build_dir too.
-            libdirs.push_back( obj.m_build_dir );
         }
         libdirs.push_back( obj.m_install_dir );
         libdirs.insert( libdirs.end(),

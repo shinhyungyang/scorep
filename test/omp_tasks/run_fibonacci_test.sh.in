@@ -15,7 +15,7 @@
 ## Copyright (c) 2009-2011,
 ## University of Oregon, Eugene, USA
 ##
-## Copyright (c) 2009-2011,
+## Copyright (c) 2009-2011, 2024,
 ## Forschungszentrum Juelich GmbH, Germany
 ##
 ## Copyright (c) 2009-2011,
@@ -52,11 +52,6 @@ echo "==================="
 cp  @abs_srcdir@/task_fibonacci.c task_fibonacci.c
 result_dir_base="scorep_fibonacci_"
 
-OTF2_LIBDIR="$PWD/../vendor/otf2/build-backend/@LT_OBJDIR@"
-CUBEW_LIBDIR="$PWD/../vendor/cubew/build-backend/@LT_OBJDIR@"
-CUBELIB_LIBDIR="$PWD/../vendor/cubelib/build-backend/@LT_OBJDIR@"
-export @SYS_LIB_SEARCH_PATH_VAR@="$PWD/@LT_OBJDIR@:${OTF2_LIBDIR}:${CUBEW_LIBDIR}:${CUBELIB_LIBDIR}${@SYS_LIB_SEARCH_PATH_VAR@:+:${@SYS_LIB_SEARCH_PATH_VAR@}}"
-
 # provide a reasonable default input for running the applications
 if [ ! x$1 = x ]; then
   FIB_NUM=$1
@@ -75,7 +70,6 @@ fi
 #         --build-check \
 #         @CC@ -I. -o fib_main task_fibonacci.c @OPENMP_CFLAGS@
 #
-#export @SYS_LIB_SEARCH_PATH_VAR@=@SCOREP_PAPI_LIBDIR@${@SYS_LIB_SEARCH_PATH_VAR@:+:${@SYS_LIB_SEARCH_PATH_VAR@}}
 #if [ ! -e fib_main ]; then
 #    exit 1
 #fi
