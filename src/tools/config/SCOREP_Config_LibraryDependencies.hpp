@@ -145,6 +145,16 @@ public:
     addDependency( const std::string& dependentLib,
                    const std::string& dependency );
 
+    /**
+     * Store @p library to be considered in get_dependencies(
+     * honorDeps == true ), in addition to the libraries provided by
+     * getLibraries(), getLDFlags(), getRpathFlags(), or
+     * getLibdirs(). Intended to be used by adapters that don't have
+     * an event lib to use in addDependency (<event_lib>,
+     * "libscorep_measurement" ).
+     */
+    void
+    addImplicitDependency( const std::string& library );
 
     static std::deque<std::string>
     RemoveSystemPath( const std::deque<std::string>& paths );
@@ -172,6 +182,7 @@ protected:
     // ------------------------------------- Public members
 private:
     std::map< std::string, LibraryData> m_library_objects;
+    std::deque< std::string >           m_implicit_dependencies;
 
     static std::string m_rpath_head;
     static std::string m_rpath_delimiter;

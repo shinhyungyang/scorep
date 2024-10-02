@@ -548,9 +548,9 @@ void
 SCOREP_Config_HipAdapter::addLibs( std::deque<std::string>&           libs,
                                    SCOREP_Config_LibraryDependencies& deps )
 {
-    /* there is no libscorep_adapter_hip_event, thus in case this is the
-       only adapter, we need to add libscorep_measurement to the needed libs. */
-    libs.push_back( "libscorep_measurement" );
+    /* Add implicit dependency to libscorep_measurement as there is no
+       event adapter who usually takes care of this. */
+    deps.addImplicitDependency( "libscorep_measurement" );
     deps.addDependency( "libscorep_measurement", "lib" + m_library + "_mgmt" );
 }
 
@@ -676,10 +676,9 @@ void
 SCOREP_Config_KokkosAdapter::addLibs( std::deque<std::string>&           libs,
                                       SCOREP_Config_LibraryDependencies& deps )
 {
-    /* there is no libscorep_adapter_kokkos_event that is linked into the
-       application, thus in case this is the only adapter, we need to add
-       libscorep_measurement to the needed libs. */
-    libs.push_back( "libscorep_measurement" );
+    /* Add implicit dependency to libscorep_measurement as there is no event
+       adapter (to be linked at link time) who usually takes care of this. */
+    deps.addImplicitDependency( "libscorep_measurement" );
     /* the Kokkos event library is loaded by the Kokkos runtime via
        KOKKOS_PROFILE_LIBRARY */
     deps.addDependency( "libscorep_measurement", "lib" + m_library + "_mgmt" );

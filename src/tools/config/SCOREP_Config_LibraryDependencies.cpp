@@ -208,8 +208,12 @@ SCOREP_Config_LibraryDependencies::get_dependencies( const deque<string>& libs,
         return libs;
     }
 
-    deque<string> deps = libs;
-    for ( int i = 0; i < deps.size(); i++ )
+    /* Iterate over container of libs and implicit dependencies and
+       append element's dependencies to the container until there is
+       nothing to add left. */
+    deque<string> deps( libs );
+    deps.insert( deps.end(), m_implicit_dependencies.begin(), m_implicit_dependencies.end() );
+    for ( int i = 0; i < deps.size(); i++ ) /* deps.size() intended to increase */
     {
         if ( m_library_objects.find( deps[ i ] ) == m_library_objects.end() )
         {
@@ -226,7 +230,8 @@ SCOREP_Config_LibraryDependencies::get_dependencies( const deque<string>& libs,
 
     if ( !honorLibs )
     {
-        deps.erase( deps.begin(), deps.begin() + libs.size() );
+        /* Remove the libs and implicit dependencies we started with. */
+        deps.erase( deps.begin(), deps.begin() + libs.size() + m_implicit_dependencies.size() );
     }
     return deps;
 }
@@ -248,6 +253,18 @@ SCOREP_Config_LibraryDependencies::addDependency( const std::string& dependentLi
 
     m_library_objects[ dependentLib ].m_dependencies.push_back( dependency );
 }
+
+void
+SCOREP_Config_LibraryDependencies::addImplicitDependency( const std::string& library )
+{
+    if ( m_library_objects.find( library ) == m_library_objects.end() )
+    {
+        cerr << "[Score-P] ERROR: Cannot add implicit dependency '" << library << "'" << endl;
+        exit( EXIT_FAILURE );
+    }
+    m_implicit_dependencies.push_back( library );
+}
+
 
 std::deque<std::string>
 SCOREP_Config_LibraryDependencies::RemoveSystemPath( const std::deque<std::string>& paths )
