@@ -95,6 +95,8 @@ create_task_root( SCOREP_Profile_LocationData* location,
                                     specific_data,
                                     timestamp,
                                     taskContext );
+    scorep_profile_set_task_context( new_node, taskContext );
+
     if ( new_node == NULL )
     {
         return NULL;
