@@ -130,45 +130,17 @@ string
 SCOREP_Config_LibraryDependencies::getLDFlags( const deque<string>& libs,
                                                bool                 install )
 {
-    deque<string>           deps = get_dependencies( libs );
-    deque<string>           libdirs;
-    deque<string>::iterator i;
-    for ( i = deps.begin(); i != deps.end(); i++ )
-    {
-        const LibraryData& obj = m_library_objects[ *i ];
-        if ( !install )
-        {
-            libdirs.push_back( obj.m_build_dir + "/.libs" );
-        }
-        libdirs.push_back( obj.m_install_dir );
-        libdirs.insert( libdirs.end(),
-                        obj.m_needs_libdirs.begin(),
-                        obj.m_needs_libdirs.end() );
-    }
-    return deque_to_string( remove_double_entries_keep_first( libdirs ), "-L", " -L", "" );
+    return deque_to_string( get_libdirs( get_dependencies( libs ), install ),
+                            "-L", " -L", "" );
 }
 
 string
 SCOREP_Config_LibraryDependencies::getRpathFlags( const deque<string>& libs,
                                                   bool                 install )
 {
-    deque<string>           deps = get_dependencies( libs );
-    deque<string>           libdirs;
-    deque<string>::iterator i;
-    for ( i = deps.begin(); i != deps.end(); i++ )
-    {
-        const LibraryData& obj = m_library_objects[ *i ];
-        if ( !install )
-        {
-            libdirs.push_back( obj.m_build_dir + "/.libs" );
-        }
-        libdirs.push_back( obj.m_install_dir );
-        libdirs.insert( libdirs.end(),
-                        obj.m_needs_libdirs.begin(),
-                        obj.m_needs_libdirs.end() );
-    }
+    deque<string> libdirs( get_libdirs( get_dependencies( libs ), install ) );
     AppendLdRunPath( libdirs );
-    return deque_to_string( remove_double_entries_keep_first( libdirs ),
+    return deque_to_string( libdirs,
                             m_rpath_head + m_rpath_delimiter,
                             m_rpath_delimiter,
                             m_rpath_tail );
@@ -180,17 +152,25 @@ SCOREP_Config_LibraryDependencies::getLibdirs( const deque<string>& libs,
                                                bool                 honorLibs,
                                                bool                 honorDeps )
 {
-    deque<string>                 deps = get_dependencies( libs, honorLibs, honorDeps );
-    deque<string>                 libdirs;
-    deque<string>::const_iterator i;
-    for ( i = deps.begin(); i != deps.end(); i++ )
+    return get_libdirs( get_dependencies( libs, honorLibs, honorDeps ), install );
+}
+
+deque<string>
+SCOREP_Config_LibraryDependencies::get_libdirs( const deque<string> libs,
+                                                bool                install )
+{
+    deque<string> libdirs;
+    for ( auto& i : libs )
     {
-        const LibraryData& obj = m_library_objects[ *i ];
+        const LibraryData& obj = m_library_objects[ i ];
         if ( !install )
         {
             libdirs.push_back( obj.m_build_dir + "/.libs" );
         }
-        libdirs.push_back( obj.m_install_dir );
+        if ( !obj.m_install_dir.empty() )
+        {
+            libdirs.push_back( obj.m_install_dir );
+        }
         libdirs.insert( libdirs.end(),
                         obj.m_needs_libdirs.begin(),
                         obj.m_needs_libdirs.end() );

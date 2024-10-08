@@ -179,6 +179,16 @@ protected:
                       bool                           honorLibs = true,
                       bool                           honorDeps = true );
 
+    /**
+     * Returns a duplicate-free container of the @p libs install paths
+     * and its needed libdirs. If @p install is false, prepend the
+     * build path to the install path. Intended to be used by the
+     * public API of this class.
+     */
+    std::deque<std::string>
+    get_libdirs( const std::deque<std::string> libs,
+                 bool                          install );
+
     // ------------------------------------- Public members
 private:
     std::map< std::string, LibraryData> m_library_objects;
