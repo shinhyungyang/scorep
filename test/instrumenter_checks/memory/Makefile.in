@@ -5,7 +5,7 @@
 ##
 ## This file is part of the Score-P software (http://www.score-p.org)
 ##
-## Copyright (c) 2014,
+## Copyright (c) 2014, 2024,
 ## Forschungszentrum Juelich GmbH, Germany
 ##
 ## Copyright (c) 2016,
@@ -18,10 +18,14 @@
 
 
 CC       = @CC@
-CFLAGS   =
+# Compilers like AOCC 4.1.0 & 4.2.0 have been observed to remove the memory calls in
+# the tests due to optimization enabled by default. Therefore, set optimization to
+# -O0 to ensure that the calls are still present in the object and binary files.
+CFLAGS   = -O0
 
 CXX      = @CXX@
-CXXFLAGS =
+# See CFLAGS
+CXXFLAGS = -O0
 
 TOOLS_BINDIR               = @BINDIR@
 INSTRUMENTERCHECK_SRCDIR   = @abs_top_srcdir@/../test/instrumenter_checks
