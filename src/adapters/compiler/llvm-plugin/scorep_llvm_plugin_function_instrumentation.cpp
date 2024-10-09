@@ -117,9 +117,9 @@ SCOREP::Compiler::LLVMPlugin::FunctionInstrumentation::insert_register_functions
     {
         if ( FunctionIsInstrumentable( *function, m_instrumentation_filter ) )
         {
-            Constant*    name           = m_builder->CreateGlobalStringPtr( DemangleFunctionName( function->getName().str() ) );
-            Constant*    canonical_name = m_builder->CreateGlobalStringPtr( function->getName() );
-            Constant*    file           = m_builder->CreateGlobalStringPtr( module.getSourceFileName() );
+            Constant*    name           = CreateGlobalStringPointer( m_builder.get(), DemangleFunctionName( function->getName().str() ) );
+            Constant*    canonical_name = CreateGlobalStringPointer( m_builder.get(), function->getName() );
+            Constant*    file           = CreateGlobalStringPointer( m_builder.get(), module.getSourceFileName() );
             unsigned int lno            = 0;
             if ( DISubprogram* subprogram = function->getSubprogram() )
             {
