@@ -15,7 +15,7 @@
 ## Copyright (c) 2009-2012,
 ## University of Oregon, Eugene, USA
 ##
-## Copyright (c) 2009-2012, 2014,
+## Copyright (c) 2009-2012, 2014, 2024,
 ## Forschungszentrum Juelich GmbH, Germany
 ##
 ## Copyright (c) 2009-2012,
@@ -109,4 +109,9 @@ EXTRA_DIST += \
     $(INSTRUMENTERCHECK_DIR)/memory/new_array-cxx.cpp \
     $(INSTRUMENTERCHECK_DIR)/io/isoc-io-cc.c \
     $(INSTRUMENTERCHECK_DIR)/io/isoc-io-cxx.cpp \
-    $(INSTRUMENTERCHECK_DIR)/io/posix-io-cc.c
+    $(INSTRUMENTERCHECK_DIR)/io/posix-io-cc.c \
+    $(INSTRUMENTERCHECK_DIR)/cmdline/cmdline-helper.h \
+    $(INSTRUMENTERCHECK_DIR)/cmdline/cmdline-macro-single-arg.cpp \
+    $(INSTRUMENTERCHECK_DIR)/cmdline/cmdline-macro-multi-arg.cpp \
+    $(INSTRUMENTERCHECK_DIR)/cmdline/cmdline-macro-dollar.cpp \
+    $(INSTRUMENTERCHECK_DIR)/cmdline/cmdline-macro-squote.cpp

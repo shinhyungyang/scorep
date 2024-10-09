@@ -796,25 +796,20 @@ SCOREP_Instrumenter_CmdLine::parse_command( const std::string& current,
 void
 SCOREP_Instrumenter_CmdLine::add_define( std::string arg )
 {
-    /* we need to escape quotes since they get lost otherwise when calling
-       system() */
+    /* we need to escape single quotes since they get lost otherwise when
+       calling system() */
     std::string::size_type pos = 0;
-    while ( ( pos = arg.find( '"', pos ) ) != std::string::npos )
+    while ( ( pos = arg.find( '\'', pos ) ) != std::string::npos )
     {
-        arg.insert( pos, 1, '\\' );
-        pos += 2;
+        arg.insert( pos, "'\\" );
+        pos += 3;
+        arg.insert( pos, 1, '\'' );
+        pos += 1;
     }
 
-    /* Because enclosing quotes may have disappeared, we must always enclose the
-       argument with quotes */
-    pos =  arg.find( '=', 0 );
-    if ( pos !=  std::string::npos )
-    {
-        arg.insert( pos + 1, 1, '\"' );
-        arg.append( 1, '\"' );
-    }
-
-    *m_current_flags += " " + arg;
+    /* Enclose entire argument in single quotes to prevent the shell from
+       doing crazy things... */
+    *m_current_flags += " '" + arg + "'";
 }
 
 void
