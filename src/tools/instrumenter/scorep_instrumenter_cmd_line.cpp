@@ -75,7 +75,6 @@ SCOREP_Instrumenter_CmdLine::SCOREP_Instrumenter_CmdLine( SCOREP_Instrumenter_In
     m_flags_after_interposition_lib  = "";
     m_current_flags                  = &m_flags_before_interposition_lib;
     m_include_flags                  = "";
-    m_define_flags                   = "";
     m_output_name                    = "";
     m_interposition_lib_set          = false;
 #if SCOREP_BACKEND_COMPILER_MIC
@@ -221,12 +220,6 @@ std::string
 SCOREP_Instrumenter_CmdLine::getIncludeFlags( void )
 {
     return m_include_flags;
-}
-
-std::string
-SCOREP_Instrumenter_CmdLine::getDefineFlags( void )
-{
-    return m_define_flags;
 }
 
 std::string
@@ -822,7 +815,6 @@ SCOREP_Instrumenter_CmdLine::add_define( std::string arg )
     }
 
     *m_current_flags += " " + arg;
-    m_define_flags   += " " + arg;
 }
 
 void
