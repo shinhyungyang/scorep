@@ -13,7 +13,7 @@
  * Copyright (c) 2009-2013,
  * University of Oregon, Eugene, USA
  *
- * Copyright (c) 2009-2013, 2015, 2017, 2022,
+ * Copyright (c) 2009-2013, 2015, 2017, 2022, 2024,
  * Forschungszentrum Juelich GmbH, Germany
  *
  * Copyright (c) 2009-2015,
@@ -210,6 +210,10 @@ SCOREP_Profile_TaskBegin( SCOREP_Location*                 thread,
     scorep_profile_type_set_region_handle( &specific_data, regionHandle );
 
     scorep_profile_task* task = get_profile_task_data( taskHandle );
+    /* Before allocating any potential memory, we must set if the task can migrate, as this can
+     * have an impact on the way memory is allocated. */
+    task->can_migrate
+        = ( SCOREP_RegionHandle_GetType( regionHandle ) == SCOREP_REGION_TASK_UNTIED );
 
     scorep_profile_node* task_root
         = create_task_root( location, regionHandle, timestamp, metricValues,
@@ -218,8 +222,6 @@ SCOREP_Profile_TaskBegin( SCOREP_Location*                 thread,
     task->current_node = task_root;
     task->root_node    = task_root;
     task->depth        = 1;
-    task->can_migrate
-        = ( SCOREP_RegionHandle_GetType( regionHandle ) == SCOREP_REGION_TASK_UNTIED );
 
     /* Perform activation */
     scorep_profile_task_switch_start( location, task, timestamp, metricValues );
