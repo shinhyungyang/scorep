@@ -22,6 +22,7 @@
 
 #include <config.h>
 
+#include <llvm/IR/IRBuilder.h>
 #include <llvm/IR/Module.h>
 #include <llvm/Support/CommandLine.h>
 #include <llvm/Support/raw_ostream.h>
@@ -71,5 +72,9 @@ GetCharPointerType( llvm::LLVMContext& context );
 
 llvm::Type*
 GetInt32PointerType( llvm::LLVMContext& context );
+
+llvm::Constant*
+CreateGlobalStringPointer( llvm::IRBuilder<>*     builder,
+                           const llvm::StringRef& str );
 }
 #endif //SCOREP_LLVM_PLUGIN_H

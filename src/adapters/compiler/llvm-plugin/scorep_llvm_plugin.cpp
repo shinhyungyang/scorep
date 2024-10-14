@@ -293,6 +293,22 @@ SCOREP::Compiler::LLVMPlugin::GetInt32PointerType( llvm::LLVMContext& context )
 }
 
 
+llvm::Constant*
+SCOREP::Compiler::LLVMPlugin::CreateGlobalStringPointer( llvm::IRBuilder<>*     builder,
+                                                         const llvm::StringRef& str )
+{
+    /* Since LLVM 17, opaque pointers are used instead of regular typed pointers.
+     * Therefore, we can start using it here. This also works around the
+     * deprecation in LLVM 20, and a crash of ROCm 6.0.3 on LUMI specifically.
+     * See https://releases.llvm.org/19.1.0/docs/OpaquePointers.html for more
+     * information about opaque pointers. */
+#if LLVM_VERSION_MAJOR >= 17
+    return builder->CreateGlobalString( str );
+#else
+    return builder->CreateGlobalStringPtr( str );
+#endif
+}
+
 /* LLVM passes should at least offer one of the following methods for pass registration
  * - llvm::PassPluginLibraryInfo get##Name##PluginInfo();
  * - extern "C" ::llvm::PassPluginLibraryInfo llvmGetPassPluginInfo() LLVM_ATTRIBUTE_WEAK;
