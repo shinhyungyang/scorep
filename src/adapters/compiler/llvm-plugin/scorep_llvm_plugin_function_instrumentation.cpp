@@ -15,6 +15,7 @@
  *
  * @brief Implementation of the instrumentation pass used for the LLVM plugin
  */
+
 #include <config.h>
 
 #include "scorep_llvm_plugin.hpp"

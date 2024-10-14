@@ -20,6 +20,16 @@
 #ifndef SCOREP_LLVM_PLUGIN_H
 #define SCOREP_LLVM_PLUGIN_H
 
+/* LLVM uses the name PIC as variable in an internal header for a
+ * PassInstrumentationCallbacks object. PIC very likely is a macro
+ * provided by libtool via command-line (pic_flag=" -fpic -DPIC"). This
+ * PIC macro causes the compilation of the header to fail. For now,
+ * undefine PIC if it is defined and hope it isn't used as macro in
+ * non-llvm headers. */
+#ifdef PIC
+#undef PIC
+#endif
+
 #include <config.h>
 
 #include <llvm/IR/IRBuilder.h>
