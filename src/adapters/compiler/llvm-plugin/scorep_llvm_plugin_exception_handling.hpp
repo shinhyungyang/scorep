@@ -20,8 +20,6 @@
 #ifndef SCOREP_LLVM_PLUGIN_EXCEPTION_HANDLING_H
 #define SCOREP_LLVM_PLUGIN_EXCEPTION_HANDLING_H
 
-#include <config.h>
-
 #include <llvm/IR/PassManager.h>
 #include <llvm/IR/Instructions.h>
 

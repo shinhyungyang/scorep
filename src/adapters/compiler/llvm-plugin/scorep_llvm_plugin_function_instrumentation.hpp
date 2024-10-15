@@ -20,8 +20,6 @@
 #ifndef SCOREP_LLVM_PLUGIN_FUNCTION_INSTRUMENTATION_H
 #define SCOREP_LLVM_PLUGIN_FUNCTION_INSTRUMENTATION_H
 
-#include <config.h>
-
 #include <llvm/ADT/SetVector.h>
 #include <llvm/IR/BasicBlock.h>
 #include <llvm/IR/Function.h>

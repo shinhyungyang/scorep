@@ -30,8 +30,6 @@
 #undef PIC
 #endif
 
-#include <config.h>
-
 #include <llvm/IR/IRBuilder.h>
 #include <llvm/IR/Module.h>
 #include <llvm/Support/CommandLine.h>
