@@ -46,7 +46,7 @@ stages:
         --prefix="$(readlink -f $PWD/../_prefix)"
         --enable-shared
         --enable-backend-test-runs
-        --disable-papi
+        --with-papi-lib=" choke me"
         $configure_flags
     - cat scorep.summary
     - log make
