@@ -15,7 +15,7 @@
 ## Copyright (c) 2009-2011,
 ## University of Oregon, Eugene, USA
 ##
-## Copyright (c) 2009-2011,
+## Copyright (c) 2009-2011, 2024,
 ## Forschungszentrum Juelich GmbH, Germany
 ##
 ## Copyright (c) 2009-2011,
@@ -61,13 +61,25 @@ SRC_ROOT=../..
 MPIRUN=mpiexec
 
 TEST_DATA_DIR=$SRC_ROOT/test/services/metric/data
+METRIC=PAPI_TOT_INS
 
 # Set up directory that will contain experiment results
 RESULT_DIR=$PWD/scorep-hybrid-papi-metric-test-dir
 rm -rf $RESULT_DIR
 
+# Check if papi_avail exists
+if ! which papi_avail > /dev/null 2>&1; then
+    echo "papi_avail not available. Skipping."
+    exit 77
+fi
+# Check if $METRIC is available
+if ! papi_avail -a | grep -q $METRIC; then
+    echo "$METRIC not available. Skipping."
+    exit 77
+fi
+
 # Run test
-SCOREP_EXPERIMENT_DIRECTORY=$RESULT_DIR OMP_NUM_THREADS=2 SCOREP_ENABLE_PROFILING=false SCOREP_ENABLE_TRACING=true SCOREP_METRIC_PAPI_SEP=, SCOREP_METRIC_PAPI=PAPI_TOT_INS $MPIRUN -np 2 ./jacobi_mpi_omp_c_metric_test
+SCOREP_EXPERIMENT_DIRECTORY=$RESULT_DIR OMP_NUM_THREADS=2 SCOREP_ENABLE_PROFILING=false SCOREP_ENABLE_TRACING=true SCOREP_METRIC_PAPI_SEP=, SCOREP_METRIC_PAPI=$METRIC $MPIRUN -np 2 ./jacobi_mpi_omp_c_metric_test
 if [ $? -ne 0 ]; then
     rm -rf scorep-measurement-tmp
     exit 1
