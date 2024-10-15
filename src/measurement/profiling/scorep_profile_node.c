@@ -13,7 +13,7 @@
  * Copyright (c) 2009-2013,
  * University of Oregon, Eugene, USA
  *
- * Copyright (c) 2009-2013, 2017,
+ * Copyright (c) 2009-2013, 2017, 2024,
  * Forschungszentrum Juelich GmbH, Germany
  *
  * Copyright (c) 2009-2013, 2015,
@@ -255,8 +255,6 @@ scorep_profile_alloc_node( SCOREP_Profile_LocationData* location,
     {
         new_node->dense_metrics = NULL;
     }
-
-    scorep_profile_set_task_context( new_node, context );
 
     return new_node;
 }
