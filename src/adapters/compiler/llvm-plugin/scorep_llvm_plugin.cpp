@@ -16,13 +16,6 @@
  * @brief Common logic used for LLVM plugin.
  */
 
-/* LLVM uses PIC in an internal header for a PassInstrumentationCallbacks object.
- * If PIC is defined elsewhere, compilation will abort with an error. Therefore,
- * remove the defined PIC if it exists. */
-#ifdef PIC
-#undef PIC
-#endif
-
 #include <config.h>
 
 #include "scorep_llvm_plugin.hpp"
