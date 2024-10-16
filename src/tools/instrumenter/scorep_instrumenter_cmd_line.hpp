@@ -13,7 +13,7 @@
  * Copyright (c) 2009-2013,
  * University of Oregon, Eugene, USA
  *
- * Copyright (c) 2009-2013, 2015, 2019-2020,
+ * Copyright (c) 2009-2013, 2015, 2019-2020, 2024,
  * Forschungszentrum Juelich GmbH, Germany
  *
  * Copyright (c) 2009-2014,
@@ -171,8 +171,6 @@ public:
     getFlagsAfterInterpositionLib( void );
     std::string
     getIncludeFlags( void );
-    std::string
-    getDefineFlags( void );
     std::string
     getOutputName( void );
 
@@ -456,11 +454,6 @@ private:
        include flags
      */
     std::string m_include_flags;
-
-    /**
-       define flags
-     */
-    std::string m_define_flags;
 
     /**
        file name of the compiler/linker output

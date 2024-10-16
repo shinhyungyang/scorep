@@ -120,6 +120,8 @@ Bugfixes:
   or OMPT record tasks. Previously, the memory consumption would
   increase linearly for each created task, causing the measurement to
   abort when too many were scheduled.
+- Properly quote macro definitions provided on the compiler command line
+  during instrumentation.
 
 ------------------- Released version 8.4 -----------------------------
 

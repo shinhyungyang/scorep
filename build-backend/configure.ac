@@ -405,6 +405,7 @@ AFS_CONFIG_MAKEFILE
 AC_CONFIG_FILES([../installcheck/instrumenter_checks/Makefile.instrument_configurations:../test/instrumenter_checks/Makefile.instrument_configurations.in
                  ../installcheck/instrumenter_checks/serial/Makefile:../test/instrumenter_checks/serial/Makefile.in
                  ../installcheck/instrumenter_checks/omp/Makefile:../test/instrumenter_checks/omp/Makefile.in
+                 ../installcheck/instrumenter_checks/cmdline/Makefile:../test/instrumenter_checks/cmdline/Makefile.in
                  ../src/scorep_config_tool_backend.h:../src/tools/config/scorep_config_tool_backend.h.in])
 
 AM_COND_IF([HAVE_PTHREAD_SUPPORT],

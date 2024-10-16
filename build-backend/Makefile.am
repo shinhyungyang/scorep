@@ -15,7 +15,7 @@
 ## Copyright (c) 2009-2011,
 ## University of Oregon, Eugene, USA
 ##
-## Copyright (c) 2009-2015, 2017-2018, 2022,
+## Copyright (c) 2009-2015, 2017-2018, 2022, 2024,
 ## Forschungszentrum Juelich GmbH, Germany
 ##
 ## Copyright (c) 2009-2011,
@@ -220,6 +220,14 @@ clean-local-instrumenter-checks:
             rm -f ../installcheck/instrumenter_checks/bin/*-$${paradigm}-*; \
             rm -rf ../installcheck/instrumenter_checks/$$paradigm/build; \
         done
+
+INSTALLCHECK_LOCAL += instrumenter-checks-cmdline
+instrumenter-checks-cmdline: ../installcheck/instrumenter_checks/cmdline/Makefile
+	@$(MAKE) -C ../installcheck/instrumenter_checks/cmdline
+
+CLEAN_LOCAL += clean-local-instrumenter-checks-cmdline
+clean-local-instrumenter-checks-cmdline: ../installcheck/instrumenter_checks/cmdline/Makefile
+	@$(MAKE) -C ../installcheck/instrumenter_checks/cmdline clean
 
 if HAVE_PTHREAD_SUPPORT
 
