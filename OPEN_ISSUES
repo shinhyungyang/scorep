@@ -699,6 +699,14 @@ various Score-P components.
   - Device-to-device data transfers are only recorded on the API level, not
     as a device activity.
 
+  - Setting compile flags via the environment variable
+    `HIPCC_COMPILE_FLAGS_APPEND` or link flags via the environment variable
+    `HIPCC_LINK_FLAGS_APPEND` may interfere with correct instrumentation, most
+    likely resulting in an empty experiment directory when MPI is used.
+    Please pass the desired compile/link flags explicitly instead. If this is
+    not possible, try to preload the Score-P libraries via
+    `LD_PRELOAD=<Score-P prefix>/lib/libscorep_adapter_mpi_event.so`.
+
 --------------------------------------------------------------------------------
 
 * OpenACC support
