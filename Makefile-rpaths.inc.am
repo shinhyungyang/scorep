@@ -127,7 +127,7 @@ $(noinst_lt_needs_ldflags):
 	@var=$$(echo "$@"); \
 	value=$$(echo "$($@)"); \
 	if test -n "$${value// }"; then \
-	    echo "$$var = $$value" >> Makefile.export; \
+	    echo "$(AFS_PACKAGE_BUILD_name)_$$var = $$value" >> Makefile.export; \
 	fi
 
 noinst_lt_needs_libs = $(noinst_LTLIBRARIES:.la=_la_needs_LIBS)
@@ -135,7 +135,7 @@ $(noinst_lt_needs_libs):
 	@var=$$(echo "$@"); \
 	value=$$(echo "$($@)"); \
 	if test -n "$${value// }"; then \
-	    echo "$$var = $$value" >> Makefile.export; \
+	    echo "$(AFS_PACKAGE_BUILD_name)_$$var = $$value" >> Makefile.export; \
 	fi
 
 
