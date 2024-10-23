@@ -76,6 +76,8 @@ User tools and API improvements and changes:
 - Added documentation of the current MPMD/MSA workflow.
 - Removed unused and faulty profiling format options (key_threads,
   cluster_threads, thread_sum, thread_tuple, and none).
+- The deprecated `SCOREP_ENABLE_SYSTEM_TREE_SEQUENCE_DEFINITIONS` feature
+  has been removed.
 
 Compatibility:
 
@@ -420,7 +422,7 @@ User tools and API improvements and changes:
 - Deprecate instrumentation using the Program Database Toolkit, i.e.,
   using the `--pdt` option. Please use compiler or user
   instrumentation instead.
-  - The `SCOREP_ENABLE_SYSTEM_TREE_SEQUENCE_DEFINITIONS` feature,
+- The `SCOREP_ENABLE_SYSTEM_TREE_SEQUENCE_DEFINITIONS` feature,
   introduced in Score-P 4.0, is deprecated.
 - Add a `DEMANGLED` keyword to the filter parser as a counterpart to
   the existing `MANGLED` keyword to switch back and forth between

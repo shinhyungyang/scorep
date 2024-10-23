@@ -13,7 +13,7 @@
  * Copyright (c) 2009-2011,
  * University of Oregon, Eugene, USA
  *
- * Copyright (c) 2009-2011, 2015, 2017-2018,
+ * Copyright (c) 2009-2011, 2015, 2017-2018, 2024,
  * Forschungszentrum Juelich GmbH, Germany
  *
  * Copyright (c) 2009-2011,
@@ -70,7 +70,6 @@ static char*    env_experiment_directory;
 static bool     env_overwrite_experiment_directory;
 static char*    env_machine_name;
 static char*    env_executable;
-static bool     env_system_tree_sequence;
 static bool     force_cfg_files;
 
 /*
@@ -215,22 +214,6 @@ static const SCOREP_ConfigVariable core_confvars[] = {
         "complain if this environment variable is needed."
     },
     {
-        "enable_system_tree_sequence_definitions",
-        SCOREP_CONFIG_TYPE_BOOL,
-        &env_system_tree_sequence,
-        NULL,
-        "false",
-        "Use system tree sequence definitions",
-        "Enables an internal system tree representation that specifies "
-        "a sequence of system tree nodes with one record instead of "
-        "creating one record per system tree node, location group or "
-        "location. It is more scalable and has less memory requirements "
-        "then single-node records. However, it costs individual names "
-        "of nodes, but simply enumerates them based on types. "
-        "Currently, system tree sequence definitions support only MPI "
-        "(and trivially single-process) applications."
-    },
-    {
         "force_cfg_files",
         SCOREP_CONFIG_TYPE_BOOL,
         &force_cfg_files,
@@ -344,19 +327,6 @@ SCOREP_Env_DoForceCfgFiles( void )
 {
     assert( env_variables_initialized );
     return force_cfg_files;
-}
-
-bool
-SCOREP_Env_UseSystemTreeSequence( void )
-{
-    assert( env_variables_initialized );
-    if ( env_system_tree_sequence )
-    {
-        UTILS_WARN_ONCE( "The system tree sequence definitions feature, enabled "
-                         "via `SCOREP_ENABLE_SYSTEM_TREE_SEQUENCE_DEFINITIONS`, "
-                         "is deprecated." );
-    }
-    return env_system_tree_sequence;
 }
 
 void

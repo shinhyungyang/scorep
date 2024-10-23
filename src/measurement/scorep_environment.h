@@ -13,7 +13,7 @@
  * Copyright (c) 2009-2011,
  * University of Oregon, Eugene, USA
  *
- * Copyright (c) 2009-2011, 2017,
+ * Copyright (c) 2009-2011, 2017, 2024,
  * Forschungszentrum Juelich GmbH, Germany
  *
  * Copyright (c) 2009-2011,
@@ -78,9 +78,6 @@ SCOREP_Env_GetMachineName( void );
 
 const char*
 SCOREP_Env_GetExecutable( void );
-
-bool
-SCOREP_Env_UseSystemTreeSequence( void );
 
 /*
  * Tracing setup
