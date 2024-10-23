@@ -121,13 +121,4 @@ bool
 SCOREP_Status_IsProcessMasterOnNode( void );
 
 
-/**
- * Notify that ACC was in use.
- *
- * Prevents usage of system tree sequence definitions.
- */
-void
-SCOREP_Status_OnAccUsage( void );
-
-
 #endif /* SCOREP_STATUS_H */

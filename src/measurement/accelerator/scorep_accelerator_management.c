@@ -4,7 +4,7 @@
  * Copyright (c) 2022,
  * Technische Universitaet Dresden, Germany
  *
- * Copyright (c) 2022,
+ * Copyright (c) 2022, 2024,
  * Forschungszentrum Juelich GmbH, Germany
  *
  * This software may be modified and distributed under the terms of
@@ -43,8 +43,6 @@ SCOREP_LocationGroupHandle
 SCOREP_AcceleratorMgmt_CreateContext( SCOREP_SystemTreeNodeHandle deviceHandle,
                                       const char*                 name )
 {
-    SCOREP_Status_OnAccUsage();
-
     return SCOREP_Definitions_NewLocationGroup(
         name,
         deviceHandle,

@@ -243,9 +243,3 @@ SCOREP_Status_HasOtf2Flushed( void )
 {
     return scorep_process_local_status.otf2_has_flushed;
 }
-
-
-void
-SCOREP_Status_OnAccUsage( void )
-{
-}
