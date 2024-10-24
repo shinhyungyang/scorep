@@ -306,15 +306,21 @@ cuda_api_get_region( CUpti_CallbackDomain domain,
         return region_handle;
     }
 
-    region_handle = SCOREP_Definitions_NewRegion(
-        functionName, NULL,
-        domain == CUPTI_CB_DOMAIN_RUNTIME_API
-        ? cuda_runtime_file_handle
-        : cuda_driver_file_handle,
-        0, 0, SCOREP_PARADIGM_CUDA,
-        callbackId == CUPTI_DRIVER_TRACE_CBID_cuLaunchKernel
-        ? SCOREP_REGION_KERNEL_LAUNCH : SCOREP_REGION_WRAPPER );
-
+    if ( SCOREP_Filtering_MatchFunction( functionName, NULL ) )
+    {
+        region_handle = SCOREP_FILTERED_REGION;
+    }
+    else
+    {
+        region_handle = SCOREP_Definitions_NewRegion(
+            functionName, NULL,
+            domain == CUPTI_CB_DOMAIN_RUNTIME_API
+            ? cuda_runtime_file_handle
+            : cuda_driver_file_handle,
+            0, 0, SCOREP_PARADIGM_CUDA,
+            callbackId == CUPTI_DRIVER_TRACE_CBID_cuLaunchKernel
+            ? SCOREP_REGION_KERNEL_LAUNCH : SCOREP_REGION_WRAPPER );
+    }
     cuda_function_table[ idx ] = region_handle;
 
     UTILS_MutexUnlock( &cuda_function_table_mutex );
@@ -767,7 +773,7 @@ scorep_cupti_callbacks_runtime_api( CUpti_CallbackId          callbackId,
        this point */
 
     /*********** write enter and exit records for CUDA runtime API **************/
-    if ( !SCOREP_Filtering_MatchFunction( cbInfo->functionName, NULL ) )
+    if ( region_handle != SCOREP_INVALID_REGION && region_handle != SCOREP_FILTERED_REGION )
     {
         if ( cbInfo->callbackSite == CUPTI_API_ENTER )
         {
@@ -1141,7 +1147,7 @@ scorep_cupti_callbacks_driver_api( CUpti_CallbackId          callbackId,
     if ( record_driver_api_location )
     {
         /********** write enter and exit records for CUDA driver API **********/
-        if ( !SCOREP_Filtering_MatchFunction( cbInfo->functionName, NULL ) )
+        if ( region_handle != SCOREP_INVALID_REGION && region_handle != SCOREP_FILTERED_REGION )
         {
             if ( cbInfo->callbackSite == CUPTI_API_ENTER )
             {
@@ -1947,8 +1953,7 @@ handle_cuda_memcpy( const CUpti_CallbackData* cbInfo,
                                     stream->location_id, bytes, 42 );
         }
 
-        if ( ( region != SCOREP_INVALID_REGION ) &&
-             ( !SCOREP_Filtering_MatchFunction( cbInfo->functionName, NULL ) ) )
+        if ( region != SCOREP_INVALID_REGION && region != SCOREP_FILTERED_REGION )
         {
             /* With 'location == NULL' SCOREP_Location_EnterRegion will
              * write the event on the current CPU location */
@@ -1985,8 +1990,7 @@ handle_cuda_memcpy( const CUpti_CallbackData* cbInfo,
                                                    scorep_cuda_window_handle, 42 );
         }
 
-        if ( ( region != SCOREP_INVALID_REGION ) &&
-             ( !SCOREP_Filtering_MatchFunction( cbInfo->functionName, NULL ) ) )
+        if ( region != SCOREP_INVALID_REGION && region != SCOREP_FILTERED_REGION )
         {
             /* With 'location == NULL' SCOREP_Location_ExitRegion will
              * write the event on the current CPU location */

@@ -125,6 +125,8 @@ Bugfixes:
 - Prevent `configure` from aborting on `--with-lib<library>-include`
   or `--with-lib<library>-lib` values that contain the substring "yes"
   or "no".
+- Reduction of overhead when the CUDA adapter is active and runtime
+  filtering is used.
 
 ------------------- Released version 8.4 -----------------------------
 
