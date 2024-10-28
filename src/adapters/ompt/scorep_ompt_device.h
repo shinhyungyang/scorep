@@ -29,6 +29,7 @@ typedef struct scorep_ompt_target_data_t
     ompt_id_t   target_id;
     uint32_t    num_records;       /* Number of device tracing records that should be dispatched */
     uint32_t    processed_records; /* Number of device tracing records that have been processed */
+    uint64_t    callsite_id;
     bool        supports_device_tracing;
 } scorep_ompt_target_data_t;
 

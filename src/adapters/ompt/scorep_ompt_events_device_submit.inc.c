@@ -44,7 +44,7 @@ device_tracing_handle_submit_record( const ompt_record_target_kernel_t callbackR
         stream->scorep_location,
         startTime,
         parameters.callsite_id,
-        ( uintptr_t )targetRegionInformation->codeptr_ra );
+        targetRegionInformation->callsite_id );
     SCOREP_Location_TriggerParameterUint64(
         stream->scorep_location,
         startTime,
@@ -102,7 +102,7 @@ target_submit_emi_device_tracing( ompt_scope_endpoint_t endpoint,
              * the value differs from data transfers as the runtime might reuse pointers. */
             *hostOpId = scorep_ompt_get_unique_id();
             SCOREP_EnterRegion( get_region( data->codeptr_ra, TOOL_EVENT_TARGET_KERNEL_LAUNCH ) );
-            SCOREP_TriggerParameterUint64( parameters.callsite_id, ( uintptr_t )data->codeptr_ra );
+            SCOREP_TriggerParameterUint64( parameters.callsite_id, data->callsite_id );
             data->num_records++;
             break;
         }
