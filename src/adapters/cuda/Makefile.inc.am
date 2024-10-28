@@ -83,6 +83,7 @@ libscorep_adapter_cuda_mgmt_la_LDFLAGS = \
     $(library_api_version_ldflags)       \
     $(libscorep_addr2line_la_needs_LDFLAGS)
 
+if HAVE_BUILD_SHARED_LT_LIBRARIES
 libscorep_adapter_cuda_event_la_SOURCES  = \
     $(SRC_ROOT)src/adapters/cuda/scorep_cuda_nvtx.c
 
@@ -97,5 +98,9 @@ libscorep_adapter_cuda_event_la_CPPFLAGS = \
 
 libscorep_adapter_cuda_event_la_LDFLAGS = \
     $(library_api_version_ldflags)
+else !HAVE_BUILD_SHARED_LT_LIBRARIES
+libscorep_adapter_cuda_mgmt_la_SOURCES += \
+    $(SRC_ROOT)src/adapters/cuda/scorep_cuda_nvtx.c
+endif !HAVE_BUILD_SHARED_LT_LIBRARIES
 
-endif
+endif HAVE_CUDA_SUPPORT
