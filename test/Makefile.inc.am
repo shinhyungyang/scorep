@@ -72,6 +72,9 @@ external_ldflags += $(SCOREP_COMPILER_INSTRUMENTATION_LDFLAGS)
 endif HAVE_SCOREP_COMPILER_INSTRUMENTATION
 
 if HAVE_CUDA_TESTS
+common_event_libadd += \
+    libscorep_adapter_cuda_event.la
+
 common_mgmt_libadd += \
     libscorep_adapter_cuda_mgmt.la \
     libscorep_alloc_metric.la
