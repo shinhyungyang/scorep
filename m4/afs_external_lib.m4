@@ -3,7 +3,7 @@
 ##
 ## This file is part of the Score-P software ecosystem (http://www.score-p.org)
 ##
-## Copyright (c) 2021-2022,
+## Copyright (c) 2021-2022, 2024,
 ## Forschungszentrum Juelich GmbH, Germany
 ##
 ## Copyright (c) 2022, 2024,
@@ -219,8 +219,8 @@ AS_CASE(["${_afs_lib_withval:+set1}${_afs_lib_withval_lib:+set2}m4_ifnblank([$3]
                   [AC_MSG_ERROR([Neither ${_afs_lib_withval}/(lib64|lib) contain _afs_lib_name.*. Consider using --with-_afs_lib_name-lib and --with-_afs_lib_name-include.])])])],
     m4_ifnblank([$3], [dnl
     [set2set3],
-        [AS_CASE([${_afs_lib_withval_lib}${_afs_lib_withval_include}],
-             [*yes*|*no*], [AC_MSG_ERROR([Both, --with-_afs_lib_name-lib and --with-_afs_lib_name-include require a <path>.])],
+        [AS_CASE([${_afs_lib_withval_lib},${_afs_lib_withval_include}],
+             [yes,*|no,*|*,yes|*,no], [AC_MSG_ERROR([Both, --with-_afs_lib_name-lib and --with-_afs_lib_name-include require a <path>.])],
              [dnl header consistency checks, differ from the checks above
               AFS_CONSISTENT_DIR([_afs_lib_withval_include], [--with-_afs_lib_name-include])
               AS_IF([! test -d "$_afs_lib_withval_include"],
