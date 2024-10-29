@@ -122,6 +122,9 @@ Bugfixes:
   abort when too many were scheduled.
 - Properly quote macro definitions provided on the compiler command line
   during instrumentation.
+- Prevent `configure` from aborting on `--with-lib<library>-include`
+  or `--with-lib<library>-lib` values that contain the substring "yes"
+  or "no".
 
 ------------------- Released version 8.4 -----------------------------
 
