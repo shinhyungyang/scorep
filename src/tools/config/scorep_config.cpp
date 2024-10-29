@@ -253,7 +253,7 @@ main( int    argc,
         else if ( strcmp( argv[ i ], "--scorep-revision" ) == 0 ||
                   strcmp( argv[ i ], "--common-revision" ) == 0 )
         {
-            std::cerr << "[Score-P] warning: " << argv[ i ] << " is deprecated" << std::endl;
+            std::cerr << "[Score-P] WARNING: '" << argv[ i ] << "' is deprecated" << std::endl;
             std::cout << SCOREP_COMPONENT_REVISION << std::endl;
             exit( EXIT_SUCCESS );
         }
@@ -516,11 +516,12 @@ main( int    argc,
         switch ( action )
         {
             case ACTION_LDFLAGS:
-                std::cout << deps.getLDFlags( libs, install );
+                str = deps.getLDFlags( libs, install );
                 if ( USE_LIBDIR_FLAG )
                 {
-                    std::cout << deps.getRpathFlags( libs, install );
+                    str += deps.getRpathFlags( libs, install );
                 }
+                std::cout << str;
                 std::cout.flush();
                 break;
 
@@ -586,10 +587,10 @@ main( int    argc,
     switch ( action )
     {
         case ACTION_LDFLAGS:
-            std::cout << deps.getLDFlags( libs, install );
+            str = deps.getLDFlags( libs, install );
             if ( USE_LIBDIR_FLAG )
             {
-                str = deps.getRpathFlags( libs, install );
+                str += deps.getRpathFlags( libs, install );
             }
             if ( SCOREP_Config_Adapter::isActive() )
             {

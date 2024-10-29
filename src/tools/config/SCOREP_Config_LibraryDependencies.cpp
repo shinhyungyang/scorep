@@ -296,6 +296,8 @@ SCOREP_Config_LibraryDependencies::AppendLdRunPath( std::deque<std::string>& pat
              || i[ 0 ] != '/'
              || i.find_first_of( "\t\n " ) != string::npos )
         {
+            std::cerr << "[Score-P] WARNING: Omitting implausible LD_RUN_PATH element '"
+                      << i << "'." << std::endl;
             continue;
         }
         paths.push_back( i );
