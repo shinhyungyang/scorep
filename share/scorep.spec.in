@@ -85,6 +85,12 @@
                 global(omp_sync_taskwait);
                 global(omp_flush);
 
+                // OpenMP Target-specific masks
+                global(omp_target_other);
+                global(omp_target_transfer);
+                global(omp_target_kernel_launches);
+                global(omp_target_kernel_executions);
+
                 // Pthread-specific masks
                 global(pthread_mgmt);
                 global(pthread_sync_mutex);
@@ -137,18 +143,19 @@
                 // experiment to later enable/disable the corresponding
                 // metric subtrees.
 
-                ${includesMPI}      = 0;
-                ${includesSHMEM}    = 0;
-                ${includesOpenMP}   = 0;
-                ${includesPthread}  = 0;
-                ${includesOpenACC}  = 0;
-                ${includesOpenCL}   = 0;
-                ${includesCUDA}     = 0;
-                ${includesIdleGPUs} = 0;
-                ${includesHIP}      = 0;
-                ${includesLIBWRAP}  = 0;
-                ${includesFILEIO}   = 0;
-                ${includesMEMORY}   = 0;
+                ${includesMPI}          = 0;
+                ${includesSHMEM}        = 0;
+                ${includesOpenMP}       = 0;
+                ${includesOpenMPTarget} = 0;
+                ${includesPthread}      = 0;
+                ${includesOpenACC}      = 0;
+                ${includesOpenCL}       = 0;
+                ${includesCUDA}         = 0;
+                ${includesIdleGPUs}     = 0;
+                ${includesHIP}          = 0;
+                ${includesLIBWRAP}      = 0;
+                ${includesFILEIO}       = 0;
+                ${includesMEMORY}       = 0;
 
 
                 //--- Callpath categorization -------------------------------
@@ -398,6 +405,36 @@
                         if ( ${role} eq "flush" )
                         {
                             ${omp_flush}[${i}] = 1;
+                        };
+                    }
+
+                    //--- OpenMP Target-specific categorization ---
+                    elseif ( ${paradigm} eq "openmp target" )
+                    {
+                        ${includesOpenMPTarget} = 1;
+                        ${includesOpenMP} = 1;
+
+                        if ( ${role} eq "function"
+                             or ${role} eq "kernel" )
+                        {
+                            ${omp_target_kernel_executions}[${i}] = 1;
+                        };
+
+                        if ( ${role} eq "taskwait" )
+                        {
+                            ${omp_target_other}[${i}] = 1;
+                        };
+
+                        if ( ${role} eq "data transfer"
+                             or ${role} eq "allocate"
+                             or ${role} eq "deallocate" )
+                        {
+                            ${omp_target_transfer}[${i}] = 1;
+                        };
+
+                        if ( ${role} eq "wrapper" )
+                        {
+                            ${omp_target_kernel_launches}[${i}] = 1;
                         };
                     }
 
@@ -756,6 +793,14 @@
                     cube::metric::set::omp_limited_parallelism("value", "VOID");
                 };
 
+                if ( ${includesOpenMPTarget} == 0 )
+                {
+                    cube::metric::set::omp_target_other("value", "VOID");
+                    cube::metric::set::omp_target_transfer("value", "VOID");
+                    cube::metric::set::omp_target_kernel_launches("value", "VOID");
+                    cube::metric::set::omp_target_kernel_executions("value", "VOID");
+                };
+
                 if ( ${includesPthread} == 0 )
                 {
                     cube::metric::set::pthread_time("value", "VOID");
@@ -910,6 +955,17 @@
                     <descr>Time spent executing OpenCL kernels</descr>
                     <cubepl>
                         ${opencl_kernel_executions}[${calculation::callpath::id}] * ( metric::time(e) - metric::omp_idle_threads(e) )
+                    </cubepl>
+                </metric>
+                <metric type="PREDERIVED_EXCLUSIVE">
+                    <disp_name>OpenMP kernels</disp_name>
+                    <uniq_name>omp_target_kernel_executions</uniq_name>
+                    <dtype>FLOAT</dtype>
+                    <uom>sec</uom>
+                    <url>@mirror@scorep_metrics.html#omp_target_kernel_executions</url>
+                    <descr>Time spent executing OpenMP kernels</descr>
+                    <cubepl>
+                        ${omp_target_kernel_executions}[${calculation::callpath::id}] * ( metric::time(e) - metric::omp_idle_threads(e) )
                     </cubepl>
                 </metric>
                 <metric type="PREDERIVED_EXCLUSIVE">
@@ -1397,8 +1453,52 @@
                 <url>@mirror@scorep_metrics.html#omp_time</url>
                 <descr>Time spent in the OpenMP run-time system and API</descr>
                 <cubepl>
-                    metric::omp_synchronization() + metric::omp_flush()
+                    metric::omp_synchronization() + metric::omp_flush() + metric::omp_target_time()
                 </cubepl>
+                <metric type="POSTDERIVED">
+                    <disp_name>OpenMP Target</disp_name>
+                    <uniq_name>omp_target_time</uniq_name>
+                    <dtype>FLOAT</dtype>
+                    <uom>sec</uom>
+                    <url>@mirror@scorep_metrics.html#omp_target_time</url>
+                    <descr>Time spent in the OpenMP target parts of the OpenMP specification</descr>
+                    <cubepl>
+                        metric::omp_target_transfer() + metric::omp_target_kernel_launches() + metric::omp_target_other()
+                    </cubepl>
+                    <metric type="PREDERIVED_EXCLUSIVE">
+                        <disp_name>Memory management</disp_name>
+                        <uniq_name>omp_target_transfer</uniq_name>
+                        <dtype>FLOAT</dtype>
+                        <uom>sec</uom>
+                        <url>@mirror@scorep_metrics.html#omp_target_transfer</url>
+                        <descr>Time spent on memory management including data transfer from host to device and vice versa</descr>
+                        <cubepl>
+                            ${omp_target_transfer}[${calculation::callpath::id}] * ( metric::time(e) - metric::omp_idle_threads(e) )
+                        </cubepl>
+                    </metric>
+                    <metric type="PREDERIVED_EXCLUSIVE">
+                        <disp_name>Kernel launches</disp_name>
+                        <uniq_name>omp_target_kernel_launches</uniq_name>
+                        <dtype>FLOAT</dtype>
+                        <uom>sec</uom>
+                        <url>@mirror@scorep_metrics.html#omp_target_kernel_launches</url>
+                        <descr>Time needed to launch OpenMP kernels</descr>
+                        <cubepl>
+                            ${omp_target_kernel_launches}[${calculation::callpath::id}] * ( metric::time(e) - metric::omp_idle_threads(e) )
+                        </cubepl>
+                    </metric>
+                    <metric type="PREDERIVED_EXCLUSIVE">
+                        <disp_name>Other</disp_name>
+                        <uniq_name>omp_target_other</uniq_name>
+                        <dtype>FLOAT</dtype>
+                        <uom>sec</uom>
+                        <url>@mirror@scorep_metrics.html#omp_target_other</url>
+                        <descr>Time spent on memory management including data transfer from host to device and vice versa</descr>
+                        <cubepl>
+                            ${omp_target_other}[${calculation::callpath::id}] * ( metric::time(e) - metric::omp_idle_threads(e) )
+                        </cubepl>
+                    </metric>
+                </metric>
                 <metric type="POSTDERIVED">
                     <disp_name>Synchronization</disp_name>
                     <uniq_name>omp_synchronization</uniq_name>
