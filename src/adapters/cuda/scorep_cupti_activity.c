@@ -13,7 +13,7 @@
  * Copyright (c) 2009-2013,
  * University of Oregon, Eugene, USA
  *
- * Copyright (c) 2009-2013, 2015, 2021, 2023,
+ * Copyright (c) 2009-2013, 2015, 2021, 2023-2024,
  * Forschungszentrum Juelich GmbH, Germany
  *
  * Copyright (c) 2009-2013,
@@ -335,12 +335,18 @@ scorep_cupti_activity_write_kernel( CUpti_ActivityKernelType* kernel,
             }
         }
 
-        // create a new region definition for this kernel
-        regionHandle = SCOREP_Definitions_NewRegion( knName, kernel->name,
-                                                     scorep_cupti_kernel_file_handle, 0, 0,
-                                                     SCOREP_PARADIGM_CUDA, SCOREP_REGION_KERNEL );
-
-        hashNode = scorep_cupti_kernel_hash_put( kernel->name, regionHandle );
+        if ( SCOREP_Filtering_MatchFunction( kernel->name, NULL ) )
+        {
+            regionHandle = SCOREP_FILTERED_REGION;
+        }
+        else
+        {
+            // create a new region definition for this kernel
+            regionHandle = SCOREP_Definitions_NewRegion( knName, kernel->name,
+                                                         scorep_cupti_kernel_file_handle, 0, 0,
+                                                         SCOREP_PARADIGM_CUDA, SCOREP_REGION_KERNEL );
+        }
+        scorep_cupti_kernel_hash_put( kernel->name, regionHandle );
     }
 
     /* write events */
@@ -434,7 +440,7 @@ scorep_cupti_activity_write_kernel( CUpti_ActivityKernelType* kernel,
             }
         }
 
-        if ( !SCOREP_Filtering_MatchFunction( kernel->name, NULL ) )
+        if ( regionHandle != SCOREP_FILTERED_REGION )
         {
             SCOREP_Location_EnterRegion( stream_location, start, regionHandle );
 
