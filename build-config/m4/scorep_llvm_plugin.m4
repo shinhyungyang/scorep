@@ -355,8 +355,13 @@ getConfigureTestPluginInfo()
 #if not __has_include( "llvm/Passes/OptimizationLevel.h" )
                  using OptimizationLevel = PassBuilder::OptimizationLevel;
 #endif
+#if LLVM_VERSION_MAJOR < 20
                  PB.registerOptimizerLastEPCallback(
                      @<:@ @:>@( llvm::ModulePassManager& PM, OptimizationLevel Level ) {
+#else
+                 PB.registerOptimizerLastEPCallback(
+                     @<:@ @:>@( llvm::ModulePassManager& PM, llvm::OptimizationLevel Level, llvm::ThinOrFullLTOPhase phase ) {
+#endif
                 PM.addPass( ConfigureTest() );
             } );
                  PB.registerPipelineParsingCallback(
