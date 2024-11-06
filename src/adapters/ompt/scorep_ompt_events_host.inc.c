@@ -491,8 +491,6 @@ scorep_ompt_cb_host_parallel_begin( ompt_data_t*        encountering_task_data,
     SCOREP_OMPT_RETURN_ON_INVALID_EVENT();
 
     UTILS_BUG_ON( requested_parallelism == 0 );
-    UTILS_BUG_ON( parallel_data->ptr != NULL,
-                  "Expected no ompt_data_t object for a new parallel region." );
 
     /* Runtimes that don't support OMPT target callbacks have been reported
        creating helper threads that lack thread-begin and implicit-task-begin
@@ -704,8 +702,6 @@ scorep_ompt_cb_host_parallel_end( ompt_data_t* parallel_data,
 
     tpd = tpd_from_now_on;
     release_parallel_region( parallel_data->ptr );
-    /* Explicitly set parallel_data->ptr to NULL, as Cray does reuse these for future parallel regions. */
-    parallel_data->ptr = NULL;
 
     UTILS_DEBUG_EXIT();
     SCOREP_IN_MEASUREMENT_DECREMENT();
