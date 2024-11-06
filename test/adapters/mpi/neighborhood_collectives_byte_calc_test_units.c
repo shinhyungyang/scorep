@@ -707,6 +707,9 @@ test_dist_graph_nb_allgatherv( CuTest* ct )
             expected        = ( ByteCounts ){.send = 3 * 400, .recv = 1 * 1200 };
             break;
         case 1:
+            // Rank 1 has no outgoing neighbors. Therefore the value of sendcount
+            // must not impact the byte calculations
+            sendcount       = -1;
             sendtype        = Int32x1;
             recvcounts[ 0 ] = 100; // <- Rank 0
             recvcounts[ 1 ] = 200; // <- Rank 2
