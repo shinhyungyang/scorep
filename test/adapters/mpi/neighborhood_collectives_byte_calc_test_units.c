@@ -25,8 +25,10 @@ test_cart_nb_alltoall( CuTest* ct )
     ByteCounts bytes    = { bogus64, bogus64 };
     ByteCounts expected = { 3 * 100 * 4, 3 * 100 * 4 };
 
-    int          sendcount, recvcount;
-    MPI_Datatype sendtype, recvtype;
+    int          sendcount = bogus32;
+    int          recvcount = bogus32;
+    MPI_Datatype sendtype  = BogusType;
+    MPI_Datatype recvtype  = BogusType;
 
     int rank;
     MPI_Comm_rank( comm, &rank );
@@ -59,8 +61,10 @@ test_cart_nb_alltoallv( CuTest* ct )
     ByteCounts bytes    = { bogus64, bogus64 };
     ByteCounts expected = { bogus64, bogus64 };
 
-    int          sendcounts[ 4 ], recvcounts[ 4 ];
-    MPI_Datatype sendtype, recvtype;
+    int          sendcounts[ 4 ] = { bogus32, bogus32, bogus32, bogus32 };
+    int          recvcounts[ 4 ] = { bogus32, bogus32, bogus32, bogus32 };
+    MPI_Datatype sendtype        = BogusType;
+    MPI_Datatype recvtype        = BogusType;
 
     int rank;
     MPI_Comm_rank( comm, &rank );
@@ -107,8 +111,11 @@ test_cart_nb_alltoallw( CuTest* ct )
     ByteCounts bytes    = { bogus64, bogus64 };
     ByteCounts expected = { bogus64, bogus64 };
 
-    int          sendcounts[ 4 ], recvcounts[ 4 ];
-    MPI_Datatype sendtypes[ 4 ], recvtypes[ 4 ];
+    int sendcounts[ 4 ] = { bogus32, bogus32, bogus32, bogus32 };
+    int recvcounts[ 4 ] = { bogus32, bogus32, bogus32, bogus32 };
+
+    MPI_Datatype sendtypes[ 4 ] = { BogusType, BogusType, BogusType, BogusType };
+    MPI_Datatype recvtypes[ 4 ] = { BogusType, BogusType, BogusType, BogusType };
 
     int rank;
     MPI_Comm_rank( comm, &rank );
@@ -167,8 +174,10 @@ test_cart_nb_allgather( CuTest* ct )
     ByteCounts bytes    = { bogus64, bogus64 };
     ByteCounts expected = { 3 * 100 * 4, 3 * 100 * 4 };
 
-    int          sendcount, recvcount;
-    MPI_Datatype sendtype, recvtype;
+    int          sendcount = bogus32;
+    int          recvcount = bogus32;
+    MPI_Datatype sendtype  = BogusType;
+    MPI_Datatype recvtype  = BogusType;
 
     int rank;
     MPI_Comm_rank( comm, &rank );
@@ -200,9 +209,10 @@ test_cart_nb_allgatherv( CuTest* ct )
     ByteCounts bytes    = { bogus64, bogus64 };
     ByteCounts expected = { bogus64, bogus64 };
 
-    int          sendcount;
-    int          recvcounts[ 4 ];
-    MPI_Datatype sendtype, recvtype;
+    int          sendcount       = bogus32;
+    int          recvcounts[ 4 ] = { bogus32, bogus32, bogus32, bogus32 };
+    MPI_Datatype sendtype        = BogusType;
+    MPI_Datatype recvtype        = BogusType;
 
     int rank;
     MPI_Comm_rank( comm, &rank );
@@ -245,8 +255,10 @@ test_graph_nb_alltoall( CuTest* ct )
     ByteCounts bytes    = { bogus64, bogus64 };
     ByteCounts expected = { 0, 0 };
 
-    int          sendcount, recvcount;
-    MPI_Datatype sendtype, recvtype;
+    int          sendcount = bogus32;
+    int          recvcount = bogus32;
+    MPI_Datatype sendtype  = BogusType;
+    MPI_Datatype recvtype  = BogusType;
 
     int rank;
     MPI_Comm_rank( comm, &rank );
@@ -295,7 +307,8 @@ test_graph_nb_alltoallv( CuTest* ct )
     // Arrays are larger than needed
     int          sendcounts[ 4 ] = { bogus32, bogus32, bogus32, bogus32 };
     int          recvcounts[ 4 ] = { bogus32, bogus32, bogus32, bogus32 };
-    MPI_Datatype sendtype, recvtype;
+    MPI_Datatype sendtype        = BogusType;
+    MPI_Datatype recvtype        = BogusType;
 
     int rank;
     MPI_Comm_rank( comm, &rank );
@@ -404,8 +417,10 @@ test_graph_nb_allgather( CuTest* ct )
     ByteCounts bytes    = { bogus64, bogus64 };
     ByteCounts expected = { 0, 0 };
 
-    int          sendcount, recvcount;
-    MPI_Datatype sendtype, recvtype;
+    int          sendcount = bogus32;
+    int          recvcount = bogus32;
+    MPI_Datatype sendtype  = BogusType;
+    MPI_Datatype recvtype  = BogusType;
 
     int rank;
     MPI_Comm_rank( comm, &rank );
@@ -454,7 +469,8 @@ test_graph_nb_allgatherv( CuTest* ct )
     // Arrays are larger than needed
     int          sendcount       = bogus32;
     int          recvcounts[ 4 ] = { bogus32, bogus32, bogus32, bogus32 };
-    MPI_Datatype sendtype, recvtype;
+    MPI_Datatype sendtype        = BogusType;
+    MPI_Datatype recvtype        = BogusType;
 
     int rank;
     MPI_Comm_rank( comm, &rank );
@@ -505,8 +521,10 @@ test_dist_graph_nb_alltoall( CuTest* ct )
     ByteCounts bytes    = { bogus64, bogus64 };
     ByteCounts expected = { 0, 0 };
 
-    int          sendcount, recvcount;
-    MPI_Datatype sendtype, recvtype;
+    int          sendcount = bogus32;
+    int          recvcount = bogus32;
+    MPI_Datatype sendtype  = BogusType;
+    MPI_Datatype recvtype  = BogusType;
 
     int rank;
     MPI_Comm_rank( comm, &rank );
@@ -642,8 +660,10 @@ test_dist_graph_nb_allgather( CuTest* ct )
     ByteCounts bytes    = { bogus64, bogus64 };
     ByteCounts expected = { 0, 0 };
 
-    int          sendcount, recvcount;
-    MPI_Datatype sendtype, recvtype;
+    int          sendcount = bogus32;
+    int          recvcount = bogus32;
+    MPI_Datatype sendtype  = BogusType;
+    MPI_Datatype recvtype  = BogusType;
 
     int rank;
     MPI_Comm_rank( comm, &rank );
@@ -691,9 +711,10 @@ test_dist_graph_nb_allgatherv( CuTest* ct )
     ByteCounts expected = { 0, 0 };
 
     // Arrays are larger than needed
-    int          sendcount;
+    int          sendcount       = bogus32;
     int          recvcounts[ 4 ] = { bogus32, bogus32, bogus32, bogus32 };
-    MPI_Datatype sendtype, recvtype;
+    MPI_Datatype sendtype        = BogusType;
+    MPI_Datatype recvtype        = BogusType;
 
     int rank;
     MPI_Comm_rank( comm, &rank );
@@ -707,7 +728,8 @@ test_dist_graph_nb_allgatherv( CuTest* ct )
             expected        = ( ByteCounts ){.send = 3 * 400, .recv = 1 * 1200 };
             break;
         case 1:
-            sendtype        = Int32x1;
+            // Rank 1 has no outgoing neighbors. Therefore sendtype and sendcount
+            // must not impact the byte calculations.
             recvcounts[ 0 ] = 100; // <- Rank 0
             recvcounts[ 1 ] = 200; // <- Rank 2
             recvtype        = Int32x1;
