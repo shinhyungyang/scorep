@@ -13,7 +13,7 @@
  * Copyright (c) 2009-2013,
  * University of Oregon, Eugene, USA
  *
- * Copyright (c) 2009-2015, 2017, 2019, 2022-2023,
+ * Copyright (c) 2009-2015, 2017, 2019, 2022-2024,
  * Forschungszentrum Juelich GmbH, Germany
  *
  * Copyright (c) 2009-2014,
@@ -54,7 +54,6 @@
 
 #include <scorep_profile_definition.h>
 #include <scorep_profile_location.h>
-#include <scorep_profile_aggregate.h>
 #include <scorep_profile_task_init.h>
 #include <scorep_ipc.h>
 #include <scorep_system_tree_sequence.h>
@@ -631,16 +630,13 @@ set_bitstring_for_unknown_metric( scorep_cube_writing_data* writeSet,
     {                                                                                                    \
         scorep_profile_node* node              = NULL;                                                   \
         cube_cnode*          cnode             = NULL;                                                   \
-        type*                aggregated_values = NULL;                                                   \
         type*                local_values      = NULL;                                                   \
         type*                global_values     = NULL;                                                   \
         if ( writeSet->callpath_number == 0 ) {                                                          \
             return; }                                                                                    \
                                                                                                          \
         local_values      = ( type* )malloc( writeSet->local_threads * sizeof( type ) );                 \
-        aggregated_values = ( type* )malloc( writeSet->local_items * sizeof( type ) );                   \
         UTILS_ASSERT( local_values );                                                                    \
-        UTILS_ASSERT( aggregated_values );                                                               \
                                                                                                          \
         if ( writeSet->my_rank == writeSet->root_rank )                                                  \
         {                                                                                                \
@@ -672,14 +668,12 @@ set_bitstring_for_unknown_metric( scorep_cube_writing_data* writeSet,
                     local_values[ thread_index ] = zero;                                                 \
                 }                                                                                        \
             }                                                                                            \
-            scorep_profile_aggregate_##type( &local_values,                                              \
-                                             &aggregated_values,                                         \
-                                             writeSet );                                                 \
+                                                                                                         \
             /* Collect data from all processes */                                                        \
             SCOREP_IpcGroup_Barrier( comm );                                                             \
             if ( writeSet->same_thread_num )                                                             \
             {                                                                                            \
-                SCOREP_IpcGroup_Gather( comm, aggregated_values, global_values,                          \
+                SCOREP_IpcGroup_Gather( comm, local_values, global_values,                          \
                                         writeSet->local_items * NUMBER,                                  \
                                         SCOREP_IPC_##TYPE, writeSet->root_rank );                        \
             }                                                                                            \
@@ -696,7 +690,7 @@ set_bitstring_for_unknown_metric( scorep_cube_writing_data* writeSet,
                     }                                                                                    \
                 }                                                                                        \
                 SCOREP_IpcGroup_Gatherv( comm,                                                           \
-                                         aggregated_values,                                              \
+                                         local_values,                                              \
                                          writeSet->local_items * NUMBER,                                 \
                                          global_values, items_per_rank,                                  \
                                          SCOREP_IPC_##TYPE, writeSet->root_rank );                       \
@@ -718,7 +712,6 @@ set_bitstring_for_unknown_metric( scorep_cube_writing_data* writeSet,
         /* Clean up */                                                                                   \
         free( global_values );                                                                           \
         free( local_values );                                                                            \
-        free( aggregated_values );                                                                       \
     }
 
 /* *INDENT-ON* */
@@ -851,9 +844,7 @@ init_cube_writing_data( scorep_cube_writing_data*   writeSet,
     writeSet->root_rank = writeSet->my_rank;
     SCOREP_Ipc_Bcast( &writeSet->root_rank, 1, SCOREP_IPC_UINT32_T, 0 );
 
-    /* Calculate the local number of items */
-    writeSet->local_items =
-        scorep_profile_get_aggregated_items( writeSet->local_threads, format );
+    writeSet->local_items = writeSet->local_threads;
 
     /* Get the number of unified callpath definitions to all ranks */
     if ( writeSet->my_rank == writeSet->root_rank )
@@ -1082,6 +1073,39 @@ cleanup:
     }
 }
 
+static void
+init_layout( const scorep_cube_writing_data* writeSet,
+             scorep_cube_layout*             layout )
+{
+    if ( writeSet->has_tasks )
+    {
+        layout->metric_list = SCOREP_CUBE_METRIC_TASK_METRICS;
+    }
+    else
+    {
+        layout->metric_list = SCOREP_CUBE_METRIC_NONE;
+    }
+
+    switch ( writeSet->format )
+    {
+        case SCOREP_PROFILE_OUTPUT_CUBE4:
+            layout->metric_list       += SCOREP_CUBE_METRIC_VISITS;
+            layout->dense_metric_type  = SCOREP_CUBE_DATA_SCALAR;
+            layout->sparse_metric_type = SCOREP_CUBE_DATA_SCALAR;
+            return;
+
+        case SCOREP_PROFILE_OUTPUT_CUBE_TUPLE:
+            layout->metric_list       += SCOREP_CUBE_METRIC_VISITS;
+            layout->dense_metric_type  = SCOREP_CUBE_DATA_SCALAR;
+            layout->sparse_metric_type = SCOREP_CUBE_DATA_TUPLE;
+            return;
+    }
+
+    UTILS_BUG( "Requested output format %d without layout description.",
+               writeSet->format );
+}
+
+
 /* *****************************************************************************
    Main writer function
 *******************************************************************************/
@@ -1116,7 +1140,7 @@ scorep_profile_write_cube4( SCOREP_Profile_OutputFormat format )
     {
         return;
     }
-    scorep_profile_init_layout( &write_set, &layout );
+    init_layout( &write_set, &layout );
 
     uint32_t max_number_of_args;
     SCOREP_Ipc_Reduce( &scorep_profile_number_of_program_args,

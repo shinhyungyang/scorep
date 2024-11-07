@@ -15,7 +15,7 @@
 ## Copyright (c) 2009-2012,
 ## University of Oregon, Eugene, USA
 ##
-## Copyright (c) 2009-2015,
+## Copyright (c) 2009-2015, 2024,
 ## Forschungszentrum Juelich GmbH, Germany
 ##
 ## Copyright (c) 2009-2012, 2014,
@@ -90,10 +90,6 @@ libscorep_profile_la_SOURCES =                                              \
     $(SRC_ROOT)src/measurement/profiling/scorep_profile_task_switch.h       \
     $(SRC_ROOT)src/measurement/profiling/scorep_profile_cube4_writer.c      \
     $(SRC_ROOT)src/measurement/profiling/scorep_profile_cube4_writer.h      \
-    $(SRC_ROOT)src/measurement/profiling/scorep_profile_key_threads.c       \
-    $(SRC_ROOT)src/measurement/profiling/scorep_profile_post_cluster.c      \
-    $(SRC_ROOT)src/measurement/profiling/scorep_profile_aggregate.c         \
-    $(SRC_ROOT)src/measurement/profiling/scorep_profile_aggregate.h         \
     $(SRC_ROOT)src/measurement/profiling/scorep_profile_io.c                \
     $(SRC_ROOT)src/measurement/profiling/scorep_profile_io.h
 

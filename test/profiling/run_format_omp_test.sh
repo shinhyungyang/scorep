@@ -6,7 +6,7 @@
 ## Copyright (c) 2015,
 ## Technische Universität Darmstadt, Darmstadt, Germany
 ##
-## Copyright (c) 2013,
+## Copyright (c) 2013, 2024,
 ## Forschungszentrum Juelich GmbH, Juelich, Germany
 ##
 ## Copyright (c) 2014,
@@ -17,7 +17,7 @@
 ## directory for details.
 ##
 
-formats="TAU_SNAPSHOT CUBE_TUPLE THREAD_SUM THREAD_TUPLE KEY_THREADS CLUSTER_THREADS"
+formats="TAU_SNAPSHOT CUBE_TUPLE"
 
 if test -f ./jacobi_omp_c; then
     for format in $formats; do

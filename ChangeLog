@@ -69,6 +69,8 @@ User tools and API improvements and changes:
   aborted. This is unlikely but can happen, if the OpenMP runtime used
   at configure time, is changed.
 - Added documentation of the current MPMD/MSA workflow.
+- Removed unused and faulty profiling format options (key_threads,
+  cluster_threads, thread_sum, thread_tuple, and none).
 
 Compatibility:
 

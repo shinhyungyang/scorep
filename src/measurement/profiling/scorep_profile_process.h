@@ -13,7 +13,7 @@
  * Copyright (c) 2009-2012,
  * University of Oregon, Eugene, USA
  *
- * Copyright (c) 2009-2013,
+ * Copyright (c) 2009-2013, 2024,
  * Forschungszentrum Juelich GmbH, Germany
  *
  * Copyright (c) 2009-2012,
@@ -109,24 +109,5 @@ scorep_profile_process_tasks( void );
  */
 void
 scorep_profile_inclusify_visits( void );
-
-/**
-   Aggregates the profile to contain only some key threads.
- */
-void
-scorep_profile_cluster_key_threads( void );
-
-/**
-   Aggregates locations that have the same calltree structure.
- */
-void
-scorep_profile_cluster_same_location( void );
-
-/**
-    Creates and initializes the number of threads metric. Assigns the value 1 to every
-    node that has a non-zero visit count.
- */
-void
-scorep_profile_init_num_threads_metric( void );
 
 #endif /* SCOREP_PROFILE_PROCESS_H */

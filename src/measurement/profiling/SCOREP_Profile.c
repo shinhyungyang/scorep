@@ -13,7 +13,7 @@
  * Copyright (c) 2009-2013,
  * University of Oregon, Eugene, USA
  *
- * Copyright (c) 2009-2018, 2020-2022,
+ * Copyright (c) 2009-2018, 2020-2022, 2024,
  * Forschungszentrum Juelich GmbH, Germany
  *
  * Copyright (c) 2009-2014,
@@ -676,34 +676,20 @@ SCOREP_Profile_Process( void )
     /* Register callpath and assign callpath handles to every node */
     scorep_profile_assign_callpath_to_master();
     scorep_profile_assign_callpath_to_workers();
-
-    /* Perform clustering */
-    if ( scorep_profile_output_format == SCOREP_PROFILE_OUTPUT_KEY_THREADS )
-    {
-        scorep_profile_cluster_key_threads();
-    }
-
-    if ( scorep_profile_output_format == SCOREP_PROFILE_OUTPUT_CLUSTER_THREADS )
-    {
-        scorep_profile_init_num_threads_metric();
-        scorep_profile_cluster_same_location();
-    }
 }
 
 
 /**
-   Writes the Profile. The output format can be set via environment variable
-   SCOREP_PROFILING_FORMAT. Possible values are None, TauSnapshot, Cube4, Default.
-   Should be called after unification.
+   Writes the Profile. The file is written either as a cubex file or in TAU
+   snapshot format. The output format can be set via environment variable
+   SCOREP_PROFILING_FORMAT. Possible values are tau_snapshot, cube4, cube_tuple,
+   and default.
+   This has to be called after unification.
  */
 static void
 write( void )
 {
-    if ( scorep_profile_output_format == SCOREP_PROFILE_OUTPUT_NONE )
-    {
-        return;
-    }
-    else if ( scorep_profile_output_format == SCOREP_PROFILE_OUTPUT_TAU_SNAPSHOT )
+    if ( scorep_profile_output_format == SCOREP_PROFILE_OUTPUT_TAU_SNAPSHOT )
     {
         scorep_profile_write_tau_snapshot();
     }
@@ -1655,25 +1641,6 @@ dump_manifest( FILE* manifestFile, const char* relativeSourceDir, const char* ta
             break;
         case SCOREP_PROFILE_OUTPUT_CUBE_TUPLE:
             SCOREP_ConfigManifestSectionEntry( manifestFile, name, "Extended set of statistics in CUBE4 format." );
-            break;
-        case SCOREP_PROFILE_OUTPUT_THREAD_SUM:
-            SCOREP_ConfigManifestSectionEntry( manifestFile, name,
-                                               "Sums all locations within a location group and stores the data in Cube4 format." );
-            break;
-        case SCOREP_PROFILE_OUTPUT_THREAD_TUPLE:
-            SCOREP_ConfigManifestSectionEntry( manifestFile, name,
-                                               "Sums all locations within a location group and stores in addition some statistical"
-                                               " data about the distribution among the locations of a location group." );
-            break;
-        case SCOREP_PROFILE_OUTPUT_KEY_THREADS:
-            SCOREP_ConfigManifestSectionEntry( manifestFile, name,
-                                               "Stores the initial location, the slowest location and the fastest location per process. "
-                                               "Sums all other locations within a location group. The result is stored in Cube4 format." );
-            break;
-        case SCOREP_PROFILE_OUTPUT_CLUSTER_THREADS:
-            SCOREP_ConfigManifestSectionEntry( manifestFile, name,
-                                               "Clusters locations within a location group if they have the same calltree structure. "
-                                               "Sums locations within a cluster. Stores the result in Cube4 format." );
             break;
         case SCOREP_PROFILE_OUTPUT_TAU_SNAPSHOT:
             SCOREP_ConfigManifestSectionEntry( manifestFile, "tau/snapshot.<rank>.0.0", "TAU snapshot files." );
