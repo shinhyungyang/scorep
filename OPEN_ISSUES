@@ -807,6 +807,18 @@ various Score-P components.
       $ make -C build-backend constructor-checks
       $ ./installcheck/constructor_checks/bin/run_constructor_checks.sh
 
+  - For AMD's AOCC 4.1.0 and newer (tested till 5.0.0), AOCC's clang
+    compiler prepends its library directory to user provided library
+    directories if -fopenmp is given. As a consequence, AOCC's
+    incompatible libunwind is linked instead of the one provided to
+    Score-P's configure. This fails with undefined symbol errors. One
+    could configure --without-libunwind to work around this compiler
+    bug. Still, there might be subtle differences, as not only
+    libunwind is found and silently linked in AOCC's library
+    directory.
+    The same applies to AMD's ROCm compiler amdclang in version 6.1.2
+    and newer.
+
 --------------------------------------------------------------------------------
 
 Please report bugs, wishes, and suggestions to <support@score-p.org>.
