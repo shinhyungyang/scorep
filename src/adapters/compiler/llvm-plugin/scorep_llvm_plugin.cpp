@@ -320,13 +320,23 @@ getScorePInstrumentationPluginInfo()
                  #endif
                  if ( SCOREP::Compiler::LLVMPlugin::EnableExceptionHandling )
                  {
+                     #if LLVM_VERSION_MAJOR < 20
                      PB.registerOptimizerLastEPCallback(
-                         [ ]( llvm::ModulePassManager& PM, OptimizationLevel level ) -> void {
+                         [ ]( ModulePassManager& PM, OptimizationLevel level ) -> void {
+                     #else
+                     PB.registerOptimizerLastEPCallback(
+                         [ ]( ModulePassManager& PM, OptimizationLevel level, ThinOrFullLTOPhase phase ) -> void {
+                     #endif
                     PM.addPass( SCOREP::Compiler::LLVMPlugin::ExceptionHandling() );
                 } );
                  }
+                 #if LLVM_VERSION_MAJOR < 20
                  PB.registerOptimizerLastEPCallback(
-                     [ ]( llvm::ModulePassManager& PM, OptimizationLevel level ) -> void {
+                     [ ]( ModulePassManager& PM, OptimizationLevel level )->void {
+                 #else
+                 PB.registerOptimizerLastEPCallback(
+                     [] ( ModulePassManager & PM, OptimizationLevel level, ThinOrFullLTOPhase phase ) -> void {
+                 #endif
                 PM.addPass( SCOREP::Compiler::LLVMPlugin::FunctionInstrumentation() );
             } );
              } };
