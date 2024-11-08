@@ -6,6 +6,9 @@
 ## Copyright (c) 2017,
 ## Technische Universitaet Dresden, Germany
 ##
+## Copyright (c) 2024,
+## Forschungszentrum Juelich GmbH, Germany
+##
 ## This software may be modified and distributed under the terms of
 ## a BSD-style license.  See the COPYING file in the package base
 ## directory for details.
@@ -63,6 +66,7 @@ test_expect_success_all "c:     init wrapper" \
     "! test_grep \"EXCLUDE.*INCLUDE\"                        wrapper-lib-c/foo.filter" \
     "! test_grep \"INCLUDE.*EXCLUDE\"                        wrapper-lib-c/foo.filter"
 
+# 'make' creates libwrap.i from libwrap.h
 test_expect_success_all "c:     empty wrapper doesn't build" \
     "cd wrapper-lib-c"                                       \
     "! make"
@@ -77,9 +81,11 @@ test_expect_success_all "c:     configure wrapper"                            \
     "test_sed_i \"s/$endif_line/$insert_libwrap_h\n$endif_line/g\" libwrap.h" \
     "test_sed_i \"s/$return_line/$insert_main_c\n$new_return_line/g\" main.c"
 
+# Use 'make clean all' after changing prerequisites (libwrap.h, main.c,
+# Makefile, *.filter) to workaround timestamp resolution issues.
 test_expect_success_all "c:     build wrapper" \
     "cd wrapper-lib-c"                         \
-    "make"                                     \
+    "make clean all"                           \
     "test -f foo.wrap"                         \
     "test -f libwrap.i"                        \
     "test -f main"                             \
@@ -145,7 +151,7 @@ test_expect_success_all "c:     build wrapper" \
 test_expect_success_all "c:     variadic-is-void" \
     "cd wrapper-lib-c"                            \
     "printf 'LIBWRAP_VARIADIC_IS_VOID_SYMBOLS += fn_15_unknown_arg_list\n' >>Makefile" \
-    "make"                                       \
+    "make clean all"                              \
     "test_grep -q '\bfn_15_' foo.wrap    # unknown argument list is treated as void"   \
     "test_grep -q '\bfn_15_' scorep_libwrap_foo.c"
 
@@ -153,7 +159,7 @@ test_expect_success_all "c:     ellipsis-mapping"    \
     "cd wrapper-lib-c"                               \
     "printf 'LIBWRAP_ELLIPSIS_MAPPING_SYMBOLS += fn_4_ellipsis:vfn_4_ellipsis_va_list_variant\n' >>Makefile" \
     "printf 'LIBWRAP_ELLIPSIS_MAPPING_SYMBOLS += fn_23_ellipsis_without_wrapping_va_list_variant:vprintf\n' >>Makefile" \
-    "make"                                           \
+    "make clean all"                                 \
     "test_grep -q '\bfn_4_'  foo.wrap    # ellipsis" \
     "test_grep -q '\bfn_4_'  scorep_libwrap_foo.c"   \
     "test_grep -q '\bfn_23_' foo.wrap    # ellipsis" \
@@ -213,7 +219,7 @@ test_expect_success_all "cdeps: configure wrapper"                            \
 
 test_expect_success_all "cdeps: build wrapper"    \
     "cd wrapper-lib-cdeps"                        \
-    "make"                                        \
+    "make clean all"                              \
     "  test_grep -q 'fn_1'  bar.wrap"             \
     "  test_grep -q 'fn_1'  scorep_libwrap_bar.c" \
     "  test_grep -q 'fn_2'  bar.wrap"             \
