@@ -2885,8 +2885,10 @@ scorep_ompt_cb_host_dispatch( ompt_data_t*    parallel_data,
     switch ( kind )
     {
         case ompt_dispatch_iteration:
+            #if HAVE( UTILS_DEBUG )
             UTILS_WARN_ONCE( "ompt_dispatch_t %s not implemented yet.",
                              dispatch2string( kind ) );
+            #endif
             break;
         case ompt_dispatch_section:
             /* Exit previous section, if any. */
@@ -2901,20 +2903,26 @@ scorep_ompt_cb_host_dispatch( ompt_data_t*    parallel_data,
             break;
         #if HAVE( DECL_OMPT_DISPATCH_WS_LOOP_CHUNK )
         case ompt_dispatch_ws_loop_chunk:
+            #if HAVE( UTILS_DEBUG )
             UTILS_WARN_ONCE( "ompt_dispatch_t %s not implemented yet.",
                              dispatch2string( kind ) );
+            #endif
             break;
         #endif  /* DECL_OMPT_DISPATCH_WS_LOOP_CHUNK */
         #if HAVE( DECL_OMPT_DISPATCH_TASKLOOP_CHUNK )
         case ompt_dispatch_taskloop_chunk:
+            #if HAVE( UTILS_DEBUG )
             UTILS_WARN_ONCE( "ompt_dispatch_t %s not implemented yet.",
                              dispatch2string( kind ) );
+            #endif
             break;
         #endif  /* DECL_OMPT_DISPATCH_TASKLOOP_CHUNK */
         #if HAVE( DECL_OMPT_DISPATCH_DISTRIBUTE_CHUNK )
         case ompt_dispatch_distribute_chunk:
+            #if HAVE( UTILS_DEBUG )
             UTILS_WARN_ONCE( "ompt_dispatch_t %s not implemented yet.",
                              dispatch2string( kind ) );
+            #endif
             break;
         #endif  /* DECL_OMPT_DISPATCH_DISTRIBUTE_CHUNK */
         default:
