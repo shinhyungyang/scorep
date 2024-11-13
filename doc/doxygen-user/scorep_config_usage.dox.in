@@ -61,8 +61,6 @@ scorep-config <command> [<options>]
   Options:
    --target   Get flags for specified target, e.g., mic.
    --nvcc     Convert flags to be suitable for the nvcc compiler.
-   --static   Use only static Score-P libraries if possible.
-   --dynamic  Use only dynamic Score-P libraries if possible.
    --compiler|--nocompiler
               Specifies whether compiler instrumentation is used.
               On default compiler instrumentation is enabled.

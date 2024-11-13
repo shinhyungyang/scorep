@@ -13,7 +13,7 @@
  * Copyright (c) 2009-2013,
  * University of Oregon, Eugene, USA
  *
- * Copyright (c) 2009-2014, 2020, 2023,
+ * Copyright (c) 2009-2014, 2020, 2023-2024,
  * Forschungszentrum Juelich GmbH, Germany
  *
  * Copyright (c) 2009-2013,
@@ -95,10 +95,6 @@ print_help( void )
               << "  --disable-preprocessing\n"
               << "                  Tells scorep to skip all preprocessing related steps,\n"
               << "                  the input files are already preprocessed.\n"
-#if defined( SCOREP_SHARED_BUILD ) && defined ( SCOREP_STATIC_BUILD )
-        << "  --static        Enforce static linking of the Score-P libraries.\n"
-        << "  --dynamic       Enforce dynamic linking of the Score-P libraries.\n"
-#endif
 #if defined( SCOREP_SHARED_BUILD )
         << "  --no-as-needed  Adds a GNU ld linker flag to fix undefined references\n"
         "                  when using shared Score-P libraries. This happens on\n"

@@ -6,7 +6,7 @@
 ## Copyright (c) 2013-2014,
 ## Technische Universitaet Dresden, Germany
 ##
-## Copyright (c) 2014, 2017,
+## Copyright (c) 2014, 2017, 2024,
 ## Forschungszentrum Juelich GmbH, Germany
 ##
 ## This software may be modified and distributed under the terms of
@@ -37,7 +37,8 @@ libscorep_mpp_shmem_la_CPPFLAGS =  \
 libscorep_mpp_shmem_la_LIBADD  = \
     libscorep_ipc_shmem.la \
     $(LIB_DIR_SCOREP)libscorep_mpp_ipc.la \
-    $(LIB_DIR_SCOREP)libutils.la
+    $(LIB_DIR_SCOREP)libutils.la \
+    $(libutils_la_needs_LIBS)
 libscorep_mpp_shmem_la_LDFLAGS = \
     $(shmem_libwrap_ldflags) \
     $(library_api_version_ldflags)
@@ -59,5 +60,22 @@ libscorep_ipc_shmem_la_CPPFLAGS = \
     -I$(INC_ROOT)src/adapters/shmem      \
     $(shmem_libwrap_cppflags)            \
     -I$(INC_DIR_DEFINITIONS)
+
+if !HAVE_SCOREP_EXTERNAL_OTF2
+
+# For internal otf2, otf2-config is not available at first
+# invocation of make, but make all, check, install, install-exec,
+# dist will build it via BUILT_SOURCES and call make <target>
+# again. In this second make call, the variables are set as
+# intended. BUILT_SOURCES are also built via
+# make build_external_targets.
+BUILT_SOURCES += $(BINDIR)/otf2-config
+$(BINDIR)/otf2-config:
+	@if test -f ../vendor/otf2/Makefile; then $(am__cd) ../vendor/otf2 && $(MAKE) $(AM_MAKEFLAGS) install; else exit 1; fi
+otf2-clean:
+	@if test -f ../vendor/otf2/Makefile; then $(am__cd) ../vendor/otf2 && $(MAKE) $(AM_MAKEFLAGS) clean uninstall; fi
+CLEAN_LOCAL += otf2-clean
+
+endif !HAVE_SCOREP_EXTERNAL_OTF2
 
 endif HAVE_SHMEM_SUPPORT

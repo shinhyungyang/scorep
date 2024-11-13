@@ -15,7 +15,7 @@
 ## Copyright (c) 2009-2011,
 ## University of Oregon, Eugene, USA
 ##
-## Copyright (c) 2009-2011, 2015, 2017, 2019, 2023,
+## Copyright (c) 2009-2011, 2015, 2017, 2019, 2023-2024,
 ## Forschungszentrum Juelich GmbH, Germany
 ##
 ## Copyright (c) 2009-2011,
@@ -37,10 +37,9 @@ DISTCLEANFILES =
 
 # Testing framework
 EXTRA_DIST += $(srcdir)/build-config/common/generate-config-backend-for-frontend.sh \
-              $(srcdir)/build-config/common/generate-library-dependencies.sh \
-              $(srcdir)/build-config/common/generate-library-dependencies-la-object.hpp \
               $(srcdir)/build-config/common/generate-library-version.sh \
               $(srcdir)/build-config/common/generate-package-version.sh \
+              $(srcdir)/build-config/common/library_data.hpp \
               $(srcdir)/common/utils/test/cutest/CuTest.c \
               $(srcdir)/common/utils/test/cutest/CuTest.h \
               $(srcdir)/common/utils/test/cutest/license.txt \

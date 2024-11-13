@@ -15,7 +15,7 @@
 ## Copyright (c) 2009-2011,
 ## University of Oregon, Eugene, USA
 ##
-## Copyright (c) 2009-2015, 2017-2018, 2022,
+## Copyright (c) 2009-2015, 2017-2018, 2022-2024,
 ## Forschungszentrum Juelich GmbH, Germany
 ##
 ## Copyright (c) 2009-2011,
@@ -66,8 +66,9 @@ clean-local-experiment-directories:
 BACKEND_TARGETS =
 $(BACKEND_TARGETS): build_external_targets
 build_external_targets:
-	@targets=`echo $(BACKEND_TARGETS) | sed 's|^[ ^t]*||;s|[ ^]*$$||;s|$(LIB_DIR_SCOREP)||g'`; \
+	@targets=$$(echo $(BACKEND_TARGETS) | sed 's|^[ ^t]*||;s|[ ^]*$$||;s|$(LIB_DIR_SCOREP)||g' | tr ' ' '\n' | sort -u); \
 	if test "x$$targets" != x; then \
+		$(am__cd) $(LIB_DIR_SCOREP) && $(MAKE) $(AM_MAKEFLAGS) scorep-built-sources; \
 		$(am__cd) $(LIB_DIR_SCOREP) && $(MAKE) $(AM_MAKEFLAGS) $$targets; \
 	fi
 
@@ -78,6 +79,9 @@ build_external_check_targets:
 	if test "x$$targets" != x; then \
 		$(am__cd) $(LIB_DIR_SCOREP) && $(MAKE) $(AM_MAKEFLAGS) $$targets; \
 	fi
+
+# When using external targets, also use corresponding exported data, if any.
+-include $(LIB_DIR_SCOREP)Makefile.export
 
 AM_CPPFLAGS += -DBACKEND_BUILD_MPI
 
@@ -137,7 +141,7 @@ foreign_instrumenter_check_prerequisites = \
 $(foreign_instrumenter_check_prerequisites):
 	@$(am__cd) $(LIB_DIR_SCOREP) && $(MAKE) $(AM_MAKEFLAGS) $@
 
-INSTALLCHECK_LOCAL += instrumenter-checks
+INSTALLCHECK_LOCAL += instrumenter-checks shared-objects-self-contained
 instrumenter-checks: $(instrumenter_configuration_files) \
                      $(foreign_instrumenter_check_prerequisites)
 	@fail= failcom='exit 1'; \

@@ -15,7 +15,7 @@
 ## Copyright (c) 2009-2013,
 ## University of Oregon, Eugene, USA
 ##
-## Copyright (c) 2009-2013, 2021,
+## Copyright (c) 2009-2013, 2021, 2024,
 ## Forschungszentrum Juelich GmbH, Germany
 ##
 ## Copyright (c) 2009-2013,
@@ -79,9 +79,9 @@ AS_IF([test "x${with_$1}" != "xno"],
                # get 'age'
                $1_provided_age=`echo ${interface_version} | awk -F ":" '{print $[]3}'`
               AS_IF([test ${interface_version} = "0:0:0"],
-                  [# by convention, master is 0:0:0
-                   AC_MSG_WARN([external $1 built from master, version checks disabled, might produce compile and link errors.])
-                   AFS_SUMMARY([$1 support], [yes, using external via ${scorep_$1_config_bin} (built from master, version checks disabled, might produce compile and link errors.)])],
+                  [# by convention, non-release is 0:0:0
+                   AC_MSG_WARN([using non-release external $1, version checks disabled, might produce compile and link errors.])
+                   AFS_SUMMARY([$1 support], [yes, using non-release external via ${scorep_$1_config_bin} (version checks disabled, might produce compile and link errors.)])],
                   [# calc 'current - age'
                    AS_VAR_ARITH([$1_min_provided_interface_version], [${$1_max_provided_interface_version} - ${$1_provided_age}])
                    # this is the version check:
@@ -108,4 +108,42 @@ AS_IF([test "x${with_$1}" != "xno"],
          [AC_MSG_ERROR([$1 is required. Opting out an external $1 via --without-$1 is only an option if an internal $1 is available, which isn't the case here. Please provide an external $1.])])
      scorep_have_$1_config="no"
      AFS_SUMMARY([$1 support], [yes, using internal])])
-])
+]) # AC_SCOREP_HAVE_CONFIG_TOOL
+
+
+# AFS_CONFIG_TOOL_HAVE_OPTION([component], [cmd-line-option], [action-if-yes], [action-if-no])
+# -------------------------------------------------------------------------------------------
+# Checks whether "$1-config $2" succeeds. Execute $3 if result is yes,
+# $4 if no.
+# Requires AC_SCOREP_HAVE_CONFIG_TOOL([$1]) to be executed earlier.
+#
+AC_DEFUN([AFS_CONFIG_TOOL_HAVE_OPTION], [
+m4_ifblank([$1], [m4_fatal([Component must be given])])dnl
+m4_ifblank([$2], [m4_fatal([Option must be given])])dnl
+dnl
+dnl use the same transformation as AC_ARG_WITH
+m4_pushdef([_afs_config_tool_have], $1[_config_have_]m4_translit($2, [-+.], [___]))dnl
+dnl
+dnl Check if $scorep_have_$1_config has been previously set by
+dnl AC_SCOREP_HAVE_CONFIG_TOOL. Cannot use AC_REQUIRE here as
+dnl AC_SCOREP_HAVE_CONFIG_TOOL takes arguments.
+AS_IF([test "x$scorep_have_$1_config" = x],
+    [AC_MSG_ERROR([[Macro AC@&t@_SCOREP_HAVE_CONFIG_TOOL([$1], ...) to be called prior to AFS_CONFIG_TOOL_HAVE_OPTION([$1], ...)]])])
+AS_IF([test "x$scorep_have_$1_config" = xyes],
+    [AS_IF([${scorep_$1_config_bin} $2 >/dev/null 2>&1],
+         [_afs_config_tool_have=yes],
+         [_afs_config_tool_have=no])],
+    [# using internal $1-config, assume $2 is available in vendor/$1
+     _afs_config_tool_have=yes])
+dnl
+m4_ifnblank([$3], [dnl
+AS_IF([test x"$_afs_config_tool_have" = xyes],
+    [$3])
+])dnl
+m4_ifnblank([$4], [dnl
+AS_IF([test x"$_afs_config_tool_have" = xno],
+    [$4])
+])dnl
+dnl
+m4_popdef([_afs_config_tool_have])dnl
+]) # AFS_CONFIG_TOOL_HAVE_OPTION

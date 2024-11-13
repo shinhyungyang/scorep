@@ -15,7 +15,7 @@
 ## Copyright (c) 2009-2013,
 ## University of Oregon, Eugene, USA
 ##
-## Copyright (c) 2009-2014,
+## Copyright (c) 2009-2014, 2023,
 ## Forschungszentrum Juelich GmbH, Germany
 ##
 ## Copyright (c) 2009-2013,
@@ -34,7 +34,7 @@
 # --------------------------------------------------------------------
 # common runtime management library for the opari2 adapters
 
-lib_LTLIBRARIES += libscorep_adapter_opari2_mgmt.la
+noinst_LTLIBRARIES += libscorep_adapter_opari2_mgmt.la
 
 libscorep_adapter_opari2_mgmt_la_SOURCES =                                   \
     $(SRC_ROOT)src/adapters/opari2/SCOREP_Opari2_Region_Info.c               \
@@ -54,6 +54,3 @@ libscorep_adapter_opari2_mgmt_la_CPPFLAGS = \
     -I$(INC_ROOT)src/measurement/include    \
     -I@OPARI2_REGION_INFO_INC_DIR@          \
     @OPARI2_CPPFLAGS@
-
-libscorep_adapter_opari2_mgmt_la_LDFLAGS = \
-    $(library_api_version_ldflags)

@@ -4,7 +4,7 @@
 ## Copyright (c) 2012-2013,
 ## German Research School for Simulation Sciences GmbH, Juelich/Aachen, Germany
 ##
-## Copyright (c) 2012-2015, 2017,
+## Copyright (c) 2012-2015, 2017, 2024,
 ## Forschungszentrum Juelich GmbH, Germany
 ##
 ## Copyright (c) 2012,
@@ -41,15 +41,16 @@ libscorep_estimator_la_CPPFLAGS = \
     $(UTILS_CPPFLAGS) \
     -I$(INC_ROOT)src/utils/include \
     -I$(INC_ROOT)src/tools/lib \
-    @CUBELIB_CPPFLAGS@
+    $(CUBELIB_CPPFLAGS)
 libscorep_estimator_la_LDFLAGS =\
     $(AM_LDFLAGS) \
-    @CUBELIB_LDFLAGS@
+    $(CUBELIB_LDFLAGS)
 libscorep_estimator_la_LIBADD = \
     libscorep_filter.la \
     libutils.la \
+    $(libutils_la_needs_LIBS) \
     libscorep_tools.la \
-    @CUBELIB_LIBS@
+    $(CUBELIB_LIBS)
 libscorep_estimator_la_DEPENDENCIES = \
     libscorep_filter.la \
     libutils.la \
@@ -70,7 +71,7 @@ scorep_score_CPPFLAGS = \
     $(UTILS_CPPFLAGS) \
     -I$(INC_ROOT)src/utils/include \
     -I$(INC_ROOT)src/tools/lib \
-    @CUBELIB_CPPFLAGS@
+    $(CUBELIB_CPPFLAGS)
 
 scorep_score_LDFLAGS =
 scorep_score_LDADD = \
@@ -82,8 +83,17 @@ scorep_score_DEPENDENCIES = \
 
 if !HAVE_SCOREP_EXTERNAL_CUBELIB
 
-libscorep_estimator_la_DEPENDENCIES += @CUBELIB_LIBS@
-@CUBELIB_LIBS@:
-	@$(am__cd) `dirname $@` && $(MAKE) $(AM_MAKEFLAGS) `basename $@`
+# For internal cubelib, cubelib-config is not available at first
+# invocation of make, but make all, check, install, install-exec,
+# dist will build it via BUILT_SOURCES and call make <target>
+# again. In this second make call, the variables are set as
+# intended. BUILT_SOURCES are also built via
+# make build_external_targets.
+# Note that a make clean will clean cubelib's builddir, but not
+# uninstall the installation. This prevents corrupting an installation
+# by a final make clean, e.g., to save disk space
+BUILT_SOURCES += $(BINDIR)/cubelib-config
+$(BINDIR)/cubelib-config:
+	@if test -f ../vendor/cubelib/Makefile; then $(am__cd) ../vendor/cubelib && $(MAKE) $(AM_MAKEFLAGS) install; else exit 1; fi
 
 endif !HAVE_SCOREP_EXTERNAL_CUBELIB

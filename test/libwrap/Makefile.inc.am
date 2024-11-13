@@ -47,8 +47,7 @@ scorep_libwrap_macros_static_test_CPPFLAGS = $(common_libwrap_cppflags) \
                                              -DSCOREP_LIBWRAP_STATIC \
                                              -I$(INC_DIR_DEFINITIONS)
 scorep_libwrap_macros_static_test_LDFLAGS = $(serial_ldflags) \
-                                            $(common_libwrap_ldflags) \
-                                            -static-libtool-libs
+                                            $(common_libwrap_ldflags)
 scorep_libwrap_macros_static_test_LDADD = $(serial_libadd) \
                                           libfoo.la
 if HAVE_SCOREP_COMPILER_INSTRUMENTATION_NEEDS_ADDR2LINE

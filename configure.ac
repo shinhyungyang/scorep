@@ -13,7 +13,7 @@ dnl
 dnl Copyright (c) 2009-2013,
 dnl University of Oregon, Eugene, USA
 dnl
-dnl Copyright (c) 2009-2019, 2021-2023,
+dnl Copyright (c) 2009-2019, 2021-2024,
 dnl Forschungszentrum Juelich GmbH, Germany
 dnl
 dnl Copyright (c) 2009-2014,
@@ -172,6 +172,8 @@ AM_CONDITIONAL([HAVE_LOCKFILE_PROGS],
 AM_CONDITIONAL([CROSS_BUILD], [test "x${ac_scorep_cross_compiling}" = "xyes"])
 
 AC_SCOREP_HAVE_CONFIG_TOOL([otf2], [10], [0])
+AFS_CONFIG_TOOL_HAVE_OPTION([otf2], [--ltldflags], [],
+    [AC_MSG_ERROR([otf2-config lacks the option --ltldflags. Please upgrade your OTF2 installation.])])
 AS_IF([test -n "${scorep_otf2_config_bin}" && \
        test "x${ac_scorep_platform}" = "xmic"],
       [scorep_otf2_have_mic=no
@@ -185,6 +187,8 @@ AS_IF([test -n "${scorep_otf2_config_bin}" && \
       ])
 AC_SCOREP_HAVE_CONFIG_TOOL([opari2], [3], [0])
 AC_SCOREP_HAVE_CONFIG_TOOL([cubew], [12], [2])
+AFS_CONFIG_TOOL_HAVE_OPTION([cubew], [--ltldflags], [],
+    [AC_MSG_ERROR([cubew-config lacks the option --ltldflags. Please upgrade your CubeW installation.])])
 AS_IF([test -n "${scorep_cubew_config_bin}" && \
        test "x${ac_scorep_platform}" = "xmic"],
       [scorep_cubew_have_mic=no
@@ -197,6 +201,8 @@ AS_IF([test -n "${scorep_cubew_config_bin}" && \
              [AC_MSG_ERROR([cannot detect MIC support for external Cube Writer installation. Either provide a suitable Cube library or reconfigure ]AC_PACKAGE_NAME[ with the '--without-cubew' option to use the included Cube Writer copy.])])
       ])
 AC_SCOREP_HAVE_CONFIG_TOOL([cubelib], [12], [2])
+AFS_CONFIG_TOOL_HAVE_OPTION([cubelib], [--ltldflags], [],
+    [AC_MSG_ERROR([cubelib-config lacks the option --ltldflags. Please upgrade your CubeLib installation.])])
 
 # handle external package's subdir configures
 

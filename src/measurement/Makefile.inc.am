@@ -15,7 +15,7 @@
 ## Copyright (c) 2009-2013,
 ## University of Oregon, Eugene, USA
 ##
-## Copyright (c) 2009-2016,
+## Copyright (c) 2009-2016, 2023-2024,
 ## Forschungszentrum Juelich GmbH, Germany
 ##
 ## Copyright (c) 2009-2014,
@@ -104,7 +104,7 @@ libscorep_measurement_core_la_CPPFLAGS = \
     -I$(INC_DIR_SUBSTRATES) \
     -I$(INC_DIR_DEFINITIONS) \
     @SCOREP_TIMER_CPPFLAGS@ \
-    @CUBEW_CPPFLAGS@
+    $(CUBEW_CPPFLAGS)
 
 noinst_LTLIBRARIES += libscorep_measurement_libwrap.la
 libscorep_measurement_libwrap_la_SOURCES = \
@@ -197,7 +197,8 @@ libscorep_mpp_mockup_la_CPPFLAGS = \
     -I$(INC_DIR_DEFINITIONS) \
     @SCOREP_TIMER_CPPFLAGS@
 libscorep_mpp_mockup_la_LIBADD = \
-    libutils.la
+    libutils.la \
+    $(libutils_la_needs_LIBS)
 libscorep_mpp_mockup_la_LDFLAGS = \
     $(library_api_version_ldflags)
 

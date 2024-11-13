@@ -15,7 +15,7 @@
 ## Copyright (c) 2009-2011,
 ## University of Oregon, Eugene, USA
 ##
-## Copyright (c) 2009-2013, 2015, 2021-2022,
+## Copyright (c) 2009-2013, 2015, 2021-2024,
 ## Forschungszentrum Juelich GmbH, Germany
 ##
 ## Copyright (c) 2009-2011,
@@ -41,8 +41,8 @@ include ../build-includes/common.am
 
 AM_CPPFLAGS += -DSCORE_BUILD
 
-include ../src/tools/config/Makefile.la_dependencies.inc.am
 include ../src/tools/lib/Makefile.inc.am
 include ../src/tools/score/Makefile.inc.am
 include ../src/utils/filter/Makefile.inc.am
 include ../common/utils/Makefile.inc.am
+include ../build-config/common/Makefile-rpaths.inc.am

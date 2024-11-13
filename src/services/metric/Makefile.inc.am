@@ -15,7 +15,7 @@
 ## Copyright (c) 2009-2013,
 ## University of Oregon, Eugene, USA
 ##
-## Copyright (c) 2009-2015,
+## Copyright (c) 2009-2015, 2023,
 ## Forschungszentrum Juelich GmbH, Germany
 ##
 ## Copyright (c) 2009-2013,
@@ -70,7 +70,8 @@ libscorep_metric_la_SOURCES += $(SRC_ROOT)src/services/metric/scorep_metric_mana
 endif
 
 libscorep_metric_la_LIBADD =
-libscorep_metric_la_LDFLAGS =
+libscorep_metric_la_needs_LIBS =
+libscorep_metric_la_needs_LDFLAGS =
 
 # RUSAGE specific settings
 
@@ -100,6 +101,8 @@ libscorep_metric_papi_la_SOURCES = \
     $(SRC_ROOT)src/services/metric/scorep_metric_papi.h
 
 libscorep_metric_la_LIBADD += libscorep_metric_papi.la
+libscorep_metric_la_needs_LIBS += $(SCOREP_PAPI_LIBS)
+libscorep_metric_la_needs_LDFLAGS += $(SCOREP_PAPI_LDFLAGS)
 endif
 
 # Plugins source specific settings

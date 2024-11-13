@@ -4,7 +4,7 @@
 ## Copyright (c) 2016, 2019,
 ## Technische Universitaet Dresden, Germany
 ##
-## Copyright (c) 2016-2017,
+## Copyright (c) 2016-2017, 2023,
 ## Forschungszentrum Juelich GmbH, Germany
 ##
 ## This software may be modified and distributed under the terms of
@@ -39,7 +39,8 @@ libscorep_adapter_memory_mgmt_la_CPPFLAGS = \
     -I$(INC_DIR_DEFINITIONS)                 \
     -I$(INC_DIR_SUBSTRATES)
 
-libscorep_adapter_memory_mgmt_la_LIBADD =
+libscorep_adapter_memory_mgmt_la_LIBADD = \
+    libscorep_alloc_metric.la
 
 libscorep_adapter_memory_mgmt_la_LDFLAGS = \
     $(library_api_version_ldflags)
@@ -60,7 +61,7 @@ libscorep_adapter_memory_event_hbwmalloc_la_CPPFLAGS =  \
     -I$(INC_DIR_DEFINITIONS)
 
 libscorep_adapter_memory_event_hbwmalloc_la_LIBADD = \
-    libscorep_measurement.la
+    libscorep_alloc_metric.la
 
 libscorep_adapter_memory_event_hbwmalloc_la_LDFLAGS = \
     $(library_api_version_ldflags) \
@@ -85,7 +86,7 @@ libscorep_adapter_memory_event_libc_la_CPPFLAGS =  \
     -I$(INC_DIR_DEFINITIONS)
 
 libscorep_adapter_memory_event_libc_la_LIBADD = \
-    libscorep_measurement.la
+    libscorep_alloc_metric.la
 
 libscorep_adapter_memory_event_libc_la_LDFLAGS = \
     $(library_api_version_ldflags) \
@@ -107,7 +108,7 @@ libscorep_adapter_memory_event_libc11_la_CPPFLAGS =  \
     -I$(INC_DIR_DEFINITIONS)
 
 libscorep_adapter_memory_event_libc11_la_LIBADD = \
-    libscorep_measurement.la
+    libscorep_alloc_metric.la
 
 libscorep_adapter_memory_event_libc11_la_LDFLAGS = \
     $(library_api_version_ldflags) \
@@ -130,7 +131,7 @@ libscorep_adapter_memory_event_cxx_la_CPPFLAGS = \
     -I$(INC_DIR_DEFINITIONS)
 
 libscorep_adapter_memory_event_cxx_la_LIBADD = \
-    libscorep_measurement.la
+    libscorep_alloc_metric.la
 
 libscorep_adapter_memory_event_cxx_la_LDFLAGS = \
     $(library_api_version_ldflags) \
@@ -153,7 +154,7 @@ libscorep_adapter_memory_event_cxx_L32_la_CPPFLAGS =  \
     -I$(INC_DIR_DEFINITIONS)
 
 libscorep_adapter_memory_event_cxx_L32_la_LIBADD = \
-    libscorep_measurement.la
+    libscorep_alloc_metric.la
 
 libscorep_adapter_memory_event_cxx_L32_la_LDFLAGS = \
     $(library_api_version_ldflags) \
@@ -176,7 +177,7 @@ libscorep_adapter_memory_event_cxx_L64_la_CPPFLAGS =  \
     -I$(INC_DIR_DEFINITIONS)
 
 libscorep_adapter_memory_event_cxx_L64_la_LIBADD = \
-    libscorep_measurement.la
+    libscorep_alloc_metric.la
 
 libscorep_adapter_memory_event_cxx_L64_la_LDFLAGS = \
     $(library_api_version_ldflags) \
@@ -199,7 +200,7 @@ libscorep_adapter_memory_event_cxx14_L32_la_CPPFLAGS = \
     -I$(INC_DIR_DEFINITIONS)
 
 libscorep_adapter_memory_event_cxx14_L32_la_LIBADD = \
-    libscorep_measurement.la
+    libscorep_alloc_metric.la
 
 libscorep_adapter_memory_event_cxx14_L32_la_LDFLAGS = \
     $(library_api_version_ldflags) \
@@ -222,7 +223,7 @@ libscorep_adapter_memory_event_cxx14_L64_la_CPPFLAGS = \
     -I$(INC_DIR_DEFINITIONS)
 
 libscorep_adapter_memory_event_cxx14_L64_la_LIBADD = \
-    libscorep_measurement.la
+    libscorep_alloc_metric.la
 
 libscorep_adapter_memory_event_cxx14_L64_la_LDFLAGS = \
     $(library_api_version_ldflags) \
@@ -245,7 +246,7 @@ libscorep_adapter_memory_event_pgCC_la_CPPFLAGS = \
     -I$(INC_DIR_DEFINITIONS)
 
 libscorep_adapter_memory_event_pgCC_la_LIBADD = \
-    libscorep_measurement.la
+    libscorep_alloc_metric.la
 
 libscorep_adapter_memory_event_pgCC_la_LDFLAGS = \
     $(library_api_version_ldflags) \
@@ -268,7 +269,7 @@ libscorep_adapter_memory_event_pgCC_L32_la_CPPFLAGS =  \
     -I$(INC_DIR_DEFINITIONS)
 
 libscorep_adapter_memory_event_pgCC_L32_la_LIBADD = \
-    libscorep_measurement.la
+    libscorep_alloc_metric.la
 
 libscorep_adapter_memory_event_pgCC_L32_la_LDFLAGS = \
     $(library_api_version_ldflags) \
@@ -291,7 +292,7 @@ libscorep_adapter_memory_event_pgCC_L64_la_CPPFLAGS =  \
     -I$(INC_DIR_DEFINITIONS)
 
 libscorep_adapter_memory_event_pgCC_L64_la_LIBADD = \
-    libscorep_measurement.la
+    libscorep_alloc_metric.la
 
 libscorep_adapter_memory_event_pgCC_L64_la_LDFLAGS = \
     $(library_api_version_ldflags) \

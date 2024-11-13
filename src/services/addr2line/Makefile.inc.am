@@ -3,7 +3,7 @@
 ##
 ## This file is part of the Score-P software (http://www.score-p.org)
 ##
-## Copyright (c) 2021-2022,
+## Copyright (c) 2021-2023,
 ## Forschungszentrum Juelich GmbH, Germany
 ##
 ## This software may be modified and distributed under the terms of
@@ -11,21 +11,24 @@
 ## directory for details.
 ##
 
-## file       Makefile.inc.am
+## file src/services/addr2line/Makefile.inc.am
 
 
 noinst_LTLIBRARIES += libscorep_addr2line.la
 
-# always provide libbfd for demangling, even if the entire addr2line
-# feature is not available.
-libscorep_addr2line_la_LDFLAGS = \
-    @SCOREP_LIBBFD_LDFLAGS@
-libscorep_addr2line_la_LIBADD = \
-    @SCOREP_LIBBFD_LIBS@
-
-# SCOREP_Addr2line_Initialize|Finalize called from libscorep_measurement
-libscorep_measurement_la_LIBADD +=  \
-    libscorep_addr2line.la
+# Provide libbfd dependency if either addr2line or demangling is
+# supported. Note that there is no need to LIBADD/LDADD
+# libscorep_addr2line.la for demangling only, but
+# libscorep_addr2line_la_needs_LIBS/LDFLAGS still needed.
+if HAVE_SCOREP_ADDR2LINE
+libscorep_addr2line_la_needs_LDFLAGS = @SCOREP_LIBBFD_LDFLAGS@
+libscorep_addr2line_la_needs_LIBS = @SCOREP_LIBBFD_LIBS@
+else !HAVE_SCOREP_ADDR2LINE
+if HAVE_SCOREP_DEMANGLE
+libscorep_addr2line_la_needs_LDFLAGS = @SCOREP_LIBBFD_LDFLAGS@
+libscorep_addr2line_la_needs_LIBS = @SCOREP_LIBBFD_LIBS@
+endif HAVE_SCOREP_DEMANGLE
+endif !HAVE_SCOREP_ADDR2LINE
 
 
 if HAVE_SCOREP_ADDR2LINE

@@ -3,7 +3,7 @@
 ##
 ## This file is part of the Score-P software (http://www.score-p.org)
 ##
-## Copyright (c) 2014-2018, 2020, 2022,
+## Copyright (c) 2014-2018, 2020, 2022-2024,
 ## Forschungszentrum Juelich GmbH, Germany
 ##
 ## Copyright (c) 2014-2016, 2019,
@@ -32,17 +32,17 @@
 # test/Makefile.mpi.inc.am.
 
 external_libadd = \
-    @OTF2_LIBS@         \
+    $(OTF2_LIBS) \
     @SCOREP_PAPI_LIBS@  \
     @SCOREP_DLFCN_LIBS@ \
-    @CUBEW_LIBS@
+    $(CUBEW_LIBS)
 
 external_ldflags = \
-    @OTF2_LDFLAGS@        \
+    $(OTF2_LDFLAGS) \
     @SCOREP_LIBBFD_LDFLAGS@      \
     @SCOREP_LIBUNWIND_LDFLAGS@      \
     @SCOREP_PAPI_LDFLAGS@ \
-    @CUBEW_LDFLAGS@ \
+    $(CUBEW_LDFLAGS) \
     @CUDA_LDFLAGS@        \
     @OPENCL_LDFLAGS@
 
@@ -72,6 +72,9 @@ external_ldflags += $(SCOREP_COMPILER_INSTRUMENTATION_LDFLAGS)
 endif HAVE_SCOREP_COMPILER_INSTRUMENTATION
 
 if HAVE_CUDA_TESTS
+common_event_libadd += \
+    libscorep_adapter_cuda_event.la
+
 common_mgmt_libadd += \
     libscorep_adapter_cuda_mgmt.la \
     libscorep_alloc_metric.la
@@ -207,6 +210,7 @@ libscorep_mpi_omp_mgmt_la_LIBADD   = \
     libscorep_adapter_opari2_openmp_mgmt.la                 \
     $(LIB_DIR_SCOREP_MPI)libscorep_mpp_mpi.la               \
     libscorep_thread_fork_join_omp.la
+libscorep_mpi_omp_mgmt_la_LDFLAGS = $(external_ldflags)
 
 endif HAVE_SCOREP_OMP_TPD
 endif HAVE_OPENMP_C_SUPPORT

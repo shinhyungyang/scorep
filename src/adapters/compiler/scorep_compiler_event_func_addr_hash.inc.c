@@ -12,7 +12,6 @@
 #ifndef SCOREP_COMPILER_FUNC_ADDR_HASH_INC_C
 #define SCOREP_COMPILER_FUNC_ADDR_HASH_INC_C
 
-#include "scorep_compiler_func_addr_hash.h"
 #include "scorep_compiler_demangle.h"
 
 #include <SCOREP_FastHashtab.h>
@@ -184,20 +183,5 @@ func_addr_hash_iterate_key_value_pair( func_addr_hash_key_t   key,
 SCOREP_HASH_TABLE_MONOTONIC( func_addr_hash, 10, hashsize( FUNC_ADDR_HASH_EXPONENT ) );
 
 #undef FUNC_ADDR_HASH_EXPONENT
-
-
-void
-scorep_compiler_func_addr_hash_dlclose_cb( void*       soHandle,
-                                           const char* soFileName,
-                                           uintptr_t   soBaseAddr,
-                                           uint16_t    soToken )
-{
-    UTILS_WARNING( "Shared object %s was dlclosed. It's addresses are not "
-                   "removed from the compiler address hash table. If another "
-                   "shared object is dlopened and addressees are reused, the "
-                   "compiler adapter might enter/exit regions referring to "
-                   "wrong source code locations", soFileName );
-}
-
 
 #endif /* SCOREP_COMPILER_FUNC_ADDR_HASH_INC_C */

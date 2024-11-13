@@ -3,7 +3,7 @@
 ##
 ## This file is part of the Score-P software (http://www.score-p.org)
 ##
-## Copyright (c) 2017,
+## Copyright (c) 2017, 2024,
 ## Forschungszentrum Juelich GmbH, Germany
 ##
 ## Copyright (c) 2019,
@@ -24,7 +24,8 @@ skiplist_test_SOURCES = \
 
 skiplist_test_LDADD = \
     $(LIB_ROOT)libscorep_allocator.la \
-    $(LIB_ROOT)libutils.la
+    $(LIB_ROOT)libutils.la \
+    $(libutils_la_needs_LIBS)
 
 skiplist_test_CPPFLAGS = $(AM_CPPFLAGS) \
     -I$(PUBLIC_INC_DIR) \

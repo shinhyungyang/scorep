@@ -15,7 +15,7 @@
 ## Copyright (c) 2009-2011,
 ## University of Oregon, Eugene, USA
 ##
-## Copyright (c) 2009-2014,
+## Copyright (c) 2009-2014, 2023,
 ## Forschungszentrum Juelich GmbH, Germany
 ##
 ## Copyright (c) 2009-2011, 2014,
@@ -66,7 +66,7 @@ region_types_consistency_check_CPPFLAGS = \
     -I$(PUBLIC_INC_DIR) \
     $(UTILS_CPPFLAGS) \
     -I$(INC_DIR_DEFINITIONS)
-region_types_consistency_check_LDADD   = $(serial_libadd) libscorep_measurement.la
+region_types_consistency_check_LDADD   = $(serial_libadd)
 region_types_consistency_check_LDFLAGS = $(serial_ldflags)
 
 EXTRA_DIST   += $(SRC_ROOT)test/serial/run_region_types_consistency_check.sh

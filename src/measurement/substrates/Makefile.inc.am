@@ -38,9 +38,6 @@ libscorep_substrates_la_SOURCES = \
     $(SRC_ROOT)src/measurement/substrates/SCOREP_Substrates_Management.c \
     $(SRC_ROOT)src/measurement/substrates/include/SCOREP_Substrates_Management.h
 
-libscorep_substrates_la_LIBADD =
-libscorep_substrates_la_LDFLAGS =
-
 if HAVE_DLFCN_SUPPORT
 libscorep_substrates_la_SOURCES += \
     $(SRC_ROOT)src/measurement/substrates/scorep_substrates_plugins.c \

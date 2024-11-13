@@ -6,7 +6,7 @@
 ## Copyright (c) 2014-2017, 2019,
 ## Technische Universitaet Dresden, Germany
 ##
-## Copyright (c) 2015,
+## Copyright (c) 2015, 2023,
 ## Forschungszentrum Juelich GmbH, Germany
 ##
 ## This software may be modified and distributed under the terms of
@@ -123,9 +123,6 @@ libscorep_adapter_opencl_event_common_cppflags = \
     -I$(INC_DIR_DEFINITIONS)                 \
     @OPENCL_CPPFLAGS@
 
-libscorep_adapter_opencl_event_common_libadd = \
-    $(LIB_DIR_SCOREP)libscorep_measurement.la
-
 libscorep_adapter_opencl_event_common_ldflags = \
     @OPENCL_LDFLAGS@                            \
     $(library_api_version_ldflags)
@@ -146,9 +143,6 @@ libscorep_adapter_opencl_event_linktime_la_LDFLAGS = \
     $(libscorep_adapter_opencl_event_common_ldflags) \
     -Wl,@../share/opencl.wrap
 
-libscorep_adapter_opencl_event_linktime_la_LIBADD = \
-    $(libscorep_adapter_opencl_event_common_libadd)
-
 endif
 
 if HAVE_LIBWRAP_RUNTIME_SUPPORT
@@ -165,9 +159,6 @@ libscorep_adapter_opencl_event_runtime_la_CPPFLAGS = \
 libscorep_adapter_opencl_event_runtime_la_LDFLAGS = \
     $(libscorep_adapter_opencl_event_common_ldflags) \
     -Wl,@../share/opencl.wrap
-
-libscorep_adapter_opencl_event_runtime_la_LIBADD = \
-    $(libscorep_adapter_opencl_event_common_libadd)
 
 endif
 

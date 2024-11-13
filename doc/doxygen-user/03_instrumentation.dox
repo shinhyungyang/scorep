@@ -947,35 +947,6 @@ In the following example @scorep will instrument calls to POSIX I/O routines.
 
 In addition calls to MPI I/O routines are automatically instrumented if the MPI programming paradigm is detected by the <tt>scorep</tt> instrumenter.
 
-@section scorep_link_mode Enforce Linking of Static/Shared @scorep Libraries
-@seclabel{scorep_link_mode}
-
-If the @scorep was build with shared libraries and with static libraries,
-the instrumenter uses the compiler defaults for linking. E.g., if the compiler
-chooses shared libraries by default, the instrumenter will link your application
-with the shared Score-P libraries. Furthermore, the linking is affected by
-parameters in the original link command. E.g., if your link command contains
-a <tt>-Bstatic</tt> flag, afterwards appended @scorep libraries are also linked
-statically.
-
-If you want to override the default and enforce linking of static or dynamic
-@scorep libraries, you can add the flag <tt>\--static</tt> or <tt>\--dynamic</tt>
-for the instrumenter. E.g., a command to enforce static linking can look like:
-
-@verbatim
-    scorep --static mpicc foo.c -o foo
-@endverbatim
-
-In this case, the linking against the static version of the @scorep libraries
-is enforced.
-
-If enforcing static or dynamic linking is not possible on your
-system, e.g., because no static/dynamic @scorep libraries are installed,
-the instrumenter will abort with an error. You can determine whether
-<tt>\--static</tt> or <tt>\--dynamic</tt> is available from the
-output of <tt>scorep \--help</tt>. If the <tt>\--static</tt> or
-<tt>\--dynamic</tt> flags are not shown, then they are not available.
-
 @section mpmd_msa_instrumentation Instrumentation of MPMD and MSA Applications
 @seclabel{mpmd_msa_instrumentation}
 

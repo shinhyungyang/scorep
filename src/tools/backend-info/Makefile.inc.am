@@ -15,7 +15,7 @@
 ## Copyright (c) 2009-2011,
 ## University of Oregon, Eugene, USA
 ##
-## Copyright (c) 2009-2011, 2015, 2017, 2022,
+## Copyright (c) 2009-2011, 2015, 2017, 2022-2024,
 ## Forschungszentrum Juelich GmbH, Germany
 ##
 ## Copyright (c) 2009-2011,
@@ -58,14 +58,15 @@ scorep_backend_info_LDADD = \
     libscorep_platform.la \
     libscorep_confvars.la \
     libscorep_hashtab.la \
-    libutils.la
+    libutils.la \
+    $(libutils_la_needs_LIBS)
 
 scorep_backend_info_LDFLAGS =
 
 ## Blue Gene P
 if PLATFORM_BGP
-scorep_backend_info_LDFLAGS += @SCOREP_TIMER_LDFLAGS@
-scorep_backend_info_LDADD += @SCOREP_TIMER_LIBS@
+scorep_backend_info_LDFLAGS += $(libscorep_timer_la_needs_LDFLAGS)
+scorep_backend_info_LDADD += $(libscorep_timer_la_needs_LIBS)
 endif PLATFORM_BGP
 
 ## Blue Gene Q

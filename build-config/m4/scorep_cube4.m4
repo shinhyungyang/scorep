@@ -15,7 +15,7 @@
 ## Copyright (c) 2009-2011,
 ## University of Oregon, Eugene, USA
 ##
-## Copyright (c) 2009-2011, 2015-2017,
+## Copyright (c) 2009-2011, 2015-2017, 2024,
 ## Forschungszentrum Juelich GmbH, Germany
 ##
 ## Copyright (c) 2009-2011,
@@ -42,17 +42,19 @@ AC_DEFUN([SCOREP_CUBELIB], [
 m4_ifndef([SCOREP_SCORE],
     [m4_fatal([Invoke SCOREP_CUBELIB from build-score only.])])
 
-AS_IF([test -n "${scorep_cubelib_bindir}"],
-    [AC_SUBST([CUBELIB_CPPFLAGS], ["`${scorep_cubelib_bindir}/cubelib-config --cppflags`"])
-     AC_SUBST([CUBELIB_LIBS],     ["`${scorep_cubelib_bindir}/cubelib-config --libs`"])
-     AC_SUBST([CUBELIB_LDFLAGS],  ["`${scorep_cubelib_bindir}/cubelib-config --ldflags`"])
-     AC_SUBST([CUBELIB_BINDIR],          ["${scorep_cubelib_bindir}"])
-    ],
-    [AC_SUBST([CUBELIB_CPPFLAGS], ['-I$(srcdir)/../vendor/cubelib/src/cube/include -I../vendor/cubelib/src -I$(srcdir)/../vendor/cubelib/src/cube/include/service -I$(srcdir)/../vendor/cubelib/src/cube/include/dimensions/metric -I$(srcdir)/../vendor/cubelib/src/cube/include/network  -I$(srcdir)/../vendor/cubelib/src/cube/include/dimensions -I$(srcdir)/../vendor/cubelib/src/cube/include/dimensions/system -I$(srcdir)/../vendor/cubelib/src/cube/include/dimensions/calltree -I$(srcdir)/../vendor/cubelib/src/cube/include/dimensions/metric/matrix -I$(srcdir)/../vendor/cubelib/src/cube/include/dimensions/metric/value -I$(srcdir)/../vendor/cubelib/src/cube/include/dimensions/metric/value/trafo/single_value -I$(srcdir)/../vendor/cubelib/src/cube/include/dimensions/metric/index -I$(srcdir)/../vendor/cubelib/src/cube/include/dimensions/metric/data/rows -I$(srcdir)/../vendor/cubelib/src/cube/include/dimensions/metric/strategies -I$(srcdir)/../vendor/cubelib/src/cube/include/service/cubelayout -I$(srcdir)/../vendor/cubelib/src/cube/include/service/cubelayout/readers -I$(srcdir)/../vendor/cubelib/src/cube/include/service/cubelayout/layout -I$(srcdir)/../vendor/cubelib/src/cube/include/dimensions/metric/data -I$(srcdir)/../vendor/cubelib/src/cube/include/dimensions/metric/cache -I$(srcdir)/../vendor/cubelib/src/cube/include/syntax/cubepl -I$(srcdir)/../vendor/cubelib/src/cube/include/syntax/cubepl/evaluators -I$(srcdir)/../vendor/cubelib/src/cube/include/topologies'])
-    AC_SUBST([CUBELIB_LIBS], [../vendor/cubelib/build-frontend/libcube4.la])
-    AC_SUBST([CUBELIB_BINDIR], ["../vendor/cubelib/build-frontend"])
-    AC_SUBST([CUBELIB_LDFLAGS],  [])
-    ])
+AS_IF([test "x${scorep_cubelib_bindir}" != x],
+    [AC_SUBST([CUBELIB_CPPFLAGS], ["$($cubelib_config_cmd --cppflags)"])
+     AC_SUBST([CUBELIB_LIBS],     ["$($cubelib_config_cmd --libs)"])
+     AC_SUBST([CUBELIB_LDFLAGS],  ["$($cubelib_config_cmd --ltldflags)"])
+     AC_SUBST([CUBELIB_BINDIR],   [${scorep_cubelib_bindir}])],
+    [# CUBELIB_* Makefile variables are evaluated by calling cubelib-config,
+     # once it has been installed. When used earlier, a compile/link will fail.
+     m4_define([CUBELIB_CONFIG], [\$(DESTDIR)\$(bindir)/cubelib-config])dnl
+     AC_SUBST([CUBELIB_CPPFLAGS], ["\$\$(if test -x \"CUBELIB_CONFIG\"; then echo \$\$(CUBELIB_CONFIG --cppflags | sed 's|-I|-I\$(DESTDIR)|g'); else echo \"-ICUBELIB_CPPFLAGS_not_provided_yet\"; fi)"])
+     AC_SUBST([CUBELIB_LIBS],     ["\$\$(if test -x \"CUBELIB_CONFIG\"; then echo \$\$(CUBELIB_CONFIG --libs); else echo \"-lCUBELIB_LIBS_not_provided_yet\"; fi)"])
+     AC_SUBST([CUBELIB_LDFLAGS],  ["\$\$(if test -x \"CUBELIB_CONFIG\"; then echo \$\$(CUBELIB_CONFIG --ltldflags | sed 's|-L|-L\$(DESTDIR)|g;s|-R|-R\$(DESTDIR)|g'); else echo \"-LCUBELIB_LDFLAGS_not_provided_yet -RCUBELIB_LDFLAGS_not_provided_yet\"; fi)"])
+     m4_undefine([CUBELIB_CONFIG])dnl
+     AC_SUBST([CUBELIB_BINDIR],   ["${BINDIR}"])])
 
 ## Check for cube reader header and library only if we are using an
 ## external cube.
@@ -67,7 +69,10 @@ AS_IF([test -n "${scorep_cubelib_bindir}"],
      scorep_save_libs="${LIBS}"
      LIBS="${LIBS} ${CUBELIB_LIBS}"
      scorep_save_ldflags="${LDFLAGS}"
-     LDFLAGS="${CUBELIB_LDFLAGS} ${LDFLAGS}"
+     # For the non-libtool LINK_IFELSE here, use --ldflags instead of
+     # --ltldflags (=CUBELIB_LDFLAGS). Later on, CUBELIB_LDFLAGS are
+     # used in a libtool context.
+     LDFLAGS="$($cubelib_config_cmd --ldflags) ${LDFLAGS}"
      AC_LINK_IFELSE([AC_LANG_PROGRAM(
                          [[#include <Cube.h>]],
                          [[cube::Cube mycube;]])],

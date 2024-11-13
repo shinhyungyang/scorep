@@ -7,13 +7,13 @@
  * Copyright (c) 2009-2013,
  * Gesellschaft fuer numerische Simulation mbH Braunschweig, Germany
  *
- * Copyright (c) 2009-2017, 2019, 2021,
+ * Copyright (c) 2009-2017, 2019, 2021, 2024,
  * Technische Universitaet Dresden, Germany
  *
  * Copyright (c) 2009-2013,
  * University of Oregon, Eugene, USA
  *
- * Copyright (c) 2009-2016, 2020, 2022,
+ * Copyright (c) 2009-2016, 2020, 2022, 2024,
  * Forschungszentrum Juelich GmbH, Germany
  *
  * Copyright (c) 2009-2014,
@@ -148,13 +148,7 @@ enum
     "   --ldaudit  Prints the linker auditing LD_AUDIT value if supported.\n" \
     "  Options:\n" \
     "   --target   Get flags for specified target, e.g., mic, score.\n" \
-    "   --nvcc     Convert flags to be suitable for the nvcc compiler.\n" \
-    "   --static   Use only static Score-P libraries if possible.\n" \
-    "   --dynamic  Use only dynamic Score-P libraries if possible.\n"
-
-std::string m_rpath_head      = "";
-std::string m_rpath_delimiter = "";
-std::string m_rpath_tail      = "";
+    "   --nvcc     Convert flags to be suitable for the nvcc compiler.\n"
 
 enum
 {
@@ -175,19 +169,10 @@ print_help( void )
 }
 
 static void
-get_rpath_struct_data( void );
-
-static void
-append_ld_run_path_to_rpath( std::deque<std::string>& rpath );
-
-static void
 treat_linker_flags_for_nvcc( std::string& flags );
 
 static void
 treat_compiler_flags_for_nvcc( std::string& flags );
-
-static std::deque<std::string>
-remove_system_path( const std::deque<std::string>& path_list );
 
 static std::deque<std::string>
 get_full_library_names( const std::deque<std::string>& library_list,
@@ -220,16 +205,12 @@ main( int    argc,
 {
     int i;
     /* set default mode to mpi */
-    int                    action        = 0;
-    int                    ret           = EXIT_SUCCESS;
-    SCOREP_Config_Language language      = SCOREP_CONFIG_LANGUAGE_C;
-    bool                   nvcc          = false;
-    bool                   install       = true;
-    bool                   allow_dynamic = true;
-    bool                   allow_static  = true;
-#if defined( SCOREP_SHARED_BUILD )
-    bool preload_libs = false;
-#endif
+    int                    action       = 0;
+    int                    ret          = EXIT_SUCCESS;
+    SCOREP_Config_Language language     = SCOREP_CONFIG_LANGUAGE_C;
+    bool                   nvcc         = false;
+    bool                   install      = true;
+    bool                   preload_libs = false;
 
     /* set default target to plain */
     int         target      = TARGET_PLAIN;
@@ -272,7 +253,7 @@ main( int    argc,
         else if ( strcmp( argv[ i ], "--scorep-revision" ) == 0 ||
                   strcmp( argv[ i ], "--common-revision" ) == 0 )
         {
-            std::cerr << "[Score-P] warning: " << argv[ i ] << " is deprecated" << std::endl;
+            std::cerr << "[Score-P] WARNING: '" << argv[ i ] << "' is deprecated" << std::endl;
             std::cout << SCOREP_COMPONENT_REVISION << std::endl;
             exit( EXIT_SUCCESS );
         }
@@ -296,10 +277,8 @@ main( int    argc,
         else if ( strcmp( argv[ i ], "--preload-libs" ) == 0 )
         {
 #if defined( SCOREP_SHARED_BUILD )
-            allow_dynamic = true;
-            allow_static  = false;
-            preload_libs  = true;
-            action        = ACTION_EVENT_LIBS;
+            preload_libs = true;
+            action       = ACTION_EVENT_LIBS;
 #else
             std::cerr << "[Score-P] ERROR: Unsupported option: '" << argv[ i ] << "'.\n"
                       << "                 This installation contains no shared Score-P libraries." << std::endl;
@@ -423,14 +402,6 @@ main( int    argc,
         {
             action = ACTION_CONSTRUCTOR;
         }
-        else if ( strcmp( argv[ i ], "--dynamic" ) == 0 )
-        {
-            allow_static = false;
-        }
-        else if ( strcmp( argv[ i ], "--static" ) == 0 )
-        {
-            allow_dynamic = false;
-        }
         else if ( strcmp( argv[ i ], "--adapter-init" ) == 0 )
         {
             action = ACTION_ADAPTER_INIT;
@@ -545,18 +516,10 @@ main( int    argc,
         switch ( action )
         {
             case ACTION_LDFLAGS:
-                get_rpath_struct_data();
-                std::cout << deque_to_string( deps.getLDFlags( libs, install ),
-                                              " ", " ", "" );
+                str = deps.getLDFlags( libs, install );
                 if ( USE_LIBDIR_FLAG )
                 {
-                    std::deque<std::string> rpath = deps.getRpathFlags( libs, install );
-                    append_ld_run_path_to_rpath( rpath );
-                    rpath = remove_system_path( rpath );
-                    str   = deque_to_string( rpath,
-                                             m_rpath_head + m_rpath_delimiter,
-                                             m_rpath_delimiter,
-                                             m_rpath_tail );
+                    str += deps.getRpathFlags( libs, install );
                 }
                 std::cout << str;
                 std::cout.flush();
@@ -564,18 +527,7 @@ main( int    argc,
 
             case ACTION_LIBS:
             {
-                if ( !allow_dynamic || !allow_static )
-                {
-                    std::deque<std::string> rpath = deps.getRpathFlags( libs, install );
-                    libs = get_full_library_names( deps.getLibraries( libs ),
-                                                   rpath,
-                                                   allow_static,
-                                                   allow_dynamic );
-                }
-                else
-                {
-                    libs = deps.getLibraries( libs );
-                }
+                libs = deps.getLibraries( libs );
                 std::cout << deque_to_string( libs, " ", " ", "" );
                 std::cout.flush();
             }
@@ -608,11 +560,14 @@ main( int    argc,
     SCOREP_Config_LibraryDependencies deps;
     std::string                       str;
 
+    /* Enabled adapters add their event lib, if any, and libscorep_measurement
+       to libs (i.e., event libs). deps (i.e., mgmt libs) usually contain a
+       dependency between libscorep_measurement and the adapter's mgmt lib. If
+       there is at least one adapter enabled, libs is not empty. */
     SCOREP_Config_Adapter::addLibsAll( libs, deps );
     SCOREP_Config_MppSystem::current->addLibs( libs, deps );
     SCOREP_Config_ThreadSystem::current->addLibs( libs, deps );
 
-#if defined( SCOREP_SHARED_BUILD )
     if ( preload_libs )
     {
         /* libscorep_measurement.so must be in the event libs */
@@ -623,23 +578,19 @@ main( int    argc,
         libs.push_back( "libscorep_constructor" );
 #endif
     }
-#endif
+
+    /* Adapters, mpp- and thread-systems might add libscorep_measurement
+       several times; remove all duplicates but the last one. libs then
+       contain the event libs. */
+    libs = remove_double_entries_keep_last( libs );
 
     switch ( action )
     {
         case ACTION_LDFLAGS:
-            get_rpath_struct_data();
-            std::cout << deque_to_string( deps.getLDFlags( libs, install ),
-                                          " ", " ", "" );
+            str = deps.getLDFlags( libs, install );
             if ( USE_LIBDIR_FLAG )
             {
-                std::deque<std::string> rpath = deps.getRpathFlags( libs, install );
-                append_ld_run_path_to_rpath( rpath );
-                rpath = remove_system_path( rpath );
-                str   = deque_to_string( rpath,
-                                         m_rpath_head + m_rpath_delimiter,
-                                         m_rpath_delimiter,
-                                         m_rpath_tail );
+                str += deps.getRpathFlags( libs, install );
             }
             if ( SCOREP_Config_Adapter::isActive() )
             {
@@ -663,13 +614,13 @@ main( int    argc,
         {
             bool honor_libs = !!( action & ACTION_EVENT_LIBS );
             bool honor_deps = !!( action & ACTION_MGMT_LIBS );
-            if ( !allow_dynamic || !allow_static )
+            if ( preload_libs )
             {
-                std::deque<std::string> rpath = deps.getRpathFlags( libs, install, honor_libs, honor_deps );
+                std::deque<std::string> libdirs = deps.getLibdirs( libs, install, honor_libs, honor_deps );
                 libs = get_full_library_names( deps.getLibraries( libs, honor_libs, honor_deps ),
-                                               rpath,
-                                               allow_static,
-                                               allow_dynamic );
+                                               libdirs,
+                                               false,
+                                               true );
             }
             else
             {
@@ -844,76 +795,6 @@ main( int    argc,
     return ret;
 }
 
-
-/** constructor and destructor */
-void
-get_rpath_struct_data( void )
-{
-    // Replace $wl by LIBDIR_FLAG_WL and erase everything from
-    // $libdir on in order to create m_rpath_head and
-    // m_rpath_delimiter. This will work for most and for the relevant
-    // (as we know in 2012-07) values of LIBDIR_FLAG_CC. Some possible
-    // values are (see also ticket 530,
-    // https://silc.zih.tu-dresden.de/trac-silc/ticket/530):
-    // '+b $libdir'
-    // '-L$libdir'
-    // '-R$libdir'
-    // '-rpath $libdir'
-    // '$wl-blibpath:$libdir:'"$aix_libpath"
-    // '$wl+b $wl$libdir'
-    // '$wl-R,$libdir'
-    // '$wl-R $libdir:/usr/lib:/lib'
-    // '$wl-rpath,$libdir'
-    // '$wl--rpath $wl$libdir'
-    // '$wl-rpath $wl$libdir'
-    // '$wl-R $wl$libdir'
-    // For a complete list, check the currently used libtool.m4.
-    std::string            rpath_flag = LIBDIR_FLAG_CC;
-    std::string::size_type index      = 0;
-    while ( true )
-    {
-        index = rpath_flag.find( "$wl", index );
-        if ( index == std::string::npos )
-        {
-            break;
-        }
-        rpath_flag.replace( index, strlen( "$wl" ), LIBDIR_FLAG_WL );
-        ++index;
-    }
-    index = rpath_flag.find( "$libdir", 0 );
-    if ( index != std::string::npos )
-    {
-        rpath_flag.erase( index );
-    }
-
-#if HAVE( PLATFORM_AIX )
-    m_rpath_head      = " " + rpath_flag;
-    m_rpath_delimiter = ":";
-    m_rpath_tail      = ":" LIBDIR_AIX_LIBPATH;
-#else
-    m_rpath_head      = "";
-    m_rpath_delimiter = " " + rpath_flag;
-    m_rpath_tail      = "";
-#endif
-}
-
-/**
- * Add content of the environment variable LD_RUN_PATH to rpath
- */
-static void
-append_ld_run_path_to_rpath( std::deque<std::string>& rpath )
-{
-    /* Get variable values */
-    const char* ld_run_path = getenv( "LD_RUN_PATH" );
-    if ( ld_run_path == NULL || *ld_run_path == '\0' )
-    {
-        return;
-    }
-
-    std::deque<std::string> run_path = string_to_deque( ld_run_path, ":" );
-    rpath.insert( rpath.end(), run_path.begin(), run_path.end() );
-}
-
 static bool
 is_scorep_lib( const std::string& name )
 {
@@ -1012,35 +893,6 @@ treat_compiler_flags_for_nvcc( std::string& flags )
 }
 
 
-static std::deque<std::string>
-remove_system_path( const std::deque<std::string>& path_list )
-{
-    std::string             dlsearch_path = SCOREP_BACKEND_SYS_LIB_DLSEARCH_PATH;
-    std::deque<std::string> system_paths  = string_to_deque( dlsearch_path, " " );
-    std::deque<std::string> result_paths;
-
-    std::deque<std::string>::iterator       sys_path;
-    std::deque<std::string>::const_iterator app_path;
-
-    for ( app_path = path_list.begin(); app_path != path_list.end(); app_path++ )
-    {
-        bool is_sys_path = false;
-        for ( sys_path = system_paths.begin();
-              sys_path != system_paths.end(); sys_path++ )
-        {
-            if ( *app_path == *sys_path )
-            {
-                is_sys_path = true;
-            }
-        }
-        if ( !is_sys_path )
-        {
-            result_paths.push_back( *app_path );
-        }
-    }
-    return result_paths;
-}
-
 static void
 print_adapter_init_source( void )
 {
@@ -1064,7 +916,7 @@ print_adapter_init_source( void )
         init_structs.push_front( "SCOREP_Subsystem_TaskStack" );
         init_structs.push_front( "SCOREP_Subsystem_Substrates" );
 
-        init_structs = remove_double_entries( init_structs );
+        init_structs = remove_double_entries_keep_first( init_structs );
 
         std::cout << deque_to_string( init_structs,
                                       "extern const struct SCOREP_Subsystem ",

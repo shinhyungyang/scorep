@@ -7,7 +7,7 @@
  * Copyright (c) 2009-2013,
  * Gesellschaft fuer numerische Simulation mbH Braunschweig, Germany
  *
- * Copyright (c) 2009-2017,
+ * Copyright (c) 2009-2017, 2024,
  * Technische Universitaet Dresden, Germany
  *
  * Copyright (c) 2009-2013,
@@ -505,8 +505,7 @@ static bool
 has_item( const deque<string>& input,
           const string&        item )
 {
-    deque<string>::const_iterator i;
-    for ( i = input.begin(); i != input.end(); i++ )
+    for ( auto i = input.begin(); i != input.end(); i++ )
     {
         if ( *i == item )
         {
@@ -517,11 +516,25 @@ has_item( const deque<string>& input,
 }
 
 deque<string>
-remove_double_entries( const deque<string>& input )
+remove_double_entries_keep_first( const deque<string>& input )
 {
-    deque<string>                         output;
-    deque<string>::const_reverse_iterator i;
-    for ( i = input.rbegin(); i != input.rend(); i++ )
+    deque<string> output;
+    for ( auto i = input.begin(); i != input.end(); i++ )
+    {
+        if ( !has_item( output, *i ) )
+        {
+            output.push_back( *i );
+        }
+    }
+
+    return output;
+}
+
+deque<string>
+remove_double_entries_keep_last( const deque<string>& input )
+{
+    deque<string> output;
+    for ( auto i = input.rbegin(); i != input.rend(); i++ )
     {
         if ( !has_item( output, *i ) )
         {

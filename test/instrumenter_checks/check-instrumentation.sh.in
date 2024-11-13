@@ -97,6 +97,14 @@ valid_thread()
     return 1
 }
 
+# Before any particular instrumentation checks, check if EXE's shared
+# object dependencies are met at all.
+if LC_ALL=C ${LDD} "${EXE}" 2>/dev/null | ${GREP} 'not found' >/dev/null; then
+    echo "Shared object dependencies of ${EXE} not met:"
+    ${LDD} ${EXE}
+    exit 1
+fi
+
 # Initialize defaults
 COMP=yes
 @HAVE_SCOREP_COMPILER_INSTRUMENTATION_FALSE@unset COMP

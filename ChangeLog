@@ -33,6 +33,11 @@ Features and improvements:
   usage will require setting LD_PRELOAD. See OPEN_ISSUES for more
   information.
 - Added support for MPI neighborhood collectives.
+- The dependencies of Score-P's and required libraries have been made
+  more explicit, as libtool does not work reliably on all systems of
+  interest. This change is transparent when `scorep` or a
+  Score-P wrapper is used, but manifests in the changed output of
+  `scorep-config --libs` and `--ldflags`.
 
 User tools and API improvements and changes:
 
@@ -94,6 +99,13 @@ Compatibility:
 - For unwind, bfd and lustreapi additional `LIBS`, `LDFLAGS` and
   `CPPFLAGS` can be passed during configure (e.g. via `LIBBFD_EXTRA_LIBS`) to
   ensure that these libraries are detected correctly.
+- Score-P's installed libraries can be built either shared or static,
+  but not the combination of both in one installation. The default
+  changed to shared. For a pure static build, use `--enable-static
+  --disable-shared`.
+  With an either shared or static installation, the `scorep` and
+  `scorep-config` options `--static` and `--dynamic` became
+  meaningless and were removed.
 
 Bugfixes:
 
@@ -130,6 +142,12 @@ Bugfixes:
   or "no".
 - Reduction of overhead when the CUDA adapter is active and runtime
   filtering is used.
+- The self-containdness of instrumented executables WRT the needed
+  Score-P libraries has been improved. Non-self-contained executables
+  have been reported on Cray systems and, dependent on the configure
+  flags and the system configuration, on some others. Oftentimes, this
+  issue has been hidden by LD_LIBRARY_PATH settings provided by module
+  systems.
 
 ------------------- Released version 8.4 -----------------------------
 

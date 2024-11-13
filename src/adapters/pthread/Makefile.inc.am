@@ -1,7 +1,7 @@
 ##
 ## This file is part of the Score-P software (http://www.score-p.org)
 ##
-## Copyright (c) 2014,
+## Copyright (c) 2014, 2023,
 ## Forschungszentrum Juelich GmbH, Germany
 ##
 ## Copyright (c) 2015, 2017,
@@ -69,8 +69,7 @@ libscorep_adapter_pthread_event_la_CPPFLAGS = \
 
 
 libscorep_adapter_pthread_event_la_LIBADD = \
-    @PTHREAD_LIBS@ \
-    libscorep_measurement.la
+    @PTHREAD_LIBS@
 
 libscorep_adapter_pthread_event_la_LDFLAGS = \
     $(library_api_version_ldflags)           \

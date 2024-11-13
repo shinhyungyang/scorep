@@ -63,7 +63,7 @@ AS_CASE([${ac_scorep_platform}],
     [aix],   [_SCOREP_TIMER_CHECK([aix], [_SCOREP_TIMER_AIX])],
     [mic],   [# Do nothing but prevent selection of TSC.
              ],
-    [_SCOREP_TIMER_CHECK([tsc], [_SCOREP_TIMER_TSC], [], [-lm])])
+    [_SCOREP_TIMER_CHECK([tsc], [_SCOREP_TIMER_TSC], [], [], [-lm])])
 
 # Output
 AS_VAR_SET_IF([scorep_timers],
@@ -127,9 +127,9 @@ AS_IF([test "x${have_timer}" = xyes],
             [scorep_timer_cppflags="${scorep_timer_cppflags} ${timer_cppflags}"],
             [scorep_timer_cppflags=${timer_cppflags}])])
     AS_VAR_SET_IF([timer_ldflags],
-        [AS_VAR_SET_IF([scorep_timer_ldflags],
-            [scorep_timer_ldflags="${scorep_timer_ldflags} ${timer_ldflags}"],
-            [scorep_timer_ldflags=${timer_ldflags}])])
+        [AS_VAR_SET_IF([scorep_timer_ldflags], # assume timer_ldflags is "-L<dir>", see bgp above
+            [scorep_timer_ldflags="${scorep_timer_ldflags} ${timer_ldflags} ${timer_ldflags:+-R${timer_ldflags#-L}}"],
+            [scorep_timer_ldflags="${timer_ldflags} ${timer_ldflags:+-R${timer_ldflags#-L}}"])])
     AS_VAR_SET_IF([timer_libs],
         [AS_VAR_SET_IF([scorep_timer_libs],
             [scorep_timer_libs="${scorep_timer_libs} ${timer_libs}"],

@@ -3,7 +3,7 @@
 ##
 ## This file is part of the Score-P software (http://www.score-p.org)
 ##
-## Copyright (c) 2013-2016, 2022,
+## Copyright (c) 2013-2016, 2022, 2024,
 ## Forschungszentrum Juelich GmbH, Germany
 ##
 ## Copyright (c) 2015,
@@ -47,7 +47,8 @@ libscorep_thread_fork_join_omp_la_CPPFLAGS = \
     @SCOREP_TIMER_CPPFLAGS@
 libscorep_thread_fork_join_omp_la_LIBADD = \
     libscorep_thread_fork_join_generic.la \
-    libutils.la
+    libutils.la \
+    $(libutils_la_needs_LIBS)
 libscorep_thread_fork_join_omp_la_LDFLAGS = \
     $(library_api_version_ldflags)
 

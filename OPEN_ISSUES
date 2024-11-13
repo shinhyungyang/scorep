@@ -67,11 +67,6 @@ various Score-P components.
     (if available) to the Cray compiler wrapper when building your
     application to link to Score-P's shared libraries.
 
-    On some Cray systems, where Score-P uses externally installed
-    dependencies, these dependencies (i.e., the shared libraries
-    libotf2.so and libcube4w.so) fail to load. As a workaround, add
-    the corresponding pathes to LD_LIBRARY_PATH in your job script.
-
   - Experimental platforms:
 
     The following platforms are considered experimental and don't get
@@ -763,13 +758,6 @@ various Score-P components.
     to '_Unwind_Resume'. Adding -lstdc++ to the original link line
     solves this issue.
 
-  - In cases where Score-P was compiled with PAPI support, the
-    instrumenter option --static (only available for '--enable-shared
-    --enable-static' builds) explicitly adds the static PAPI library to
-    the link line which may cause 'undefined reference' errors. This
-    may happen for other libraries that were requested at configure time
-    as well.
-
   - The Cube metric hierarchy remapping specification file shipped with
     Score-P currently classifies all MPI request finalization calls (i.e.,
     MPI_Test[all|any|some] and MPI_Wait[all|any|some]) as point-to-point,
@@ -818,6 +806,18 @@ various Score-P components.
       $ make install
       $ make -C build-backend constructor-checks
       $ ./installcheck/constructor_checks/bin/run_constructor_checks.sh
+
+  - For AMD's AOCC 4.1.0 and newer (tested till 5.0.0), AOCC's clang
+    compiler prepends its library directory to user provided library
+    directories if -fopenmp is given. As a consequence, AOCC's
+    incompatible libunwind is linked instead of the one provided to
+    Score-P's configure. This fails with undefined symbol errors. One
+    could configure --without-libunwind to work around this compiler
+    bug. Still, there might be subtle differences, as not only
+    libunwind is found and silently linked in AOCC's library
+    directory.
+    The same applies to AMD's ROCm compiler amdclang in version 6.1.2
+    and newer.
 
 --------------------------------------------------------------------------------
 

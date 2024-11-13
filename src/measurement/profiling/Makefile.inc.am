@@ -15,7 +15,7 @@
 ## Copyright (c) 2009-2012,
 ## University of Oregon, Eugene, USA
 ##
-## Copyright (c) 2009-2015, 2024,
+## Copyright (c) 2009-2015, 2023-2024,
 ## Forschungszentrum Juelich GmbH, Germany
 ##
 ## Copyright (c) 2009-2012, 2014,
@@ -48,7 +48,7 @@ PROFILE_FLAGS =                                    \
     -I$(INC_DIR_COMMON_HASH)                       \
     -I$(INC_DIR_DEFINITIONS)                       \
     -I$(INC_DIR_SUBSTRATES)                        \
-    @CUBEW_CPPFLAGS@
+    $(CUBEW_CPPFLAGS)
 
 noinst_LTLIBRARIES += libscorep_profile.la
 

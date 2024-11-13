@@ -13,7 +13,7 @@ dnl
 dnl Copyright (c) 2009-2013,
 dnl University of Oregon, Eugene, USA
 dnl
-dnl Copyright (c) 2009-2022, 2024,
+dnl Copyright (c) 2009-2024,
 dnl Forschungszentrum Juelich GmbH, Germany
 dnl
 dnl Copyright (c) 2009-2013,
@@ -76,9 +76,11 @@ AFS_PROG_F77_SUMMARY
 AM_CONDITIONAL([HAVE_FORTRAN_SUPPORT], [test "x${afs_cv_prog_f77_works}" = "xyes" && test "x${afs_cv_prog_fc_works}" = "xyes"])
 
 LT_PREREQ([2.4.6])
-LT_INIT([disable-shared])
+LT_INIT([shared disable-static pic-only])
 AC_SUBST([LIBTOOL_DEPS])
 AFS_LINKMODE
+AFS_LT_RESTRICTIONS
+AFS_LT_RPATHS
 AFS_SUMMARY([Link mode], [static=$enable_static, shared=$enable_shared])
 
 AC_CONFIG_HEADERS([../src/config-backend.h])
@@ -161,29 +163,32 @@ AC_SCOREP_LINK_FLAGS_CHECK
 
 AFS_SUMMARY_SECTION_BEGIN([OTF2 features])
 
-scorep_otf2_config=
 scorep_otf2_config_backend_arg=
-AS_IF([test "x${ac_scorep_cross_compiling}" = "xyes"],
-      [scorep_otf2_config_backend_arg="--target=backend"
-       AS_IF([test "x${ac_scorep_platform}" = "xmic"],
-             [scorep_otf2_config_backend_arg="--target=mic"])
-      ])
-AS_IF([test -n "${scorep_otf2_bindir}"],
-      [AC_SUBST([OTF2_CPPFLAGS], ["`${scorep_otf2_bindir}/otf2-config --cppflags ${scorep_otf2_config_backend_arg}`"])
-       AC_SUBST([OTF2_LIBS],     ["`${scorep_otf2_bindir}/otf2-config --libs ${scorep_otf2_config_backend_arg}`"])
-       AC_SUBST([OTF2_LDFLAGS],  ["`${scorep_otf2_bindir}/otf2-config --ldflags ${scorep_otf2_config_backend_arg}`"])
-       AC_SUBST([OTF2_BINDIR],   ["${scorep_otf2_bindir}"])
-       AM_CONDITIONAL([HAVE_SCOREP_EXTERNAL_OTF2], [test 1 -eq 1])
-       scorep_otf2_config=${scorep_otf2_bindir}/otf2-config],
-      [AC_SUBST([OTF2_CPPFLAGS], ['-I../vendor/otf2/include -I$(srcdir)/../vendor/otf2/include'])
-       AC_SUBST([OTF2_LIBS],     [../vendor/otf2/build-backend/libotf2.la])
-       AC_SUBST([OTF2_LDFLAGS],  [])
-       AC_SUBST([OTF2_BINDIR],   [../vendor/otf2/build-backend])
-       AM_CONDITIONAL([HAVE_SCOREP_EXTERNAL_OTF2], [test 1 -eq 0])
-       scorep_otf2_config=../vendor/otf2/otf2-mini-config.sh])
+AS_IF([test "x${ac_scorep_cross_compiling}" = xyes],
+    [scorep_otf2_config_backend_arg="--target=backend"
+     AS_IF([test "x${ac_scorep_platform}" = xmic],
+         [scorep_otf2_config_backend_arg="--target=mic"])])
+AS_IF([test "x${scorep_otf2_bindir}" != x],
+    [otf2_config_cmd="${scorep_otf2_bindir}/otf2-config ${scorep_otf2_config_backend_arg}"
+     AC_SUBST([OTF2_LIBS], [$($otf2_config_cmd --libs)])
+     AC_SUBST([OTF2_LDFLAGS], [$($otf2_config_cmd --ltldflags)])
+     AC_SUBST([OTF2_CPPFLAGS], [$($otf2_config_cmd --cppflags)])
+     AC_SUBST([OTF2_BINDIR],   ["${scorep_otf2_bindir}"])],
+    [# OTF2_* Makefile variables are evaluated by calling otf2-config,
+     # once it has been installed. When used earlier, a compile/link will fail.
+     m4_define([OTF2_CONFIG], [\$(DESTDIR)\$(bindir)/otf2-config])dnl
+     AC_SUBST([OTF2_LIBS], ["\$\$(if test -x \"OTF2_CONFIG\"; then echo \$\$(OTF2_CONFIG \$\${scorep_otf2_config_backend_arg} --libs); else echo \"-lOTF2_LIBS_not_provided_yet\"; fi)"])
+     AC_SUBST([OTF2_LDFLAGS], ["\$\$(if test -x \"OTF2_CONFIG\"; then echo \$\$(OTF2_CONFIG \$\${scorep_otf2_config_backend_arg} --ltldflags | sed  's|-L|-L\$(DESTDIR)|g;s|-R|-R\$(DESTDIR)|g'); else echo \"-LOTF2_LDFLAGS_not_provided_yet -ROTF2_LDFLAGS_not_provided_yet\"; fi)"])
+     AC_SUBST([OTF2_CPPFLAGS], ["\$\$(if test -x \"OTF2_CONFIG\"; then echo \$\$(OTF2_CONFIG \$\${scorep_otf2_config_backend_arg} --cppflags | sed  's|-I|-I\$(DESTDIR)|g'); else echo \"-IOTF2_CPPFLAGS_not_provided_yet\"; fi)"])
+     m4_undefine([OTF2_CONFIG])dnl
+     AC_SUBST([OTF2_BINDIR], ["${BINDIR}"])
+
+     # Sole purpose of this otf2_config_cmd is to query sionlib status, see below.
+     otf2_config_cmd="../vendor/otf2/otf2-mini-config.sh ${scorep_otf2_config_backend_arg}"])
+AM_CONDITIONAL([HAVE_SCOREP_EXTERNAL_OTF2], [test "x${scorep_otf2_bindir}" != x])
 
 scorep_otf2_have_sion=no
-for substrate in `$scorep_otf2_config $scorep_otf2_config_backend_arg --features=substrates`
+for substrate in $($otf2_config_cmd --features=substrates)
 do
     AS_CASE([${substrate}],
         [sion], [scorep_otf2_have_sion=yes])
@@ -218,29 +223,28 @@ AS_IF([test -n "${scorep_opari2_bindir}"],
        AM_CONDITIONAL([HAVE_SCOREP_EXTERNAL_OPARI2], [false])])
 AC_SUBST([HAVE_OPARI2_FIX_AND_FREE_FORM_OPTIONS], [${opari2_fix_and_free_form_options}])
 
-AS_IF([test -n "${scorep_cubew_bindir}"],
-      [scorep_cubew_config_backend_arg=""
-       AS_IF([test "x${ac_scorep_cross_compiling}" = "xyes"],
-             [scorep_cubew_config_backend_arg="--target=backend"
-              AS_IF([test "x${ac_scorep_platform}" = "xmic"],
-                    [scorep_cubew_config_backend_arg="--target=mic"])
-             ])
-       AC_SUBST([CUBEW_CPPFLAGS],      ["`${scorep_cubew_bindir}/cubew-config --cflags`"])
-       AC_SUBST([CUBEW_LIBS],          ["`${scorep_cubew_bindir}/cubew-config --libs`"])
-       AC_SUBST([CUBEW_LDFLAGS],       ["`${scorep_cubew_bindir}/cubew-config --ldflags ${scorep_cubew_config_backend_arg}`"])
-       AC_SUBST([CUBEW_BINDIR],          ["${scorep_cubew_bindir}"])
-       AM_CONDITIONAL([HAVE_SCOREP_EXTERNAL_CUBEW], [test 1 -eq 1])
-      ],
-      [AC_SUBST([CUBEW_CPPFLAGS],      ['-I$(srcdir)/../vendor/cubew/src/cubew -I../vendor/cubew/src'])
-       AC_SUBST([CUBEW_LIBS],          ['../vendor/cubew/build-backend/libcube4w.la'])
-       AC_SUBST([CUBEW_LDFLAGS],       [])
-       AC_SUBST([CUBEW_BINDIR], ["../vendor/cubew/build-backend"])
-       AM_CONDITIONAL([HAVE_SCOREP_EXTERNAL_CUBEW], [test 1 -eq 0])
-      ])
+scorep_cubew_config_backend_arg=""
+AS_IF([test "x${ac_scorep_cross_compiling}" = xyes],
+    [scorep_cubew_config_backend_arg="--target=backend"
+     AS_IF([test "x${ac_scorep_platform}" = xmic],
+         [scorep_cubew_config_backend_arg="--target=mic"])])
+AS_IF([test "x${scorep_cubew_bindir}" != x],
+    [cubew_config_cmd="${scorep_cubew_bindir}/cubew-config ${scorep_cubew_config_backend_arg}"
+     AC_SUBST([CUBEW_LIBS], [$($cubew_config_cmd --libs)])
+     AC_SUBST([CUBEW_LDFLAGS], [$($cubew_config_cmd --ltldflags)])
+     AC_SUBST([CUBEW_CPPFLAGS], [$($cubew_config_cmd --cppflags)])],
+    [# CUBEW_* Makefile variables are evaluated by calling cubew-config,
+     # once it has been installed. When used earlier, a compile/link will fail.
+     m4_define([CUBEW_CONFIG], [\$(DESTDIR)\$(bindir)/cubew-config])dnl
+     AC_SUBST([CUBEW_LIBS], ["\$\$(if test -x \"CUBEW_CONFIG\"; then echo \$\$(CUBEW_CONFIG \$\${scorep_cubew_config_backend_arg} --libs); else echo \"-lCUBEW_LIBS_not_provided_yet\"; fi)"])
+     AC_SUBST([CUBEW_LDFLAGS], ["\$\$(if test -x \"CUBEW_CONFIG\"; then echo \$\$(CUBEW_CONFIG \$\${scorep_cubew_config_backend_arg} --ltldflags | sed 's|-L|-L\$(DESTDIR)|g;s|-R|-R\$(DESTDIR)|g'); else echo \"-LCUBEW_LDFLAGS_not_provided_yet -RCUBEW_LDFLAGS_not_provided_yet\"; fi)"])
+     AC_SUBST([CUBEW_CPPFLAGS], ["\$\$(if test -x \"CUBEW_CONFIG\"; then echo \$\$(CUBEW_CONFIG \$\${scorep_cubew_config_backend_arg} --cppflags | sed 's|-I|-I\$(DESTDIR)|g'); else echo \"-ICUBEW_CPPFLAGS_not_provided_yet\"; fi)"])
+     m4_undefine([CUBEW_CONFIG])])
+AM_CONDITIONAL([HAVE_SCOREP_EXTERNAL_CUBEW], [test "x${scorep_cubew_bindir}" != x])
 
 AS_IF([test -n "${scorep_cubelib_bindir}"],
       [AC_SUBST([CUBELIB_BINDIR], ["${scorep_cubelib_bindir}"])],
-      [AC_SUBST([CUBELIB_BINDIR], ["../vendor/cubelib/build-frontend"])])
+      [AC_SUBST([CUBELIB_BINDIR], ["${BINDIR}"])])
 
 AFS_POSIX_ACCESS
 AFS_POSIX_CLOSE

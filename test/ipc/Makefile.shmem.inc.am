@@ -6,6 +6,9 @@
 ## Copyright (c) 2012-2014,
 ## Technische Universitaet Dresden, Germany
 ##
+## Copyright (c) 2024,
+## Forschungszentrum Juelich GmbH, Germany
+##
 ## This software may be modified and distributed under the terms of
 ## a BSD-style license.  See the COPYING file in the package base
 ## directory for details.
@@ -40,7 +43,8 @@ test_ipc_shmem_CPPFLAGS = \
 
 test_ipc_shmem_LDADD = \
     libscorep_ipc_shmem.la \
-    $(LIB_DIR_SCOREP)libutils.la
+    $(LIB_DIR_SCOREP)libutils.la \
+    $(libutils_la_needs_LIBS)
 test_ipc_shmem_LDFLAGS = $(shmem_libwrap_ldflags)
 
 TESTS_SHMEM += test_ipc_shmem

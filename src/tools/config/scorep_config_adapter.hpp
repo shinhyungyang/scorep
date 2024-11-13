@@ -171,9 +171,11 @@ protected:
     checkArgument( const std::string& arg );
 
     /**
-     * Adds the adapter library to the list of libraries. This implementation
-     * adds the value stored in m_library. Overwrite this function if you need
-     * more or different libraries.
+     * Adds the adapter event library and libscorep_measurement
+     * to @a libs. Add a dependency between libscorep_measurement and the
+     * adapter's mgmt library to @a deps.
+     * Overwrite this function e.g., if you adapter doesn't have an event
+     * library or if you need more or different libraries.
      * @param libs The list of libs to which you may add other libs.
      * @param deps The library dependency class.
      */
@@ -341,9 +343,6 @@ public:
                SCOREP_Config_Language language,
                bool                   nvcc ) override;
     void
-    addLibs( std::deque<std::string>&           libs,
-             SCOREP_Config_LibraryDependencies& deps ) override;
-    void
     appendInitStructName( std::deque<std::string>& init_structs ) override;
 };
 
@@ -382,9 +381,6 @@ class SCOREP_Config_OpenaccAdapter : public SCOREP_Config_Adapter
 {
 public:
     SCOREP_Config_OpenaccAdapter();
-    void
-    addLibs( std::deque<std::string>&           libs,
-             SCOREP_Config_LibraryDependencies& deps ) override;
 };
 
 /* **************************************************************************************
