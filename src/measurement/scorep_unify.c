@@ -13,7 +13,7 @@
  * Copyright (c) 2009-2013,
  * University of Oregon, Eugene, USA
  *
- * Copyright (c) 2009-2017,
+ * Copyright (c) 2009-2017, 2024,
  * Forschungszentrum Juelich GmbH, Germany
  *
  * Copyright (c) 2009-2013,
@@ -49,7 +49,6 @@
 #include <stdio.h>
 #include <inttypes.h>
 #include "scorep_subsystem_management.h"
-#include "scorep_system_tree_sequence.h"
 
 #include <UTILS_Error.h>
 #define SCOREP_DEBUG_MODULE_NAME UNIFY
@@ -101,11 +100,6 @@ SCOREP_Unify( void )
     scorep_unify_helper_create_interim_comm_mapping(
         &scorep_local_definition_manager.interim_communicator );
 
-    /* Scalable system tree definitions need the string mappings */
-    if ( SCOREP_Status_UseSystemTreeSequenceDefinitions() )
-    {
-        scorep_system_tree_seq_unify();
-    }
 
     /* Let the subsystems do some stuff */
     scorep_subsystems_post_unify();
@@ -150,14 +144,11 @@ SCOREP_CopyDefinitionsToUnified( SCOREP_DefinitionManager* sourceDefinitionManag
 {
     UTILS_ASSERT( sourceDefinitionManager );
     UNIFY_DEFINITION( sourceDefinitionManager, String, string );
-    if ( !SCOREP_Status_UseSystemTreeSequenceDefinitions() )
-    {
-        UNIFY_DEFINITION( sourceDefinitionManager, SystemTreeNode, system_tree_node );
-        UNIFY_DEFINITION( sourceDefinitionManager, SystemTreeNodeProperty, system_tree_node_property );
-        UNIFY_DEFINITION( sourceDefinitionManager, LocationGroup, location_group );
-        UNIFY_DEFINITION( sourceDefinitionManager, Location, location );
-        UNIFY_DEFINITION( sourceDefinitionManager, LocationProperty, location_property );
-    }
+    UNIFY_DEFINITION( sourceDefinitionManager, SystemTreeNode, system_tree_node );
+    UNIFY_DEFINITION( sourceDefinitionManager, SystemTreeNodeProperty, system_tree_node_property );
+    UNIFY_DEFINITION( sourceDefinitionManager, LocationGroup, location_group );
+    UNIFY_DEFINITION( sourceDefinitionManager, Location, location );
+    UNIFY_DEFINITION( sourceDefinitionManager, LocationProperty, location_property );
     UNIFY_DEFINITION( sourceDefinitionManager, SourceFile, source_file );
     UNIFY_DEFINITION( sourceDefinitionManager, Region, region );
     UNIFY_DEFINITION( sourceDefinitionManager, Group, group );

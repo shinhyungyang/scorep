@@ -13,7 +13,7 @@
  * Copyright (c) 2009-2013,
  * University of Oregon, Eugene, USA
  *
- * Copyright (c) 2009-2016, 2021-2022,
+ * Copyright (c) 2009-2016, 2021-2022, 2024,
  * Forschungszentrum Juelich GmbH, Germany
  *
  * Copyright (c) 2009-2013,
@@ -49,7 +49,6 @@
 #include "scorep_runtime_management.h"
 #include <scorep/SCOREP_PublicTypes.h>
 #include <SCOREP_Memory.h>
-#include <scorep_system_tree_sequence.h>
 #include <stdbool.h>
 #include <stdint.h>
 #include <string.h>
@@ -280,8 +279,6 @@ SCOREP_Definitions_Finalize( void )
     // the contents of the definition managers is allocated using
     // SCOREP_Memory_AllocForDefinitions, so we don't need to free it
     // explicitly.
-
-    scorep_system_tree_seq_free();
 
     definitions_initialized = false;
 }

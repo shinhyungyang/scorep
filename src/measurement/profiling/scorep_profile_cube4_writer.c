@@ -56,7 +56,6 @@
 #include <scorep_profile_location.h>
 #include <scorep_profile_task_init.h>
 #include <scorep_ipc.h>
-#include <scorep_system_tree_sequence.h>
 #include <scorep_status.h>
 #include <scorep_runtime_management.h>
 #include <scorep_location_management.h>
@@ -970,26 +969,19 @@ init_cube_writing_data( scorep_cube_writing_data*   writeSet,
 static void
 add_mapping_to_cube_writing_data( scorep_cube_writing_data* writeSet )
 {
-    /* Get local location map */
-    const uint64_t* thread_map = NULL;
-    if ( SCOREP_Status_UseSystemTreeSequenceDefinitions() )
-    {
-        thread_map = scorep_system_tree_seq_get_local_location_order();
-    }
-
     /* Map global sequence numbers to profile nodes */
     writeSet->id_2_node = calloc( writeSet->callpath_number * writeSet->local_threads,
                                   sizeof( scorep_profile_node* ) );
 
-    scorep_profile_node* node = scorep_profile.first_root_node;
-    for ( uint64_t i = 0; node != NULL; node = node->next_sibling )
+    uint64_t id = 0;
+    for ( scorep_profile_node* node = scorep_profile.first_root_node;
+          node != NULL;
+          node = node->next_sibling )
     {
-        uint64_t thread_index = thread_map ? thread_map[ i ] : i;
-        thread_index *= writeSet->callpath_number;
         scorep_profile_for_all( node,
                                 make_callpath_mapping,
-                                &writeSet->id_2_node[ thread_index ] );
-        i++;
+                                &writeSet->id_2_node[ id ] );
+        id += writeSet->callpath_number;
     }
 
     /* Mapping from global sequence number to local metric handle. Defines
@@ -1131,10 +1123,6 @@ scorep_profile_write_cube4( SCOREP_Profile_OutputFormat format )
     UTILS_DEBUG_PRINTF( SCOREP_DEBUG_PROFILE, "Prepare writing" );
 
     SCOREP_Ipc_Group* comm = SCOREP_IPC_GROUP_WORLD;
-    if ( SCOREP_Status_UseSystemTreeSequenceDefinitions() )
-    {
-        comm = scorep_system_tree_seq_get_ipc_group();
-    }
 
     if ( !init_cube_writing_data( &write_set, format, comm ) )
     {
@@ -1442,8 +1430,4 @@ scorep_profile_write_cube4( SCOREP_Profile_OutputFormat format )
     /* Clean up */
     UTILS_DEBUG_PRINTF( SCOREP_DEBUG_PROFILE, "Clean up" );
     delete_cube_writing_data( &write_set );
-    if ( SCOREP_Status_UseSystemTreeSequenceDefinitions() )
-    {
-        scorep_system_tree_seq_free_ipc_group( comm );
-    }
 }

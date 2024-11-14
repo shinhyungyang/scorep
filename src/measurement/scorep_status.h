@@ -13,7 +13,7 @@
  * Copyright (c) 2009-2013,
  * University of Oregon, Eugene, USA
  *
- * Copyright (c) 2009-2013,
+ * Copyright (c) 2009-2013, 2024,
  * Forschungszentrum Juelich GmbH, Germany
  *
  * Copyright (c) 2009-2013,
@@ -119,22 +119,6 @@ SCOREP_Status_IsMppFinalized( void );
  */
 bool
 SCOREP_Status_IsProcessMasterOnNode( void );
-
-
-/**
- * Notify that ACC was in use.
- *
- * Prevents usage of system tree sequence definitions.
- */
-void
-SCOREP_Status_OnAccUsage( void );
-
-
-/**
- * Indicates whether the system tree sequence definitions should and can be used.
- */
-bool
-SCOREP_Status_UseSystemTreeSequenceDefinitions( void );
 
 
 #endif /* SCOREP_STATUS_H */

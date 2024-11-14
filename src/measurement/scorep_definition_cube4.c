@@ -13,7 +13,7 @@
  * Copyright (c) 2009-2013,
  * University of Oregon, Eugene, USA
  *
- * Copyright (c) 2009-2017, 2019, 2020, 2022-2024,
+ * Copyright (c) 2009-2017, 2019-2020, 2022-2024,
  * Forschungszentrum Juelich GmbH, Germany
  *
  * Copyright (c) 2009-2014,
@@ -42,7 +42,6 @@
 #include <ctype.h>
 #include <inttypes.h>
 #include "scorep_definition_cube4.h"
-#include "scorep_system_tree_sequence.h"
 
 #include <SCOREP_RuntimeManagement.h>
 #include <SCOREP_Memory.h>
@@ -1290,129 +1289,6 @@ write_cartesian_definitions( cube_t*                       myCube,
     free( process_to_master_thread_location_index_map );
 }
 
-/* ****************************************************************************
- * System tree sequence definitions expansion.
- *****************************************************************************/
-
-typedef struct
-{
-    cube_t*                      my_cube;
-    const uint32_t*              rank_mapping;
-    const uint32_t*              num_locations;
-    scorep_system_tree_seq_name* name_data;
-    const scorep_cube_layout*    layout;
-} sequence_writer_data;
-
-static scorep_system_tree_seq_child_param
-write_location_to_cube( scorep_system_tree_seq*            definition,
-                        uint64_t                           copy,
-                        sequence_writer_data*              writerData,
-                        scorep_system_tree_seq_child_param forChildren )
-{
-    cube_location* current = NULL;
-
-    cube_location_group* parent   = forChildren.ptr;
-    uint64_t             sub_type = scorep_system_tree_seq_get_sub_type( definition );
-    cube_location_type   class    = convert_to_cube_location_type( sub_type );
-
-    char* display_name = scorep_system_tree_seq_get_name( definition, copy,
-                                                          writerData->name_data );
-
-    current = cube_def_location( writerData->my_cube,
-                                 display_name, copy, class, parent );
-    free( display_name );
-
-    scorep_system_tree_seq_child_param for_children;
-    for_children.ptr = current;
-    return for_children;
-}
-
-static scorep_system_tree_seq_child_param
-write_location_group_to_cube( scorep_system_tree_seq*            definition,
-                              uint64_t                           copy,
-                              sequence_writer_data*              writerData,
-                              scorep_system_tree_seq_child_param forChildren )
-{
-    cube_system_tree_node*   parent       = forChildren.ptr;
-    static uint64_t          index        = 0;
-    uint64_t                 sub_type     = scorep_system_tree_seq_get_sub_type( definition );
-    cube_location_group_type class        = convert_to_cube_location_group_type( sub_type );
-    uint64_t                 sequence_no  = writerData->rank_mapping[ index ];
-    char*                    display_name = scorep_system_tree_seq_get_name( definition, copy,
-                                                                             writerData->name_data );
-
-    cube_location_group* current = cube_def_location_group( writerData->my_cube,
-                                                            display_name,
-                                                            sequence_no,
-                                                            class,
-                                                            parent );
-
-    index++;
-
-    free( display_name );
-    scorep_system_tree_seq_child_param for_children;
-    for_children.ptr = current;
-    return for_children;
-}
-
-
-static scorep_system_tree_seq_child_param
-write_system_tree_node_to_cube( scorep_system_tree_seq*            definition,
-                                uint64_t                           copy,
-                                sequence_writer_data*              writerData,
-                                scorep_system_tree_seq_child_param forChildren )
-{
-    uint64_t    sub_type = scorep_system_tree_seq_get_sub_type( definition );
-    const char* class    = scorep_system_tree_seq_get_class( definition,
-                                                             writerData->name_data );
-    char* display_name = scorep_system_tree_seq_get_name( definition, copy,
-                                                          writerData->name_data );
-
-    cube_system_tree_node* parent = forChildren.ptr;
-
-
-    cube_system_tree_node* current =
-        cube_def_system_tree_node( writerData->my_cube, display_name, "", class, parent );
-
-    free( display_name );
-    scorep_system_tree_seq_child_param for_children;
-    for_children.ptr = current;
-    return for_children;
-}
-
-static scorep_system_tree_seq_child_param
-write_system_tree_seq_to_cube( scorep_system_tree_seq*            definition,
-                               uint64_t                           copy,
-                               void*                              param,
-                               scorep_system_tree_seq_child_param forChildren )
-{
-    sequence_writer_data* writer_data = param;
-    switch ( scorep_system_tree_seq_get_type( definition ) )
-    {
-        case SCOREP_SYSTEM_TREE_SEQ_TYPE_SYSTEM_TREE_NODE:
-            return write_system_tree_node_to_cube( definition, copy,
-                                                   writer_data,
-                                                   forChildren );
-            break;
-        case SCOREP_SYSTEM_TREE_SEQ_TYPE_LOCATION_GROUP:
-            return write_location_group_to_cube( definition, copy,
-                                                 writer_data,
-                                                 forChildren );
-            break;
-        case SCOREP_SYSTEM_TREE_SEQ_TYPE_LOCATION:
-            return write_location_to_cube( definition, copy,
-                                           writer_data,
-                                           forChildren );
-            break;
-        default:
-            UTILS_ERROR( SCOREP_ERROR_UNKNOWN_TYPE,
-                         "Child system tree node of unknown type" );
-    }
-    scorep_system_tree_seq_child_param for_children;
-    for_children.ptr = NULL;
-    return for_children;
-}
-
 
 /* ****************************************************************************
  * Main definition writer function
@@ -1440,30 +1316,9 @@ scorep_write_definitions_to_cube4( cube_t*                       myCube,
         write_region_definitions( myCube, manager, map );
         write_callpath_definitions( myCube, manager, map, maxNumberOfProgramArgs );
 
-        if ( SCOREP_Status_UseSystemTreeSequenceDefinitions() )
-        {
-            sequence_writer_data writer_data;
-            writer_data.my_cube       = myCube;
-            writer_data.rank_mapping  = scorep_system_tree_seq_get_rank_order();
-            writer_data.name_data     = scorep_system_tree_seq_create_name_data();
-            writer_data.num_locations = locationsPerRank;
-            writer_data.layout        = layout;
-            scorep_system_tree_seq_child_param to_root;
-            to_root.ptr = NULL;
-
-            scorep_system_tree_seq_traverse_all( scorep_system_tree_seq_get_root(),
-                                                 &write_system_tree_seq_to_cube,
-                                                 &writer_data,
-                                                 to_root );
-            scorep_system_tree_seq_free_name_data( writer_data.name_data );
-        }
-        else
-        {
-            location_map = write_all_location_definitions( myCube, manager,
-                                                           nLocations );
-            scorep_write_cube_location_property( myCube, manager, location_map );
-            write_cartesian_definitions( myCube, manager, map, location_map );
-            free( location_map );
-        }
+        location_map = write_all_location_definitions( myCube, manager, nLocations );
+        scorep_write_cube_location_property( myCube, manager, location_map );
+        write_cartesian_definitions( myCube, manager, map, location_map );
+        free( location_map );
     }
 }

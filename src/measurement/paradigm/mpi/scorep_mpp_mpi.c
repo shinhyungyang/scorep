@@ -7,6 +7,9 @@
  * Copyright (c) 2016,
  * Technische Universitaet Darmstadt, Germany
  *
+ * Copyright (c) 2024,
+ * Forschungszentrum Juelich GmbH, Germany
+ *
  * This software may be modified and distributed under the terms of
  * a BSD-style license.  See the COPYING file in the package base
  * directory for details.
@@ -36,14 +39,6 @@ static char name[ MPI_LOCATION_GROUP_NAME_LENGTH ];
 char*
 SCOREP_Mpp_GetLocationGroupName( void )
 {
-    // When using sequence definitions, we do no create individual names
-    // in the definitions, but construct them from a base name and a
-    // number when they are written to disk. Thus, return only the
-    // base name in this case.
-    if ( SCOREP_Status_UseSystemTreeSequenceDefinitions() )
-    {
-        return "MPI Rank";
-    }
     int rank = SCOREP_Ipc_GetRank();
     snprintf( name, MPI_LOCATION_GROUP_NAME_LENGTH, "MPI Rank %d", rank );
 
