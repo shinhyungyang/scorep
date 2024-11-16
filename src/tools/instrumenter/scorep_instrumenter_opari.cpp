@@ -180,6 +180,13 @@ SCOREP_Instrumenter_OpariAdapter::precompile( SCOREP_Instrumenter&         instr
     invoke_opari( instrumenter, source_file, modified_file );
     instrumenter.addTempFile( modified_file );
     instrumenter.addTempFile( remove_path( source_file + ".opari.inc" ) );
+    /* We need to make sure that an OPARI2 instrumented file is pre-processed again. See compile
+     * step of SCOREP_Instrumenter. */
+    if ( m_openmp != disabled &&
+         cmdLine.getPreprocessMode() != SCOREP_Instrumenter_CmdLine::DISABLE )
+    {
+        cmdLine.enableSeparatePreprocessingStep();
+    }
     return modified_file;
 }
 

@@ -4,7 +4,7 @@
  * Copyright (c) 2022,
  * Technische Universitaet Dresden, Germany
  *
- * Copyright (c) 2023,
+ * Copyright (c) 2023, 2024,
  * Forschungszentrum Juelich GmbH, Germany
  *
  * This software may be modified and distributed under the terms of
@@ -155,4 +155,10 @@ SCOREP_Instrumenter_HipAdapter::printHelp( void )
                   thus automatically disables preprocessing.\n\
   --nohip         Disables HIP instrumentation."
               << std::endl;
+}
+
+bool
+SCOREP_Instrumenter_HipAdapter::isHipcc( void )
+{
+    return m_hipcc_compiler;
 }
