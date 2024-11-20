@@ -152,6 +152,9 @@ Bugfixes:
   systems.
 - Prevent build errors for OpenMP programs with Cray wrappers when
   preprocessing is used and an accelerator architecture is loaded.
+- Add the missing CommCreate, CommDestroy and their corresponding
+  MpiCollectiveBegin, MpiCollectiveEnd events to the `scorep-score`
+  estimate calculation.
 
 ------------------- Released version 8.4 -----------------------------
 
