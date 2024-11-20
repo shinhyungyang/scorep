@@ -111,23 +111,31 @@ bool
 SCOREP::Compiler::LLVMPlugin::FunctionIsInstrumentable( Function&      F,
                                                         SCOREP_Filter* filter )
 {
-    if ( F.empty() | !F.hasName() | F.isDeclaration() )
+    if ( F.empty() || !F.hasName() || F.isDeclaration() )
     {
         return false;
     }
 
-    // First. check for user functions
+    // First check for user functions
     auto basename             = DemangleFunctionGetBasename( F.getName().str() );
-    int  function_is_filtered = 0;
+    int  function_is_included = 0;
+    // If included explicitly, skip the remaining check
+    SCOREP_Filter_IncludeFunction( filter, basename.c_str(), F.getName().str().c_str(), &function_is_included );
+    if ( static_cast<bool>( function_is_included ) )
+    {
+        return true;
+    }
+    // Check if excluded function
+    int function_is_filtered = 0;
     SCOREP_Filter_MatchFunction( filter, basename.c_str(), F.getName().str().c_str(), &function_is_filtered );
-    if ( bool( function_is_filtered ) )
+    if ( static_cast<bool>( function_is_filtered ) )
     {
         return false;
     }
-    // Check against user filtered files
+    // Check against excluded files
     int file_is_filtered = 0;
     SCOREP_Filter_MatchFile( filter, F.getParent()->getSourceFileName().c_str(), &file_is_filtered );
-    if ( bool( file_is_filtered ) )
+    if ( static_cast<bool>( file_is_filtered ) )
     {
         return false;
     }
@@ -161,18 +169,18 @@ SCOREP::Compiler::LLVMPlugin::FunctionIsInstrumentable( Function&      F,
 
         // Newly added filters needed for LLVM plugin functions
         // Basic C++
-        && ( !strstr( basename.c_str(), "_GLOBAL__" ) )
-        && ( !strstr( basename.c_str(), "__gnu_cxx::" ) )
-        && ( !strstr( basename.c_str(), "__cxx_" ) )
-        && ( !strstr( basename.c_str(), "std::" ) )
+        && ( strncmp( basename.c_str(), "_GLOBAL__", 9 ) != 0 )
+        && ( strncmp( basename.c_str(), "__gnu_cxx::", 11 ) != 0 )
+        && ( strncmp( basename.c_str(), "__cxx_", 6 ) != 0 )
+        && ( strncmp( basename.c_str(), "std::", 5 ) != 0 )
         // OpenMP
-        && ( fnmatch( "__clang_*", basename.c_str(), 0 ) != 0 )
+        && ( strncmp( "__clang_", basename.c_str(), 8 ) != 0 )
         && ( fnmatch( "omp*$omp*$*", basename.c_str(), 0 ) != 0 )
         && ( fnmatch( "*.omp_outlined*", F.getName().str().c_str(), 0 ) != 0 )
         && ( fnmatch( "*.omp_outlined_debug__*", F.getName().str().c_str(), 0 ) != 0 )
-        && ( !strstr( basename.c_str(), "_omp_" ) )
+        // __kmp* are LLVM internal runtime functions
+        && ( strncmp( basename.c_str(), "__kmp", 5 ) != 0 )
         && ( !strstr( basename.c_str(), "_omp$" ) )
-        && ( !strstr( basename.c_str(), "__kmpc" ) )
         && ( strncmp( basename.c_str(), "ompx::", 6 ) != 0 )
         && ( strncmp( basename.c_str(), "__keep_alive", 10 ) != 0 )
         && ( strncmp( basename.c_str(), "__assert_fail", 13 ) != 0 )
