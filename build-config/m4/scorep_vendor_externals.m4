@@ -68,7 +68,8 @@ AS_IF([test "x${scorep_otf2_bindir}" = x],
 
      # We cannot do compile checks against the internal OTF2, hence we need to
      # assume that it is the expected version
-     ac_cv_have_decl_OTF2_REGION_ROLE_KERNEL=yes])
+     ac_cv_have_decl_OTF2_REGION_ROLE_KERNEL=yes
+     ac_cv_have_decl_OTF2_PARADIGM_OPENMP_TARGET=yes])
 
 scorep_otf2_have_sion=no
 for substrate in $($otf2_config_cmd --features=substrates)
@@ -84,8 +85,13 @@ AFS_SUMMARY([SIONlib support], [$scorep_otf2_have_sion])
 AC_LANG_PUSH([C])
 save_CFLAGS=$CFLAGS
 CFLAGS="$CFLAGS $OTF2_CPPFLAGS"
-# This should only be executed with an external OTF2, the internal spools the cache
+# Additional declaration checks, since these are not encoded in the library interface version.
+# Because it versions the ABI not the API. This should only be executed with an external OTF2,
+# the internal spools the cache.
 AC_CHECK_DECLS([OTF2_REGION_ROLE_KERNEL], [:], [:], [[#include <otf2/otf2.h>]])
+AC_CHECK_DECLS([OTF2_PARADIGM_OPENMP_TARGET], [:],
+    [AC_DEFINE([OTF2_PARADIGM_OPENMP_TARGET], [25], [Value from OTF2 3.1])],
+    [#include <otf2/OTF2_GeneralDefinitions.h>])
 CFLAGS=$save_CFLAGS
 AC_LANG_POP([C])
 
