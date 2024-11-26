@@ -897,7 +897,10 @@ scorep_ompt_cb_host_implicit_task( ompt_scope_endpoint_t endpoint,
                 ( void* )parent, /* ancestorInfo */
                 &new_tpd,
                 &scorep_task );
-            SCOREP_EnterRegion( parallel_region->region );
+            if ( parallel_region->is_recorded )
+            {
+                SCOREP_EnterRegion( parallel_region->region );
+            }
 
             SCOREP_Location* location = SCOREP_Location_GetCurrentCPULocation();
             task_t*          task     = get_task_from_pool();
@@ -1280,8 +1283,16 @@ scorep_ompt_cb_host_sync_region( ompt_sync_region_t    kind,
                     {
                         ibarrier_codeptr_ra = ( const void* )task->parallel_region->codeptr_ra;
                     }
-                    SCOREP_EnterRegion( sync_region_begin( task, ibarrier_codeptr_ra, TOOL_EVENT_IMPLICIT_BARRIER ) );
-
+                    /* Do not record the enter of the sync region if the
+                       corresponding parallel region was not recorded.
+                       However, still update the task->sync_regions array
+                       via sync_region_begin() to prevent crashes in
+                       subsequent sync_region callbacks. */
+                    const SCOREP_RegionHandle region = sync_region_begin( task, ibarrier_codeptr_ra, TOOL_EVENT_IMPLICIT_BARRIER );
+                    if ( task->parallel_region->is_recorded )
+                    {
+                        SCOREP_EnterRegion( region );
+                    }
                     #if HAVE( UTILS_DEBUG )
                     SCOREP_Location* loc = SCOREP_Location_GetCurrentCPULocation();
                     #endif
@@ -1654,12 +1665,16 @@ barrier_implicit_parallel_end_impl( task_t* task, char* utilsDebugCaller )
                   "ibarrier_end %s : loc %" PRIu32 " | task %p ",
                   utilsDebugCaller, SCOREP_Location_GetId( task->scorep_location ),
                   task );
-    /* Do not record the end of the sync region if the parallel region was not recorded */
+    /* Do not record the exit of the sync region if the corresponding
+       parallel region was not recorded.  However, still update the
+       task->sync_regions array via sync_region_end() to prevent
+       crashes in subsequent sync_region callbacks. */
+    const SCOREP_RegionHandle region = sync_region_end( task );
     if ( parallel_region->is_recorded )
     {
         SCOREP_Location_ExitRegion( task->scorep_location,
                                     timestamp,
-                                    sync_region_end( task ) );
+                                    region );
     }
 }
 
