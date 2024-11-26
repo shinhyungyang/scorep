@@ -491,8 +491,6 @@ scorep_ompt_cb_host_parallel_begin( ompt_data_t*        encountering_task_data,
     SCOREP_OMPT_RETURN_ON_INVALID_EVENT();
 
     UTILS_BUG_ON( requested_parallelism == 0 );
-    UTILS_BUG_ON( parallel_data->ptr != NULL,
-                  "Expected no ompt_data_t object for a new parallel region." );
 
     /* Runtimes that don't support OMPT target callbacks have been reported
        creating helper threads that lack thread-begin and implicit-task-begin
@@ -704,8 +702,6 @@ scorep_ompt_cb_host_parallel_end( ompt_data_t* parallel_data,
 
     tpd = tpd_from_now_on;
     release_parallel_region( parallel_data->ptr );
-    /* Explicitly set parallel_data->ptr to NULL, as Cray does reuse these for future parallel regions. */
-    parallel_data->ptr = NULL;
 
     UTILS_DEBUG_EXIT();
     SCOREP_IN_MEASUREMENT_DECREMENT();
@@ -901,7 +897,10 @@ scorep_ompt_cb_host_implicit_task( ompt_scope_endpoint_t endpoint,
                 ( void* )parent, /* ancestorInfo */
                 &new_tpd,
                 &scorep_task );
-            SCOREP_EnterRegion( parallel_region->region );
+            if ( parallel_region->is_recorded )
+            {
+                SCOREP_EnterRegion( parallel_region->region );
+            }
 
             SCOREP_Location* location = SCOREP_Location_GetCurrentCPULocation();
             task_t*          task     = get_task_from_pool();
@@ -1284,8 +1283,16 @@ scorep_ompt_cb_host_sync_region( ompt_sync_region_t    kind,
                     {
                         ibarrier_codeptr_ra = ( const void* )task->parallel_region->codeptr_ra;
                     }
-                    SCOREP_EnterRegion( sync_region_begin( task, ibarrier_codeptr_ra, TOOL_EVENT_IMPLICIT_BARRIER ) );
-
+                    /* Do not record the enter of the sync region if the
+                       corresponding parallel region was not recorded.
+                       However, still update the task->sync_regions array
+                       via sync_region_begin() to prevent crashes in
+                       subsequent sync_region callbacks. */
+                    const SCOREP_RegionHandle region = sync_region_begin( task, ibarrier_codeptr_ra, TOOL_EVENT_IMPLICIT_BARRIER );
+                    if ( task->parallel_region->is_recorded )
+                    {
+                        SCOREP_EnterRegion( region );
+                    }
                     #if HAVE( UTILS_DEBUG )
                     SCOREP_Location* loc = SCOREP_Location_GetCurrentCPULocation();
                     #endif
@@ -1309,6 +1316,7 @@ scorep_ompt_cb_host_sync_region( ompt_sync_region_t    kind,
                 }
                 case ompt_sync_region_barrier_implementation:
                 {
+                    task->reduction_codeptr_ra = ( uintptr_t )codeptr_ra;
                     SCOREP_EnterRegion( sync_region_begin( task, codeptr_ra, TOOL_EVENT_IMPLEMENTATION_BARRIER ) );
                     break;
                 }
@@ -1316,7 +1324,6 @@ scorep_ompt_cb_host_sync_region( ompt_sync_region_t    kind,
                     SCOREP_EnterRegion( sync_region_begin( task, codeptr_ra, TOOL_EVENT_TASKWAIT ) );
                     break;
                 case ompt_sync_region_taskgroup:
-                    task->reduction_codeptr_ra = ( uintptr_t )codeptr_ra;
                     SCOREP_EnterRegion( sync_region_begin( task, codeptr_ra, TOOL_EVENT_TASKGROUP ) );
                     break;
                 case ompt_sync_region_reduction:
@@ -1352,6 +1359,12 @@ scorep_ompt_cb_host_sync_region( ompt_sync_region_t    kind,
                 case ompt_sync_region_barrier_implicit:
                 {
                     UTILS_WARN_ONCE( "Deprecated enum ompt_sync_region_barrier_implicit encountered." );
+                    if ( parallel_data != NULL ) /* ibarrier inside parallel region */
+                    {
+                        task_t* task = task_data->ptr;
+                        SCOREP_ExitRegion( sync_region_end( task ) );
+                        break;
+                    }
                 } /* fall-through into ompt_sync_region_barrier_implementation intended */
                 /* OpenMP 5.2 spec.: The implementation can handle these barriers like implicit barriers
                    and dispatch all events as for implicit barriers. */
@@ -1359,6 +1372,7 @@ scorep_ompt_cb_host_sync_region( ompt_sync_region_t    kind,
                 {
                     if ( parallel_data != NULL ) /* ibarrier inside parallel region */
                     {
+                        task->reduction_codeptr_ra = ( uintptr_t )task->parallel_region->codeptr_ra;
                         task_t* task = task_data->ptr;
                         SCOREP_ExitRegion( sync_region_end( task ) );
                         break;
@@ -1651,12 +1665,16 @@ barrier_implicit_parallel_end_impl( task_t* task, char* utilsDebugCaller )
                   "ibarrier_end %s : loc %" PRIu32 " | task %p ",
                   utilsDebugCaller, SCOREP_Location_GetId( task->scorep_location ),
                   task );
-    /* Do not record the end of the sync region if the parallel region was not recorded */
+    /* Do not record the exit of the sync region if the corresponding
+       parallel region was not recorded.  However, still update the
+       task->sync_regions array via sync_region_end() to prevent
+       crashes in subsequent sync_region callbacks. */
+    const SCOREP_RegionHandle region = sync_region_end( task );
     if ( parallel_region->is_recorded )
     {
         SCOREP_Location_ExitRegion( task->scorep_location,
                                     timestamp,
-                                    sync_region_end( task ) );
+                                    region );
     }
 }
 
@@ -1735,14 +1753,12 @@ scorep_ompt_cb_host_work( ompt_work_t           work_type,
                 #if HAVE( DECL_OMPT_WORK_LOOP_OTHER )
                 case ompt_work_loop_other:
                 #endif  /* DECL_OMPT_WORK_LOOP_OTHER */
-                    task->reduction_codeptr_ra = ( uintptr_t )codeptr_ra;
                     SCOREP_EnterRegion( work_begin( task, codeptr_ra, TOOL_EVENT_LOOP ) );
                     #if !HAVE( SCOREP_OMPT_MISSING_WORK_LOOP_SCHEDULE )
                     SCOREP_TriggerParameterString( parameter_loop_type, looptype2string( work_type ) );
                     #endif /* !HAVE( SCOREP_OMPT_MISSING_WORK_LOOP_SCHEDULE ) */
                     break;
                 case ompt_work_sections:
-                    task->reduction_codeptr_ra = ( uintptr_t )codeptr_ra;
                     SCOREP_EnterRegion( work_begin( task, codeptr_ra, TOOL_EVENT_SECTIONS ) );
                     task->dispatch.section = SCOREP_INVALID_REGION;
                     break;
@@ -1761,12 +1777,10 @@ scorep_ompt_cb_host_work( ompt_work_t           work_type,
                                      work2string( work_type ) );
                     break;
                 case ompt_work_taskloop:
-                    task->reduction_codeptr_ra = ( uintptr_t )codeptr_ra;
                     SCOREP_EnterRegion( work_begin( task, codeptr_ra, TOOL_EVENT_TASKLOOP ) );
                     break;
                 #if HAVE( DECL_OMPT_WORK_SCOPE )
                 case ompt_work_scope:
-                    task->reduction_codeptr_ra = ( uintptr_t )codeptr_ra;
                     UTILS_WARN_ONCE( "ompt_work_t %s not implemented yet.",
                                      work2string( work_type ) );
                     break;
@@ -1948,37 +1962,6 @@ scorep_ompt_cb_host_task_create( ompt_data_t*        encountering_task_data,
         return;
     }
 
-    /* For `taskwait depend` we only receive the completion of the `taskwait depend`
-     * during task_schedule, with the corresponding undeferred task being started here. This
-     * means that new_task_data will be used as the prior_task in task_schedule with no
-     * next_task_data being passed. Since this would cause a segmentation fault, when checking
-     * for OpenMP leagues, we create an artifical task which is used for handling this directive. */
-    #if HAVE( DECL_OMPT_TASK_TASKWAIT ) && HAVE( DECL_OMPT_TASKWAIT_COMPLETE )
-    if ( flags & ompt_task_taskwait )
-    {
-        task_t* next_task = get_task_from_pool();
-        if ( flags & ompt_task_undeferred )
-        {
-            /* Since this task is already undeferred, increase the level by one. */
-            next_task->undeferred_level++;
-        }
-        next_task->region            = get_region( codeptr_ra, TOOL_EVENT_TASKWAIT_DEPEND );
-        next_task->belongs_to_league = task->belongs_to_league;
-        next_task->parallel_region   = task->parallel_region;
-        new_task_data->ptr           = next_task;
-        if ( next_task->undeferred_level == UNDEFERRED_TASK_INIT )
-        {
-            UTILS_WARN_ONCE( "Non-undeferred taskwait_complete is not implemented yet!" );
-        }
-        else
-        {
-            SCOREP_EnterRegion( next_task->region );
-        }
-        SCOREP_IN_MEASUREMENT_DECREMENT();
-        return;
-    }
-    #endif /* HAVE( DECL_OMPT_TASK_TASKWAIT ) && HAVE( DECL_OMPT_TASKWAIT_COMPLETE ) */
-
     /* No scheduling events occur when switching to or from a merged task ... */
     if ( flags & ompt_task_merged )
     {
@@ -2000,6 +1983,35 @@ scorep_ompt_cb_host_task_create( ompt_data_t*        encountering_task_data,
        We use the 64 bit available in new_task_data->value. This way we prevent
        an additional allocation on thread A that might be released on thread B,
        which would lead to draining one thread's memory pool faster than others. */
+
+    #if HAVE( DECL_OMPT_TASK_TASKWAIT ) && HAVE( DECL_OMPT_TASKWAIT_COMPLETE )
+    /* The taskwait construct with one or more depend clauses creates
+       this taskwait-init event and a corresponding taskwait-complete
+       intercepted from the task_schedule callback. There is no
+       schedule event in between that denotes the start of the task. We
+       set the region here and record enter/exit without duration at
+       taskwait-complete. */
+    if ( flags & ompt_task_taskwait )
+    {
+        SCOREP_RegionHandle task_create = get_region( codeptr_ra, TOOL_EVENT_TASK_CREATE );
+        SCOREP_Location*    location    = SCOREP_Location_GetCurrentCPULocation();
+        uint64_t            timestamp   = SCOREP_Timer_GetClockTicks();
+        SCOREP_RegionHandle task_region;
+        if ( flags & ompt_task_undeferred )
+        {
+            task_region = get_region( codeptr_ra, TOOL_EVENT_TASKWAIT_DEPEND );
+        }
+        else
+        {
+            task_region = get_region( codeptr_ra, TOOL_EVENT_TASKWAIT_DEPEND_NOWAIT );
+        }
+        /* Do not use shift_new_task, as it might not be initialized for implicit-parallel */
+        new_task_data->value = ( uint64_t )task_region << shift_region;
+        SCOREP_Location_EnterRegion( location, timestamp, task_create );
+        SCOREP_Location_ExitRegion( location, timestamp, task_create );
+        return;
+    }
+    #endif /* HAVE( DECL_OMPT_TASK_TASKWAIT ) && HAVE( DECL_OMPT_TASKWAIT_COMPLETE ) */
 
     /* Undeferred tasks:
        Execute immediately, thus don't generate
@@ -2116,6 +2128,34 @@ scorep_ompt_cb_host_task_schedule( ompt_data_t*       prior_task_data,
         return;
     }
 
+    /* The taskwait-complete event provides the completed task in
+       prior_task_data, there is no other schedule callback. I.e., we
+       cannot intercept the start of the task that is associated with
+       a taskwait construct with one or more depend clauses. Thus,
+       just record a TOOL_EVENT_TASKWAIT_DEPEND[_NOWAIT] region with no
+       duration. LLVM-based runtimes also do not pass a next_task_data
+       argument for taskwait-complete events. This is conformant with
+       the OpenMP 5.2 / 6.0 specification, stating: The argument is NULL
+       if the callback is dispatched [...] or if the callback signals the
+       completion of a taskwait construct. (OpenMP 6.0, p.757, L12-14).
+       Therefore, only record the task with an explicit Enter/Exit and return
+       afterward. */
+    #if HAVE( DECL_OMPT_TASK_TASKWAIT ) && HAVE( DECL_OMPT_TASKWAIT_COMPLETE )
+    if ( prior_task_status == ompt_taskwait_complete )
+    {
+        /* Do not use shift_new_task, as it might not be initialized for implicit-parallel */
+        SCOREP_RegionHandle region = prior_task_data->value >> shift_region;
+        if ( region != SCOREP_INVALID_REGION )
+        {
+            uint64_t         timestamp = SCOREP_Timer_GetClockTicks();
+            SCOREP_Location* location  = SCOREP_Location_GetCurrentCPULocation();
+            SCOREP_Location_EnterRegion( location, timestamp, region );
+            SCOREP_Location_ExitRegion( location, timestamp, region );
+        }
+        return;
+    }
+    #endif /* HAVE( DECL_OMPT_TASK_TASKWAIT ) && HAVE( DECL_OMPT_TASKWAIT_COMPLETE ) */
+
     task_t* prior_task = prior_task_data->ptr;
 
     /* For now, prevent league events. We need to take prior and next task
@@ -2145,20 +2185,7 @@ scorep_ompt_cb_host_task_schedule( ompt_data_t*       prior_task_data,
     {
         task_schedule_handle_prior_task( prior_task, prior_task_status );
     }
-    /* LLVM runtimes do not pass a next_task_data to task_schedule for
-     * taskwait_complete. Instead, runtimes start the waiting task immediately
-     * after creating it in task_create without dispatching additional callbacks.
-     * During task_schedule, they communicate the completion of all dependencies,
-     * indicating that the encountering task can continue execution.
-     * Since we're handling undeferred tasks here, we do not need to switch
-     * to the previous task. Therefore, return from the function and
-     * continue execution normally. */
-    #if HAVE( DECL_OMPT_TASK_TASKWAIT ) && HAVE( DECL_OMPT_TASKWAIT_COMPLETE )
-    if ( !( prior_task_status == ompt_taskwait_complete && next_task_data == NULL ) )
-    #endif /* HAVE( DECL_OMPT_TASK_TASKWAIT ) && HAVE( DECL_OMPT_TASKWAIT_COMPLETE ) */
-    {
-        task_schedule_handle_next_task( prior_task, next_task_data );
-    }
+    task_schedule_handle_next_task( prior_task, next_task_data );
     if ( prior_task->undeferred_level == UNDEFERRED_TASK_TO_BE_FREED )
     {
         release_task_to_pool( prior_task );
@@ -2175,20 +2202,6 @@ task_schedule_handle_prior_task( task_t*            priorTask,
 {
     switch ( priorTaskStatus )
     {
-        #if HAVE( DECL_OMPT_TASK_TASKWAIT ) && HAVE( DECL_OMPT_TASKWAIT_COMPLETE )
-        case ompt_taskwait_complete:
-            /* See task_create for more information */
-            if ( priorTask->undeferred_level > UNDEFERRED_TASK_INIT )
-            {
-                SCOREP_ExitRegion( priorTask->region );
-            }
-            else
-            {
-                UTILS_WARN_ONCE( "Non-undeferred taskwait_complete is not implemented yet!" );
-            }
-            priorTask->undeferred_level = UNDEFERRED_TASK_TO_BE_FREED; /* Task will be freed afterward */
-            break;
-        #endif /* HAVE( DECL_OMPT_TASK_TASKWAIT ) && HAVE( DECL_OMPT_TASKWAIT_COMPLETE ) */
         case ompt_task_complete:
         case ompt_task_detach:
             if ( priorTask->undeferred_level == UNDEFERRED_TASK_INIT ) /* deferred task */
@@ -2886,8 +2899,10 @@ scorep_ompt_cb_host_dispatch( ompt_data_t*    parallel_data,
     switch ( kind )
     {
         case ompt_dispatch_iteration:
+            #if HAVE( UTILS_DEBUG )
             UTILS_WARN_ONCE( "ompt_dispatch_t %s not implemented yet.",
                              dispatch2string( kind ) );
+            #endif
             break;
         case ompt_dispatch_section:
             /* Exit previous section, if any. */
@@ -2902,20 +2917,26 @@ scorep_ompt_cb_host_dispatch( ompt_data_t*    parallel_data,
             break;
         #if HAVE( DECL_OMPT_DISPATCH_WS_LOOP_CHUNK )
         case ompt_dispatch_ws_loop_chunk:
+            #if HAVE( UTILS_DEBUG )
             UTILS_WARN_ONCE( "ompt_dispatch_t %s not implemented yet.",
                              dispatch2string( kind ) );
+            #endif
             break;
         #endif  /* DECL_OMPT_DISPATCH_WS_LOOP_CHUNK */
         #if HAVE( DECL_OMPT_DISPATCH_TASKLOOP_CHUNK )
         case ompt_dispatch_taskloop_chunk:
+            #if HAVE( UTILS_DEBUG )
             UTILS_WARN_ONCE( "ompt_dispatch_t %s not implemented yet.",
                              dispatch2string( kind ) );
+            #endif
             break;
         #endif  /* DECL_OMPT_DISPATCH_TASKLOOP_CHUNK */
         #if HAVE( DECL_OMPT_DISPATCH_DISTRIBUTE_CHUNK )
         case ompt_dispatch_distribute_chunk:
+            #if HAVE( UTILS_DEBUG )
             UTILS_WARN_ONCE( "ompt_dispatch_t %s not implemented yet.",
                              dispatch2string( kind ) );
+            #endif
             break;
         #endif  /* DECL_OMPT_DISPATCH_DISTRIBUTE_CHUNK */
         default:
@@ -2986,10 +3007,9 @@ scorep_ompt_cb_host_reduction( ompt_sync_region_t    kind,
             /* Reduction has no codeptr_ra attached, thus provide a codeptr_ra
                via task_t. It's value starts with the codeptr_ra from the
                parallel region (see implicit_task cb), and is updated by the
-               constructs issuing the reduction (see work and sync_region cbs).
-               Once the codeptr_ra is consumed, reset to the enclosing one. */
+               constructs issuing the reduction (see sync_region implementation barrier cbs).
+               The codeptr_ra is reset when leaving the implementation barrier. */
             SCOREP_EnterRegion( sync_region_begin( task, ( void* )task->reduction_codeptr_ra, TOOL_EVENT_REDUCTION ) );
-            task->reduction_codeptr_ra = task->parallel_region->codeptr_ra;
         }
         break;
         case ompt_scope_end:
