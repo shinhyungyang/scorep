@@ -37,6 +37,12 @@ AC_REQUIRE([AFS_CPU_INSTRUCTION_SETS])
 
 AC_SUBST([CONFIG_EXTERNAL_LIBS_HPP], AFS_PACKAGE_TO_TOP[src/config-external-libs-]AFS_PACKAGE_BUILD_name[.hpp])
 AC_SUBST([CONFIG_EXTERNAL_LIBS_HPP_INCLUDE_GUARD], [CONFIG_EXTERNAL_LIBS_]AFS_PACKAGE_BUILD_NAME[_HPP])
+
+# Compile-time system search path for libraries: use e.g., to filter
+# -L paths in config-tools.
+AC_SUBST([SYS_LIB_SEARCH_PATH_SPEC], [${sys_lib_search_path_spec}])
+# Detected run-time system search path for libraries: use e.g., to
+# filter -R/-Wl,-rpath paths in config-tools.
 AC_SUBST([SYS_LIB_DLSEARCH_PATH_SPEC], [${sys_lib_dlsearch_path_spec}])
 
 AC_CONFIG_COMMANDS([Makefile.export], [make Makefile.export || exit 1])
