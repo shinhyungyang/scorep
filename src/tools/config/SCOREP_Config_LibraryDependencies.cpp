@@ -83,12 +83,12 @@ SCOREP_Config_LibraryDependencies::insert( const string& libName,
     deque<string> install_dir = { libInstallDir };
     install_dir = RemoveSystemPath( install_dir );
     m_library_objects.insert(
-        std::make_pair( libName,
-                        LibraryData( libName,
-                                     "",    // buildDir of no use for libwrapped lib
-                                     install_dir.empty() ? "" : install_dir.front(),
-                                     "", "" // libwrapped libs are supposed to be self-contained
-                                     ) ) );
+        make_pair( libName,
+                   LibraryData( libName,
+                                "",         // buildDir of no use for libwrapped lib
+                                install_dir.empty() ? "" : install_dir.front(),
+                                "", ""      // libwrapped libs are supposed to be self-contained
+                                ) ) );
 }
 
 deque<string>
@@ -217,8 +217,8 @@ SCOREP_Config_LibraryDependencies::get_dependencies( const deque<string>& libs,
 }
 
 void
-SCOREP_Config_LibraryDependencies::addDependency( const std::string& dependentLib,
-                                                  const std::string& dependency )
+SCOREP_Config_LibraryDependencies::addDependency( const string& dependentLib,
+                                                  const string& dependency )
 {
     if ( m_library_objects.find( dependentLib ) == m_library_objects.end() )
     {
@@ -235,7 +235,7 @@ SCOREP_Config_LibraryDependencies::addDependency( const std::string& dependentLi
 }
 
 void
-SCOREP_Config_LibraryDependencies::addImplicitDependency( const std::string& library )
+SCOREP_Config_LibraryDependencies::addImplicitDependency( const string& library )
 {
     if ( m_library_objects.find( library ) == m_library_objects.end() )
     {
@@ -246,15 +246,15 @@ SCOREP_Config_LibraryDependencies::addImplicitDependency( const std::string& lib
 }
 
 
-std::deque<std::string>
-SCOREP_Config_LibraryDependencies::RemoveSystemPath( const std::deque<std::string>& paths )
+deque<string>
+SCOREP_Config_LibraryDependencies::RemoveSystemPath( const deque<string>& paths )
 {
-    std::string             dlsearch_path = SCOREP_BACKEND_SYS_LIB_DLSEARCH_PATH;
-    std::deque<std::string> system_paths  = string_to_deque( dlsearch_path, " " );
-    std::deque<std::string> result_paths;
+    string        dlsearch_path = SCOREP_BACKEND_SYS_LIB_DLSEARCH_PATH;
+    deque<string> system_paths  = string_to_deque( dlsearch_path, " " );
+    deque<string> result_paths;
 
-    std::deque<std::string>::iterator       sys_path;
-    std::deque<std::string>::const_iterator app_path;
+    deque<string>::iterator       sys_path;
+    deque<string>::const_iterator app_path;
 
     for ( app_path = paths.begin(); app_path != paths.end(); app_path++ )
     {
@@ -276,7 +276,7 @@ SCOREP_Config_LibraryDependencies::RemoveSystemPath( const std::deque<std::strin
 }
 
 void
-SCOREP_Config_LibraryDependencies::AppendLdRunPath( std::deque<std::string>& paths )
+SCOREP_Config_LibraryDependencies::AppendLdRunPath( deque<string>& paths )
 {
     /* Get variable values */
     const char* ld_run_path_env = getenv( "LD_RUN_PATH" ); // abs_dir[:abs_dir]
@@ -285,7 +285,7 @@ SCOREP_Config_LibraryDependencies::AppendLdRunPath( std::deque<std::string>& pat
         return;
     }
 
-    std::deque<std::string> ld_run_path = string_to_deque( ld_run_path_env, ":" );
+    deque<string> ld_run_path = string_to_deque( ld_run_path_env, ":" );
     ld_run_path = remove_double_entries_keep_first( ld_run_path );
     ld_run_path = RemoveSystemPath( ld_run_path );
     /* Omit empty entries, entries that are not absolute paths, and
@@ -296,15 +296,15 @@ SCOREP_Config_LibraryDependencies::AppendLdRunPath( std::deque<std::string>& pat
              || i[ 0 ] != '/'
              || i.find_first_of( "\t\n " ) != string::npos )
         {
-            std::cerr << "[Score-P] WARNING: Omitting implausible LD_RUN_PATH element '"
-                      << i << "'." << std::endl;
+            cerr << "[Score-P] WARNING: Omitting implausible LD_RUN_PATH element '"
+                 << i << "'." << endl;
             continue;
         }
         paths.push_back( i );
     }
 }
 
-static std::string
+static string
 get_rpath_flag()
 {
     // Replace $wl by LIBDIR_FLAG_WL and erase everything from
@@ -326,12 +326,12 @@ get_rpath_flag()
     // '$wl-rpath $wl$libdir'
     // '$wl-R $wl$libdir'
     // For a complete list, check the currently used libtool.m4.
-    std::string            rpath_flag = LIBDIR_FLAG_CC;
-    std::string::size_type index      = 0;
+    string            rpath_flag = LIBDIR_FLAG_CC;
+    string::size_type index      = 0;
     while ( true )
     {
         index = rpath_flag.find( "$wl", index );
-        if ( index == std::string::npos )
+        if ( index == string::npos )
         {
             break;
         }
@@ -339,7 +339,7 @@ get_rpath_flag()
         ++index;
     }
     index = rpath_flag.find( "$libdir", 0 );
-    if ( index != std::string::npos )
+    if ( index != string::npos )
     {
         rpath_flag.erase( index );
     }
@@ -347,11 +347,11 @@ get_rpath_flag()
 }
 
 #if HAVE( PLATFORM_AIX )
-std::string SCOREP_Config_LibraryDependencies::m_rpath_head      = " " + get_rpath_flag();
-std::string SCOREP_Config_LibraryDependencies::m_rpath_delimiter = ":";
-std::string SCOREP_Config_LibraryDependencies::m_rpath_tail      = ":" LIBDIR_AIX_LIBPATH;
+string SCOREP_Config_LibraryDependencies::m_rpath_head      = " " + get_rpath_flag();
+string SCOREP_Config_LibraryDependencies::m_rpath_delimiter = ":";
+string SCOREP_Config_LibraryDependencies::m_rpath_tail      = ":" LIBDIR_AIX_LIBPATH;
 #else
-std::string SCOREP_Config_LibraryDependencies::m_rpath_head;
-std::string SCOREP_Config_LibraryDependencies::m_rpath_delimiter = " " + get_rpath_flag();
-std::string SCOREP_Config_LibraryDependencies::m_rpath_tail;
+string SCOREP_Config_LibraryDependencies::m_rpath_head;
+string SCOREP_Config_LibraryDependencies::m_rpath_delimiter = " " + get_rpath_flag();
+string SCOREP_Config_LibraryDependencies::m_rpath_tail;
 #endif
