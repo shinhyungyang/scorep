@@ -45,9 +45,9 @@
 
 /**
  * A class to store and analyze the dependencies from libraries. To generate
- * the dependecies, Makefile variables are parsed and header files are generated,
- * see build-config/common/Makefile-rpaths.inc.am. Note that is is taken care of
- * that no libdirs from SYS_LIB_DLSEARCH_PATH_SPEC will make it to m_library_objects.
+ * the dependencies, Makefile variables are parsed and header files are generated,
+ * see build-config/common/Makefile-rpaths.inc.am. Note that we take care of
+ * omitting known linker and loader search paths in getLDFlags() and getRpathFlags().
  */
 class SCOREP_Config_LibraryDependencies final
 {
@@ -92,7 +92,8 @@ public:
 
     /**
      * Returns a duplicate-free list containing the -L library
-     * path flags for the @p input_libs and its dependencies.
+     * path flags for the @p input_libs and its dependencies. Known
+     * linker search paths are omitted.
      * @param libs    A list of library names.
      * @param install If true, the install paths are used. If false, the
      *                build path are prepended (to allow the config tool
@@ -104,7 +105,8 @@ public:
 
     /**
      * Returns a duplicate-free list containing the -Wl,-rpath linker
-     * flags for the @p input_libs and its dependencies.
+     * flags for the @p input_libs and its dependencies. Known
+     * loader search paths are omitted.
      * @param libs    A list of library names.
      * @param install If true, the install paths are used. If false, the
      *                build path are prepended (to allow the config tool
@@ -156,18 +158,6 @@ public:
     void
     addImplicitDependency( const std::string& library );
 
-    static std::deque<std::string>
-    RemoveSystemPath( const std::deque<std::string>& paths );
-
-    /**
-     * Append contents of the environment variable LD_RUN_PATH as
-     * container of strings to @p paths, ommitting system linker
-     * search paths, non-absolute paths and those containing
-     * whitespace.
-     */
-    static void
-    AppendLdRunPath( std::deque<std::string>& paths );
-
     // ------------------------------------- Protected functions
 protected:
     /**
@@ -189,7 +179,34 @@ protected:
     get_libdirs( const std::deque<std::string> libs,
                  bool                          install );
 
-    // ------------------------------------- Public members
+    /**
+     * Remove known linker search paths from @p input.
+     */
+    static std::deque<std::string>
+    remove_linker_search_paths( const std::deque<std::string>& input );
+
+    /**
+     * Remove known loader search paths from @p input.
+     */
+    static std::deque<std::string>
+    remove_loader_search_paths( const std::deque<std::string>& input );
+
+    /**
+     * Remove paths from @p input that are part of @p remove.
+     */
+    static std::deque<std::string>
+    remove_paths( const std::deque<std::string>& input,
+                  const std::deque<std::string>& remove );
+
+    /**
+     * Append contents of the environment variable LD_RUN_PATH as
+     * container of strings to @p paths, omitting known loader search
+     * paths, non-absolute paths and those containing whitespace.
+     */
+    static void
+    append_ld_run_path( std::deque<std::string>& paths );
+
+    // ------------------------------------- Private members
 private:
     std::map< std::string, LibraryData> m_library_objects;
     std::deque< std::string >           m_implicit_dependencies;

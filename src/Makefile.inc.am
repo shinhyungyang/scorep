@@ -106,9 +106,22 @@ if !HAVE_SCOREP_EXTERNAL_OTF2
 # Note that a make clean will clean otf2's builddir, but not
 # uninstall the installation. This prevents corrupting an installation
 # by a final make clean, e.g., to save disk space.
+# We need <builddir>/otf2-config as prerequisite to install
+# $(BINDIR)/otf2-config even is there is an (older, incompatible)
+# installation in $(BINDIR).
+
+if CROSS_BUILD
+LOCAL_OTF2_CONFIG = ../vendor/otf2/build-frontend/otf2-config
+else ! CROSS_BUILD
+LOCAL_OTF2_CONFIG = ../vendor/otf2/build-backend/otf2-config
+endif !CROSS_BUILD
+
 BUILT_SOURCES += $(BINDIR)/otf2-config
-$(BINDIR)/otf2-config:
+$(BINDIR)/otf2-config: $(LOCAL_OTF2_CONFIG)
 	@if test -f ../vendor/otf2/Makefile; then $(am__cd) ../vendor/otf2 && $(MAKE) $(AM_MAKEFLAGS) install; else exit 1; fi
+
+$(LOCAL_OTF2_CONFIG):
+	@if test -f ../vendor/otf2/Makefile; then $(am__cd) ../vendor/otf2 && $(MAKE) $(AM_MAKEFLAGS) all; else exit 1; fi
 
 endif !HAVE_SCOREP_EXTERNAL_OTF2
 
@@ -123,9 +136,22 @@ if !HAVE_SCOREP_EXTERNAL_CUBEW
 # Note that a make clean will clean cubew's builddir, but not
 # uninstall the installation. This prevents corrupting an installation
 # by a final make clean, e.g., to save disk space.
+# We need <builddir>/cubew-config as prerequisite to install
+# $(BINDIR)/cubew-config even is there is an (older, incompatible)
+# installation in $(BINDIR).
+
+if CROSS_BUILD
+LOCAL_CUBEW_CONFIG = ../vendor/cubew/build-frontend/cubew-config
+else ! CROSS_BUILD
+LOCAL_CUBEW_CONFIG = ../vendor/cubew/build-backend/cubew-config
+endif !CROSS_BUILD
+
 BUILT_SOURCES += $(BINDIR)/cubew-config
-$(BINDIR)/cubew-config:
+$(BINDIR)/cubew-config: $(LOCAL_CUBEW_CONFIG)
 	@if test -f ../vendor/cubew/Makefile; then $(am__cd) ../vendor/cubew && $(MAKE) $(AM_MAKEFLAGS) install; else exit 1; fi
+
+$(LOCAL_CUBEW_CONFIG):
+	@if test -f ../vendor/cubew/Makefile; then $(am__cd) ../vendor/cubew && $(MAKE) $(AM_MAKEFLAGS) all; else exit 1; fi
 
 endif !HAVE_SCOREP_EXTERNAL_CUBEW
 
