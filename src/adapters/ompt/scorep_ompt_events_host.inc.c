@@ -172,6 +172,12 @@ typedef struct parallel_t
                                 * was enabled at the beginning of
                                 * a parallel region to not write
                                 * overdue events */
+    #if HAVE( SCOREP_OMPT_TEAMS_DISPATCH_IMPLICIT_TASK )
+    bool is_league_team;       /* Parallel object was created by a league.
+                                * Such parallel objects skip an implicit
+                                * barrier at parallel_end */
+    task_t* league_team_encountering_task;
+    #endif
 
     /* For explicit tasking: */
     /* Squeeze explicit task creation data into 64 bits, see also
@@ -540,6 +546,18 @@ scorep_ompt_cb_host_parallel_begin( ompt_data_t*        encountering_task_data,
             team_implicit_parallel = parallel_region;
         }
     }
+    #if HAVE( SCOREP_OMPT_TEAMS_DISPATCH_IMPLICIT_TASK )
+    /* League teams are internal parallel regions created by the runtime. They
+     * are not part of the user's parallel regions and should not be recorded.
+     * To identify them, set is_league_team to true. Also store the encountering
+     * task, as we will reuse this data when threads participating in the
+     * internal parallel region initialize with an implicit-task-begin event. */
+    else if ( ( ( task_t* )encountering_task_data->ptr )->belongs_to_league )
+    {
+        parallel_region->is_league_team                = true;
+        parallel_region->league_team_encountering_task = encountering_task_data->ptr;
+    }
+    #endif
 
     init_parallel_obj( parallel_region, tpd, requested_parallelism, codeptr_ra, -1 );
     /* parallel_t object ready */
@@ -550,7 +568,12 @@ scorep_ompt_cb_host_parallel_begin( ompt_data_t*        encountering_task_data,
        the hash table already here. */
     get_region( codeptr_ra, TOOL_EVENT_IMPLICIT_BARRIER );
 
-    SCOREP_ThreadForkJoin_Fork( SCOREP_PARADIGM_OPENMP, requested_parallelism );
+    #if HAVE( SCOREP_OMPT_TEAMS_DISPATCH_IMPLICIT_TASK )
+    if ( !parallel_region->is_league_team )
+    #endif
+    {
+        SCOREP_ThreadForkJoin_Fork( SCOREP_PARADIGM_OPENMP, requested_parallelism );
+    }
 
     /* Set subsystem_data's task for this location to NULL as this location will
      * be reused as worker thread 0 within the parallel region. subsystem_data
@@ -601,10 +624,21 @@ init_parallel_obj( parallel_t*                        parallel,
     UTILS_BUG_ON( parallel == NULL );
     UTILS_BUG_ON( requestedParallelism == 0 );
 
-    parallel->parent      = parent;
-    parallel->team_size   = requestedParallelism;
-    parallel->codeptr_ra  = ( uintptr_t )codeptrRa;
-    parallel->region      = get_region( codeptrRa, parallel->belongs_to_league ? TOOL_EVENT_LEAGUE : TOOL_EVENT_PARALLEL );
+    parallel->parent     = parent;
+    parallel->team_size  = requestedParallelism;
+    parallel->codeptr_ra = ( uintptr_t )codeptrRa;
+    #if HAVE( SCOREP_OMPT_TEAMS_DISPATCH_IMPLICIT_TASK )
+    /* Since we want to ignore this event, do not call get_region() and directly
+     * set the region to SCOREP_INVALID_REGION. */
+    if ( parallel->is_league_team )
+    {
+        parallel->region = SCOREP_INVALID_REGION;
+    }
+    else
+    #endif
+    {
+        parallel->region = get_region( codeptrRa, parallel->belongs_to_league ? TOOL_EVENT_LEAGUE : TOOL_EVENT_PARALLEL );
+    }
     parallel->ref_count   = refCount;
     parallel->is_recorded = SCOREP_RecordingEnabled();
 
@@ -668,7 +702,19 @@ scorep_ompt_cb_host_parallel_end( ompt_data_t* parallel_data,
     }
 
     struct scorep_thread_private_data* tpd_from_now_on = NULL;
-    SCOREP_ThreadForkJoin_Join( SCOREP_PARADIGM_OPENMP, &tpd_from_now_on );
+    #if HAVE( SCOREP_OMPT_TEAMS_DISPATCH_IMPLICIT_TASK )
+    /* Since we reused the encountering_task_data from parallel_begin, we need to
+     * reset the tpd correctly. Normally, this would be done by ThreadForkJoin,
+     * but since we ignored these events, we cannot call this function. */
+    if ( parallel_region->is_league_team )
+    {
+        tpd_from_now_on = parallel_region->league_team_encountering_task->tpd;
+    }
+    else
+    #endif
+    {
+        SCOREP_ThreadForkJoin_Join( SCOREP_PARADIGM_OPENMP, &tpd_from_now_on );
+    }
 
     /* Reset subsystem data after it was used in previous parallel region. */
     SCOREP_Location* location = SCOREP_Location_GetCurrentCPULocation();
@@ -822,19 +868,36 @@ scorep_ompt_cb_host_implicit_task( ompt_scope_endpoint_t endpoint,
             struct scorep_thread_private_data* new_tpd = NULL;
             struct SCOREP_Task*                scorep_task;
 
-            /* Triggers overdue handling via subsystem_cb before substrates
-             * gets informed and location activated. */
-            SCOREP_ThreadForkJoin_TeamBegin(
-                SCOREP_PARADIGM_OPENMP,
-                ( uint32_t )index,
-                ( uint32_t )actual_parallelism,
-                0,               /* use ancesterInfo instead of nesting level */
-                ( void* )parent, /* ancestorInfo */
-                &new_tpd,
-                &scorep_task );
-            if ( parallel_region->is_recorded )
+            #if HAVE( SCOREP_OMPT_TEAMS_DISPATCH_IMPLICIT_TASK )
+            /* League teams are internally created by the runtime and do not
+             * give any meaningful information for a performance measurement.
+             * Since we do not want to record any events for league teams, we
+             * copy information from the parent task to the new task and reuse
+             * it. */
+            if ( parallel_region->is_league_team )
             {
-                SCOREP_EnterRegion( parallel_region->region );
+                new_tpd                    = parallel_region->league_team_encountering_task->tpd;
+                scorep_task                = parallel_region->league_team_encountering_task->scorep_task;
+                actual_parallelism         = 1;
+                parallel_region->team_size = 1;
+            }
+            else
+            #endif
+            {
+                /* Triggers overdue handling via subsystem_cb before substrates
+                 * gets informed and location activated. */
+                SCOREP_ThreadForkJoin_TeamBegin(
+                    SCOREP_PARADIGM_OPENMP,
+                    ( uint32_t )index,
+                    ( uint32_t )actual_parallelism,
+                    0,               /* use ancesterInfo instead of nesting level */
+                    ( void* )parent, /* ancestorInfo */
+                    &new_tpd,
+                    &scorep_task );
+                if ( parallel_region->is_recorded )
+                {
+                    SCOREP_EnterRegion( parallel_region->region );
+                }
             }
 
             SCOREP_Location* location = SCOREP_Location_GetCurrentCPULocation();
@@ -1100,6 +1163,14 @@ implicit_task_end_impl( task_t* task, char* utilsDebugCaller )
                  SCOREP_Location_GetId( task->scorep_location ), parallel_region,
                  task, task->index, tpd, task->tpd, timestamp );
 
+
+    #if HAVE( SCOREP_OMPT_TEAMS_DISPATCH_IMPLICIT_TASK )
+    /* League teams are not recorded, therefore return early. */
+    if ( parallel_region->is_league_team )
+    {
+        return;
+    }
+    #endif
     /* event might be triggered from location different from the one that
        executed itask_begin; so far, seen in finalize_tool only. Only record
        event if parallel region was recorded. */
