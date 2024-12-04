@@ -7,7 +7,7 @@
  * Copyright (c) 2009-2013,
  * Gesellschaft fuer numerische Simulation mbH Braunschweig, Germany
  *
- * Copyright (c) 2009-2017,
+ * Copyright (c) 2009-2017, 2024,
  * Technische Universitaet Dresden, Germany
  *
  * Copyright (c) 2009-2013,
@@ -41,6 +41,7 @@
  */
 
 #include <string>
+#include <vector>
 
 /**
     Checks whether a file is a source file.
@@ -155,6 +156,15 @@ check_lib_name( const std::string& libraryName,
  */
 std::string
 create_random_string( void );
+
+/**
+ * Append 'newEnvItems' to the value of the environment variable
+ * specified in 'environmentVariable' delimited by the 'delimiter' value.
+ */
+void
+append_list_to_env( std::vector<std::string> newEnvItems,
+                    const std::string&       environmentVariable,
+                    const std::string&       delimiter );
 
 
 #endif // SCOREP_INSTRUMENTER_UTILS_HPP

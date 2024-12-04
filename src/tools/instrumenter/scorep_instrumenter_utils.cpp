@@ -317,3 +317,23 @@ create_random_string( void )
                   << "_" << tv.tv_usec;
     return random_string.str();
 }
+
+void
+append_list_to_env( std::vector<std::string> newEnvItems,
+                    const std::string&       environmentVariable,
+                    const std::string&       delimiter )
+{
+    if ( newEnvItems.empty() )
+    {
+        return;
+    }
+
+    const char* env_variable_value = std::getenv( environmentVariable.c_str() );
+    if ( env_variable_value )
+    {
+        newEnvItems.insert( newEnvItems.begin(), std::string( env_variable_value ) );
+    }
+    const auto new_value = scorep_vector_to_string( newEnvItems, "", "", delimiter );
+
+    setenv( environmentVariable.c_str(), new_value.c_str(), /* Overwrite */ 1 );
+}
