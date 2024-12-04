@@ -1336,8 +1336,7 @@ scorep_ompt_cb_host_sync_region( ompt_sync_region_t    kind,
                 }
                 #if HAVE( DECL_OMPT_SYNC_REGION_BARRIER_TEAMS )
                 case ompt_sync_region_barrier_teams:
-                    UTILS_WARN_ONCE( "ompt_sync_region_t %s not implemented yet.",
-                                     sync_region2string( kind ) );
+                    SCOREP_EnterRegion( sync_region_begin( task, codeptr_ra, TOOL_EVENT_IMPLICIT_BARRIER_TEAMS ) );
                     break;
                 #endif  /* DECL_OMPT_SYNC_REGION_BARRIER_TEAMS */
                 default:
@@ -1378,6 +1377,16 @@ scorep_ompt_cb_host_sync_region( ompt_sync_region_t    kind,
                         break;
                     }
                 } /* fall-through into ompt_sync_region_barrier_implicit_parallel intended */
+                #if HAVE( DECL_OMPT_SYNC_REGION_BARRIER_TEAMS )
+                case ompt_sync_region_barrier_teams:
+                {
+                    if ( parallel_data != NULL ) /* ibarrier inside parallel region */
+                    {
+                        SCOREP_ExitRegion( sync_region_end( task ) );
+                        break;
+                    }
+                } /* fall-through into ompt_sync_region_barrier_implicit_parallel intended */
+                #endif  /* DECL_OMPT_SYNC_REGION_BARRIER_TEAMS */
                 case ompt_sync_region_barrier_implicit_parallel:
                 {
                     /* parallel_data == NULL for ompt_sync_region_barrier_implicit_parallel
@@ -1431,12 +1440,6 @@ scorep_ompt_cb_host_sync_region( ompt_sync_region_t    kind,
                     SCOREP_ExitRegion( sync_region_end( task ) );
                     break;
                 }
-                #if HAVE( DECL_OMPT_SYNC_REGION_BARRIER_TEAMS )
-                case ompt_sync_region_barrier_teams:
-                    UTILS_WARN_ONCE( "ompt_sync_region_t %s not implemented yet.",
-                                     sync_region2string( kind ) );
-                    break;
-                #endif  /* DECL_OMPT_SYNC_REGION_BARRIER_TEAMS */
                 default:
                     UTILS_WARNING( "unknown ompt_sync_region_t %d.",
                                    ( int )kind );

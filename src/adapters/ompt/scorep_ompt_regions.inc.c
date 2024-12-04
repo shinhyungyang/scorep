@@ -45,6 +45,7 @@ typedef enum tool_event_t
     TOOL_EVENT_TASKWAIT_DEPEND_NOWAIT,
     TOOL_EVENT_TASKGROUP,
     TOOL_EVENT_BARRIER,
+    TOOL_EVENT_IMPLICIT_BARRIER_TEAMS,
     TOOL_EVENT_MASKED,
     TOOL_EVENT_CRITICAL,
     TOOL_EVENT_CRITICAL_SBLOCK,
@@ -88,6 +89,7 @@ typedef struct region_fallback_t
 #define REGION_OMP_TASKWAIT_DEPEND_NOWAIT "!$omp taskwait depend nowait"
 #define REGION_OMP_TASKGROUP "!$omp taskgroup"
 #define REGION_OMP_BARRIER "!$omp barrier"
+#define REGION_OMP_IBARRIER_TEAMS "!$omp implicit barrier (teams)"
 #define REGION_OMP_MASKED "!$omp masked"
 #define REGION_OMP_CRITICAL "!$omp critical"
 #define REGION_OMP_CRITICAL_SBLOCK "!$omp critical sblock"
@@ -119,6 +121,7 @@ static region_fallback_t region_fallback[ TOOL_EVENTS ] =
     { REGION_OMP_TASKWAIT_DEPEND_NOWAIT, sizeof( REGION_OMP_TASKWAIT_DEPEND_NOWAIT ) - 1, SCOREP_REGION_TASK_WAIT,        SCOREP_INVALID_REGION },
     { REGION_OMP_TASKGROUP,              sizeof( REGION_OMP_TASKGROUP ) - 1,              SCOREP_REGION_BARRIER,          SCOREP_INVALID_REGION },
     { REGION_OMP_BARRIER,                sizeof( REGION_OMP_BARRIER ) - 1,                SCOREP_REGION_BARRIER,          SCOREP_INVALID_REGION },
+    { REGION_OMP_IBARRIER_TEAMS,         sizeof( REGION_OMP_IBARRIER_TEAMS ) - 1,         SCOREP_REGION_IMPLICIT_BARRIER, SCOREP_INVALID_REGION },
     { REGION_OMP_MASKED,                 sizeof( REGION_OMP_MASKED ) - 1,                 SCOREP_REGION_MASTER,           SCOREP_INVALID_REGION },
     { REGION_OMP_CRITICAL,               sizeof( REGION_OMP_CRITICAL ) - 1,               SCOREP_REGION_CRITICAL,         SCOREP_INVALID_REGION },
     { REGION_OMP_CRITICAL_SBLOCK,        sizeof( REGION_OMP_CRITICAL_SBLOCK ) - 1,        SCOREP_REGION_CRITICAL_SBLOCK,  SCOREP_INVALID_REGION },
@@ -148,6 +151,7 @@ static region_fallback_t region_fallback[ TOOL_EVENTS ] =
 #undef REGION_OMP_TASKWAIT_DEPEND_NOWAIT
 #undef REGION_OMP_TASKGROUP
 #undef REGION_OMP_BARRIER
+#undef REGION_OMP_IBARRIER_TEAMS
 #undef REGION_OMP_MASKED
 #undef REGION_OMP_CRITICAL
 #undef REGION_OMP_CRITICAL_SBLOCK
