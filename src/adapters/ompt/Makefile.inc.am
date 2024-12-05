@@ -35,12 +35,12 @@ libscorep_adapter_ompt_mgmt_la_LIBADD = \
     libutils.la \
     $(libutils_la_needs_LIBS) \
     libscorep_addr2line.la \
-    $(libscorep_addr2line_la_needs_LIBS)
+    $(libscorep_addr2line_la_needs_LIBS) \
+    libscorep_alloc_metric.la
 
 libscorep_adapter_ompt_mgmt_la_LDFLAGS = \
     $(library_api_version_ldflags) \
     $(libscorep_addr2line_la_needs_LDFLAGS)
-
 
 lib_LTLIBRARIES += libscorep_adapter_ompt_event.la
 
@@ -64,7 +64,8 @@ libscorep_adapter_ompt_event_la_CPPFLAGS = \
 
 libscorep_adapter_ompt_event_la_LIBADD = \
     libscorep_addr2line.la \
-    $(libscorep_addr2line_la_needs_LIBS)
+    $(libscorep_addr2line_la_needs_LIBS) \
+    libscorep_alloc_metric.la
 
 libscorep_adapter_ompt_event_la_LDFLAGS = \
     $(library_api_version_ldflags) \
