@@ -81,6 +81,8 @@ User tools and API improvements and changes:
 - Score-P now adds every `--instrument-filter` file to the
   `CCACHE_EXTRAFILES` environment variable to make `ccache` aware
   of the filter file and its contents.
+- The instrumenter now handles pure preprocessing commands to stdout,
+  such as `gcc -E > out.i`.
 
 Compatibility:
 
