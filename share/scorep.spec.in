@@ -585,7 +585,8 @@
                     }
 
                     //--- HIP-specific classification ---
-                    elseif ( ${paradigm} eq "hip" )
+                    // All HIP regions are in sub groups of "hip", hence the "hip:" check
+                    elseif ( ${paradigm} =~ /^hip:/ )
                     {
                         ${includesHIP} = 1;
                         ${hip}[${i}]   = 1;
@@ -603,25 +604,25 @@
                         };
 
                         // HIP memory allocations
-                        if ( ${sourcefile} seq "HIP_MALLOC" )
+                        if ( ${paradigm} eq "hip:HIP_MALLOC" )
                         {
                             ${hip_malloc}[${i}] = 1;
                         };
 
                         // HIP memory transfers
-                        if ( ${sourcefile} seq "HIP_MEMCPY" )
+                        if ( ${paradigm} eq "hip:HIP_MEMCPY" )
                         {
                             ${hip_memcpy}[${i}] = 1;
                         };
 
                         // HIP synchronization
-                        if ( ${sourcefile} seq "HIP_SYNC" )
+                        if ( ${paradigm} eq "hip:HIP_SYNC" )
                         {
                             ${hip_sync}[${i}] = 1;
                         };
 
                         // HIP kernels
-                        if ( ${sourcefile} seq "HIP_KERNEL" )
+                        if ( ${paradigm} eq "hip:HIP_KERNEL" )
                         {
                             ${hip_kernel_executions}[${i}] = 1;
                         };

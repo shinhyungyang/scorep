@@ -165,6 +165,7 @@ Bugfixes:
 - Add the missing CommCreate, CommDestroy and their corresponding
   MpiCollectiveBegin, MpiCollectiveEnd events to the `scorep-score`
   estimate calculation.
+- Fix remapping specification for HIP applications.
 
 ------------------- Released version 8.4 -----------------------------
 
