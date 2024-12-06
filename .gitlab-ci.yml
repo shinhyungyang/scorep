@@ -46,9 +46,6 @@ stages:
         --prefix="$(readlink -f $PWD/../_prefix)"
         --enable-shared
         --enable-backend-test-runs
-        --without-cubelib
-        --without-cubew
-        --without-otf2
         $configure_flags
     - cat scorep.summary
     - log make
