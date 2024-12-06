@@ -29,6 +29,7 @@ typedef enum tool_event_t
     TOOL_EVENT_UNKNOWN = 0,
 
     TOOL_EVENT_PARALLEL,
+    TOOL_EVENT_LEAGUE,
     TOOL_EVENT_IMPLICIT_BARRIER,
     TOOL_EVENT_IMPLEMENTATION_BARRIER,
     TOOL_EVENT_SINGLE,
@@ -38,6 +39,7 @@ typedef enum tool_event_t
     TOOL_EVENT_TASK_CREATE,
     TOOL_EVENT_TASKLOOP,
     TOOL_EVENT_LOOP,
+    TOOL_EVENT_DISTRIBUTE,
     TOOL_EVENT_SECTIONS,
     TOOL_EVENT_WORKSHARE,
     TOOL_EVENT_TASKWAIT,
@@ -45,6 +47,7 @@ typedef enum tool_event_t
     TOOL_EVENT_TASKWAIT_DEPEND_NOWAIT,
     TOOL_EVENT_TASKGROUP,
     TOOL_EVENT_BARRIER,
+    TOOL_EVENT_IMPLICIT_BARRIER_TEAMS,
     TOOL_EVENT_MASKED,
     TOOL_EVENT_CRITICAL,
     TOOL_EVENT_CRITICAL_SBLOCK,
@@ -71,6 +74,7 @@ typedef struct region_fallback_t
 
 #define REGION_OMP_UNKNOWN "!$omp unknown"
 #define REGION_OMP_PARALLEL "!$omp parallel"
+#define REGION_OMP_LEAGUE "!$omp teams"
 /* Note: OpenMP 5.1+ allows us to distinguish between several barrier types */
 #define REGION_OMP_IBARRIER "!$omp implicit barrier"
 #define REGION_OMP_IMPBARRIER "!$omp implementation barrier"
@@ -81,6 +85,7 @@ typedef struct region_fallback_t
 #define REGION_OMP_CREATE_TASK "!$omp create task"
 #define REGION_OMP_TASKLOOP "!$omp taskloop"
 #define REGION_OMP_LOOP "!$omp for/do"
+#define REGION_OMP_DISTRIBUTE "!$omp distribute"
 #define REGION_OMP_SECTIONS "!$omp sections"
 #define REGION_OMP_WORKSHARE "!$omp workshare"
 #define REGION_OMP_TASKWAIT "!$omp taskwait"
@@ -88,6 +93,7 @@ typedef struct region_fallback_t
 #define REGION_OMP_TASKWAIT_DEPEND_NOWAIT "!$omp taskwait depend nowait"
 #define REGION_OMP_TASKGROUP "!$omp taskgroup"
 #define REGION_OMP_BARRIER "!$omp barrier"
+#define REGION_OMP_IBARRIER_TEAMS "!$omp implicit barrier (teams)"
 #define REGION_OMP_MASKED "!$omp masked"
 #define REGION_OMP_CRITICAL "!$omp critical"
 #define REGION_OMP_CRITICAL_SBLOCK "!$omp critical sblock"
@@ -103,6 +109,7 @@ static region_fallback_t region_fallback[ TOOL_EVENTS ] =
     /* *INDENT-OFF* */
     { REGION_OMP_UNKNOWN,                sizeof( REGION_OMP_UNKNOWN ) - 1,                SCOREP_REGION_UNKNOWN,          SCOREP_INVALID_REGION },
     { REGION_OMP_PARALLEL,               sizeof( REGION_OMP_PARALLEL ) - 1,               SCOREP_REGION_PARALLEL,         SCOREP_INVALID_REGION },
+    { REGION_OMP_LEAGUE,                 sizeof( REGION_OMP_LEAGUE ) - 1,                 SCOREP_REGION_PARALLEL,         SCOREP_INVALID_REGION },
     { REGION_OMP_IBARRIER,               sizeof( REGION_OMP_IBARRIER ) - 1,               SCOREP_REGION_IMPLICIT_BARRIER, SCOREP_INVALID_REGION },
     { REGION_OMP_IMPBARRIER,             sizeof( REGION_OMP_IMPBARRIER ) - 1,             SCOREP_REGION_IMPLICIT_BARRIER, SCOREP_INVALID_REGION },
     { REGION_OMP_SINGLE,                 sizeof( REGION_OMP_SINGLE ) - 1,                 SCOREP_REGION_SINGLE,           SCOREP_INVALID_REGION },
@@ -112,6 +119,7 @@ static region_fallback_t region_fallback[ TOOL_EVENTS ] =
     { REGION_OMP_CREATE_TASK,            sizeof( REGION_OMP_CREATE_TASK ) - 1,            SCOREP_REGION_TASK_CREATE,      SCOREP_INVALID_REGION },
     { REGION_OMP_TASKLOOP,               sizeof( REGION_OMP_TASKLOOP ) - 1,               SCOREP_REGION_LOOP,             SCOREP_INVALID_REGION },
     { REGION_OMP_LOOP,                   sizeof( REGION_OMP_LOOP ) - 1,                   SCOREP_REGION_LOOP,             SCOREP_INVALID_REGION },
+    { REGION_OMP_DISTRIBUTE,             sizeof( REGION_OMP_DISTRIBUTE ) - 1,             SCOREP_REGION_LOOP,             SCOREP_INVALID_REGION },
     { REGION_OMP_SECTIONS,               sizeof( REGION_OMP_SECTIONS ) - 1,               SCOREP_REGION_SECTIONS,         SCOREP_INVALID_REGION },
     { REGION_OMP_WORKSHARE,              sizeof( REGION_OMP_WORKSHARE ) - 1,              SCOREP_REGION_WORKSHARE,        SCOREP_INVALID_REGION },
     { REGION_OMP_TASKWAIT,               sizeof( REGION_OMP_TASKWAIT ) - 1,               SCOREP_REGION_TASK_WAIT,        SCOREP_INVALID_REGION },
@@ -119,6 +127,7 @@ static region_fallback_t region_fallback[ TOOL_EVENTS ] =
     { REGION_OMP_TASKWAIT_DEPEND_NOWAIT, sizeof( REGION_OMP_TASKWAIT_DEPEND_NOWAIT ) - 1, SCOREP_REGION_TASK_WAIT,        SCOREP_INVALID_REGION },
     { REGION_OMP_TASKGROUP,              sizeof( REGION_OMP_TASKGROUP ) - 1,              SCOREP_REGION_BARRIER,          SCOREP_INVALID_REGION },
     { REGION_OMP_BARRIER,                sizeof( REGION_OMP_BARRIER ) - 1,                SCOREP_REGION_BARRIER,          SCOREP_INVALID_REGION },
+    { REGION_OMP_IBARRIER_TEAMS,         sizeof( REGION_OMP_IBARRIER_TEAMS ) - 1,         SCOREP_REGION_IMPLICIT_BARRIER, SCOREP_INVALID_REGION },
     { REGION_OMP_MASKED,                 sizeof( REGION_OMP_MASKED ) - 1,                 SCOREP_REGION_MASTER,           SCOREP_INVALID_REGION },
     { REGION_OMP_CRITICAL,               sizeof( REGION_OMP_CRITICAL ) - 1,               SCOREP_REGION_CRITICAL,         SCOREP_INVALID_REGION },
     { REGION_OMP_CRITICAL_SBLOCK,        sizeof( REGION_OMP_CRITICAL_SBLOCK ) - 1,        SCOREP_REGION_CRITICAL_SBLOCK,  SCOREP_INVALID_REGION },
@@ -132,6 +141,7 @@ static region_fallback_t region_fallback[ TOOL_EVENTS ] =
 
 #undef REGION_OMP_UNKNOWN
 #undef REGION_OMP_PARALLEL
+#undef REGION_OMP_LEAGUE
 #undef REGION_OMP_IBARRIER
 #undef REGION_OMP_IMPBARRIER
 #undef REGION_OMP_SINGLE
@@ -141,6 +151,7 @@ static region_fallback_t region_fallback[ TOOL_EVENTS ] =
 #undef REGION_OMP_CREATE_TASK
 #undef REGION_OMP_TASKLOOP
 #undef REGION_OMP_LOOP
+#undef REGION_OMP_DISTRIBUTE
 #undef REGION_OMP_SECTIONS
 #undef REGION_OMP_WORKSHARE
 #undef REGION_OMP_TASKWAIT
@@ -148,6 +159,7 @@ static region_fallback_t region_fallback[ TOOL_EVENTS ] =
 #undef REGION_OMP_TASKWAIT_DEPEND_NOWAIT
 #undef REGION_OMP_TASKGROUP
 #undef REGION_OMP_BARRIER
+#undef REGION_OMP_IBARRIER_TEAMS
 #undef REGION_OMP_MASKED
 #undef REGION_OMP_CRITICAL
 #undef REGION_OMP_CRITICAL_SBLOCK

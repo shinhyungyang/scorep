@@ -172,6 +172,12 @@ typedef struct parallel_t
                                 * was enabled at the beginning of
                                 * a parallel region to not write
                                 * overdue events */
+    #if HAVE( SCOREP_OMPT_TEAMS_DISPATCH_IMPLICIT_TASK )
+    bool is_league_team;       /* Parallel object was created by a league.
+                                * Such parallel objects skip an implicit
+                                * barrier at parallel_end */
+    task_t* league_team_encountering_task;
+    #endif
 
     /* For explicit tasking: */
     /* Squeeze explicit task creation data into 64 bits, see also
@@ -241,6 +247,12 @@ static task_t initial_task;
 static THREAD_LOCAL_STORAGE_SPECIFIER struct scorep_thread_private_data* tpd;
 
 
+/* Workaround: LLVM based runtimes might not pass the parallel object from parallel_begin
+   to itask_begin when only a single team is wanted. We store this team here to use
+   it when we detect this scenario. Prevents an abort of Score-P. */
+static THREAD_LOCAL_STORAGE_SPECIFIER parallel_t* team_implicit_parallel;
+
+
 /* free list of parallel_t objects */
 static UTILS_Mutex parallel_regions_free_list_mutex = UTILS_MUTEX_INIT;
 static parallel_t* parallel_regions_free_list;
@@ -280,6 +292,12 @@ static UTILS_Mutex adapter_ready_mutex = UTILS_MUTEX_INIT;
 /* convenience macros for tasking */
 #define UNDEFERRED_TASK_INIT ( 0 )
 #define UNDEFERRED_TASK_TO_BE_FREED ( -1 )
+
+
+/* convenience */
+#define LEAGUE_WARNING( CALLBACK_NAME ) \
+    UTILS_WARN_ONCE( "OpenMP league event detected in %s callback. " \
+                     "Support for leagues is experimental. Please report crashes.", ( CALLBACK_NAME ) )
 
 
 /* Score-P parameters */
@@ -325,6 +343,7 @@ complete_adapter_init( void )
     }
     UTILS_MutexUnlock( &adapter_ready_mutex );
 }
+
 
 static inline parallel_t*
 get_parallel_region_from_pool( void )
@@ -506,10 +525,7 @@ scorep_ompt_cb_host_parallel_begin( ompt_data_t*        encountering_task_data,
 
     /* First parallel region runs in serial context. No need for synchronization. */
     static bool first_parallel_encountered = false;
-    if ( !first_parallel_encountered
-         /* For now, prevent league events. */
-         && !( ( flags & ompt_parallel_league )
-               || ( ( task_t* )encountering_task_data->ptr )->belongs_to_league ) )
+    if ( !first_parallel_encountered )
     {
         first_parallel_encountered = true;
         on_first_parallel_begin( encountering_task_data );
@@ -519,33 +535,45 @@ scorep_ompt_cb_host_parallel_begin( ompt_data_t*        encountering_task_data,
        parallel_data->ptr */
     parallel_t* parallel_region = get_parallel_region_from_pool();
 
-    /* For now, prevent league events. */
-    if ( ( flags & ompt_parallel_league )
-         || ( ( task_t* )encountering_task_data->ptr )->belongs_to_league )
+    if ( flags & ompt_parallel_league )
     {
+        LEAGUE_WARNING( "parallel_begin" );
         parallel_region->belongs_to_league = true;
-        UTILS_WARN_ONCE( "OpenMP league implicit-task-begin event detected. "
-                         "Not handled yet. Score-P might crash on child events." );
-        UTILS_DEBUG_EXIT( "atid %" PRIu32 " | parallel_data->ptr %p | "
-                          "encountering_task_data->ptr %p | belongs_to_league",
-                          adapter_tid, parallel_data->ptr, encountering_task_data->ptr );
-        parallel_data->ptr = parallel_region;
-        SCOREP_IN_MEASUREMENT_DECREMENT();
-        return;
+        /* parallel_data->ptr is not passed to itask_begin in the case of OpenMP teams
+         * and only a single team. Therefore, store the region here to be used in itask_begin */
+        if ( requested_parallelism == 1 )
+        {
+            team_implicit_parallel = parallel_region;
+        }
     }
+    #if HAVE( SCOREP_OMPT_TEAMS_DISPATCH_IMPLICIT_TASK )
+    /* League teams are internal parallel regions created by the runtime. They
+     * are not part of the user's parallel regions and should not be recorded.
+     * To identify them, set is_league_team to true. Also store the encountering
+     * task, as we will reuse this data when threads participating in the
+     * internal parallel region initialize with an implicit-task-begin event. */
+    else if ( ( ( task_t* )encountering_task_data->ptr )->belongs_to_league )
+    {
+        parallel_region->is_league_team                = true;
+        parallel_region->league_team_encountering_task = encountering_task_data->ptr;
+    }
+    #endif
 
     init_parallel_obj( parallel_region, tpd, requested_parallelism, codeptr_ra, -1 );
     /* parallel_t object ready */
     parallel_data->ptr = parallel_region;
-
-    UTILS_BUG_ON( !( flags & ompt_parallel_team ) );
 
     /* codeptr_ra is also used for the (contended) ibarrier begin later on.
        Thus, create and insert the barrier region handle uncontended into
        the hash table already here. */
     get_region( codeptr_ra, TOOL_EVENT_IMPLICIT_BARRIER );
 
-    SCOREP_ThreadForkJoin_Fork( SCOREP_PARADIGM_OPENMP, requested_parallelism );
+    #if HAVE( SCOREP_OMPT_TEAMS_DISPATCH_IMPLICIT_TASK )
+    if ( !parallel_region->is_league_team )
+    #endif
+    {
+        SCOREP_ThreadForkJoin_Fork( SCOREP_PARADIGM_OPENMP, requested_parallelism );
+    }
 
     /* Set subsystem_data's task for this location to NULL as this location will
      * be reused as worker thread 0 within the parallel region. subsystem_data
@@ -596,10 +624,21 @@ init_parallel_obj( parallel_t*                        parallel,
     UTILS_BUG_ON( parallel == NULL );
     UTILS_BUG_ON( requestedParallelism == 0 );
 
-    parallel->parent      = parent;
-    parallel->team_size   = requestedParallelism;
-    parallel->codeptr_ra  = ( uintptr_t )codeptrRa;
-    parallel->region      = get_region( codeptrRa, TOOL_EVENT_PARALLEL );
+    parallel->parent     = parent;
+    parallel->team_size  = requestedParallelism;
+    parallel->codeptr_ra = ( uintptr_t )codeptrRa;
+    #if HAVE( SCOREP_OMPT_TEAMS_DISPATCH_IMPLICIT_TASK )
+    /* Since we want to ignore this event, do not call get_region() and directly
+     * set the region to SCOREP_INVALID_REGION. */
+    if ( parallel->is_league_team )
+    {
+        parallel->region = SCOREP_INVALID_REGION;
+    }
+    else
+    #endif
+    {
+        parallel->region = get_region( codeptrRa, parallel->belongs_to_league ? TOOL_EVENT_LEAGUE : TOOL_EVENT_PARALLEL );
+    }
     parallel->ref_count   = refCount;
     parallel->is_recorded = SCOREP_RecordingEnabled();
 
@@ -657,17 +696,25 @@ scorep_ompt_cb_host_parallel_end( ompt_data_t* parallel_data,
 
     parallel_t* parallel_region = parallel_data->ptr;
 
-    /* For now, prevent league events */
     if ( parallel_region->belongs_to_league )
     {
-        UTILS_DEBUG_EXIT( "atid %" PRIu32 " | parallel_data->ptr %p | "
-                          "encountering_task_data->ptr %p | belongs_to_league" );
-        SCOREP_IN_MEASUREMENT_DECREMENT();
-        return;
+        LEAGUE_WARNING( "parallel_end" );
     }
 
     struct scorep_thread_private_data* tpd_from_now_on = NULL;
-    SCOREP_ThreadForkJoin_Join( SCOREP_PARADIGM_OPENMP, &tpd_from_now_on );
+    #if HAVE( SCOREP_OMPT_TEAMS_DISPATCH_IMPLICIT_TASK )
+    /* Since we reused the encountering_task_data from parallel_begin, we need to
+     * reset the tpd correctly. Normally, this would be done by ThreadForkJoin,
+     * but since we ignored these events, we cannot call this function. */
+    if ( parallel_region->is_league_team )
+    {
+        tpd_from_now_on = parallel_region->league_team_encountering_task->tpd;
+    }
+    else
+    #endif
+    {
+        SCOREP_ThreadForkJoin_Join( SCOREP_PARADIGM_OPENMP, &tpd_from_now_on );
+    }
 
     /* Reset subsystem data after it was used in previous parallel region. */
     SCOREP_Location* location = SCOREP_Location_GetCurrentCPULocation();
@@ -708,42 +755,6 @@ scorep_ompt_cb_host_parallel_end( ompt_data_t* parallel_data,
 }
 
 
-static task_t*
-new_league_task( ompt_scope_endpoint_t endpoint,
-                 ompt_data_t*          parallelData,
-                 unsigned int          actualParallelism,
-                 unsigned int          index,
-                 bool                  initial )
-{
-    task_t* task = get_task_from_pool();
-    if ( initial )
-    {
-        /* rocm 5.2.0 provides no parallel_data, although it should */
-        UTILS_BUG_ON( parallelData->ptr != NULL );
-        task->parallel_region   = NULL;
-        task->index             = index;
-        task->belongs_to_league = true;
-    }
-    else
-    {
-        UTILS_BUG_ON( parallelData->ptr == NULL );
-        parallel_t* parallel_region = parallelData->ptr;
-        task->parallel_region   = parallel_region;
-        task->index             = index;
-        task->belongs_to_league = true;
-        if ( index == 0 )
-        {
-            UTILS_Atomic_StoreN_int32( &( parallel_region->ref_count ),
-                                       ( int32_t )( actualParallelism + 1 ),
-                                       UTILS_ATOMIC_SEQUENTIAL_CONSISTENT );
-        }
-    }
-    UTILS_WARN_ONCE( "OpenMP league implicit-task-begin event detected. "
-                     "Not handled yet. Score-P might crash on child events." );
-    return task;
-}
-
-
 /*
     typedef enum ompt_task_flag_t {
     ompt_task_initial
@@ -777,63 +788,34 @@ scorep_ompt_cb_host_implicit_task( ompt_scope_endpoint_t endpoint,
 
     /* Special handling for initial thread's initial task (outside of any
        OpenMP construct) and initial tasks of leagues. */
-    if ( flags & ompt_task_initial )
+    static bool initial_task_set = false;
+    if ( flags & ompt_task_initial &&
+         ( !initial_task_set || ( ( task_t* )task_data->ptr ) == &initial_task ) )
     {
         switch ( endpoint )
         {
             case ompt_scope_begin:
             {
                 /* Initial thread's initial task */
-                if ( initial_task.tpd == NULL )
-                {
-                    on_initial_task( flags );
-                    task_data->ptr     = &initial_task;
-                    parallel_data->ptr = &implicit_parallel;
-                    UTILS_DEBUG_EXIT( "atid %" PRIu32 " | initial_task: task_data->ptr %p "
-                                      "| implicit_parallel: parallel_data->ptr %p "
-                                      "| location %p",
-                                      adapter_tid, task_data->ptr, parallel_data->ptr,
-                                      initial_task.scorep_location );
-                    break;
-                }
-
-                /* For now, prevent league events: initial task of league. */
-                /* TODO why is parallel_data->ptr == NULL in rocm 5.2.0? parallel was created
-                   and binding is the current teams region */
-                UTILS_BUG_ON( parallel_data->ptr != NULL );
-
-                task_data->ptr = new_league_task( endpoint, parallel_data, actual_parallelism, index, true );
-                UTILS_DEBUG_EXIT( "atid %" PRIu32 " | endpoint %s | index = %d | "
-                                  "parallel_data->ptr %p | task_data->ptr %p | "
-                                  "belongs_to_league (initial)",
-                                  adapter_tid, scope_endpoint2string( endpoint ),
-                                  index, parallel_data->ptr, task_data->ptr );
+                UTILS_BUG_ON( initial_task.tpd != NULL );
+                on_initial_task( flags );
+                task_data->ptr     = &initial_task;
+                parallel_data->ptr = &implicit_parallel;
+                initial_task_set   = true;
+                UTILS_DEBUG_EXIT( "atid %" PRIu32 " | initial_task: task_data->ptr %p "
+                                  "| implicit_parallel: parallel_data->ptr %p "
+                                  "| location %p",
+                                  adapter_tid, task_data->ptr, parallel_data->ptr,
+                                  initial_task.scorep_location );
                 break;
             }
             case ompt_scope_end:
             {
                 task_t* task = task_data->ptr;
                 /* Initial thread's initial task */
-                if ( task == &initial_task )
-                {
-                    UTILS_DEBUG_EXIT( "atid %" PRIu32 " | initial_task: task_data->ptr %p | location %p",
-                                      adapter_tid, task_data->ptr, initial_task.scorep_location );
-                    break;
-                }
-
-                /* For now, prevent league events: initial task of league. */
-                UTILS_BUG_ON( !task->belongs_to_league );
-                /* TODO why is parallel_data->ptr == NULL in rocm 5.2.0? parallel was created
-                   and binding is the current teams region */
-                UTILS_BUG_ON( task->parallel_region != NULL );
-                /* Will crash as relying on valid parallel_data->ptr */
-                /* RELEASE_AT_TEAM_END( task, task_data ); */
-                UTILS_DEBUG_EXIT( "atid %" PRIu32 " | endpoint %s | "
-                                  "parallel_data->ptr %p | task_data->ptr %p "
-                                  "| index %d | flags %s | belongs_to_league",
-                                  adapter_tid, scope_endpoint2string( endpoint ),
-                                  parallel_data == NULL ? NULL : parallel_data->ptr,
-                                  task_data->ptr, index, task_flag2string( flags ) );
+                UTILS_BUG_ON( task != &initial_task );
+                UTILS_DEBUG_EXIT( "atid %" PRIu32 " | initial_task: task_data->ptr %p | location %p",
+                                  adapter_tid, task_data->ptr, initial_task.scorep_location );
                 break;
             }
             #if HAVE( DECL_OMPT_SCOPE_BEGINEND )
@@ -852,18 +834,17 @@ scorep_ompt_cb_host_implicit_task( ompt_scope_endpoint_t endpoint,
     {
         case ompt_scope_begin:
         {
-            /* For now, prevent league events. */
-            UTILS_BUG_ON( parallel_data->ptr == NULL );
-            if ( ( ( parallel_t* )parallel_data->ptr )->belongs_to_league == true )
+            /* We may not receive the parallel_data->ptr from parallel_begin
+             * when dealing with OpenMP teams. Therefore, use the locally stored
+             * region, which matches the one we would get passed normally */
+            if ( flags & ompt_task_initial && parallel_data->ptr == NULL )
             {
-                UTILS_BUG_ON( parallel_data->ptr == NULL );
-                task_data->ptr = new_league_task( endpoint, parallel_data, actual_parallelism, index, false );
-                UTILS_DEBUG_EXIT( "atid %" PRIu32 " | endpoint %s | index = %d | "
-                                  "parallel_data->ptr %p | task_data->ptr %p | "
-                                  "belongs_to_league",
-                                  adapter_tid, scope_endpoint2string( endpoint ),
-                                  index, parallel_data->ptr, task_data->ptr );
-                break;
+                parallel_data->ptr = team_implicit_parallel;
+            }
+            UTILS_BUG_ON( parallel_data->ptr == NULL );
+            if ( ( ( parallel_t* )parallel_data->ptr )->belongs_to_league )
+            {
+                LEAGUE_WARNING( "implicit_task" );
             }
 
             parallel_t*                        parallel_region = parallel_data->ptr;
@@ -887,19 +868,36 @@ scorep_ompt_cb_host_implicit_task( ompt_scope_endpoint_t endpoint,
             struct scorep_thread_private_data* new_tpd = NULL;
             struct SCOREP_Task*                scorep_task;
 
-            /* Triggers overdue handling via subsystem_cb before substrates
-             * gets informed and location activated. */
-            SCOREP_ThreadForkJoin_TeamBegin(
-                SCOREP_PARADIGM_OPENMP,
-                ( uint32_t )index,
-                ( uint32_t )actual_parallelism,
-                0,               /* use ancesterInfo instead of nesting level */
-                ( void* )parent, /* ancestorInfo */
-                &new_tpd,
-                &scorep_task );
-            if ( parallel_region->is_recorded )
+            #if HAVE( SCOREP_OMPT_TEAMS_DISPATCH_IMPLICIT_TASK )
+            /* League teams are internally created by the runtime and do not
+             * give any meaningful information for a performance measurement.
+             * Since we do not want to record any events for league teams, we
+             * copy information from the parent task to the new task and reuse
+             * it. */
+            if ( parallel_region->is_league_team )
             {
-                SCOREP_EnterRegion( parallel_region->region );
+                new_tpd                    = parallel_region->league_team_encountering_task->tpd;
+                scorep_task                = parallel_region->league_team_encountering_task->scorep_task;
+                actual_parallelism         = 1;
+                parallel_region->team_size = 1;
+            }
+            else
+            #endif
+            {
+                /* Triggers overdue handling via subsystem_cb before substrates
+                 * gets informed and location activated. */
+                SCOREP_ThreadForkJoin_TeamBegin(
+                    SCOREP_PARADIGM_OPENMP,
+                    ( uint32_t )index,
+                    ( uint32_t )actual_parallelism,
+                    0,               /* use ancesterInfo instead of nesting level */
+                    ( void* )parent, /* ancestorInfo */
+                    &new_tpd,
+                    &scorep_task );
+                if ( parallel_region->is_recorded )
+                {
+                    SCOREP_EnterRegion( parallel_region->region );
+                }
             }
 
             SCOREP_Location* location = SCOREP_Location_GetCurrentCPULocation();
@@ -913,6 +911,7 @@ scorep_ompt_cb_host_implicit_task( ompt_scope_endpoint_t endpoint,
             task->scorep_location      = location;
             task->scorep_task          = scorep_task;
             task->reduction_codeptr_ra = parallel_region->codeptr_ra;
+            task->belongs_to_league    = ( ( parallel_t* )parallel_data->ptr )->belongs_to_league;
             /* NVHPC might reuse the task_data->ptr if a parallel region only uses
              * a single thread. Therefore, store the task as the next task and restore
              * the task on implicit_task end */
@@ -952,22 +951,14 @@ scorep_ompt_cb_host_implicit_task( ompt_scope_endpoint_t endpoint,
             task_t* task = task_data->ptr;
             if ( task != NULL )
             {
-                /* For now, prevent league events. */
                 if ( task->belongs_to_league )
                 {
-                    RELEASE_AT_TEAM_END( task, task_data );
-                    UTILS_DEBUG_EXIT( "atid %" PRIu32 " | endpoint %s | "
-                                      "parallel_data->ptr %p | task_data->ptr %p "
-                                      "| index %d | flags %s | belongs_to_league",
-                                      adapter_tid, scope_endpoint2string( endpoint ),
-                                      parallel_data == NULL ? NULL : parallel_data->ptr,
-                                      task_data->ptr, index, task_flag2string( flags ) );
-                    break;
+                    LEAGUE_WARNING( "implicit_task" );
                 }
 
                 implicit_task_end_impl( task, " (itask_exit)" );
 
-                /* Release location as this thread wont write
+                /* Release location as this thread won't write
                  * any events to this location. */
                 GET_SUBSYSTEM_DATA( task->scorep_location, stored_data, unused );
                 UTILS_MutexUnlock( &stored_data->preserve_order );
@@ -1172,6 +1163,14 @@ implicit_task_end_impl( task_t* task, char* utilsDebugCaller )
                  SCOREP_Location_GetId( task->scorep_location ), parallel_region,
                  task, task->index, tpd, task->tpd, timestamp );
 
+
+    #if HAVE( SCOREP_OMPT_TEAMS_DISPATCH_IMPLICIT_TASK )
+    /* League teams are not recorded, therefore return early. */
+    if ( parallel_region->is_league_team )
+    {
+        return;
+    }
+    #endif
     /* event might be triggered from location different from the one that
        executed itask_begin; so far, seen in finalize_tool only. Only record
        event if parallel region was recorded. */
@@ -1225,19 +1224,9 @@ scorep_ompt_cb_host_sync_region( ompt_sync_region_t    kind,
 
     task_t* task = task_data->ptr;
 
-    /* For now, prevent league events */
     if ( task->belongs_to_league )
     {
-        UTILS_DEBUG_EXIT( "atid %" PRIu32 " | kind %s | endpoint %s | "
-                          "parallel_data->ptr %p | task_data->ptr %p | codeptr_ra %p | "
-                          "belongs_to_league",
-                          adapter_tid, sync_region2string( kind ),
-                          scope_endpoint2string( endpoint ),
-                          parallel_data == NULL ? NULL : parallel_data->ptr,
-                          task_data->ptr, codeptr_ra );
-
-        SCOREP_IN_MEASUREMENT_DECREMENT();
-        return;
+        LEAGUE_WARNING( "sync_region" );
     }
 
     switch ( endpoint )
@@ -1336,8 +1325,7 @@ scorep_ompt_cb_host_sync_region( ompt_sync_region_t    kind,
                 }
                 #if HAVE( DECL_OMPT_SYNC_REGION_BARRIER_TEAMS )
                 case ompt_sync_region_barrier_teams:
-                    UTILS_WARN_ONCE( "ompt_sync_region_t %s not implemented yet.",
-                                     sync_region2string( kind ) );
+                    SCOREP_EnterRegion( sync_region_begin( task, codeptr_ra, TOOL_EVENT_IMPLICIT_BARRIER_TEAMS ) );
                     break;
                 #endif  /* DECL_OMPT_SYNC_REGION_BARRIER_TEAMS */
                 default:
@@ -1378,6 +1366,16 @@ scorep_ompt_cb_host_sync_region( ompt_sync_region_t    kind,
                         break;
                     }
                 } /* fall-through into ompt_sync_region_barrier_implicit_parallel intended */
+                #if HAVE( DECL_OMPT_SYNC_REGION_BARRIER_TEAMS )
+                case ompt_sync_region_barrier_teams:
+                {
+                    if ( parallel_data != NULL ) /* ibarrier inside parallel region */
+                    {
+                        SCOREP_ExitRegion( sync_region_end( task ) );
+                        break;
+                    }
+                } /* fall-through into ompt_sync_region_barrier_implicit_parallel intended */
+                #endif  /* DECL_OMPT_SYNC_REGION_BARRIER_TEAMS */
                 case ompt_sync_region_barrier_implicit_parallel:
                 {
                     /* parallel_data == NULL for ompt_sync_region_barrier_implicit_parallel
@@ -1431,12 +1429,6 @@ scorep_ompt_cb_host_sync_region( ompt_sync_region_t    kind,
                     SCOREP_ExitRegion( sync_region_end( task ) );
                     break;
                 }
-                #if HAVE( DECL_OMPT_SYNC_REGION_BARRIER_TEAMS )
-                case ompt_sync_region_barrier_teams:
-                    UTILS_WARN_ONCE( "ompt_sync_region_t %s not implemented yet.",
-                                     sync_region2string( kind ) );
-                    break;
-                #endif  /* DECL_OMPT_SYNC_REGION_BARRIER_TEAMS */
                 default:
                     UTILS_WARNING( "unknown ompt_sync_region_t %d.",
                                    ( int )kind );
@@ -1723,16 +1715,7 @@ scorep_ompt_cb_host_work( ompt_work_t           work_type,
     /* For now, prevent league events */
     if ( task->belongs_to_league )
     {
-        UTILS_WARN_ONCE( "OpenMP league workshare event detected. "
-                         "Not handled yet. Score-P might crash." );
-        UTILS_DEBUG_EXIT( "atid %" PRIu32 " | endpoint %s | wstype %s | "
-                          "parallel_data->ptr %p | task_data->ptr %p | count %"
-                          PRIu64 " | codeptr_ra %p | belongs_to_league",
-                          adapter_tid, work2string( work_type ), scope_endpoint2string( endpoint ),
-                          parallel_data == NULL ? NULL : parallel_data->ptr, task_data->ptr,
-                          count, codeptr_ra );
-        SCOREP_IN_MEASUREMENT_DECREMENT();
-        return;
+        LEAGUE_WARNING( "work" );
     }
 
     switch ( endpoint )
@@ -1773,8 +1756,7 @@ scorep_ompt_cb_host_work( ompt_work_t           work_type,
                     SCOREP_EnterRegion( work_begin( task, codeptr_ra, TOOL_EVENT_WORKSHARE ) );
                     break;
                 case ompt_work_distribute:
-                    UTILS_WARN_ONCE( "ompt_work_t %s not implemented yet.",
-                                     work2string( work_type ) );
+                    SCOREP_EnterRegion( work_begin( task, codeptr_ra, TOOL_EVENT_DISTRIBUTE ) );
                     break;
                 case ompt_work_taskloop:
                     SCOREP_EnterRegion( work_begin( task, codeptr_ra, TOOL_EVENT_TASKLOOP ) );
@@ -1828,8 +1810,7 @@ scorep_ompt_cb_host_work( ompt_work_t           work_type,
                     SCOREP_ExitRegion( work_end( task ) );
                     break;
                 case ompt_work_distribute:
-                    UTILS_WARN_ONCE( "ompt_work_t %s not implemented yet.",
-                                     work2string( work_type ) );
+                    SCOREP_ExitRegion( work_end( task ) );
                     break;
                 case ompt_work_taskloop:
                     SCOREP_ExitRegion( work_end( task ) );
@@ -1946,20 +1927,10 @@ scorep_ompt_cb_host_task_create( ompt_data_t*        encountering_task_data,
     SCOREP_OMPT_ENSURE_INITIALIZED();
     SCOREP_OMPT_RETURN_ON_INVALID_EVENT();
 
-    /* For now, prevent league events */
     task_t* task = encountering_task_data->ptr;
     if ( task->belongs_to_league )
     {
-        UTILS_WARN_ONCE( "OpenMP league task-create event detected. "
-                         "Not handled yet. Score-P might crash." );
-        UTILS_DEBUG_EXIT( "atid %" PRIu64 " | encountering_task_data->ptr %p | "
-                          "new_task_data->ptr %p | flags %s | belongs_to_league", adapter_tid,
-                          encountering_task_data == NULL ? NULL : encountering_task_data->ptr,
-                          new_task_data == NULL ? NULL : new_task_data->ptr,
-                          task_flag2string( flags ) );
-        new_task_data->value = 0;
-        SCOREP_IN_MEASUREMENT_DECREMENT();
-        return;
+        LEAGUE_WARNING( "task_create" );
     }
 
     /* No scheduling events occur when switching to or from a merged task ... */
@@ -2157,26 +2128,10 @@ scorep_ompt_cb_host_task_schedule( ompt_data_t*       prior_task_data,
     #endif /* HAVE( DECL_OMPT_TASK_TASKWAIT ) && HAVE( DECL_OMPT_TASKWAIT_COMPLETE ) */
 
     task_t* prior_task = prior_task_data->ptr;
-
-    /* For now, prevent league events. We need to take prior and next task
-       into account. This is asking for trouble. Check next_task_data specifically
-       for NULL as well since `taskwait depend` does not pass a pointer for the next task.
-       In addition, cancelled tasks still use the set value from task_create for their prior_task_data,
-       which can cause a segmentation fault. Therefore, skip the check for cancelled tasks. Lastly,
-       check prior_task for NULL explicitly since ompt_task_*_fulfill might not set it to any value. */
-    if ( ( prior_task_status != ompt_task_cancel && prior_task && prior_task->belongs_to_league ) || ( next_task_data && next_task_data->value == 0 ) )
+    UTILS_BUG_ON( !prior_task, "Prior task should be set, but is not. This is a runtime issue." );
+    if ( prior_task->belongs_to_league )
     {
-        UTILS_WARN_ONCE( "OpenMP league task-schedule event detected. "
-                         "Not handled yet. Score-P might crash." );
-        UTILS_DEBUG_EXIT( "atid %" PRIu32 " | prior_task_data->ptr %p | prior_task_status %s | "
-                          "next_task_data->ptr %p | next_task_data->value %" PRIu64 " | "
-                          "belongs_to_league",
-                          adapter_tid, prior_task_data == NULL ? NULL : prior_task_data->ptr,
-                          task_status2string( prior_task_status ),
-                          next_task_data == NULL ? NULL : next_task_data->ptr,
-                          next_task_data == NULL ? 0 : next_task_data->value );
-        SCOREP_IN_MEASUREMENT_DECREMENT();
-        return;
+        LEAGUE_WARNING( "task_schedule" );
     }
 
     /* Cancelled tasks did not start yet, therefore the prior task
@@ -2335,18 +2290,9 @@ scorep_ompt_cb_host_masked( ompt_scope_endpoint_t endpoint,
 
     task_t* task = task_data->ptr;
 
-    /* For now, prevent league events */
     if ( task->belongs_to_league )
     {
-        UTILS_WARN_ONCE( "OpenMP league masked event detected. "
-                         "Not handled yet. Score-P might crash." );
-        UTILS_DEBUG_EXIT( "atid %" PRIu32 " | endpoint %s | parallel_data->ptr %p | "
-                          "task_data->ptr %p | codeptr_ra %p",
-                          adapter_tid, scope_endpoint2string( endpoint ),
-                          parallel_data == NULL ? NULL : parallel_data->ptr, task_data->ptr,
-                          codeptr_ra );
-        SCOREP_IN_MEASUREMENT_DECREMENT();
-        return;
+        LEAGUE_WARNING( "masked" );
     }
 
     switch ( endpoint )
@@ -2399,15 +2345,9 @@ scorep_ompt_cb_host_mutex_acquire( ompt_mutex_t   kind,
 
     task_t* task = get_current_task();
 
-    /* For now, prevent league events */
     if ( task->belongs_to_league )
     {
-        UTILS_WARN_ONCE( "OpenMP league mutex_acquire event detected. "
-                         "Not handled yet. Score-P might crash." );
-        UTILS_DEBUG_EXIT( "atid %" PRIu32 " | kind %s | wait_id %ld | codeptr_ra %p",
-                          adapter_tid, mutex2string( kind ), wait_id, codeptr_ra );
-        SCOREP_IN_MEASUREMENT_DECREMENT();
-        return;
+        LEAGUE_WARNING( "mutex_acquire" );
     }
 
     switch ( kind )
@@ -2487,15 +2427,9 @@ scorep_ompt_cb_host_mutex_acquired( ompt_mutex_t   kind,
 
     task_t* task = get_current_task();
 
-    /* For now, prevent league events */
     if ( task->belongs_to_league )
     {
-        UTILS_WARN_ONCE( "OpenMP league mutex_acquired event detected. "
-                         "Not handled yet. Score-P might crash." );
-        UTILS_DEBUG_EXIT( "atid %" PRIu32 " | kind %s | wait_id %ld | codeptr_ra %p",
-                          adapter_tid, mutex2string( kind ), wait_id, codeptr_ra );
-        SCOREP_IN_MEASUREMENT_DECREMENT();
-        return;
+        LEAGUE_WARNING( "mutex_acquired" );
     }
 
     SCOREP_RegionHandle lock_region = SCOREP_INVALID_REGION;
@@ -2621,15 +2555,9 @@ scorep_ompt_cb_host_mutex_released( ompt_mutex_t   kind,
 
     task_t* task = get_current_task();
 
-    /* For now, prevent league events */
     if ( task->belongs_to_league )
     {
-        UTILS_WARN_ONCE( "OpenMP league mutex_released event detected. "
-                         "Not handled yet. Score-P might crash." );
-        UTILS_DEBUG_EXIT( "atid %" PRIu32 " | kind %s | wait_id %ld | codeptr_ra %p",
-                          adapter_tid, mutex2string( kind ), wait_id, codeptr_ra );
-        SCOREP_IN_MEASUREMENT_DECREMENT();
-        return;
+        LEAGUE_WARNING( "mutex_released" );
     }
 
     switch ( kind )
@@ -2709,15 +2637,9 @@ scorep_ompt_cb_host_lock_init( ompt_mutex_t   kind,
 
     task_t* task = get_current_task();
 
-    /* For now, prevent league events */
     if ( task->belongs_to_league )
     {
-        UTILS_WARN_ONCE( "OpenMP league lock_init event detected. "
-                         "Not handled yet. Score-P might crash." );
-        UTILS_DEBUG_EXIT( "atid %" PRIu32 " | kind %s | wait_id %ld | codeptr_ra %p",
-                          adapter_tid, mutex2string( kind ), wait_id, codeptr_ra );
-        SCOREP_IN_MEASUREMENT_DECREMENT();
-        return;
+        LEAGUE_WARNING( "lock_init" );
     }
 
     /* There is no duration available for lock-init. */
@@ -2769,15 +2691,9 @@ scorep_ompt_cb_host_lock_destroy( ompt_mutex_t   kind,
 
     task_t* task = get_current_task();
 
-    /* For now, prevent league events */
     if ( task->belongs_to_league )
     {
-        UTILS_WARN_ONCE( "OpenMP league mutex_acquired event detected. "
-                         "Not handled yet. Score-P might crash." );
-        UTILS_DEBUG_EXIT( "atid %" PRIu32 " | kind %s | wait_id %ld | codeptr_ra %p",
-                          adapter_tid, mutex2string( kind ), wait_id, codeptr_ra );
-        SCOREP_IN_MEASUREMENT_DECREMENT();
-        return;
+        LEAGUE_WARNING( "lock_destroy" );
     }
 
     /* There is no duration available for lock-destroy. */
@@ -2816,15 +2732,9 @@ scorep_ompt_cb_host_nest_lock( ompt_scope_endpoint_t endpoint,
 
     task_t* task = get_current_task();
 
-    /* For now, prevent league events */
     if ( task->belongs_to_league )
     {
-        UTILS_WARN_ONCE( "OpenMP league nest-lock event detected. "
-                         "Not handled yet. Score-P might crash." );
-        UTILS_DEBUG_EXIT( "atid %" PRIu32 " | endpoint %s | wait_id %ld | codeptr_ra %p",
-                          adapter_tid, scope_endpoint2string( endpoint ), wait_id, codeptr_ra );
-        SCOREP_IN_MEASUREMENT_DECREMENT();
-        return;
+        LEAGUE_WARNING( "nest_lock" );
     }
 
     mutex_obj_t* mutex = mutex_get( wait_id, ompt_mutex_nest_lock );
@@ -2883,17 +2793,9 @@ scorep_ompt_cb_host_dispatch( ompt_data_t*    parallel_data,
 
     task_t* task = task_data->ptr;
 
-    /* For now, prevent league events */
     if ( task->belongs_to_league )
     {
-        UTILS_WARN_ONCE( "OpenMP league dispatch event detected. "
-                         "Not handled yet. Score-P might crash." );
-        UTILS_DEBUG_EXIT( "atid %" PRIu32 " | parallel_data->ptr %p | task_data->ptr %p | "
-                          "dispatch %s | instance.value %" PRIu64 " | instance.ptr %p",
-                          adapter_tid, parallel_data->ptr, task_data->ptr,
-                          dispatch2string( kind ), instance.value, instance.ptr );
-        SCOREP_IN_MEASUREMENT_DECREMENT();
-        return;
+        LEAGUE_WARNING( "dispatch" );
     }
 
     switch ( kind )
