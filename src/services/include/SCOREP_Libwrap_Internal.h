@@ -80,14 +80,8 @@ SCOREP_Libwrap_RegisterWrapper( SCOREP_LibwrapHandle*          handle,
 #define SCOREP_LIBWRAP_ORIGINAL( func ) \
     ( ( SCOREP_LIBWRAP_ORIGINAL_TYPE( func )* )SCOREP_Libwrap_GetOriginal( SCOREP_LIBWRAP_ORIGINAL_HANDLE( func ) ) )
 
-static inline void*
-SCOREP_Libwrap_GetOriginal( SCOREP_Libwrap_OriginalHandle originalHandle )
-{
-    void*
-    gotcha_get_wrappee( void* );
-
-    return gotcha_get_wrappee( originalHandle );
-}
+void*
+SCOREP_Libwrap_GetOriginal( SCOREP_Libwrap_OriginalHandle originalHandle );
 
 #endif /* SCOREP_LIBWRAP_ORIGINAL */
 
