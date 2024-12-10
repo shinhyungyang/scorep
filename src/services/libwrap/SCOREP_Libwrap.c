@@ -532,6 +532,12 @@ SCOREP_Libwrap_RegisterWrapper( SCOREP_LibwrapHandle*          handle,
     UTILS_DEBUG_EXIT();
 }
 
+void*
+SCOREP_Libwrap_GetOriginal( SCOREP_Libwrap_OriginalHandle originalHandle )
+{
+    return gotcha_get_wrappee( originalHandle );
+}
+
 /* ****************************************************************** */
 /* Plug-in API                                                        */
 /* ****************************************************************** */
@@ -568,12 +574,6 @@ libwrap_plugin_api_register_wrapper( SCOREP_LibwrapHandle* handle,
         originalHandleOut,
         regionOut );
     SCOREP_RegionHandle_SetGroup( *regionOut, handle->attributes->display_name );
-}
-
-static void*
-libwrap_plugin_api_get_original( SCOREP_Libwrap_OriginalHandle originalHandle )
-{
-    return gotcha_get_wrappee( originalHandle );
 }
 
 static int
@@ -632,7 +632,7 @@ const SCOREP_LibwrapAPI scorep_libwrap_plugin_api =
 {
     .create               = SCOREP_Libwrap_Create,
     .register_wrapper     = libwrap_plugin_api_register_wrapper,
-    .get_original         = libwrap_plugin_api_get_original,
+    .get_original         = SCOREP_Libwrap_GetOriginal,
     .enter_measurement    = libwrap_plugin_api_enter_measurement,
     .exit_measurement     = libwrap_plugin_api_exit_measurement,
     .enter_region         = libwrap_plugin_api_enter_region,
