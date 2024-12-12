@@ -44,7 +44,6 @@ stages:
     - cd _build
     - log ../configure
         --prefix="$(readlink -f $PWD/../_prefix)"
-        --enable-shared
         --enable-backend-test-runs
         $configure_flags
     - cat scorep.summary
@@ -86,11 +85,8 @@ build-oneapi:
   image: scorep/devel-oneapi:$SCOREP_BUILD_TAG
   extends: .common
   script:
-    # do not download libbfd, it triggers https://gitlab.jsc.fz-juelich.de/perftools/scorep/-/issues/116
-    # because libunwinding is disabled by Intel MPI
     - configure_flags="
         --with-nocross-compiler-suite=oneapi
-        --with-libbfd=yes
       "
     - *common-script
 
