@@ -57,7 +57,6 @@ build-gcc:
   extends: .common
   script:
     - configure_flags="
-        --with-nocross-compiler-suite=gcc
         --without-shmem
       "
     - *common-script
@@ -67,7 +66,6 @@ build-clang:
   extends: .common
   script:
     - configure_flags="
-        --with-nocross-compiler-suite=clang
         --without-shmem
       "
     - *common-script
@@ -77,7 +75,6 @@ build-nvhpc:
   extends: .common
   script:
     - configure_flags="
-        --with-nocross-compiler-suite=nvhpc
       "
     - *common-script
 
@@ -86,7 +83,6 @@ build-oneapi:
   extends: .common
   script:
     - configure_flags="
-        --with-nocross-compiler-suite=oneapi
       "
     - *common-script
 
@@ -95,7 +91,6 @@ build-rocm:
   extends: .common
   script:
     - configure_flags="
-        --with-nocross-compiler-suite=amdclang
         --without-shmem
       "
     - *common-script
