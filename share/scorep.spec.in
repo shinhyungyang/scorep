@@ -604,25 +604,31 @@
                         };
 
                         // HIP memory allocations
-                        if ( ${paradigm} eq "hip:HIP_MALLOC" )
+                        if ( ${paradigm} eq "hip:HIP_MALLOC"
+                             or ${role} eq "allocate"
+                             or ${role} eq "deallocate"
+                             or ${role} eq "reallocate" )
                         {
                             ${hip_malloc}[${i}] = 1;
                         };
 
                         // HIP memory transfers
-                        if ( ${paradigm} eq "hip:HIP_MEMCPY" )
+                        if ( ${paradigm} eq "hip:HIP_MEMCPY"
+                             or ${role} eq "rma" )
                         {
                             ${hip_memcpy}[${i}] = 1;
                         };
 
                         // HIP synchronization
-                        if ( ${paradigm} eq "hip:HIP_SYNC" )
+                        if ( ${paradigm} eq "hip:HIP_SYNC"
+                             or ${role} eq "barrier" )
                         {
                             ${hip_sync}[${i}] = 1;
                         };
 
                         // HIP kernels
-                        if ( ${paradigm} eq "hip:HIP_KERNEL" )
+                        if ( ${paradigm} eq "hip:HIP_KERNEL"
+                             or ${role} eq "kernel" )
                         {
                             ${hip_kernel_executions}[${i}] = 1;
                         };
