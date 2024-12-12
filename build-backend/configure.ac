@@ -7,7 +7,7 @@ dnl
 dnl Copyright (c) 2009-2013,
 dnl Gesellschaft fuer numerische Simulation mbH Braunschweig, Germany
 dnl
-dnl Copyright (c) 2009-2022,
+dnl Copyright (c) 2009-2022, 2024,
 dnl Technische Universitaet Dresden, Germany
 dnl
 dnl Copyright (c) 2009-2013,
@@ -184,7 +184,11 @@ AS_IF([test "x${scorep_otf2_bindir}" != x],
      AC_SUBST([OTF2_BINDIR], ["${BINDIR}"])
 
      # Sole purpose of this otf2_config_cmd is to query sionlib status, see below.
-     otf2_config_cmd="../vendor/otf2/otf2-mini-config.sh ${scorep_otf2_config_backend_arg}"])
+     otf2_config_cmd="../vendor/otf2/otf2-mini-config.sh ${scorep_otf2_config_backend_arg}"
+
+     # We cannot do compile checks against the internal OTF2, hence we need to
+     # assume that it is the expected version
+     ac_cv_have_decl_OTF2_REGION_ROLE_KERNEL=yes])
 AM_CONDITIONAL([HAVE_SCOREP_EXTERNAL_OTF2], [test "x${scorep_otf2_bindir}" != x])
 
 scorep_otf2_have_sion=no
@@ -196,7 +200,16 @@ done
 AS_IF([test "x$scorep_otf2_have_sion" = "xyes"], [
     AC_DEFINE([HAVE_OTF2_SUBSTRATE_SION], [1], [Define if the used OTF2 library has SIONlib support.])
 ])
+
 AFS_SUMMARY([SIONlib support], [$scorep_otf2_have_sion])
+
+AC_LANG_PUSH([C])
+save_CFLAGS=$CFLAGS
+CFLAGS="$CFLAGS $OTF2_CPPFLAGS"
+# This should only be executed with an external OTF2, the internal spools the cache
+AC_CHECK_DECLS([OTF2_REGION_ROLE_KERNEL], [:], [:], [[#include <otf2/otf2.h>]])
+CFLAGS=$save_CFLAGS
+AC_LANG_POP([C])
 
 AFS_SUMMARY_SECTION_END # OTF2 features
 

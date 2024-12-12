@@ -7,7 +7,7 @@
  * Copyright (c) 2009-2013,
  * Gesellschaft fuer numerische Simulation mbH Braunschweig, Germany
  *
- * Copyright (c) 2009-2019, 2022,
+ * Copyright (c) 2009-2019, 2022, 2024,
  * Technische Universitaet Dresden, Germany
  *
  * Copyright (c) 2009-2013,
@@ -455,7 +455,9 @@ scorep_write_region_definitions( void*                     writerHandle,
                 break;
 
 #define OTF2_REGION_ROLE_KERNEL_LAUNCH OTF2_REGION_ROLE_WRAPPER
+#if !HAVE( DECL_OTF2_REGION_ROLE_KERNEL )
 #define OTF2_REGION_ROLE_KERNEL        OTF2_REGION_ROLE_FUNCTION
+#endif
 #define SCOREP_REGION_TYPE( NAME, name_str )     \
     case SCOREP_REGION_ ## NAME:                 \
         region_role = OTF2_REGION_ROLE_ ## NAME; \
