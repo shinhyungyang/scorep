@@ -1646,7 +1646,7 @@ memcpy_cb( uint32_t    domain,
 
     if ( data->phase == ACTIVITY_API_PHASE_ENTER )
     {
-        api_region_enter( cid, SCOREP_REGION_RMA, "HIP_MEMCPY", false );
+        api_region_enter( cid, SCOREP_REGION_DATA_TRANSFER, "HIP_MEMCPY", false );
 
         correlation_entry* e = create_correlation_entry( data->correlation_id, cid );
         e->payload.memcpy.stream = get_stream( stream );

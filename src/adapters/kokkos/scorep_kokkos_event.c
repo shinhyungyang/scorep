@@ -1,7 +1,7 @@
 /*
  * This file is part of the Score-P software (http://www.score-p.org)
  *
- * Copyright (c) 2020, 2022,
+ * Copyright (c) 2020, 2022, 2024,
  * Technische Universitaet Dresden, Germany
  *
  * Copyright (c) 2022,
@@ -341,7 +341,7 @@ init_kokkos( void )
                 SCOREP_INVALID_LINE_NO,
                 SCOREP_INVALID_LINE_NO,
                 SCOREP_PARADIGM_KOKKOS,
-                SCOREP_REGION_RMA );
+                SCOREP_REGION_DATA_TRANSFER );
             SCOREP_RegionHandle_SetGroup( kokkos_deep_copy_region, "Kokkos deep copy" );
 
             kokkos_rma_window = scorep_kokkos_define_rma_win();

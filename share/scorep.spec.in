@@ -614,7 +614,8 @@
 
                         // HIP memory transfers
                         if ( ${paradigm} eq "hip:HIP_MEMCPY"
-                             or ${role} eq "rma" )
+                             or ${role} eq "rma"
+                             or ${role} eq "data transfer" )
                         {
                             ${hip_memcpy}[${i}] = 1;
                         };

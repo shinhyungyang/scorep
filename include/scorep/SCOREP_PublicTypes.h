@@ -445,6 +445,7 @@ typedef enum SCOREP_ParameterType
  * - SCOREP_REGION_FILE_IO_METADATA Represents an I/O metadata operation region (e.g., seek)
  * - SCOREP_REGION_KERNEL_LAUNCH Represents a function launching a kernel on an accelerator device (externally mapped to WRAPPER)
  * - SCOREP_REGION_KERNEL Represents a kernel running on an accelerator
+ * - SCOREP_REGION_DATA_TRANSFER Represents a data transfer operation in memory
  */
 #define SCOREP_REGION_TYPES \
     SCOREP_REGION_TYPE( COLL_ONE2ALL, "one2all" ) \
@@ -482,7 +483,8 @@ typedef enum SCOREP_ParameterType
     SCOREP_REGION_TYPE( FILE_IO,      "file io" ) \
     SCOREP_REGION_TYPE( FILE_IO_METADATA, "file io metadata" ) \
     SCOREP_REGION_TYPE( KERNEL_LAUNCH, "wrapper" ) \
-    SCOREP_REGION_TYPE( KERNEL,       "kernel" )
+    SCOREP_REGION_TYPE( KERNEL,       "kernel" ) \
+    SCOREP_REGION_TYPE( DATA_TRANSFER, "data transfer" )
 
 
 #define SCOREP_REGION_TYPE( NAME, name_str ) \
