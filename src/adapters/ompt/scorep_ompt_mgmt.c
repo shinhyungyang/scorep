@@ -316,9 +316,9 @@ register_event_callbacks_host( ompt_set_callback_t setCallback )
     };
     const registration_data_t single_callbacks[] =
     {
-        CALLBACK( masked,    ompt_set_sometimes_paired ),
-        CALLBACK( flush,     ompt_set_sometimes_paired ),
-        CALLBACK( reduction, ompt_set_sometimes_paired ),
+        CALLBACK( masked, ompt_set_sometimes_paired ),
+        CALLBACK( flush,  ompt_set_sometimes_paired ),
+        // CALLBACK( reduction, ompt_set_sometimes_paired ),
         END()
     };
 
