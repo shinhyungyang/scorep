@@ -7,7 +7,7 @@
  * Copyright (c) 2009-2011,
  * Gesellschaft fuer numerische Simulation mbH Braunschweig, Germany
  *
- * Copyright (c) 2009-2011, 2018, 2020, 2022,
+ * Copyright (c) 2009-2011, 2018, 2020, 2022, 2024,
  * Technische Universitaet Dresden, Germany
  *
  * Copyright (c) 2009-2011,
@@ -336,6 +336,8 @@ typedef enum SCOREP_ParadigmClass
  * - SCOREP_PARADIGM_OPENCL refers to OpenCL instrumentation
  * - SCOREP_PARADIGM_OPENACC refers to OpenACC instrumentation
  * - SCOREP_PARADIGM_IO refers to I/O instrumentation
+ * - SCOREP_PARADIGM_KOKKOS refers to Kokkos instrumentation
+ * - SCOREP_PARADIGM_HIP refers to ROCm/HIP instrumentation
  * - SCOREP_INVALID_PARADIGM_TYPE for internal use only
  */
 #define SCOREP_PARADIGMS \
