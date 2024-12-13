@@ -46,6 +46,7 @@ exec 1>&2
 
 # Setup and use common beautification code
 : ${BEAUTIFY_CONFIG:=common/beautifier/beautify.cfg}
+: ${BEAUTIFY_F_CONFIG:=common/beautifier/beautify_f.cfg}
 BEAUTIFY_COMMON=common/beautifier/beautify-common
 if [ ! -f $BEAUTIFY_COMMON ]
 then
@@ -72,7 +73,14 @@ do
 
     # Beautify the candidate
     result="${tmpdir}/.results/${file}"
-    $BEAUTIFY -q -c $BEAUTIFY_CONFIG -f "${candidate}" -o "${result}"
+    case "${candidate}" in
+        *.f90|*.F90)
+            $BEAUTIFY_F -c "$BEAUTIFY_F_CONFIG" -s "${candidate}" > "${result}"
+            ;;
+        *)
+            $BEAUTIFY -q -c "$BEAUTIFY_CONFIG" -f "${candidate}" -o "${result}"
+            ;;
+    esac
     if test $? -ne 0
     then
         echo "  ERROR    ${path}"
