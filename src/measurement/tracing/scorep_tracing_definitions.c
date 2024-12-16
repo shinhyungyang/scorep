@@ -635,11 +635,6 @@ scorep_write_group_definitions( void*                     writerHandle,
                 paradigm = OTF2_PARADIGM_CUDA;
                 break;
 
-            case SCOREP_GROUP_OPENCL_LOCATIONS:
-            case SCOREP_GROUP_OPENCL_GROUP:
-                paradigm = OTF2_PARADIGM_OPENCL;
-                break;
-
             case SCOREP_GROUP_SHMEM_LOCATIONS:
             case SCOREP_GROUP_SHMEM_GROUP:
             case SCOREP_GROUP_SHMEM_SELF:
@@ -650,6 +645,11 @@ scorep_write_group_definitions( void*                     writerHandle,
             case SCOREP_GROUP_PTHREAD_LOCATIONS:
             case SCOREP_GROUP_PTHREAD_THREAD_TEAM:
                 paradigm = OTF2_PARADIGM_PTHREAD;
+                break;
+
+            case SCOREP_GROUP_OPENCL_LOCATIONS:
+            case SCOREP_GROUP_OPENCL_GROUP:
+                paradigm = OTF2_PARADIGM_OPENCL;
                 break;
 
             case SCOREP_GROUP_TOPOLOGY_HARDWARE_LOCATIONS:
