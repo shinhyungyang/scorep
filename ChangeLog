@@ -166,6 +166,8 @@ Bugfixes:
   MpiCollectiveBegin, MpiCollectiveEnd events to the `scorep-score`
   estimate calculation.
 - Fix remapping specification for HIP applications.
+- Fix paradigm assignment to group definitions for Kokkos and HIP in
+  tracing mode.
 
 ------------------- Released version 8.4 -----------------------------
 

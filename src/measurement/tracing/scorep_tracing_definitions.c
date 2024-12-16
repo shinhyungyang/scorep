@@ -609,64 +609,10 @@ scorep_write_group_definitions( void*                     writerHandle,
 
     SCOREP_DEFINITIONS_MANAGER_FOREACH_DEFINITION_BEGIN( definitionManager, Group, group )
     {
-        OTF2_GroupType group_type
-            = scorep_tracing_group_type_to_otf2( definition->group_type );
         OTF2_Paradigm paradigm     = OTF2_PARADIGM_UNKNOWN;
         OTF2_GroupFlag group_flags = OTF2_GROUP_FLAG_NONE;
-        switch ( definition->group_type )
-        {
-            case SCOREP_GROUP_REGIONS:
-                paradigm = OTF2_PARADIGM_NONE;
-                break;
-
-            case SCOREP_GROUP_MPI_LOCATIONS:
-            case SCOREP_GROUP_MPI_GROUP:
-            case SCOREP_GROUP_MPI_SELF:
-                paradigm = OTF2_PARADIGM_MPI;
-                break;
-
-            case SCOREP_GROUP_OPENMP_LOCATIONS:
-            case SCOREP_GROUP_OPENMP_THREAD_TEAM:
-                paradigm = OTF2_PARADIGM_OPENMP;
-                break;
-
-            case SCOREP_GROUP_CUDA_LOCATIONS:
-            case SCOREP_GROUP_CUDA_GROUP:
-                paradigm = OTF2_PARADIGM_CUDA;
-                break;
-
-            case SCOREP_GROUP_SHMEM_LOCATIONS:
-            case SCOREP_GROUP_SHMEM_GROUP:
-            case SCOREP_GROUP_SHMEM_SELF:
-                paradigm    = OTF2_PARADIGM_SHMEM;
-                group_flags = OTF2_GROUP_FLAG_GLOBAL_MEMBERS;
-                break;
-
-            case SCOREP_GROUP_PTHREAD_LOCATIONS:
-            case SCOREP_GROUP_PTHREAD_THREAD_TEAM:
-                paradigm = OTF2_PARADIGM_PTHREAD;
-                break;
-
-            case SCOREP_GROUP_OPENCL_LOCATIONS:
-            case SCOREP_GROUP_OPENCL_GROUP:
-                paradigm = OTF2_PARADIGM_OPENCL;
-                break;
-
-            case SCOREP_GROUP_TOPOLOGY_HARDWARE_LOCATIONS:
-            case SCOREP_GROUP_TOPOLOGY_HARDWARE_GROUP:
-                paradigm = OTF2_PARADIGM_HARDWARE;
-                break;
-
-            case SCOREP_GROUP_TOPOLOGY_PROCESS_LOCATIONS:
-            case SCOREP_GROUP_TOPOLOGY_PROCESS_GROUP:
-                paradigm = OTF2_PARADIGM_MEASUREMENT_SYSTEM;
-                break;
-
-            case SCOREP_GROUP_TOPOLOGY_USER_LOCATIONS:
-            case SCOREP_GROUP_TOPOLOGY_USER_GROUP:
-                paradigm = OTF2_PARADIGM_USER;
-                break;
-        }
+        OTF2_GroupType group_type
+            = scorep_tracing_group_type_to_otf2( definition->group_type, &paradigm, &group_flags );
 
         const uint64_t* members = definition->members;
         if ( definition->group_type == SCOREP_GROUP_REGIONS )
