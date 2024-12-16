@@ -57,7 +57,6 @@ build-gcc:
   extends: .common
   script:
     - configure_flags="
-        --without-shmem
       "
     - *common-script
 
@@ -66,7 +65,6 @@ build-clang:
   extends: .common
   script:
     - configure_flags="
-        --without-shmem
       "
     - *common-script
 
@@ -91,6 +89,5 @@ build-rocm:
   extends: .common
   script:
     - configure_flags="
-        --without-shmem
       "
     - *common-script
