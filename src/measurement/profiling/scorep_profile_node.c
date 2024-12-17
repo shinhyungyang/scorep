@@ -525,6 +525,7 @@ scorep_profile_find_create_child( SCOREP_Profile_LocationData* location,
 {
     /* Search matching node */
     UTILS_ASSERT( parent != NULL );
+    scorep_profile_node* prev  = NULL;
     scorep_profile_node* child = parent->first_child;
     while ( ( child != NULL ) &&
             ( ( child->node_type != node_type ) ||
@@ -532,6 +533,7 @@ scorep_profile_find_create_child( SCOREP_Profile_LocationData* location,
                                                    child->type_specific_data,
                                                    node_type ) ) ) )
     {
+        prev  = child;
         child = child->next_sibling;
     }
 
@@ -542,6 +544,14 @@ scorep_profile_find_create_child( SCOREP_Profile_LocationData* location,
                                             specific_data,
                                             timestamp,
                                             scorep_profile_get_task_context( parent ) );
+        child->next_sibling = parent->first_child;
+        parent->first_child = child;
+    }
+
+    /* If found and not head of list -> make it the head node */
+    else if ( prev != NULL )
+    {
+        prev->next_sibling  = child->next_sibling;
         child->next_sibling = parent->first_child;
         parent->first_child = child;
     }
