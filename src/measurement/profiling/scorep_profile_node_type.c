@@ -78,18 +78,6 @@ hash_by_value( scorep_profile_type_data_t data );
 static uint64_t
 hash_by_both_entries( scorep_profile_type_data_t data );
 
-static bool
-less_than_by_handle( scorep_profile_type_data_t data1,
-                     scorep_profile_type_data_t data2 );
-
-static bool
-less_than_by_value( scorep_profile_type_data_t data1,
-                    scorep_profile_type_data_t data2 );
-
-static bool
-less_than_by_both_entries( scorep_profile_type_data_t data1,
-                           scorep_profile_type_data_t data2 );
-
 
 /* ***************************************************************************************
    Type dependent data handling types and variables
@@ -103,9 +91,6 @@ less_than_by_both_entries( scorep_profile_type_data_t data1,
 typedef struct
 {
     uint64_t ( * hash_func )( scorep_profile_type_data_t );
-
-    bool ( * less_than_func )( scorep_profile_type_data_t,
-                               scorep_profile_type_data_t );
 } scorep_profile_type_data_func_t;
 
 /* *INDENT-OFF* */
@@ -115,13 +100,13 @@ typedef struct
   same order like in @a scorep_profile_node_type.
  */
 scorep_profile_type_data_func_t scorep_profile_type_data_funcs[] = {
-  { &hash_by_handle,       &less_than_by_handle       }, /* Regular region */
-  { &hash_by_both_entries, &less_than_by_both_entries }, /* Parameter string */
-  { &hash_by_both_entries, &less_than_by_both_entries }, /* Parameter integer */
-  { &hash_by_value,        &less_than_by_value        }, /* Thread root */
-  { &hash_by_handle,       &less_than_by_handle       }, /* Thread start */
-  { &hash_by_value,        &less_than_by_value        }, /* Collapse */
-  { &hash_by_handle,       &less_than_by_handle       }, /* Task root */
+  { &hash_by_handle       }, /* Regular region */
+  { &hash_by_both_entries }, /* Parameter string */
+  { &hash_by_both_entries }, /* Parameter integer */
+  { &hash_by_value        }, /* Thread root */
+  { &hash_by_handle       }, /* Thread start */
+  { &hash_by_value        }, /* Collapse */
+  { &hash_by_handle       }, /* Task root */
 };
 
 /* *INDENT-ON* */
@@ -152,35 +137,6 @@ hash_by_both_entries( scorep_profile_type_data_t data )
     return val;
 }
 
-static bool
-less_than_by_handle( scorep_profile_type_data_t data1,
-                     scorep_profile_type_data_t data2 )
-{
-    return data1.handle < data2.handle;
-}
-
-static bool
-less_than_by_value( scorep_profile_type_data_t data1,
-                    scorep_profile_type_data_t data2 )
-{
-    return data1.value < data2.value;
-}
-
-static bool
-less_than_by_both_entries( scorep_profile_type_data_t data1,
-                           scorep_profile_type_data_t data2 )
-{
-    if ( data1.handle < data2.handle )
-    {
-        return true;
-    }
-    if ( data1.handle > data2.handle )
-    {
-        return false;
-    }
-    return data1.value < data2.value;
-}
-
 /* ***************************************************************************************
    Type dependent functions
 *****************************************************************************************/
@@ -190,15 +146,6 @@ scorep_profile_hash_for_type_data( scorep_profile_type_data_t data,
                                    scorep_profile_node_type   type )
 {
     return ( *scorep_profile_type_data_funcs[ type ].hash_func )( data );
-}
-
-/* Gives an ordering for two data sets */
-bool
-scorep_profile_less_than_for_type_data( scorep_profile_type_data_t data1,
-                                        scorep_profile_type_data_t data2,
-                                        scorep_profile_node_type   type )
-{
-    return ( *scorep_profile_type_data_funcs[ type ].less_than_func )( data1, data2 );
 }
 
 /* ***************************************************************************************
