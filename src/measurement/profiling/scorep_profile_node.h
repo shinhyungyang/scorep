@@ -75,7 +75,8 @@ typedef struct
    List of profile node types.  Each node has special type and a field where it might
    store type dependent data. In order to add new node types, add a new entry here, and
    the type-specific handling functions to scorep_profile_teype_data_funcs in
-   scorep_profile_node.c.
+   scorep_profile_node.c.  Also update the following functions accordingly:
+     - scorep_profile_compare_type_data
  */
 typedef enum
 {
@@ -692,10 +693,34 @@ scorep_profile_less_than_for_type_data( scorep_profile_type_data_t data1,
    @param type  Specifies the node type to which @a data1 and @a data2 belong.
    @return true, if @a data1 equals @a data2.
  */
-bool
+static inline bool
 scorep_profile_compare_type_data( scorep_profile_type_data_t data1,
                                   scorep_profile_type_data_t data2,
-                                  scorep_profile_node_type   type );
+                                  scorep_profile_node_type   type )
+{
+    switch ( type )
+    {
+        case SCOREP_PROFILE_NODE_REGULAR_REGION:
+        case SCOREP_PROFILE_NODE_PARAMETER_STRING:
+        case SCOREP_PROFILE_NODE_PARAMETER_INTEGER:
+            return ( data1.handle == data2.handle ) &&
+                   ( data1.value == data2.value );
+
+        case SCOREP_PROFILE_NODE_THREAD_START:
+        case SCOREP_PROFILE_NODE_TASK_ROOT:
+            return data1.handle == data2.handle;
+
+        case SCOREP_PROFILE_NODE_THREAD_ROOT:
+        case SCOREP_PROFILE_NODE_COLLAPSE:
+            return data1.value == data2.value;
+
+        default:
+            break;
+    }
+
+    UTILS_BUG( "Unknown profile node type" );
+}
+
 
 
 #endif /* SCOREP_PROFILE_NODE_H */
