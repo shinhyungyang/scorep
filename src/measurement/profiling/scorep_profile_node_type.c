@@ -13,7 +13,7 @@
  * Copyright (c) 2009-2012,
  * University of Oregon, Eugene, USA
  *
- * Copyright (c) 2009-2012, 2021,
+ * Copyright (c) 2009-2012, 2021, 2024,
  * Forschungszentrum Juelich GmbH, Germany
  *
  * Copyright (c) 2009-2012,
@@ -69,10 +69,6 @@
    Prototypes of internal comparison and copy functions for type dependent data.
 *****************************************************************************************/
 
-static void
-copy_flat( scorep_profile_type_data_t* destination,
-           scorep_profile_type_data_t  source );
-
 static uint64_t
 hash_by_handle( scorep_profile_type_data_t data );
 
@@ -124,8 +120,6 @@ typedef struct
                                scorep_profile_type_data_t );
     bool ( * comp_func )( scorep_profile_type_data_t,
                           scorep_profile_type_data_t );
-    void ( * copy_func )( scorep_profile_type_data_t*,
-                          scorep_profile_type_data_t );
 } scorep_profile_type_data_func_t;
 
 /* *INDENT-OFF* */
@@ -135,13 +129,13 @@ typedef struct
   same order like in @a scorep_profile_node_type.
  */
 scorep_profile_type_data_func_t scorep_profile_type_data_funcs[] = {
-  { &hash_by_handle,       &less_than_by_handle,       &compare_both_entries, &copy_flat }, /* Regular region */
-  { &hash_by_both_entries, &less_than_by_both_entries, &compare_both_entries, &copy_flat }, /* Parameter string */
-  { &hash_by_both_entries, &less_than_by_both_entries, &compare_both_entries, &copy_flat }, /* Parameter integer */
-  { &hash_by_value,        &less_than_by_value,        &compare_only_value,   &copy_flat }, /* Thread root */
-  { &hash_by_handle,       &less_than_by_handle,       &compare_only_handle,  &copy_flat }, /* Thread start */
-  { &hash_by_value,        &less_than_by_value,        &compare_only_value,   &copy_flat }, /* Collapse */
-  { &hash_by_handle,       &less_than_by_handle,       &compare_only_handle,  &copy_flat }, /* Task root */
+  { &hash_by_handle,       &less_than_by_handle,       &compare_both_entries }, /* Regular region */
+  { &hash_by_both_entries, &less_than_by_both_entries, &compare_both_entries }, /* Parameter string */
+  { &hash_by_both_entries, &less_than_by_both_entries, &compare_both_entries }, /* Parameter integer */
+  { &hash_by_value,        &less_than_by_value,        &compare_only_value   }, /* Thread root */
+  { &hash_by_handle,       &less_than_by_handle,       &compare_only_handle  }, /* Thread start */
+  { &hash_by_value,        &less_than_by_value,        &compare_only_value   }, /* Collapse */
+  { &hash_by_handle,       &less_than_by_handle,       &compare_only_handle  }, /* Task root */
 };
 
 /* *INDENT-ON* */
@@ -149,14 +143,6 @@ scorep_profile_type_data_func_t scorep_profile_type_data_funcs[] = {
 /* ***************************************************************************************
    Implementation of comparison ond copy functions for type dependent data.
 *****************************************************************************************/
-
-static void
-copy_flat( scorep_profile_type_data_t* destination,
-           scorep_profile_type_data_t  source )
-{
-    destination->handle = source.handle;
-    destination->value  = source.value;
-}
 
 static bool
 compare_only_handle( scorep_profile_type_data_t data1,
@@ -258,15 +244,6 @@ scorep_profile_compare_type_data( scorep_profile_type_data_t data1,
                                   scorep_profile_node_type   type )
 {
     return ( *scorep_profile_type_data_funcs[ type ].comp_func )( data1, data2 );
-}
-
-/* Copies a data set */
-void
-scorep_profile_copy_type_data( scorep_profile_type_data_t* destination,
-                               scorep_profile_type_data_t  source,
-                               scorep_profile_node_type    type )
-{
-    ( *scorep_profile_type_data_funcs[ type ].copy_func )( destination, source );
 }
 
 /* ***************************************************************************************

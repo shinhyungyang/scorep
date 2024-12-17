@@ -13,7 +13,7 @@
  * Copyright (c) 2009-2012,
  * University of Oregon, Eugene, USA
  *
- * Copyright (c) 2009-2012,
+ * Copyright (c) 2009-2012, 2024,
  * Forschungszentrum Juelich GmbH, Germany
  *
  * Copyright (c) 2009-2012, 2015,
@@ -52,7 +52,7 @@
 /**
    Type for the type dependent data. Each node has special type and a field where it might
    store type dependent data. Currently, 8 bytes are reserved for type dependent data,
-   which should be enough to store a pointer, an handle, an integer value, or an double
+   which should be enough to store a pointer, a handle, an integer value, or a double
    value.
  */
 typedef struct
@@ -74,7 +74,8 @@ typedef struct
 /**
    List of profile node types.  Each node has special type and a field where it might
    store type dependent data. In order to add new node types, add a new entry here, and
-   the copy and compare functions to scorep_profile_type_data_funcs in scorep_profile_node.c.
+   the type-specific handling functions to scorep_profile_teype_data_funcs in
+   scorep_profile_node.c.
  */
 typedef enum
 {
@@ -88,7 +89,7 @@ typedef enum
 } scorep_profile_node_type;
 
 /**
-   Speciefies whether the current call happens in the context of an untied or tied task.
+   Specifies whether the current call happens in the context of an untied or tied task.
  */
 typedef enum
 {
@@ -695,16 +696,6 @@ bool
 scorep_profile_compare_type_data( scorep_profile_type_data_t data1,
                                   scorep_profile_type_data_t data2,
                                   scorep_profile_node_type   type );
-
-/**
-   Creates a copy of type dependent data.
-   @param data The data which is copied.
-   @param type  Specifies the node type of @a data.
- */
-void
-scorep_profile_copy_type_data( scorep_profile_type_data_t* destination,
-                               scorep_profile_type_data_t  source,
-                               scorep_profile_node_type    type );
 
 
 #endif /* SCOREP_PROFILE_NODE_H */
