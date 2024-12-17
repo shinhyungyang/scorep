@@ -86,7 +86,7 @@ scorep_profile_create_node( SCOREP_Profile_LocationData* location,
     node->first_enter_time    = timestamp;
     node->last_exit_time      = timestamp;
     node->node_type           = type;
-    scorep_profile_copy_type_data( &node->type_specific_data, data, type );
+    node->type_specific_data  = data;
 
     /* Initialize dense metric values */
     scorep_profile_init_dense_metric( &node->inclusive_time );
