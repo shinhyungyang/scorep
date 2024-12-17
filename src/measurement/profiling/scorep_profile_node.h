@@ -74,8 +74,8 @@ typedef struct
 /**
    List of profile node types.  Each node has special type and a field where it might
    store type dependent data. In order to add new node types, add a new entry here, and
-   the type-specific handling functions to scorep_profile_teype_data_funcs in
-   scorep_profile_node.c.  Also update the following functions accordingly:
+   update the following functions accordingly:
+     - scorep_profile_hash_for_type_data
      - scorep_profile_less_than_for_type_data
      - scorep_profile_compare_type_data
  */
@@ -669,9 +669,37 @@ scorep_profile_type_set_ptr_value( scorep_profile_type_data_t* data,
    @param type Specifies the node type in which @a data belongs.
    @return a 64-bit hash value.
  */
-uint64_t
+static inline uint64_t
 scorep_profile_hash_for_type_data( scorep_profile_type_data_t data,
-                                   scorep_profile_node_type   type );
+                                   scorep_profile_node_type   type )
+{
+    switch ( type )
+    {
+        case SCOREP_PROFILE_NODE_REGULAR_REGION:
+        case SCOREP_PROFILE_NODE_THREAD_START:
+        case SCOREP_PROFILE_NODE_TASK_ROOT:
+            return data.handle;
+
+        case SCOREP_PROFILE_NODE_THREAD_ROOT:
+        case SCOREP_PROFILE_NODE_COLLAPSE:
+            return data.value;
+
+        case SCOREP_PROFILE_NODE_PARAMETER_STRING:
+        case SCOREP_PROFILE_NODE_PARAMETER_INTEGER:
+        {
+            uint64_t val = data.handle;
+            val  = ( val >> 1 ) | ( val << 31 );
+            val += data.value;
+
+            return val;
+        }
+
+        default:
+            break;
+    }
+
+    UTILS_BUG( "Unknown profile node type" );
+}
 
 /**
    Provides an ordering for type-dependent data. Both objects are assumed to
