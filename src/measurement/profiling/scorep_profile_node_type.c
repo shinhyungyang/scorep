@@ -90,18 +90,6 @@ static bool
 less_than_by_both_entries( scorep_profile_type_data_t data1,
                            scorep_profile_type_data_t data2 );
 
-static bool
-compare_only_handle( scorep_profile_type_data_t data1,
-                     scorep_profile_type_data_t data2 );
-
-static bool
-compare_only_value( scorep_profile_type_data_t data1,
-                    scorep_profile_type_data_t data2 );
-
-static bool
-compare_both_entries( scorep_profile_type_data_t data1,
-                      scorep_profile_type_data_t data2 );
-
 
 /* ***************************************************************************************
    Type dependent data handling types and variables
@@ -118,8 +106,6 @@ typedef struct
 
     bool ( * less_than_func )( scorep_profile_type_data_t,
                                scorep_profile_type_data_t );
-    bool ( * comp_func )( scorep_profile_type_data_t,
-                          scorep_profile_type_data_t );
 } scorep_profile_type_data_func_t;
 
 /* *INDENT-OFF* */
@@ -129,13 +115,13 @@ typedef struct
   same order like in @a scorep_profile_node_type.
  */
 scorep_profile_type_data_func_t scorep_profile_type_data_funcs[] = {
-  { &hash_by_handle,       &less_than_by_handle,       &compare_both_entries }, /* Regular region */
-  { &hash_by_both_entries, &less_than_by_both_entries, &compare_both_entries }, /* Parameter string */
-  { &hash_by_both_entries, &less_than_by_both_entries, &compare_both_entries }, /* Parameter integer */
-  { &hash_by_value,        &less_than_by_value,        &compare_only_value   }, /* Thread root */
-  { &hash_by_handle,       &less_than_by_handle,       &compare_only_handle  }, /* Thread start */
-  { &hash_by_value,        &less_than_by_value,        &compare_only_value   }, /* Collapse */
-  { &hash_by_handle,       &less_than_by_handle,       &compare_only_handle  }, /* Task root */
+  { &hash_by_handle,       &less_than_by_handle       }, /* Regular region */
+  { &hash_by_both_entries, &less_than_by_both_entries }, /* Parameter string */
+  { &hash_by_both_entries, &less_than_by_both_entries }, /* Parameter integer */
+  { &hash_by_value,        &less_than_by_value        }, /* Thread root */
+  { &hash_by_handle,       &less_than_by_handle       }, /* Thread start */
+  { &hash_by_value,        &less_than_by_value        }, /* Collapse */
+  { &hash_by_handle,       &less_than_by_handle       }, /* Task root */
 };
 
 /* *INDENT-ON* */
@@ -143,28 +129,6 @@ scorep_profile_type_data_func_t scorep_profile_type_data_funcs[] = {
 /* ***************************************************************************************
    Implementation of comparison ond copy functions for type dependent data.
 *****************************************************************************************/
-
-static bool
-compare_only_handle( scorep_profile_type_data_t data1,
-                     scorep_profile_type_data_t data2 )
-{
-    return data1.handle == data2.handle;
-}
-
-static bool
-compare_only_value( scorep_profile_type_data_t data1,
-                    scorep_profile_type_data_t data2 )
-{
-    return data1.value == data2.value;
-}
-
-static bool
-compare_both_entries( scorep_profile_type_data_t data1,
-                      scorep_profile_type_data_t data2 )
-{
-    return ( data1.handle == data2.handle ) &&
-           ( data1.value  == data2.value );
-}
 
 static uint64_t
 hash_by_handle( scorep_profile_type_data_t data )
@@ -235,15 +199,6 @@ scorep_profile_less_than_for_type_data( scorep_profile_type_data_t data1,
                                         scorep_profile_node_type   type )
 {
     return ( *scorep_profile_type_data_funcs[ type ].less_than_func )( data1, data2 );
-}
-
-/* Compares two data sets */
-bool
-scorep_profile_compare_type_data( scorep_profile_type_data_t data1,
-                                  scorep_profile_type_data_t data2,
-                                  scorep_profile_node_type   type )
-{
-    return ( *scorep_profile_type_data_funcs[ type ].comp_func )( data1, data2 );
 }
 
 /* ***************************************************************************************
