@@ -485,7 +485,7 @@
                             ${opencl_kernel_launches}[${i}] = 1;
                         };
 
-                        if ( ${sourcefile} seq "OPENCL_KERNEL" )
+                        if ( ${sourcefile} eq "OPENCL_KERNEL" )
                         {
                             ${opencl_kernel_executions}[${i}] = 1;
                         };
@@ -563,7 +563,7 @@
                             ${cuda_sync}[${i}] = 1;
                         };
 
-                        if ( ${sourcefile} seq "CUDA_KERNEL" )
+                        if ( ${sourcefile} eq "CUDA_KERNEL" )
                         {
                             ${cuda_kernel_executions}[${i}] = 1;
                         };
@@ -658,7 +658,7 @@
                         ${includesFILEIO} = 1;
                         ${fileio}[${i}]   = 1;
 
-                        if ( ${role} seq "file io metadata" )
+                        if ( ${role} eq "file io metadata" )
                         {
                             ${fileio_meta}[${i}] = 1;
                         };
