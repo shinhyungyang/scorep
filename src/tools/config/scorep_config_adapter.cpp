@@ -511,6 +511,16 @@ SCOREP_Config_CudaAdapter::addCFlags( std::string& cflags,
 {
 }
 
+#if !HAVE_BACKEND( CUDA_TESTS ) && HAVE_BACKEND( BUILD_SHARED_LT_LIBRARIES )
+void
+SCOREP_Config_CudaAdapter::addLdFlags( std::string& ldflags,
+                                       bool         build_check,
+                                       bool         nvcc )
+{
+    ldflags += SCOREP_BACKEND_CUDA_STUBS_LDFLAGS;
+}
+#endif // !HAVE_BACKEND( CUDA_TESTS ) && HAVE_BACKEND( BUILD_SHARED_LT_LIBRARIES )
+
 void
 SCOREP_Config_CudaAdapter::appendInitStructName( std::deque<std::string>& initStructs )
 {

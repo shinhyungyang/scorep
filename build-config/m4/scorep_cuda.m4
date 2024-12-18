@@ -181,7 +181,9 @@ AC_SCOREP_COND_HAVE([NVML_SUPPORT],
 
 AC_SCOREP_COND_HAVE([CUDA_TESTS],
                     [test "x${scorep_have_cuda_tests}" = "xyes"],
-                    [Defined if CUDA tests will be run.], [], [])
+                    [Defined if CUDA tests will be run.],
+                    [AC_SUBST([SCOREP_CUDA_STUBS_LDFLAGS], [""])],
+                    [AC_SUBST([SCOREP_CUDA_STUBS_LDFLAGS], ["${with_libcuda_ldflags} ${with_libcuda_libs} ${with_libnvidia_ml_ldflags} ${with_libnvidia_ml_libs}"])])
 
 dnl run_cuda_test.sh: no gold files available for supported CUDA
 AM_CONDITIONAL([HAVE_CUDA_TESTS_HAVE_GOLD], [false])
