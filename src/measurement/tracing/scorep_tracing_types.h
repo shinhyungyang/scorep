@@ -7,7 +7,7 @@
  * Copyright (c) 2009-2013,
  * Gesellschaft fuer numerische Simulation mbH Braunschweig, Germany
  *
- * Copyright (c) 2009-2017, 2020, 2022,
+ * Copyright (c) 2009-2017, 2020, 2022, 2024,
  * Technische Universitaet Dresden, Germany
  *
  * Copyright (c) 2009-2013,
@@ -80,62 +80,66 @@ scorep_tracing_location_group_type_to_otf2( SCOREP_LocationGroupType scorepType 
 }
 
 static inline OTF2_GroupType
-scorep_tracing_group_type_to_otf2( SCOREP_GroupType scorepType )
+scorep_tracing_group_type_to_otf2( SCOREP_GroupType scorepType,
+                                   OTF2_Paradigm*   paradigm,
+                                   OTF2_GroupFlag*  groupFlags )
 {
     switch ( scorepType )
     {
-#define case_return( SCOREP, OTF2 ) \
+#define case_return( SCOREP, OTF2, PARADIGM, FLAGS ) \
     case SCOREP_GROUP_ ## SCOREP: \
+        *paradigm   = OTF2_PARADIGM_ ## PARADIGM; \
+        *groupFlags = OTF2_GROUP_FLAG_ ## FLAGS; \
         return OTF2_GROUP_TYPE_ ## OTF2
 
-        case_return( UNKNOWN,            UNKNOWN );
-        case_return( LOCATIONS,          LOCATIONS );
-        case_return( REGIONS,            REGIONS );
-        case_return( METRIC,             METRIC );
+        case_return( UNKNOWN,   UNKNOWN,   UNKNOWN, NONE );
+        case_return( LOCATIONS, LOCATIONS, UNKNOWN, NONE );
+        case_return( REGIONS,   REGIONS,   UNKNOWN, NONE );
+        case_return( METRIC,    METRIC,    UNKNOWN, NONE );
 
         // MPI
-        case_return( MPI_LOCATIONS,      COMM_LOCATIONS );
-        case_return( MPI_GROUP,          COMM_GROUP );
-        case_return( MPI_SELF,           COMM_SELF );
+        case_return( MPI_LOCATIONS, COMM_LOCATIONS, MPI, NONE );
+        case_return( MPI_GROUP,     COMM_GROUP,     MPI, NONE );
+        case_return( MPI_SELF,      COMM_SELF,      MPI, NONE );
 
         // OpenMP
-        case_return( OPENMP_LOCATIONS,   COMM_LOCATIONS );
-        case_return( OPENMP_THREAD_TEAM, COMM_GROUP );
+        case_return( OPENMP_LOCATIONS,   COMM_LOCATIONS, OPENMP, NONE );
+        case_return( OPENMP_THREAD_TEAM, COMM_GROUP,     OPENMP, NONE );
 
         // CUDA
-        case_return( CUDA_LOCATIONS,     COMM_LOCATIONS );
-        case_return( CUDA_GROUP,         COMM_GROUP );
-
-        // OpenCL
-        case_return( OPENCL_LOCATIONS,   COMM_LOCATIONS );
-        case_return( OPENCL_GROUP,       COMM_GROUP );
-
-        // Kokkos
-        case_return( KOKKOS_LOCATIONS,     COMM_LOCATIONS );
-        case_return( KOKKOS_GROUP,         COMM_GROUP );
+        case_return( CUDA_LOCATIONS, COMM_LOCATIONS, CUDA, NONE );
+        case_return( CUDA_GROUP,     COMM_GROUP,     CUDA, NONE );
 
         // SHMEM
-        case_return( SHMEM_LOCATIONS,    COMM_LOCATIONS );
-        case_return( SHMEM_GROUP,        COMM_GROUP );
-        case_return( SHMEM_SELF,         COMM_SELF );
+        case_return( SHMEM_LOCATIONS, COMM_LOCATIONS, SHMEM, GLOBAL_MEMBERS );
+        case_return( SHMEM_GROUP,     COMM_GROUP,     SHMEM, GLOBAL_MEMBERS );
+        case_return( SHMEM_SELF,      COMM_SELF,      SHMEM, GLOBAL_MEMBERS );
 
         // Pthread
-        case_return( PTHREAD_LOCATIONS,   COMM_LOCATIONS );
-        case_return( PTHREAD_THREAD_TEAM, COMM_GROUP );
+        case_return( PTHREAD_LOCATIONS,   COMM_LOCATIONS, PTHREAD, NONE );
+        case_return( PTHREAD_THREAD_TEAM, COMM_GROUP,     PTHREAD, NONE );
 
-        //Topologies
-        case_return( TOPOLOGY_HARDWARE_LOCATIONS, COMM_LOCATIONS );
-        case_return( TOPOLOGY_HARDWARE_GROUP, COMM_GROUP );
+        // OpenCL
+        case_return( OPENCL_LOCATIONS, COMM_LOCATIONS, OPENCL, NONE );
+        case_return( OPENCL_GROUP,     COMM_GROUP,     OPENCL, NONE );
 
-        case_return( TOPOLOGY_PROCESS_LOCATIONS, COMM_LOCATIONS );
-        case_return( TOPOLOGY_PROCESS_GROUP, COMM_GROUP );
+        // Topologies
+        case_return( TOPOLOGY_HARDWARE_LOCATIONS, COMM_LOCATIONS, HARDWARE, NONE );
+        case_return( TOPOLOGY_HARDWARE_GROUP,     COMM_GROUP,     HARDWARE, NONE );
 
-        case_return( TOPOLOGY_USER_LOCATIONS, COMM_LOCATIONS );
-        case_return( TOPOLOGY_USER_GROUP, COMM_GROUP );
+        case_return( TOPOLOGY_PROCESS_LOCATIONS, COMM_LOCATIONS, MEASUREMENT_SYSTEM, NONE );
+        case_return( TOPOLOGY_PROCESS_GROUP,     COMM_GROUP,     MEASUREMENT_SYSTEM, NONE );
+
+        case_return( TOPOLOGY_USER_LOCATIONS, COMM_LOCATIONS, USER, NONE );
+        case_return( TOPOLOGY_USER_GROUP,     COMM_GROUP,     USER, NONE );
+
+        // Kokkos
+        case_return( KOKKOS_LOCATIONS, COMM_LOCATIONS, KOKKOS, NONE );
+        case_return( KOKKOS_GROUP,     COMM_GROUP,     KOKKOS, NONE );
 
         // HIP
-        case_return( HIP_LOCATIONS,     COMM_LOCATIONS );
-        case_return( HIP_GROUP,         COMM_GROUP );
+        case_return( HIP_LOCATIONS, COMM_LOCATIONS, HIP, NONE );
+        case_return( HIP_GROUP,     COMM_GROUP,     HIP, NONE );
 
 #undef case_return
         default:
