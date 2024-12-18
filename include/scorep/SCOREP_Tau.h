@@ -7,7 +7,7 @@
  * Copyright (c) 2009-2011,
  * Gesellschaft fuer numerische Simulation mbH Braunschweig, Germany
  *
- * Copyright (c) 2009-2011, 2014-2016,
+ * Copyright (c) 2009-2011, 2014-2016, 2024,
  * Technische Universitaet Dresden, Germany
  *
  * Copyright (c) 2009-2011,
@@ -195,6 +195,7 @@ typedef enum
 
     SCOREP_TAU_REGION_KERNEL_LAUNCH,
     SCOREP_TAU_REGION_KERNEL,
+    SCOREP_TAU_REGION_DATA_TRANSFER,
 
     SCOREP_TAU_INVALID_REGION_TYPE /**< For internal use only. */
 } SCOREP_Tau_RegionType;

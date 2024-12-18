@@ -485,7 +485,7 @@
                             ${opencl_kernel_launches}[${i}] = 1;
                         };
 
-                        if ( ${sourcefile} seq "OPENCL_KERNEL" )
+                        if ( ${sourcefile} eq "OPENCL_KERNEL" )
                         {
                             ${opencl_kernel_executions}[${i}] = 1;
                         };
@@ -563,7 +563,7 @@
                             ${cuda_sync}[${i}] = 1;
                         };
 
-                        if ( ${sourcefile} seq "CUDA_KERNEL" )
+                        if ( ${sourcefile} eq "CUDA_KERNEL" )
                         {
                             ${cuda_kernel_executions}[${i}] = 1;
                         };
@@ -585,7 +585,8 @@
                     }
 
                     //--- HIP-specific classification ---
-                    elseif ( ${paradigm} eq "hip" )
+                    // All HIP regions are in sub groups of "hip", hence the "hip:" check
+                    elseif ( ${paradigm} =~ /^hip:/ )
                     {
                         ${includesHIP} = 1;
                         ${hip}[${i}]   = 1;
@@ -603,25 +604,32 @@
                         };
 
                         // HIP memory allocations
-                        if ( ${sourcefile} seq "HIP_MALLOC" )
+                        if ( ${paradigm} eq "hip:HIP_MALLOC"
+                             or ${role} eq "allocate"
+                             or ${role} eq "deallocate"
+                             or ${role} eq "reallocate" )
                         {
                             ${hip_malloc}[${i}] = 1;
                         };
 
                         // HIP memory transfers
-                        if ( ${sourcefile} seq "HIP_MEMCPY" )
+                        if ( ${paradigm} eq "hip:HIP_MEMCPY"
+                             or ${role} eq "rma"
+                             or ${role} eq "data transfer" )
                         {
                             ${hip_memcpy}[${i}] = 1;
                         };
 
                         // HIP synchronization
-                        if ( ${sourcefile} seq "HIP_SYNC" )
+                        if ( ${paradigm} eq "hip:HIP_SYNC"
+                             or ${role} eq "barrier" )
                         {
                             ${hip_sync}[${i}] = 1;
                         };
 
                         // HIP kernels
-                        if ( ${sourcefile} seq "HIP_KERNEL" )
+                        if ( ${paradigm} eq "hip:HIP_KERNEL"
+                             or ${role} eq "kernel" )
                         {
                             ${hip_kernel_executions}[${i}] = 1;
                         };
@@ -650,7 +658,7 @@
                         ${includesFILEIO} = 1;
                         ${fileio}[${i}]   = 1;
 
-                        if ( ${role} seq "file io metadata" )
+                        if ( ${role} eq "file io metadata" )
                         {
                             ${fileio_meta}[${i}] = 1;
                         };
