@@ -6,6 +6,9 @@
 ## Copyright (c) 2023-2024,
 ## Forschungszentrum Juelich GmbH, Germany
 ##
+## Copyright (c) 2024,
+## Technische Universitaet Dresden, Germany
+##
 ## This software may be modified and distributed under the terms of
 ## a BSD-style license.  See the COPYING file in the package base
 ## directory for details.
@@ -300,19 +303,32 @@ else !HAVE_BUILD_STATIC_LT_LIBRARIES
 
 if AFS_BUILD_EQUALS_HOST
 
-lib_lt_so = $(lib_LTLIBRARIES:.la=.so)
+lib_lt_so      = $(lib_LTLIBRARIES:.la=.so)
+lib_lt_so_skip = $(SKIP_SELF_CONTAINED_TEST_LAS:.la=.so)
 shared-objects-self-contained:
-	@selfcontained=yes; \
+	@$(am__tty_colors); \
+	selfcontained=yes; \
 	list='$(lib_lt_so)'; test -n "$(libdir)" || list=; \
+	skiplist='$(lib_lt_so_skip)'; test -n "$(libdir)" || skiplist=; \
 	for so in $$list; do \
+	    case " $$skiplist " in \
+	    (*" $$so "*) \
+	        echo "  $${blu}SKIP$${std}     ldd $(libdir)/$$so"; \
+	        continue ;; \
+	    esac; \
 	    if LC_ALL=C ldd "$(libdir)/$$so" 2>/dev/null | ${GREP} 'not found' >/dev/null; then \
 	        selfcontained=no; \
-	        echo "not selfcontained: ldd $(libdir)/$$so"; \
-	        ldd "$(libdir)/$$so"; \
+	        echo "  $${red}FAIL$${std}     ldd $(libdir)/$$so"; \
+	        LC_ALL=C ldd "$(libdir)/$$so" | \
+	            sed -e 's/^\s\+//' \
+	                -e "s/.*not found\$$/$${red}&$${std}/" \
+	                -e 's/^/           /'; \
+	    else \
+	        echo "  $${grn}PASS$${std}     ldd $(libdir)/$$so"; \
 	    fi; \
 	done; \
 	if test "x$$selfcontained" = xno; then \
-	    echo "shared objects not self-contained"; \
+	    echo "$${red}FAIL:$${std} shared objects not self-contained"; \
 	    exit 1; \
 	fi
 
