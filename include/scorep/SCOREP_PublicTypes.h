@@ -7,7 +7,7 @@
  * Copyright (c) 2009-2011,
  * Gesellschaft fuer numerische Simulation mbH Braunschweig, Germany
  *
- * Copyright (c) 2009-2011, 2018, 2020, 2022,
+ * Copyright (c) 2009-2011, 2018, 2020, 2022, 2024,
  * Technische Universitaet Dresden, Germany
  *
  * Copyright (c) 2009-2011,
@@ -336,6 +336,8 @@ typedef enum SCOREP_ParadigmClass
  * - SCOREP_PARADIGM_OPENCL refers to OpenCL instrumentation
  * - SCOREP_PARADIGM_OPENACC refers to OpenACC instrumentation
  * - SCOREP_PARADIGM_IO refers to I/O instrumentation
+ * - SCOREP_PARADIGM_KOKKOS refers to Kokkos instrumentation
+ * - SCOREP_PARADIGM_HIP refers to ROCm/HIP instrumentation
  * - SCOREP_INVALID_PARADIGM_TYPE for internal use only
  */
 #define SCOREP_PARADIGMS \
@@ -442,7 +444,7 @@ typedef enum SCOREP_ParameterType
  * - SCOREP_REGION_FILE_IO Represents an I/O data operation region
  * - SCOREP_REGION_FILE_IO_METADATA Represents an I/O metadata operation region (e.g., seek)
  * - SCOREP_REGION_KERNEL_LAUNCH Represents a function launching a kernel on an accelerator device (externally mapped to WRAPPER)
- * - SCOREP_REGION_KERNEL Represents a kernel running on an accelerator (externally mapped to FUNCTION)
+ * - SCOREP_REGION_KERNEL Represents a kernel running on an accelerator
  */
 #define SCOREP_REGION_TYPES \
     SCOREP_REGION_TYPE( COLL_ONE2ALL, "one2all" ) \
@@ -478,9 +480,9 @@ typedef enum SCOREP_ParameterType
     SCOREP_REGION_TYPE( DEALLOCATE,   "deallocate" ) \
     SCOREP_REGION_TYPE( REALLOCATE,   "reallocate" ) \
     SCOREP_REGION_TYPE( FILE_IO,      "file io" ) \
-    SCOREP_REGION_TYPE( FILE_IO_METADATA,  "file io metadata" ) \
+    SCOREP_REGION_TYPE( FILE_IO_METADATA, "file io metadata" ) \
     SCOREP_REGION_TYPE( KERNEL_LAUNCH, "wrapper" ) \
-    SCOREP_REGION_TYPE( KERNEL,       "function" )
+    SCOREP_REGION_TYPE( KERNEL,       "kernel" )
 
 
 #define SCOREP_REGION_TYPE( NAME, name_str ) \
