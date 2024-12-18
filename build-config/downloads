@@ -16,13 +16,13 @@ libunwind
 
 # Given --with-libbfd=download, we download this binutils tarball
 binutils_libname=bfd
-binutils_version=2.36.1
+binutils_version=2.43.1
 binutils_package=binutils-${binutils_version}
 binutils_base_url=https://ftp.gnu.org/gnu/binutils
 binutils_url=${binutils_base_url}/${binutils_package}.tar.gz
 
 # Given --with-libunwind=download, we download this libunwind tarball
-libunwind_version=1.6.2
+libunwind_version=1.8.1
 libunwind_package=libunwind-${libunwind_version}
 libunwind_base_url=https://github.com/libunwind/libunwind/releases/download/v${libunwind_version}
 libunwind_url=${libunwind_base_url}/${libunwind_package}.tar.gz

@@ -79,7 +79,7 @@ all:
 	        --disable-per-thread-cache
 	$(AM_V_at)cd $(PACKAGE)/_build && $(MAKE) $(BUILD_V_SILENT)
 	$(AM_V_at)cd $(PACKAGE)/_build && $(MAKE) $(BUILD_V_SILENT) install
-	-$(AM_V_at)rm -f $(PREFIX)/lib/libunwind.la
+	-$(AM_V_at)rm -f $(PREFIX)/lib/lib*.la
 clean: uninstall
 	$(AM_V_at)rm -rf $(PACKAGE).tar.gz $(PACKAGE)
 uninstall:

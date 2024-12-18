@@ -1,26 +1,23 @@
 #include <opari2/pomp2_lib.h>
-
-#include <stdint.h>
-extern int64_t __attribute__((aligned (16))) F77_FUNC_(pomp_tpd,POMP_TPD);
-#pragma omp threadprivate(F77_FUNC_(pomp_tpd,POMP_TPD))
-#define POMP2_DLIST_00001 shared(pomp2_region_1)
-static POMP2_Region_handle pomp2_region_1 = NULL;
-#define pomp2_ctc_1 "229*regionType=task*sscl=omp_tasks.c:48:48*escl=omp_tasks.c:51:51**"
-static POMP2_Region_handle pomp2_region_2 = NULL;
-#define pomp2_ctc_2 "233*regionType=taskwait*sscl=omp_tasks.c:53:53*escl=omp_tasks.c:53:53**"
-#define POMP2_DLIST_00003 shared(pomp2_region_3,pomp2_region_4)
-static POMP2_Region_handle pomp2_region_3 = NULL;
-#define pomp2_ctc_3 "233*regionType=parallel*sscl=omp_tasks.c:62:62*escl=omp_tasks.c:66:66**"
-static POMP2_Region_handle pomp2_region_4 = NULL;
-#define pomp2_ctc_4 "231*regionType=single*sscl=omp_tasks.c:64:64*escl=omp_tasks.c:65:65**"
+#define POMP2_DLIST_00001 shared( opari2_region_1 )
+static OPARI2_Region_handle opari2_region_1 = ( OPARI2_Region_handle )0;
+#define opari2_ctc_1 "168*regionType=task*sscl=omp_tasks.c:44:44*escl=omp_tasks.c:47:47**"
+static OPARI2_Region_handle opari2_region_2 = ( OPARI2_Region_handle )0;
+#define opari2_ctc_2 "172*regionType=taskwait*sscl=omp_tasks.c:49:49*escl=omp_tasks.c:49:49**"
+#define POMP2_DLIST_00003 shared( opari2_region_3, opari2_region_4 )
+static OPARI2_Region_handle opari2_region_3 = ( OPARI2_Region_handle )0;
+#define opari2_ctc_3 "172*regionType=parallel*sscl=omp_tasks.c:58:58*escl=omp_tasks.c:62:62**"
+static OPARI2_Region_handle opari2_region_4 = ( OPARI2_Region_handle )0;
+#define opari2_ctc_4 "170*regionType=single*sscl=omp_tasks.c:60:60*escl=omp_tasks.c:61:61**"
 
 #ifdef __cplusplus
- extern "C"
+extern "C"
 #endif
-void POMP2_Init_reg_jl6l9ddtlx35j_4()
+void
+POMP2_Init_reg_lihdix7loxm2_4()
 {
-    POMP2_Assign_handle( &pomp2_region_1, pomp2_ctc_1 );
-    POMP2_Assign_handle( &pomp2_region_2, pomp2_ctc_2 );
-    POMP2_Assign_handle( &pomp2_region_3, pomp2_ctc_3 );
-    POMP2_Assign_handle( &pomp2_region_4, pomp2_ctc_4 );
+    POMP2_Assign_handle( &opari2_region_1, opari2_ctc_1 );
+    POMP2_Assign_handle( &opari2_region_2, opari2_ctc_2 );
+    POMP2_Assign_handle( &opari2_region_3, opari2_ctc_3 );
+    POMP2_Assign_handle( &opari2_region_4, opari2_ctc_4 );
 }

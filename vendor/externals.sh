@@ -8,53 +8,31 @@ cd "$bindir"
 
 cmd_get()
 {
-    local vcs=$1
-    shift
     local external=$1
     shift
     test ! -d "$external" && {
-        case $vcs in
-        svn)
-            echo "svn checkout $* $bindir/$external"
-            eval 'svn '"${EXTERNALS_SVN_OPTIONS-}"' checkout --quiet "$@" "$external"'
-        ;;
-        git)
-            echo "git clone $* $bindir/$external"
-            eval 'git '"${EXTERNALS_GIT_OPTIONS-}"' clone --quiet "$@" "$external"'
-            if [ -x "$external"/vendor/externals.sh ]; then
-                "$external"/vendor/externals.sh get
-            fi
-        ;;
-        esac
+        echo "git clone $* $bindir/$external"
+        eval 'git '"${EXTERNALS_GIT_OPTIONS-}"' clone --quiet "$@" "$external"'
+        if [ -x "$external"/vendor/externals.sh ]; then
+            "$external"/vendor/externals.sh get
+        fi
     }
 }
 
 cmd_update()
 {
-    local vcs=$1
-    shift
     local external=$1
     test -d "$external" && {
-        case $vcs in
-        svn)
-            echo "svn update $bindir/$external"
-            eval 'svn '"${EXTERNALS_SVN_OPTIONS-}"' update --quiet "$external"'
-        ;;
-        git)
-            echo "cd $bindir/$external && git pull"
-            eval '( cd "$external" && git '"${EXTERNALS_GIT_OPTIONS-}"' pull --quiet )'
-            if [ -x "$external"/vendor/externals.sh ]; then
-                "$external"/vendor/externals.sh update
-            fi
-        ;;
-        esac
+        echo "cd $bindir/$external && git pull"
+        eval '( cd "$external" && git '"${EXTERNALS_GIT_OPTIONS-}"' pull --quiet )'
+        if [ -x "$external"/vendor/externals.sh ]; then
+            "$external"/vendor/externals.sh update
+        fi
     }
 }
 
 cmd_clean()
 {
-    local vcs=$1
-    shift
     local external=$1
     echo "rm -rf $bindir/$external"
     rm -rf "$external"
@@ -68,7 +46,7 @@ cmd_help()
 
 cmd=cmd_${1:-get}
 
-${cmd} git otf2 -b master https://gitlab.jsc.fz-juelich.de/perftools/otf2.git
-${cmd} git opari2 -b v2.0.8 https://gitlab.jsc.fz-juelich.de/perftools/opari2.git
-${cmd} git cubew -b master https://gitlab.jsc.fz-juelich.de/perftools/cubew.git
-${cmd} git cubelib -b master https://gitlab.jsc.fz-juelich.de/perftools/cubelib.git
+${cmd} otf2 -b v3.1-rc5 https://gitlab.jsc.fz-juelich.de/perftools/otf2.git
+${cmd} opari2 -b v2.0.8 https://gitlab.jsc.fz-juelich.de/perftools/opari2.git
+${cmd} cubew -b v4.9-rc2 https://gitlab.jsc.fz-juelich.de/perftools/cubew.git
+${cmd} cubelib -b v4.9-rc2 https://gitlab.jsc.fz-juelich.de/perftools/cubelib.git

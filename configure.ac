@@ -200,7 +200,7 @@ AS_IF([test -n "${scorep_cubew_config_bin}" && \
        AS_IF([test "x${scorep_cubew_have_mic}" = "xno"],
              [AC_MSG_ERROR([cannot detect MIC support for external Cube Writer installation. Either provide a suitable Cube library or reconfigure ]AC_PACKAGE_NAME[ with the '--without-cubew' option to use the included Cube Writer copy.])])
       ])
-AC_SCOREP_HAVE_CONFIG_TOOL([cubelib], [12], [2])
+AC_SCOREP_HAVE_CONFIG_TOOL([cubelib], [13], [0])
 AFS_CONFIG_TOOL_HAVE_OPTION([cubelib], [--ltldflags], [],
     [AC_MSG_ERROR([cubelib-config lacks the option --ltldflags. Please upgrade your CubeLib installation.])])
 
