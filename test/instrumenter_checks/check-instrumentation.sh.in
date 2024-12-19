@@ -98,12 +98,16 @@ valid_thread()
 }
 
 # Before any particular instrumentation checks, check if EXE's shared
-# object dependencies are met at all.
-if LC_ALL=C ${LDD} "${EXE}" 2>/dev/null | ${GREP} 'not found' >/dev/null; then
-    echo "Shared object dependencies of ${EXE} not met:"
-    ${LDD} ${EXE}
-    exit 1
-fi
+# object dependencies are met at all. Ignore check for CUDA stubs library
+# installations, there are no libraries with NEEDED SONAMEs.
+# NEEDS AM_CONDITIONAL
+@HAVE_CUDA_TESTS_FALSE@if test "$PARADIGM" != cuda; then
+    if LC_ALL=C ${LDD} "${EXE}" 2>/dev/null | ${GREP} 'not found' >/dev/null; then
+        echo "Shared object dependencies of ${EXE} not met:"
+        ${LDD} ${EXE}
+        exit 1
+    fi
+@HAVE_CUDA_TESTS_FALSE@fi
 
 # Initialize defaults
 COMP=yes

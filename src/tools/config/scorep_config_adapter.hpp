@@ -342,6 +342,14 @@ public:
                bool                   build_check,
                SCOREP_Config_Language language,
                bool                   nvcc ) override;
+
+    #if !HAVE_BACKEND( CUDA_TESTS ) && HAVE_BACKEND( BUILD_SHARED_LT_LIBRARIES )
+    void
+    addLdFlags( std::string& ldflags,
+                bool         build_check,
+                bool         nvcc ) override;
+
+    #endif // !HAVE_BACKEND( CUDA_TESTS ) && HAVE_BACKEND( BUILD_SHARED_LT_LIBRARIES )
     void
     appendInitStructName( std::deque<std::string>& init_structs ) override;
 };
