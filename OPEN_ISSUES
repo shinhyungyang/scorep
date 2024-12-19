@@ -16,20 +16,19 @@ various Score-P components.
   - Score-P has been tested on the following platforms:
 
     + HPE/Cray XC and EX systems with PrgEnvs cray, intel, nvidia,
-      gnu, amd, aocc, cray-amd (see 'Shared libraries on Cray systems'
-      below). PrgEnv-cray with Cray PE prior 21.05 fails to
-      compiler-instrument functions.
+      gnu, amd, aocc, cray-amd. PrgEnv-cray with Cray PE prior 21.05
+      fails to compiler-instrument functions.
 
-    + various Linux (Intel, AMD, IBM, ARM) clusters with GNU, Intel,
-      NVIDIA, IBM, and AMD compilers. Note that some compilers are
+    + various Linux (Intel, AMD, ARM) clusters with GNU, Intel,
+      NVIDIA, and AMD compilers. Note that some compilers are
       based on Clang. Note that Fujitsu compilers haven't been tested
-      recently.
+      thoroughly, Fujitsu cross-compilers haven't been tested at all.
     The provided configure options (see INSTALL) may provide a good
     basis for building and testing the toolset on other systems.
 
   - The following platforms have not been tested recently:
-    + Intel Xeon Phi (KNL), only native mode supported
-    + IBM Blue Gene
+    + Intel Xeon Phi (KNL)
+    + IBM Blue Gene and IBM Power systems
     + Cray XT, XE, XK
     However the supplied build system might still work on these
     systems.
@@ -59,13 +58,14 @@ various Score-P components.
        force Score-P to use 'pgCC' as well. This will prevent link
        failures.
 
-  - Shared libraries on Cray systems: building Score-P's shared libraries
-    works as normal through the '--enable-shared' configure option. But
-    note that if the default Cray link mode is static (which is the case
-    for CCE prior to 9.0.0) or if CRAYPE_LINK_TYPE=static is provided
-    via the environment, you need to pass the '-dynamic' flag
-    (if available) to the Cray compiler wrapper when building your
-    application to link to Score-P's shared libraries.
+  - (dated) Shared libraries on Cray systems: building Score-P's
+    shared libraries works as normal through the '--enable-shared'
+    configure option. But note that if the default Cray link mode is
+    static (which is the case for CCE prior to 9.0.0) or if
+    CRAYPE_LINK_TYPE=static is provided via the environment, you need
+    to pass the '-dynamic' flag (if available) to the Cray compiler
+    wrapper when building your application to link to Score-P's shared
+    libraries.
 
   - Experimental platforms:
 
@@ -99,10 +99,9 @@ various Score-P components.
              compilers or the Clang-based ixc/icpx compilers from
              Intel oneAPI toolkit. Note that the Fortran ifx compiler
              does not support compiler instrumentation.
-  - Cray   : tested with version 8.1.8 and later, uses the GNU interface
-  - Fujitsu: tested with different versions of the language
-             environment K-1.2.0 on K computer and compiler version
-             1.2.1 on FX-10 systems. Uses the GNU interface
+  - Cray   : tested with version 8.1.8 and later, uses the GNU interface.
+  - Fujitsu: tested with the language environment 1.2.40 in traditional
+             and Clang mode on Fugaku, uses the GNU interface.
   - Clang  : tested with Clang 4.0 and higher. Note that several
              compiler vendors now use Clang for their C and C++
              compilers while the Fortran compiler stays
@@ -128,7 +127,7 @@ various Score-P components.
     GNU compiler plug-in based instrumentation is used.
 
   - Measurement filtering can only be applied to functions
-    instrumented by the IBM, GNU, Intel, NVHPC, or PGI compilers as
+    instrumented by the IBM, GNU, Intel, NVHPC, Clang, or PGI compilers as
     well as functions instrumented by Kokkos and user functions.
     Filtering of MPI, SHMEM, and OpenMP runtime functions is always
     ineffective.
@@ -145,11 +144,11 @@ various Score-P components.
     preprocessed source files.  For the pgCC versions 13.9 until 14.0,
     preprocessing is not possible for C++ codes.
 
-  - The GCC compiler uses DWARF v4 as the default debug information
-    format since version 4.8. But when used with an older binutils
-    version this results in unreliable region meta data. If file name
-    information are missing in the resulting region meta data, then
-    try recompiling with the -gdwarf-3 or -gdwarf-2 flag.
+  - Some compiler interfaces provide function pointers that get
+    translated to region meta data via libbfd from the binutils
+    package. If Score-P uses a system libbfd and region meta data is
+    implausible, consider reinstalling Score-P while providing a
+    recent libbfd via the configure option `--with-libbfd=download`.
 
   - The LLVM plug-in is supported from LLVM 13.0 and onwards. Due to
     regular changes in the plug-in API, bleeding edge releases of
