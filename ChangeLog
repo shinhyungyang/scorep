@@ -118,6 +118,9 @@ Compatibility:
   With an either shared or static installation, the `scorep` and
   `scorep-config` options `--static` and `--dynamic` became
   meaningless and were removed.
+- The support for the discontinued PGI compilers (they have evolved
+  into the NVIDIA HPC SDK) and the configure option
+  `--with-nocross-compiler-suite=pgi` are deprecated.
 
 Bugfixes:
 
