@@ -42,9 +42,9 @@ requirements are needed (assuming `PREFIX/bin` is in `$PATH`):
    Install via
 
    ```console
-   $ wget https://perftools.pages.jsc.fz-juelich.de/utils/afs-dev/afs-dev-latest.tar.gz
-   $ tar xf afs-dev-latest.tar.gz
-   $ cd afs-dev-latest
+   $ wget https://perftools.pages.jsc.fz-juelich.de/utils/afs-dev/afs-dev-08.tar.gz
+   $ tar xf afs-dev-08.tar.gz
+   $ cd afs-dev-08
    $ ./install-afs-dev.sh --continue-after-download --prefix=PREFIX
    ```
 
@@ -53,9 +53,9 @@ requirements are needed (assuming `PREFIX/bin` is in `$PATH`):
    Install via
 
    ```console
-   $ wget https://perftools.pages.jsc.fz-juelich.de/utils/perftools-dev/perftools-dev-latest.tar.gz
-   $ tar xf perftools-dev-latest.tar.gz
-   $ cd perftools-dev-latest
+   $ wget https://perftools.pages.jsc.fz-juelich.de/utils/perftools-dev/perftools-dev-10.tar.gz
+   $ tar xf perftools-dev-10.tar.gz
+   $ cd perftools-dev-10
    $ ./install-perftools-dev.sh --continue-after-download --prefix=PREFIX
    ```
 
