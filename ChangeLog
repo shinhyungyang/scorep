@@ -50,8 +50,8 @@ User tools and API improvements and changes:
   Measurements always record extended non-blocking events.
 - The `scorep` tool now also provides the Git revision via the
   `--revision` flag, similar to `scorep-config`.
-- Add a filter generation option to `scorep-score`, that generates a
-  maximal filter including all filterable regions. This serves as
+- Add a filter generation option to `scorep-score` that generates a
+  maximal filter, including all filterable regions. This serves as
   starting point for a fully manual approach without the need to
   copy and paste from the default output.
 - The help command of the Score-P instrumenter `scorep --help` will now
@@ -76,7 +76,7 @@ User tools and API improvements and changes:
 - The OMPT adapter will disable individual callbacks or groups of related
   callbacks during initialization if they cannot be registered properly.
   If registration of required callbacks fails, the measurement will be
-  aborted. This is unlikely but can happen, if the OpenMP runtime used
+  aborted. This is unlikely but can happen if the OpenMP runtime, used
   at configure time, is changed.
 - Added documentation of the current MPMD/MSA workflow.
 - Removed unused and faulty profiling format options (key_threads,
@@ -104,7 +104,7 @@ Compatibility:
   disables this build as well, `--with-llvm=<path>` will not
   cause configure to fail if the requirements for the generator
   build cannot be satisfied anymore.
-- External dependencies which can be downloaded via `--with-lib<foo>=download`
+- External dependencies that can be downloaded via `--with-lib<foo>=download`
   at configure time, can now be provided via `build-config/packages` or
   `--with-package-cache=<path>`. Run `build-config/packages.sh` to list
   all packages and their respective download URL.
@@ -139,7 +139,7 @@ Bugfixes:
 - Cray's OMPT implementation reuses data that is supposed to be
   parallel-region local. Handle this gracefully.
 - Fix a race condition in BFD-based addr2line lookup.
-- Fix a crash with NVTX when trying to name a stream which is unknown
+- Fix a crash with NVTX when trying to name a stream that is unknown
   to the CUDA adapter.
 - Fix a crash with NVTX when NULL is passed as the context when trying
   to name a CUDA context.
@@ -164,11 +164,11 @@ Bugfixes:
   issue has been hidden by LD_LIBRARY_PATH settings provided by module
   systems.
 - Prevent build errors for OpenMP programs with Cray wrappers when
-  preprocessing is used and an accelerator architecture is loaded.
+  preprocessing is used, and an accelerator architecture is loaded.
 - Add the missing CommCreate, CommDestroy and their corresponding
   MpiCollectiveBegin, MpiCollectiveEnd events to the `scorep-score`
   estimate calculation.
-- Fix remapping specification for HIP applications.
+- Fix remapping specifications for HIP applications.
 - Fix paradigm assignment to group definitions for Kokkos and HIP in
   tracing mode.
 
