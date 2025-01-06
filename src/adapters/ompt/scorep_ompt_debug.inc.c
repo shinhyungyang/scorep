@@ -1,7 +1,7 @@
 /*
  * This file is part of the Score-P software (http://www.score-p.org)
  *
- * Copyright (c) 2022-2023,
+ * Copyright (c) 2022-2023, 2025,
  * Forschungszentrum Juelich GmbH, Germany
  *
  * This software may be modified and distributed under the terms of
@@ -269,6 +269,8 @@ task_status2string( ompt_task_status_t t )
     return "";
 }
 
+#if HAVE( SCOREP_OMPT_TARGET_SUPPORT )
+
 static const char*
 target_data_optype2string( ompt_target_data_op_t t )
 {
@@ -296,18 +298,30 @@ target_data_optype2string( ompt_target_data_op_t t )
             return "target_data_transfer_from_device";
         case ompt_target_data_delete:
             return "target_data_delete";
+        #if HAVE( DECL_OMPT_TARGET_DATA_ASSOCIATE )
         case ompt_target_data_associate:
             return "target_data_associate";
+        #endif /* HAVE( DECL_OMPT_TARGET_DATA_ASSOCIATE ) */
+        #if HAVE( DECL_OMPT_TARGET_DATA_DISASSOCIATE )
         case ompt_target_data_disassociate:
             return "target_data_disassociate";
+        #endif /* HAVE( DECL_OMPT_TARGET_DATA_DISASSOCIATE ) */
+        #if HAVE( DECL_OMPT_TARGET_DATA_ALLOC_ASYNC )
         case ompt_target_data_alloc_async:
             return "target_data_alloc_async";
+        #endif /* HAVE( DECL_OMPT_TARGET_DATA_ALLOC_ASYNC ) */
+        #if HAVE( DECL_OMPT_TARGET_DATA_TRANSFER_TO_DEVICE_ASYNC )
         case ompt_target_data_transfer_to_device_async:
             return "target_data_transfer_to_device_async";
+        #endif /* HAVE( DECL_OMPT_TARGET_DATA_TRANSFER_TO_DEVICE_ASYNC ) */
+        #if HAVE( DECL_OMPT_TARGET_DATA_TRANSFER_FROM_DEVICE_ASYNC )
         case ompt_target_data_transfer_from_device_async:
             return "target_data_transfer_from_device_async";
+        #endif /* HAVE( DECL_OMPT_TARGET_DATA_TRANSFER_FROM_DEVICE_ASYNC ) */
+        #if HAVE( DECL_OMPT_TARGET_DATA_DELETE_ASYNC )
         case ompt_target_data_delete_async:
             return "target_data_delete_async";
+        #endif /* HAVE( DECL_OMPT_TARGET_DATA_DELETE_ASYNC ) */
         default:
             break;
     }
@@ -340,20 +354,30 @@ target_kind2string( ompt_target_t t )
             return "target_exit_data";
         case ompt_target_update:
             return "target_update";
+        #if HAVE( DECL_OMPT_TARGET_NOWAIT )
         case ompt_target_nowait:
             return "target_nowait";
+        #endif /* HAVE( DECL_OMPT_TARGET_NOWAIT ) */
+        #if HAVE( DECL_OMPT_TARGET_ENTER_DATA_NOWAIT )
         case ompt_target_enter_data_nowait:
             return "target_enter_data_nowait";
+        #endif /* HAVE( DECL_OMPT_TARGET_ENTER_DATA_NOWAIT ) */
+        #if HAVE( DECL_OMPT_TARGET_EXIT_DATA_NOWAIT )
         case ompt_target_exit_data_nowait:
             return "target_exit_data_nowait";
+        #endif /* HAVE( DECL_OMPT_TARGET_EXIT_DATA_NOWAIT ) */
+        #if HAVE( DECL_OMPT_TARGET_UPDATE_NOWAIT )
         case ompt_target_update_nowait:
             return "target_update_nowait";
+        #endif /* HAVE( DECL_OMPT_TARGET_UPDATE_NOWAIT ) */
         default:
             break;
     }
     UTILS_BUG();
     return "";
 }
+
+#endif /* HAVE( SCOREP_OMPT_TARGET_SUPPORT ) */
 
 static const char*
 sync_region2string( ompt_sync_region_t t )

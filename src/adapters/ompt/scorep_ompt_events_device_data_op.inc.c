@@ -1,7 +1,7 @@
 /*
  * This file is part of the Score-P software (http://www.score-p.org)
  *
- * Copyright (c) 2023-2024,
+ * Copyright (c) 2023-2025,
  * Forschungszentrum Juelich GmbH, Germany
  *
  * This software may be modified and distributed under the terms of
@@ -32,14 +32,22 @@ get_source_device_num( ompt_target_data_op_t optype,
     switch ( optype )
     {
         case ompt_target_data_transfer_to_device:
+        #if HAVE( DECL_OMPT_TARGET_DATA_TRANSFER_TO_DEVICE_ASYNC )
         case ompt_target_data_transfer_to_device_async:
+        #endif /* HAVE( DECL_OMPT_TARGET_DATA_TRANSFER_TO_DEVICE_ASYNC ) */
         case ompt_target_data_alloc:
+        #if HAVE( DECL_OMPT_TARGET_DATA_ALLOC_ASYNC )
         case ompt_target_data_alloc_async:
+        #endif /* HAVE( DECL_OMPT_TARGET_DATA_ALLOC_ASYNC ) */
             return destDeviceNum;
         case ompt_target_data_transfer_from_device:
+        #if HAVE( DECL_OMPT_TARGET_DATA_TRANSFER_FROM_DEVICE_ASYNC )
         case ompt_target_data_transfer_from_device_async:
+        #endif /* HAVE( DECL_OMPT_TARGET_DATA_TRANSFER_FROM_DEVICE_ASYNC ) */
         case ompt_target_data_delete:
+        #if HAVE( DECL_OMPT_TARGET_DATA_DELETE_ASYNC )
         case ompt_target_data_delete_async:
+        #endif /* HAVE( DECL_OMPT_TARGET_DATA_DELETE_ASYNC ) */
             return srcDeviceNum;
         default:
             return -1;
@@ -106,7 +114,9 @@ device_tracing_handle_target_data_op_record( const ompt_record_target_data_op_t 
     switch ( callbackRecord.optype )
     {
         case ompt_target_data_transfer_to_device:
+        #if HAVE( DECL_OMPT_TARGET_DATA_TRANSFER_TO_DEVICE_ASYNC )
         case ompt_target_data_transfer_to_device_async:
+        #endif /* HAVE( DECL_OMPT_TARGET_DATA_TRANSFER_TO_DEVICE_ASYNC ) */
             SCOREP_Location_RmaGet(
                 stream->scorep_location,
                 startTime,
@@ -125,7 +135,9 @@ device_tracing_handle_target_data_op_record( const ompt_record_target_data_op_t 
             SCOREP_Location_SetLastTimestamp( stream->scorep_location, callbackRecord.end_time );
             break;
         case ompt_target_data_transfer_from_device:
+        #if HAVE( DECL_OMPT_TARGET_DATA_TRANSFER_FROM_DEVICE_ASYNC )
         case ompt_target_data_transfer_from_device_async:
+        #endif /* HAVE( DECL_OMPT_TARGET_DATA_TRANSFER_FROM_DEVICE_ASYNC ) */
             SCOREP_Location_RmaPut(
                 stream->scorep_location,
                 startTime,
@@ -154,21 +166,34 @@ get_target_data_op_region( const void*           codeptrRa,
 {
     switch ( optype )
     {
+        #if HAVE( DECL_OMPT_TARGET_DATA_ALLOC_ASYNC )
         case ompt_target_data_alloc_async:
+        #endif /* HAVE( DECL_OMPT_TARGET_DATA_ALLOC_ASYNC ) */
         case ompt_target_data_alloc:
             return get_region( codeptrRa, TOOL_EVENT_TARGET_ALLOC );
+        #if HAVE( DECL_OMPT_TARGET_DATA_DELETE_ASYNC )
         case ompt_target_data_delete_async:
+        #endif /* HAVE( DECL_OMPT_TARGET_DATA_DELETE_ASYNC ) */
         case ompt_target_data_delete:
             return get_region( codeptrRa, TOOL_EVENT_TARGET_FREE );
         case ompt_target_data_transfer_from_device:
+        #if HAVE( DECL_OMPT_TARGET_DATA_TRANSFER_FROM_DEVICE_ASYNC )
         case ompt_target_data_transfer_from_device_async:
+        #endif /* HAVE( DECL_OMPT_TARGET_DATA_TRANSFER_FROM_DEVICE_ASYNC ) */
         case ompt_target_data_transfer_to_device:
+        #if HAVE( DECL_OMPT_TARGET_DATA_TRANSFER_TO_DEVICE_ASYNC )
         case ompt_target_data_transfer_to_device_async:
+        #endif
             return get_region( codeptrRa, TOOL_EVENT_TARGET_DATA );
+            /* Ignore the next two events, since they do not offer us anything for measurements */
+        #if HAVE( DECL_OMPT_TARGET_DATA_ASSOCIATE )
         case ompt_target_data_associate:
-        case ompt_target_data_disassociate:
-            /* Ignore those two events, since they do not offer us anything for measurements */
             return SCOREP_INVALID_REGION;
+        #endif /* HAVE( DECL_OMPT_TARGET_DATA_ASSOCIATE ) */
+        #if HAVE( DECL_OMPT_TARGET_DATA_DISASSOCIATE )
+        case ompt_target_data_disassociate:
+            return SCOREP_INVALID_REGION;
+        #endif /* HAVE( DECL_OMPT_TARGET_DATA_DISASSOCIATE ) */
         default:
             UTILS_WARNING( "[OMPT] Unknown data transfer optype %d", optype );
             return SCOREP_INVALID_REGION;
@@ -359,11 +384,15 @@ target_data_op_emi_device_tracing( ompt_scope_endpoint_t endpoint,
             scorep_ompt_target_device_t* device     = get_device( device_num );
             switch ( optype )
             {
+                #if HAVE( DECL_OMPT_TARGET_DATA_TRANSFER_TO_DEVICE_ASYNC )
                 case ompt_target_data_alloc_async:
+                #endif /* HAVE( DECL_OMPT_TARGET_DATA_ALLOC_ASYNC ) */
                 case ompt_target_data_alloc:
                     handle_alloc( device, destAddr, bytes );
                     break;
+                #if HAVE( DECL_OMPT_TARGET_DATA_DELETE_ASYNC )
                 case ompt_target_data_delete_async:
+                #endif /* HAVE( DECL_OMPT_TARGET_DATA_DELETE_ASYNC ) */
                 case ompt_target_data_delete:
                     handle_free( device, srcAddr );
                     break;

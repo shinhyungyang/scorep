@@ -1,7 +1,7 @@
 /*
  * This file is part of the Score-P software (http://www.score-p.org)
  *
- * Copyright (c) 2022-2023,
+ * Copyright (c) 2022-2023, 2025,
  * Forschungszentrum Juelich GmbH, Germany
  *
  * This software may be modified and distributed under the terms of
@@ -16,6 +16,10 @@
 
 #ifndef SCOREP_OMPT_CALLBACKS_TARGET_H
 #define SCOREP_OMPT_CALLBACKS_TARGET_H
+
+#if !HAVE( SCOREP_OMPT_TARGET_SUPPORT )
+#error "This file should only be included when OMPT target support is detected."
+#endif
 
 
 void

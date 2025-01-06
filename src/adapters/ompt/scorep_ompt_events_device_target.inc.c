@@ -1,7 +1,7 @@
 /*
  * This file is part of the Score-P software (http://www.score-p.org)
  *
- * Copyright (c) 2023-2024,
+ * Copyright (c) 2023-2025,
  * Forschungszentrum Juelich GmbH, Germany
  *
  * This software may be modified and distributed under the terms of
@@ -37,18 +37,26 @@ record_target_region( ompt_target_t kind )
     switch ( kind )
     {
         case ompt_target:
+        #if HAVE( DECL_OMPT_TARGET_NOWAIT )
         case ompt_target_nowait:
+        #endif /* HAVE( DECL_OMPT_TARGET_NOWAIT ) */
             if ( !feature_kernel )
             {
                 return false;
             }
             break;
         case ompt_target_enter_data:
+        #if HAVE( DECL_OMPT_TARGET_ENTER_DATA_NOWAIT )
         case ompt_target_enter_data_nowait:
+        #endif /* HAVE( DECL_OMPT_TARGET_ENTER_DATA_NOWAIT ) */
         case ompt_target_exit_data:
+        #if HAVE( DECL_OMPT_TARGET_EXIT_DATA_NOWAIT )
         case ompt_target_exit_data_nowait:
+        #endif /* HAVE( DECL_OMPT_TARGET_EXIT_DATA_NOWAIT ) */
         case ompt_target_update:
+        #if HAVE( DECL_OMPT_TARGET_UPDATE_NOWAIT )
         case ompt_target_update_nowait:
+        #endif /* HAVE( DECL_OMPT_TARGET_UPDATE_NOWAIT ) */
             if ( !feature_memory )
             {
                 return false;

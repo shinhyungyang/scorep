@@ -1,7 +1,7 @@
 /*
  * This file is part of the Score-P software (http://www.score-p.org)
  *
- * Copyright (c) 2023-2024,
+ * Copyright (c) 2023-2025,
  * Forschungszentrum Juelich GmbH, Germany
  *
  * This software may be modified and distributed under the terms of
@@ -21,6 +21,11 @@
 #include <SCOREP_AllocMetric.h>
 
 #include <jenkins_hash.h>
+
+
+#if !HAVE( SCOREP_OMPT_TARGET_SUPPORT )
+#error "This file should only be included when OMPT target support is detected."
+#endif
 
 
 typedef struct scorep_ompt_target_data_t

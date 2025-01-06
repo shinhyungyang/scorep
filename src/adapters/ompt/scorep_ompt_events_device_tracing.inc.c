@@ -1,7 +1,7 @@
 /*
  * This file is part of the Score-P software (http://www.score-p.org)
  *
- * Copyright (c) 2023-2024,
+ * Copyright (c) 2023-2025,
  * Forschungszentrum Juelich GmbH, Germany
  *
  * This software may be modified and distributed under the terms of
@@ -156,9 +156,13 @@ device_tracing_evaluate_buffer( scorep_ompt_target_device_t* bufferDevice,
         ompt_record_ompt_t* record = bufferDevice->device_functions.get_record_ompt( buffer, current_cursor );
         switch ( record->type )
         {
+            #if HAVE( DECL_OMPT_CALLBACK_TARGET_SUBMIT )
             case ompt_callback_target_submit:
+            #endif /* HAVE( DECL_OMPT_CALLBACK_TARGET_SUBMIT ) */
             case ompt_callback_target_submit_emi:
+            #if HAVE( DECL_OMPT_CALLBACK_TARGET_DATA_OP )
             case ompt_callback_target_data_op:
+            #endif /* HAVE( DECL_OMPT_CALLBACK_TARGET_DATA_OP ) */
             case ompt_callback_target_data_op_emi:
                 ++num_accelerator_records;
                 break;
@@ -193,9 +197,13 @@ device_tracing_evaluate_buffer( scorep_ompt_target_device_t* bufferDevice,
 
         switch ( record->type )
         {
+            #if HAVE( DECL_OMPT_CALLBACK_TARGET_SUBMIT )
             case ompt_callback_target_submit:
+            #endif /* HAVE( DECL_OMPT_CALLBACK_TARGET_SUBMIT ) */
             case ompt_callback_target_submit_emi:
+            #if HAVE( DECL_OMPT_CALLBACK_TARGET_DATA_OP )
             case ompt_callback_target_data_op:
+            #endif /* HAVE( DECL_OMPT_CALLBACK_TARGET_DATA_OP ) */
             case ompt_callback_target_data_op_emi:
                 accelerator_records[ accelerator_index++ ] = record;
                 break;
@@ -227,16 +235,22 @@ device_tracing_evaluate_buffer( scorep_ompt_target_device_t* bufferDevice,
         record->time = translate_to_host_time( bufferDevice, record->time );
         switch ( record->type )
         {
+            #if HAVE( DECL_OMPT_CALLBACK_TARGET_DATA_OP )
             case ompt_callback_target_data_op:
+            #endif /* HAVE( DECL_OMPT_CALLBACK_TARGET_DATA_OP ) */
             case ompt_callback_target_data_op_emi:
             {
                 /* Allocations and deletions should be recorded as device-level metrics and are therefore not included here.
                  * Associate and disassociate only offer information for non-performance tools and are ignored as well */
                 ompt_target_data_op_t record_optype = record->record.target_data_op.optype;
                 if ( record_optype != ompt_target_data_transfer_to_device &&
+                     #if HAVE( DECL_OMPT_TARGET_DATA_TRANSFER_TO_DEVICE_ASYNC )
                      record_optype != ompt_target_data_transfer_to_device_async &&
-                     record_optype != ompt_target_data_transfer_from_device &&
-                     record_optype != ompt_target_data_transfer_from_device_async )
+                     #endif /* HAVE( DECL_OMPT_TARGET_DATA_TRANSFER_TO_DEVICE_ASYNC ) */
+                     #if HAVE( DECL_OMPT_TARGET_DATA_TRANSFER_FROM_DEVICE_ASYNC )
+                     record_optype != ompt_target_data_transfer_from_device_async &&
+                     #endif /* HAVE( DECL_OMPT_TARGET_DATA_TRANSFER_FROM_DEVICE_ASYNC ) */
+                     record_optype != ompt_target_data_transfer_from_device )
                 {
                     break;
                 }
@@ -257,7 +271,9 @@ device_tracing_evaluate_buffer( scorep_ompt_target_device_t* bufferDevice,
                 }
             }
             break;
+            #if HAVE( DECL_OMPT_CALLBACK_TARGET_SUBMIT )
             case ompt_callback_target_submit:
+            #endif /* HAVE( DECL_OMPT_CALLBACK_TARGET_SUBMIT ) */
             case ompt_callback_target_submit_emi:
             {
                 scorep_ompt_device_stream_t* current_stream =
