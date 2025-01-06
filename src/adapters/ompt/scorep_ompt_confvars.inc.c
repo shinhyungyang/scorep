@@ -1,7 +1,7 @@
 /*
  * This file is part of the Score-P software (http://www.score-p.org)
  *
- * Copyright (c) 2023,
+ * Copyright (c) 2023, 2025,
  * Forschungszentrum Juelich GmbH, Germany
  *
  * This software may be modified and distributed under the terms of
@@ -16,7 +16,7 @@
 #include "scorep_ompt_confvars.h"
 
 /* Confvars */
-uint64_t scorep_ompt_target_features;
+uint64_t scorep_ompt_target_features = 0;
 bool     scorep_ompt_target_use_device_tracing;
 size_t   scorep_ompt_target_buffer_chunk_size;
 

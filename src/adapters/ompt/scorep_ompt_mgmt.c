@@ -1,7 +1,7 @@
 /*
  * This file is part of the Score-P software (http://www.score-p.org)
  *
- * Copyright (c) 2022-2024,
+ * Copyright (c) 2022-2025,
  * Forschungszentrum Juelich GmbH, Germany
  *
  * This software may be modified and distributed under the terms of
@@ -17,9 +17,11 @@
 #include <config.h>
 
 #include "scorep_ompt.h"
-#include "scorep_ompt_device.h"
 #include "scorep_ompt_callbacks_host.h"
+#if HAVE( SCOREP_OMPT_TARGET_SUPPORT )
+#include "scorep_ompt_device.h"
 #include "scorep_ompt_callbacks_device.h"
+#endif /* HAVE( SCOREP_OMPT_TARGET_SUPPORT ) */
 #include "scorep_ompt_confvars.h"
 #include "scorep_ompt_confvars.inc.c"
 
@@ -383,6 +385,7 @@ register_event_callbacks_host( ompt_set_callback_t setCallback )
 static void
 register_event_callbacks_device( ompt_set_callback_t setCallback )
 {
+    #if HAVE( SCOREP_OMPT_TARGET_SUPPORT )
     #define CALLBACK( name, result ) { ompt_callback_ ## name, ( ompt_callback_t )&scorep_ompt_cb_ ## name, #name, result }
     #define CALLBACK_NON_CRITICAL( name, result ) { ompt_callback_ ## name, ( ompt_callback_t )&scorep_ompt_cb_ ## name, #name, result, false }
     #define END()                    { NO_EVENT, NULL, "" } /* Indicate end of section */
@@ -421,6 +424,7 @@ register_event_callbacks_device( ompt_set_callback_t setCallback )
 
     #undef CALLBACK
     #undef END
+    #endif /* HAVE( SCOREP_OMPT_TARGET_SUPPORT ) */
 }
 
 
@@ -452,7 +456,7 @@ iterate_assign_cpu_locations( SCOREP_Location* location,
     return false;
 }
 
-
+#if HAVE( SCOREP_OMPT_TARGET_SUPPORT )
 static void
 iterate_finalize_trace( scorep_ompt_device_table_key_t key, scorep_ompt_device_table_value_t value, void* cbData )
 {
@@ -492,6 +496,7 @@ collect_comm_locations( void )
     SCOREP_Location_ForAll( iterate_assign_cpu_locations, NULL );
     scorep_ompt_device_table_iterate_key_value_pairs( &iterate_collect_comm_locations, NULL );
 }
+#endif /* HAVE( SCOREP_OMPT_TARGET_SUPPORT ) */
 
 
 static SCOREP_ErrorCode
@@ -576,9 +581,13 @@ ompt_subsystem_end( void )
      * we may need to call this function before ompt_finalize_tool(). In theory, ompt_finalize_tool()
      * should do the same job, but fails to do so with LLVM based runtimes.
      * Issue link: https://github.com/RadeonOpenCompute/ROCm/issues/2056 */
+    #if HAVE( SCOREP_OMPT_TARGET_SUPPORT )
     scorep_ompt_device_table_iterate_key_value_pairs( &iterate_finalize_trace, NULL );
+    #endif /* HAVE( SCOREP_OMPT_TARGET_SUPPORT ) */
     ompt_finalize_tool();
+    #if HAVE( SCOREP_OMPT_TARGET_SUPPORT )
     scorep_ompt_device_table_iterate_key_value_pairs( &iterate_report_leaked, NULL );
+    #endif /* HAVE( SCOREP_OMPT_TARGET_SUPPORT ) */
 
     /* ignore subsequent events */
     scorep_ompt_record_events = false;
@@ -625,7 +634,9 @@ ompt_subsystem_pre_unify( void )
     {
         return SCOREP_SUCCESS;
     }
+    #if HAVE( SCOREP_OMPT_TARGET_SUPPORT )
     collect_comm_locations();
+    #endif /* HAVE( SCOREP_OMPT_TARGET_SUPPORT ) */
     scorep_ompt_unify_pre();
     return SCOREP_SUCCESS;
 }
