@@ -13,7 +13,7 @@ dnl
 dnl Copyright (c) 2009-2012,
 dnl University of Oregon, Eugene, USA
 dnl
-dnl Copyright (c) 2009-2013, 2020-2022, 2024,
+dnl Copyright (c) 2009-2013, 2020-2022, 2024-2025,
 dnl Forschungszentrum Juelich GmbH, Germany
 dnl
 dnl Copyright (c) 2009-2012, 2014,
@@ -60,6 +60,9 @@ m4_define([SCOREP_COMPUTENODE_F77],[
         AC_F77_LIBRARY_LDFLAGS
         AS_CASE([${ac_scorep_platform}],
             [crayx*], [FLIBS=`echo ${FLIBS} | sed -e 's/-ltcmalloc_minimal //g' -e 's/-ltcmalloc_minimal$//g'`])
+        # See SCOREP_COMPUTENODE_FC comment down below regarding the removal
+        # of the -lsr-complexity-limit flag.
+        FLIBS=`echo ${FLIBS} | sed -e 's/-lsr-complexity-limit=[[0-9]]* //g' -e 's/-lsr-complexity-limit=[[0-9]]*$//g'`
         AC_F77_WRAPPERS
     else
         # We use the name mangling macro to interact with Fortran even if there is
@@ -85,6 +88,11 @@ m4_define([SCOREP_COMPUTENODE_FC],[
         AC_FC_LIBRARY_LDFLAGS
         AS_CASE([${ac_scorep_platform}],
             [crayx*], [FCLIBS=`echo ${FCLIBS} | sed -e 's/-ltcmalloc_minimal //g' -e 's/-ltcmalloc_minimal$//g'`])
+        # Remove -lsr-complexity-limit=<some-number> from FLIBS, as it is
+        # not an actual linker flag, but a flag passed to llc. This flag
+        # was observed in the FLIBS variable when using the NVHPC compiler
+        # on aarch64 systems.
+        FCLIBS=`echo ${FCLIBS} | sed -e 's/-lsr-complexity-limit=[[0-9]]* //g' -e 's/-lsr-complexity-limit=[[0-9]]*$//g'`
         AC_FC_WRAPPERS
     else
         # Not used yet, but will be when we abandon F77.
