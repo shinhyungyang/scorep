@@ -1,7 +1,7 @@
 /*
  * This file is part of the Score-P software (http://www.score-p.org)
  *
- * Copyright (c) 2013-2014, 2019-2020, 2023-2024,
+ * Copyright (c) 2013-2014, 2019-2020, 2023-2025,
  * Forschungszentrum Juelich GmbH, Germany
  *
  * Copyright (c) 2014-2017, 2020, 2022,
@@ -343,13 +343,11 @@ public:
                SCOREP_Config_Language language,
                bool                   nvcc ) override;
 
-    #if !HAVE_BACKEND( CUDA_TESTS ) && HAVE_BACKEND( BUILD_SHARED_LT_LIBRARIES )
     void
     addLdFlags( std::string& ldflags,
                 bool         build_check,
                 bool         nvcc ) override;
 
-    #endif // !HAVE_BACKEND( CUDA_TESTS ) && HAVE_BACKEND( BUILD_SHARED_LT_LIBRARIES )
     void
     appendInitStructName( std::deque<std::string>& init_structs ) override;
 };
