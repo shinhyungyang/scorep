@@ -13,7 +13,7 @@
  * Copyright (c) 2009-2013,
  * University of Oregon, Eugene, USA
  *
- * Copyright (c) 2009-2013, 2024,
+ * Copyright (c) 2009-2013, 2024-2025,
  * Forschungszentrum Juelich GmbH, Germany
  *
  * Copyright (c) 2009-2015,
@@ -133,6 +133,8 @@ is_cuda_file( const std::string& filename )
         return false;
     }
     #define SCOREP_CHECK_EXT( ext ) if ( extension == ext ) return true
+    SCOREP_CHECK_EXT( ".cuf" );
+    SCOREP_CHECK_EXT( ".CUF" );
     SCOREP_CHECK_EXT( ".cu" );
     SCOREP_CHECK_EXT( ".CU" );
     SCOREP_CHECK_EXT( ".cpp.ii" );

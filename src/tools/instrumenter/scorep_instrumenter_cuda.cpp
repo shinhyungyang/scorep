@@ -1,7 +1,7 @@
 /*
  * This file is part of the Score-P software (http://www.score-p.org)
  *
- * Copyright (c) 2013, 2023,
+ * Copyright (c) 2013, 2023, 2025,
  * Forschungszentrum Juelich GmbH, Germany
  *
  * Copyright (c) 2017,
@@ -137,7 +137,7 @@ SCOREP_Instrumenter_CudaAdapter::checkObjects( SCOREP_Instrumenter& instrumenter
     all_objects_stream << instrumenter.getCommandLine().getLibraryFiles();
 
     std::string command = SCOREP_NM " " + all_objects_stream.str() + " 2>/dev/null | "
-                          SCOREP_EGREP " -l '(r fatbinData|U cuda|U __cuda)' >/dev/null 2>&1";
+                          SCOREP_EGREP " -l '(r fatbinData|U cuda|U __cuda|U Mcuda_compiled)' >/dev/null 2>&1";
     if ( instrumenter.getCommandLine().getVerbosity() >= 1 )
     {
         std::cerr << command << std::endl;

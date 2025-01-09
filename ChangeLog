@@ -173,6 +173,8 @@ Bugfixes:
 - Fix remapping specifications for HIP applications.
 - Fix paradigm assignment to group definitions for Kokkos and HIP in
   tracing mode.
+- The instrumenter now identifies the file suffixes `.cuf` and `.CUF`
+  as CUDA Fortran files.
 
 ------------------- Released version 8.4 -----------------------------
 
