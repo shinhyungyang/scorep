@@ -45,8 +45,6 @@ include ../src/utils/alloc_metric/Makefile.inc.am
 include ../src/utils/bitstring/Makefile.inc.am
 include ../src/utils/memory/Makefile.inc.am
 
-include ../build-config/common/Makefile-rpaths.inc.am
-
 ## include tests
 include ../test/Makefile.inc.am
 include ../test/adapters/cuda/Makefile.inc.am
