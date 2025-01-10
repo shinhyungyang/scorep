@@ -15,7 +15,7 @@
 ## Copyright (c) 2009-2011,
 ## University of Oregon, Eugene, USA
 ##
-## Copyright (c) 2009-2015, 2017, 2024,
+## Copyright (c) 2009-2015, 2017, 2024-2025,
 ## Forschungszentrum Juelich GmbH, Germany
 ##
 ## Copyright (c) 2009-2011,
@@ -104,3 +104,5 @@ include ../build-includes/front-and-backend.am
 
 check-serial: check-run-serial
 check-omp:    check-run-omp
+
+INSTALLCHECK_LOCAL += shared-objects-self-contained bin-programs-self-contained

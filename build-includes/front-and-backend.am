@@ -29,6 +29,7 @@ include ../src/utils/filter/Makefile.inc.am
 include ../src/utils/vector/Makefile.inc.am
 include ../src/utils/hashtab/Makefile.inc.am
 include ../common/utils/Makefile.inc.am
+include ../build-config/common/Makefile-rpaths.inc.am
 
 ## include tests
 #include ../test/exception/Makefile.inc.am
