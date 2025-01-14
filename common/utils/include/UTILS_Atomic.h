@@ -47,7 +47,10 @@
 
 /* define UTILS_CPU_RELAX to be a 'PAUSE' instruction to improve the performance of spin-wait loops, if available. */
 #if defined( ASM_INLINE )
-#if HAVE( CPU_INSTRUCTION_SET_X86_64 )
+#if HAVE( HAVE_CPU_INSTRUCTION_SET_PPC64 )
+/* set Hardware Multi-Threading (HMT) priority to low; then back to medium */
+#define UTILS_CPU_RELAX ASM_INLINE volatile ( "or 1, 1, 1; or 2, 2, 2;" ::: "memory" )
+#elif HAVE( CPU_INSTRUCTION_SET_X86_64 )
 #define UTILS_CPU_RELAX ASM_INLINE volatile ( "pause" ::: "memory" )
 #elif HAVE( CPU_INSTRUCTION_SET_AARCH64 )
 #define UTILS_CPU_RELAX ASM_INLINE volatile ( "yield" ::: "memory" )
