@@ -54,6 +54,8 @@
 #define UTILS_CPU_RELAX ASM_INLINE volatile ( "pause" ::: "memory" )
 #elif HAVE( CPU_INSTRUCTION_SET_AARCH64 )
 #define UTILS_CPU_RELAX ASM_INLINE volatile ( "yield" ::: "memory" )
+#elif HAVE( HAVE_CPU_INSTRUCTION_SET_RISCV )
+#define UTILS_CPU_RELAX ASM_INLINE volatile ( ".4byte 0x100000f" ::: "memory" )
 #endif
 #endif /* defined( ASM_INLINE ) */
 
