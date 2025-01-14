@@ -7,6 +7,9 @@
  * Copyright (c) 2019-2020, 2022-2023,
  * Forschungszentrum Juelich GmbH, Germany
  *
+ * Copyright (c) 2025,
+ * Technische Universitaet Dresden, Germany
+ *
  * This software may be modified and distributed under the terms of
  * a BSD-style license.  See the COPYING file in the package base
  * directory for details.
@@ -45,14 +48,14 @@
 /* define UTILS_CPU_RELAX to be a 'PAUSE' instruction to improve the performance of spin-wait loops, if available. */
 #if defined( ASM_INLINE )
 #if HAVE( CPU_INSTRUCTION_SET_X86_64 )
-#define UTILS_CPU_RELAX ASM_INLINE volatile ( "pause" )
+#define UTILS_CPU_RELAX ASM_INLINE volatile ( "pause" ::: "memory" )
 #elif HAVE( CPU_INSTRUCTION_SET_AARCH64 )
-#define UTILS_CPU_RELAX ASM_INLINE volatile ( "yield" )
+#define UTILS_CPU_RELAX ASM_INLINE volatile ( "yield" ::: "memory" )
 #endif
 #endif /* defined( ASM_INLINE ) */
 
 #if !defined( UTILS_CPU_RELAX )
-#define UTILS_CPU_RELAX ( ( void )0 )
+#define UTILS_CPU_RELAX ASM_INLINE volatile ( "" ::: "memory" )
 #endif /* !defined( UTILS_CPU_RELAX ) */
 
 #endif /* defined( HAVE_CONFIG_H ) */
