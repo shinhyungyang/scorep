@@ -13,7 +13,7 @@
  * Copyright (c) 2009-2012,
  * University of Oregon, Eugene, USA
  *
- * Copyright (c) 2009-2012, 2024,
+ * Copyright (c) 2009-2012, 2024-2025,
  * Forschungszentrum Juelich GmbH, Germany
  *
  * Copyright (c) 2009-2012, 2015,
@@ -88,7 +88,12 @@ typedef enum
     SCOREP_PROFILE_NODE_THREAD_START,
     SCOREP_PROFILE_NODE_COLLAPSE,
     SCOREP_PROFILE_NODE_TASK_ROOT
-} scorep_profile_node_type;
+} scorep_profile_node_type_enum;
+
+/**
+   Wrapper for enum scorep_profile_node_type_enum.
+ */
+typedef uint8_t scorep_profile_node_type;
 
 /**
    Specifies whether the current call happens in the context of an untied or tied task.
@@ -137,7 +142,6 @@ typedef enum
  */
 typedef struct scorep_profile_node_struct
 {
-    SCOREP_CallpathHandle                callpath_handle;
     struct scorep_profile_node_struct*   parent;
     struct scorep_profile_node_struct*   first_child;
     struct scorep_profile_node_struct*   next_sibling;
@@ -149,8 +153,9 @@ typedef struct scorep_profile_node_struct
     uint64_t                             hits;             // For samples
     uint64_t                             first_enter_time; // Required by Scalasca
     uint64_t                             last_exit_time;   // Required by Scalasca
-    scorep_profile_node_type             node_type;
     scorep_profile_type_data_t           type_specific_data;
+    SCOREP_CallpathHandle                callpath_handle;
+    scorep_profile_node_type             node_type;
     uint8_t                              flags;
 } scorep_profile_node;
 

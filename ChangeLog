@@ -45,6 +45,7 @@ Features and improvements:
 - Regions that run on any offloading device (aka "kernels") are now
   classified as such with a new region role provided by OTF2 and "kernel"
   in the Cube call-path profile.
+- Reduced measurement overhead and memory consumption in profiling mode.
 
 User tools and API improvements and changes:
 
