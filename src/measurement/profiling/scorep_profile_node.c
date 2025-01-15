@@ -13,7 +13,7 @@
  * Copyright (c) 2009-2013,
  * University of Oregon, Eugene, USA
  *
- * Copyright (c) 2009-2013, 2017, 2024,
+ * Copyright (c) 2009-2013, 2017, 2024-2025,
  * Forschungszentrum Juelich GmbH, Germany
  *
  * Copyright (c) 2009-2013, 2015,
@@ -74,19 +74,19 @@ scorep_profile_create_node( SCOREP_Profile_LocationData* location,
     }
 
     /* Initialize values */
-    node->callpath_handle     = SCOREP_INVALID_CALLPATH;
     node->parent              = parent;
     node->first_child         = NULL;
     node->next_sibling        = NULL;
     node->first_double_sparse = NULL;
     node->first_int_sparse    = NULL;
-    node->flags               = 0;
     node->count               = 0;    /* Is increased to one during SCOREP_Profile_Enter() */
     node->hits                = 0;
     node->first_enter_time    = timestamp;
     node->last_exit_time      = timestamp;
-    node->node_type           = type;
     node->type_specific_data  = data;
+    node->callpath_handle     = SCOREP_INVALID_CALLPATH;
+    node->node_type           = type;
+    node->flags               = 0;
 
     /* Initialize dense metric values */
     scorep_profile_init_dense_metric( &node->inclusive_time );
