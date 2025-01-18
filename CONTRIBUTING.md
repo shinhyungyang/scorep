@@ -24,4 +24,4 @@ First off, thank you for taking the time to prepare a contribution to Score-P!
       something like
       > cafebabe triggered CI/CD pipeline #12345 - PASS
    1. After approval, ensure branch is rebased onto target branch and signal ready
-      state by adding the `~ready` label
+      state by adding the `~ready-to-merge` label
