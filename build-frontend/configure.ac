@@ -13,7 +13,7 @@ dnl
 dnl Copyright (c) 2009-2013,
 dnl University of Oregon, Eugene, USA
 dnl
-dnl Copyright (c) 2009-2015, 2017-2018, 2021-2023,
+dnl Copyright (c) 2009-2015, 2017-2018, 2021-2023, 2025,
 dnl Forschungszentrum Juelich GmbH, Germany
 dnl
 dnl Copyright (c) 2009-2013,
@@ -78,6 +78,7 @@ LT_PREREQ([2.4.6])
 # disable-shared as default; we don't have lib_LTLIBRARIES, just noinst_LTLIBRARIES
 LT_INIT([disable-shared])
 AC_SUBST([LIBTOOL_DEPS])
+AFS_LT_RESTRICTIONS
 
 AC_CONFIG_HEADERS([../src/config-frontend.h])
 

@@ -15,7 +15,7 @@
 ## Copyright (c) 2009-2011,
 ## University of Oregon, Eugene, USA
 ##
-## Copyright (c) 2009-2013, 2015, 2021-2024,
+## Copyright (c) 2009-2013, 2015, 2021-2025,
 ## Forschungszentrum Juelich GmbH, Germany
 ##
 ## Copyright (c) 2009-2011,
@@ -46,3 +46,5 @@ include ../src/tools/score/Makefile.inc.am
 include ../src/utils/filter/Makefile.inc.am
 include ../common/utils/Makefile.inc.am
 include ../build-config/common/Makefile-rpaths.inc.am
+
+INSTALLCHECK_LOCAL += shared-objects-self-contained bin-programs-self-contained
