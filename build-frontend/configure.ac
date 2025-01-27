@@ -75,8 +75,10 @@ AFS_PROG_CXX([11], [noext])
 AFS_PROG_CXX_SUMMARY
 
 LT_PREREQ([2.4.6])
-# disable-shared as default; we don't have lib_LTLIBRARIES, just noinst_LTLIBRARIES
-LT_INIT([disable-shared])
+# Use libtool defaults such that AFS_LT_RESTRICTIONS succeeds for valid
+# configure options. This allows to use the `bin-programs-self-contained`
+# Makefile target.
+LT_INIT([shared disable-static pic-only])
 AC_SUBST([LIBTOOL_DEPS])
 AFS_LT_RESTRICTIONS
 
