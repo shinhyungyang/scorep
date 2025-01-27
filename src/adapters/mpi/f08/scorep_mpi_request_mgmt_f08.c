@@ -162,3 +162,18 @@ scorep_mpi_get_f08_status_array_fromF08( size_t count )
 
     return storage->f08_status_array.loc;
 }
+
+void
+scorep_mpi_request_start_fromF08( MPI_Fint* request )
+{
+    scorep_mpi_request_start( PMPI_Request_f2c( *request ) );
+}
+
+
+void
+scorep_mpi_request_free_wrapper_fromF08( MPI_Fint* request )
+{
+    MPI_Request request_c = PMPI_Request_f2c( *request );
+    scorep_mpi_request_free_wrapper( &request_c );
+    *request = PMPI_Request_c2f( request_c );
+}

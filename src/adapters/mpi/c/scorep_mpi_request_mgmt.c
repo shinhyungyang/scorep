@@ -780,6 +780,87 @@ scorep_mpi_test_all( int count )
 }
 
 void
+scorep_mpi_request_start( MPI_Request request )
+{
+    scorep_mpi_request* scorep_req = scorep_mpi_request_get( request );
+
+    if ( scorep_req && ( scorep_req->flags & SCOREP_MPI_REQUEST_FLAG_IS_PERSISTENT ) )
+    {
+        scorep_req->flags |= SCOREP_MPI_REQUEST_FLAG_IS_ACTIVE;
+        if ( ( scorep_req->request_type == SCOREP_MPI_REQUEST_TYPE_SEND ) && ( scorep_req->payload.p2p.dest != MPI_PROC_NULL ) )
+        {
+            SCOREP_MpiIsend( scorep_req->payload.p2p.dest, scorep_req->payload.p2p.comm_handle,
+                             scorep_req->payload.p2p.tag, scorep_req->payload.p2p.bytes, scorep_req->id );
+        }
+        else if ( scorep_req->request_type == SCOREP_MPI_REQUEST_TYPE_RECV )
+        {
+            SCOREP_MpiIrecvRequest( scorep_req->id );
+        }
+    }
+    scorep_mpi_unmark_request( scorep_req );
+}
+
+
+void
+scorep_mpi_request_set_completed( scorep_mpi_request* req )
+{
+    if ( !req )
+    {
+        return;
+    }
+    req->flags |= SCOREP_MPI_REQUEST_FLAG_IS_COMPLETED;
+}
+
+void
+scorep_mpi_request_set_cancel( scorep_mpi_request* req )
+{
+    if ( !req )
+    {
+        return;
+    }
+    req->flags |= SCOREP_MPI_REQUEST_FLAG_CAN_CANCEL;
+}
+
+void
+scorep_mpi_request_free_wrapper( MPI_Request* request )
+{
+    const int           event_gen_active_for_group = scorep_mpi_enabled & SCOREP_MPI_ENABLED_REQUEST;
+    scorep_mpi_request* scorep_req                 = scorep_mpi_request_get( *request );
+
+    if ( scorep_req )
+    {
+        if ( scorep_req->flags & SCOREP_MPI_REQUEST_FLAG_CAN_CANCEL && event_gen_active_for_group )
+        {
+            MPI_Status* status = scorep_mpi_get_status_array( 1 );
+            int         cancelled;
+            /* -- Must check if request was cancelled and write the
+             *    cancel event. Not doing so will confuse the trace
+             *    analysis.
+             */
+            PMPI_Wait( request, status );
+            PMPI_Test_cancelled( status, &cancelled );
+
+            if ( cancelled )
+            {
+                SCOREP_MpiRequestCancelled( scorep_req->id );
+            }
+        }
+
+        if ( ( scorep_req->flags & SCOREP_MPI_REQUEST_FLAG_IS_PERSISTENT ) && ( scorep_req->flags & SCOREP_MPI_REQUEST_FLAG_IS_ACTIVE ) )
+        {
+            /* mark active requests for deallocation */
+            scorep_req->flags |= SCOREP_MPI_REQUEST_FLAG_DEALLOCATE;
+        }
+        else
+        {
+            /* deallocate inactive requests -*/
+            scorep_mpi_request_free( scorep_req );
+        }
+    }
+    scorep_mpi_unmark_request( scorep_req );
+}
+
+void
 scorep_mpi_request_tested( scorep_mpi_request* req )
 {
     if ( !req ||

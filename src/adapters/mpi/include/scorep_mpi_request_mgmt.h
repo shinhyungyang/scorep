@@ -374,6 +374,18 @@ scorep_mpi_check_some( int         incount,
 void
 scorep_mpi_test_all( int count );
 
+void
+scorep_mpi_request_start( MPI_Request request );
+
+void
+scorep_mpi_request_set_completed( scorep_mpi_request* req );
+
+void
+scorep_mpi_request_set_cancel( scorep_mpi_request* req );
+
+void
+scorep_mpi_request_free_wrapper( MPI_Request* request );
+
 /**
  * @brief Trigger a "tested" event for this MPI request
  * @param req Pointer to request entry to be tested
