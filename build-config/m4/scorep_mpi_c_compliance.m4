@@ -68,6 +68,15 @@ AC_DEFUN([_SCOREP_MPI_COMPLIANCE_CHECKS], [
     [CONST],          [MPI_Win, win, const void*, base])
 
     _SCOREP_MPI_CHECK_COMPLIANCE(
+    [MPI_Status_f082f], [(const MPI_F08_status*, f08_status, MPI_Fint*, f_status)],
+    [NOT_CONST], [(MPI_F08_status*, f08_status, MPI_Fint*, f_status)])
+
+    _SCOREP_MPI_CHECK_COMPLIANCE(
+    [int], [return 0],
+    [MPI_Status_f2f08], [(const MPI_Fint*, f_status, MPI_F08_status*, f08_status)],
+    [NOT_CONST], [(MPI_Fint*, f_status, MPI_F08_status*, f08_status)])
+
+    _SCOREP_MPI_CHECK_COMPLIANCE(
     [int], [return 0],
     [MPI_Psend_init], [const void*, buf, int, partitions, MPI_Count, count, MPI_Datatype, datatype, int, dest, int, tag, MPI_Comm, comm, MPI_Info, info, MPI_Request*, request],
     [NOT_CONST],      [void*, buf, int, partitions, MPI_Count, count, MPI_Datatype, datatype, int, dest, int, tag, MPI_Comm, comm, MPI_Info, info, MPI_Request*, request])
