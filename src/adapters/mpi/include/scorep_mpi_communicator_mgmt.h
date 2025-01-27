@@ -263,4 +263,7 @@ scorep_mpi_get_scorep_mpi_rank( int rank )
     return rank;
 }
 
+uint32_t
+scorep_mpi_io_get_unify_key( SCOREP_InterimCommunicatorHandle commHandle );
+
 #endif /* SCOREP_MPI_COMMUNICATOR_MGMT_H */
