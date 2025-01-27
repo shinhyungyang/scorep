@@ -796,31 +796,12 @@ MPI_Start( MPI_Request* request )
         if ( event_gen_active_for_group )
         {
             SCOREP_EnterWrappedRegion( scorep_mpi_regions[ SCOREP_MPI_REGION__MPI_START ] );
+            scorep_mpi_request_start( *request );
         }
         else if ( SCOREP_IsUnwindingEnabled() )
         {
             SCOREP_EnterWrapper( scorep_mpi_regions[ SCOREP_MPI_REGION__MPI_START ] );
         }
-    }
-
-    if ( event_gen_active_for_group )
-    {
-        scorep_mpi_request* scorep_req = scorep_mpi_request_get( *request );
-
-        if ( scorep_req && ( scorep_req->flags & SCOREP_MPI_REQUEST_FLAG_IS_PERSISTENT ) )
-        {
-            scorep_req->flags |= SCOREP_MPI_REQUEST_FLAG_IS_ACTIVE;
-            if ( ( scorep_req->request_type == SCOREP_MPI_REQUEST_TYPE_SEND ) && ( scorep_req->payload.p2p.dest != MPI_PROC_NULL ) )
-            {
-                SCOREP_MpiIsend( scorep_req->payload.p2p.dest, scorep_req->payload.p2p.comm_handle,
-                                 scorep_req->payload.p2p.tag, scorep_req->payload.p2p.bytes, scorep_req->id );
-            }
-            else if ( scorep_req->request_type == SCOREP_MPI_REQUEST_TYPE_RECV )
-            {
-                SCOREP_MpiIrecvRequest( scorep_req->id );
-            }
-        }
-        scorep_mpi_unmark_request( scorep_req );
     }
 
     SCOREP_ENTER_WRAPPED_REGION();
@@ -879,33 +860,14 @@ MPI_Startall( int          count,
         if ( event_gen_active_for_group )
         {
             SCOREP_EnterWrappedRegion( scorep_mpi_regions[ SCOREP_MPI_REGION__MPI_STARTALL ] );
+            for ( int i = 0; i < count; ++i )
+            {
+                scorep_mpi_request_start( array_of_requests[ i ] );
+            }
         }
         else if ( SCOREP_IsUnwindingEnabled() )
         {
             SCOREP_EnterWrapper( scorep_mpi_regions[ SCOREP_MPI_REGION__MPI_STARTALL ] );
-        }
-    }
-
-    if ( event_gen_active_for_group )
-    {
-        for ( i = 0; i < count; i++ )
-        {
-            scorep_mpi_request* scorep_req = scorep_mpi_request_get( array_of_requests[ i ] );
-
-            if ( scorep_req && ( scorep_req->flags & SCOREP_MPI_REQUEST_FLAG_IS_PERSISTENT ) )
-            {
-                scorep_req->flags |= SCOREP_MPI_REQUEST_FLAG_IS_ACTIVE;
-                if ( ( scorep_req->request_type == SCOREP_MPI_REQUEST_TYPE_SEND ) && ( scorep_req->payload.p2p.dest != MPI_PROC_NULL ) )
-                {
-                    SCOREP_MpiIsend( scorep_req->payload.p2p.dest, scorep_req->payload.p2p.comm_handle,
-                                     scorep_req->payload.p2p.tag, scorep_req->payload.p2p.bytes, scorep_req->id );
-                }
-                else if ( scorep_req->request_type == SCOREP_MPI_REQUEST_TYPE_RECV )
-                {
-                    SCOREP_MpiIrecvRequest( scorep_req->id );
-                }
-            }
-            scorep_mpi_unmark_request( scorep_req );
         }
     }
 
@@ -1227,40 +1189,7 @@ MPI_Request_free( MPI_Request* request )
         }
     }
 
-    scorep_mpi_request* scorep_req = scorep_mpi_request_get( *request );
-
-    if ( scorep_req )
-    {
-        if ( scorep_req->flags & SCOREP_MPI_REQUEST_FLAG_CAN_CANCEL && event_gen_active_for_group )
-        {
-            MPI_Status* status = scorep_mpi_get_status_array( 1 );
-            int         cancelled;
-            /* -- Must check if request was cancelled and write the
-             *    cancel event. Not doing so will confuse the trace
-             *    analysis.
-             */
-
-            return_val = PMPI_Wait( request, status );
-            PMPI_Test_cancelled( status, &cancelled );
-
-            if ( cancelled )
-            {
-                SCOREP_MpiRequestCancelled( scorep_req->id );
-            }
-        }
-
-        if ( ( scorep_req->flags & SCOREP_MPI_REQUEST_FLAG_IS_PERSISTENT ) && ( scorep_req->flags & SCOREP_MPI_REQUEST_FLAG_IS_ACTIVE ) )
-        {
-            /* mark active requests for deallocation */
-            scorep_req->flags |= SCOREP_MPI_REQUEST_FLAG_DEALLOCATE;
-        }
-        else
-        {
-            /* deallocate inactive requests -*/
-            scorep_mpi_request_free( scorep_req );
-        }
-    }
-    scorep_mpi_unmark_request( scorep_req );
+    scorep_mpi_request_free_wrapper( request );
 
     /* -- We had to call PMPI_Wait for cancelable requests, which already
      *    frees (non-persistent) requests itself and sets them to
@@ -1343,10 +1272,7 @@ MPI_Cancel( MPI_Request* request )
 
     scorep_mpi_request* scorep_req = scorep_mpi_saved_request_get( 0 );
 
-    if ( scorep_req )
-    {
-        scorep_req->flags |= SCOREP_MPI_REQUEST_FLAG_CAN_CANCEL;
-    }
+    scorep_mpi_request_set_cancel( scorep_req );
 
     scorep_mpi_unmark_request( scorep_req );
 
@@ -1423,11 +1349,7 @@ MPI_Request_get_status( MPI_Request request,
     if ( *flag )
     {
         scorep_mpi_check_request( scorep_req, status );
-        /* mark request as completed */
-        if ( scorep_req )
-        {
-            scorep_req->flags |= SCOREP_MPI_REQUEST_FLAG_IS_COMPLETED;
-        }
+        scorep_mpi_request_set_completed( scorep_req );
     }
     else if ( event_gen_active_for_group && xtest_active )
     {

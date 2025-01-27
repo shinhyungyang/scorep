@@ -171,6 +171,30 @@ module scorep_mpi_request_mgmt_h
         module procedure scorep_mpi_test_all_array
     end interface
 
+    interface scorep_mpi_request_start
+        module procedure scorep_mpi_request_start
+    end interface
+
+    interface scorep_mpi_request_set_completed
+        subroutine scorep_mpi_request_set_completed(req) bind(c)
+            import
+            implicit none
+            type(c_ptr), intent(in), value :: req
+        end subroutine
+    end interface
+
+    interface scorep_mpi_request_set_cancel
+        subroutine scorep_mpi_request_set_cancel(req) bind(c)
+            import
+            implicit none
+            type(c_ptr), intent(in), value :: req
+        end subroutine
+    end interface
+
+    interface scorep_mpi_request_free_wrapper
+        module procedure scorep_mpi_request_free_wrapper
+    end interface
+
     interface
         subroutine scorep_mpi_request_tested(req) bind(c)
             import
@@ -329,6 +353,24 @@ module scorep_mpi_request_mgmt_h
             implicit none
             integer, dimension(*), intent(in) :: requestArray
             integer(c_size_t), intent(in), value :: arraySize
+        end subroutine
+    end interface
+
+    interface
+        subroutine scorep_mpi_request_start_toC(request) &
+            bind(c, name="scorep_mpi_request_start_fromF08")
+            import
+            implicit none
+            integer, intent(in) :: request
+        end subroutine
+    end interface
+
+    interface
+        subroutine scorep_mpi_request_free_wrapper_toC(request) &
+            bind(c, name="scorep_mpi_request_free_wrapper_fromF08")
+            import
+            implicit none
+            integer, intent(inout) :: request
         end subroutine
     end interface
 
@@ -595,6 +637,18 @@ contains
             call scorep_mpi_request_tested(scorep_req)
             call scorep_mpi_unmark_request(scorep_req)
         end do
+    end subroutine
+
+    subroutine scorep_mpi_request_start(request)
+        type(MPI_Request), intent(in) :: request
+
+        call scorep_mpi_request_start_toC(request%MPI_VAL)
+    end subroutine
+
+    subroutine scorep_mpi_request_free_wrapper(request)
+        type(MPI_Request), intent(inout) :: request
+
+        call scorep_mpi_request_free_wrapper_toC(request%MPI_VAL)
     end subroutine
 
     subroutine scorep_mpi_check_request(scorepRequest, status)
