@@ -61,6 +61,7 @@
 #include <scorep_mpi_c.h>
 #include <scorep_mpi_communicator.h>
 #include <scorep_mpi_request_mgmt.h>
+#include <scorep_mpi_io.h>
 #include <scorep_mpi_io_mgmt.h>
 #include <SCOREP_RuntimeManagement.h>
 #include <SCOREP_InMeasurement.h>
@@ -68,78 +69,6 @@
 #include <SCOREP_IoManagement.h>
 #include <SCOREP_Definitions.h>
 
-static inline SCOREP_IoAccessMode
-mpi_io_get_access_mode( int amode )
-{
-    SCOREP_IoAccessMode scorep_mode = SCOREP_IO_ACCESS_MODE_NONE;
-
-    if ( amode & MPI_MODE_RDONLY )
-    {
-        scorep_mode = SCOREP_IO_ACCESS_MODE_READ_ONLY;
-    }
-    else if ( amode & MPI_MODE_WRONLY )
-    {
-        scorep_mode = SCOREP_IO_ACCESS_MODE_WRITE_ONLY;
-    }
-    else if ( amode & MPI_MODE_RDWR )
-    {
-        scorep_mode = SCOREP_IO_ACCESS_MODE_READ_WRITE;
-    }
-
-    return scorep_mode;
-}
-
-static inline SCOREP_IoCreationFlag
-mpi_io_get_creation_flags( int amode )
-{
-    SCOREP_IoCreationFlag creation_flags = SCOREP_IO_CREATION_FLAG_NONE;
-
-    /* Handle creation flags */
-    if ( amode & MPI_MODE_CREATE )
-    {
-        creation_flags |= SCOREP_IO_CREATION_FLAG_CREATE;
-    }
-    if ( amode & MPI_MODE_EXCL )
-    {
-        creation_flags |= SCOREP_IO_CREATION_FLAG_EXCLUSIVE;
-    }
-
-    return creation_flags;
-}
-
-static inline SCOREP_IoStatusFlag
-mpi_io_get_status_flags( int amode )
-{
-    SCOREP_IoStatusFlag status_flags = SCOREP_IO_STATUS_FLAG_NONE;
-
-    /* Handle status flags */
-    if ( amode & MPI_MODE_APPEND )
-    {
-        status_flags |= SCOREP_IO_STATUS_FLAG_APPEND;
-    }
-    if ( amode & MPI_MODE_DELETE_ON_CLOSE )
-    {
-        status_flags |= SCOREP_IO_STATUS_FLAG_CLOSE_ON_EXEC;
-    }
-
-    return status_flags;
-}
-
-static inline SCOREP_IoSeekOption
-mpi_io_get_seek_option( int whence )
-{
-    switch ( whence )
-    {
-        case MPI_SEEK_SET:
-            return SCOREP_IO_SEEK_FROM_START;
-        case MPI_SEEK_CUR:
-            return SCOREP_IO_SEEK_FROM_CURRENT;
-        case MPI_SEEK_END:
-            return SCOREP_IO_SEEK_FROM_END;
-    }
-
-    return SCOREP_IO_SEEK_INVALID;
-}
 
 static inline int
 mpi_io_get_type_size( MPI_Datatype datatype )
@@ -216,9 +145,9 @@ MPI_File_open( MPI_Comm comm, SCOREP_MPI_CONST_DECL char* filename, int amode, M
                 if( io_handle != SCOREP_INVALID_IO_HANDLE )
                 {
                     SCOREP_IoCreateHandle( io_handle,
-                                           mpi_io_get_access_mode( amode ),
-                                           mpi_io_get_creation_flags( amode ),
-                                           mpi_io_get_status_flags( amode ) );
+                                           scorep_mpi_io_get_access_mode( amode ),
+                                           scorep_mpi_io_get_creation_flags( amode ),
+                                           scorep_mpi_io_get_status_flags( amode ) );
                 }
             }
             else
@@ -370,7 +299,7 @@ MPI_File_seek( MPI_File fh, MPI_Offset offset, int whence )
             {
                 MPI_Offset pos;
                 PMPI_File_get_position( fh, &pos );
-                SCOREP_IoSeekOption seek_option = mpi_io_get_seek_option( whence );
+                SCOREP_IoSeekOption seek_option = scorep_mpi_io_get_seek_option( whence );
 
                 SCOREP_IoSeek( io_handle,
                                offset,
@@ -441,7 +370,7 @@ MPI_File_seek_shared( MPI_File fh, MPI_Offset offset, int whence )
         {
             if( io_handle != SCOREP_INVALID_IO_HANDLE )
             {
-                SCOREP_IoSeekOption   seek_option = mpi_io_get_seek_option( whence );
+                SCOREP_IoSeekOption   seek_option = scorep_mpi_io_get_seek_option( whence );
 
                 MPI_Offset pos;
                 PMPI_File_get_position( fh, &pos );
