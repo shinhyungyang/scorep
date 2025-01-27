@@ -54,6 +54,8 @@ libscorep_adapter_mpi_mgmt_la_SOURCES = \
     $(SRC_ROOT)src/adapters/mpi/include/scorep_mpi_io_mgmt.h \
     $(SRC_ROOT)src/adapters/mpi/c/SCOREP_Mpi_Reg.c \
     $(SRC_ROOT)src/adapters/mpi/include/SCOREP_Mpi_Reg.h \
+    $(SRC_ROOT)src/adapters/mpi/c/scorep_mpi_topo.c \
+    $(SRC_ROOT)src/adapters/mpi/include/scorep_mpi_topo.h \
     $(SRC_ROOT)src/adapters/mpi/include/scorep_mpi_coll.h \
     $(SRC_ROOT)src/adapters/mpi/c/scorep_mpi_coll.c \
     $(SRC_ROOT)src/adapters/mpi/include/scorep_mpi_fortran.h
