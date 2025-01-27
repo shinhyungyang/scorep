@@ -13,7 +13,7 @@
  * Copyright (c) 2009-2013,
  * University of Oregon, Eugene, USA
  *
- * Copyright (c) 2009-2015, 2017, 2019, 2022,
+ * Copyright (c) 2009-2015, 2017, 2019, 2022, 2025,
  * Forschungszentrum Juelich GmbH, Germany
  *
  * Copyright (c) 2009-2013,
@@ -23,8 +23,9 @@
  * Technische Universitaet Muenchen, Germany
  *
  * This software may be modified and distributed under the terms of
- * a BSD-style license.  See the COPYING file in the package base
+ * a BSD-style license. See the COPYING file in the package base
  * directory for details.
+ *
  */
 
 /**
@@ -50,12 +51,13 @@
 #include <SCOREP_Location.h>
 #include <SCOREP_Definitions.h>
 
-#include "SCOREP_Mpi.h"
-#include "scorep_mpi_fortran.h"
-#include "scorep_mpi_communicator.h"
-#include "scorep_mpi_communicator_mgmt.h"
-#include "scorep_mpi_request_mgmt.h"
-#include "scorep_mpi_io_mgmt.h"
+#include <scorep_mpi_c.h>
+#include <scorep_mpi_fortran.h>
+#include <scorep_mpi_communicator.h>
+#include <scorep_mpi_communicator_mgmt.h>
+#include <scorep_mpi_request_mgmt.h>
+#include <scorep_mpi_io_mgmt.h>
+
 
 #include <stdlib.h>
 

@@ -10,7 +10,7 @@ LIBS            = `xml2-config --libs`
 # settig sfor wrapper generator
 MPI_TMPL_DIR    = skel
 MPI_OUTPUTDIR   = mpi_generated
-MPI_INSTALLDIR  = ../../../src/adapters/mpi/
+MPI_INSTALLDIR  = ../../../src/adapters/mpi
 
 #settings for the generated user documentation for the mpi wrappers
 DOC_TMPL_DIR    = mpi_docs
@@ -29,7 +29,9 @@ DOXYGEN_OPTS    =
 
 MODS            = SCOREP_Wrapgen_Funcparam.o SCOREP_Wrapgen_Func.o SCOREP_Wrapgen_MpiFunc.o SCOREP_Wrapgen_Util.o SCOREP_Wrapgen_Handlers.o SCOREP_Wrapgen_HandlersMpi.o
 
-MPI_FILES       = $(patsubst $(MPI_TMPL_DIR)/%.tmpl,%,$(wildcard $(MPI_TMPL_DIR)/*.tmpl))
+MPI_FILES_C     = $(patsubst $(MPI_TMPL_DIR)/%.tmpl,%,$(wildcard $(MPI_TMPL_DIR)/SCOREP_Mpi_C_*.tmpl))
+MPI_FILES_F     = $(patsubst $(MPI_TMPL_DIR)/%.tmpl,%,$(wildcard $(MPI_TMPL_DIR)/SCOREP_Mpi_F_*.tmpl))
+MPI_FILES       = $(MPI_FILES_C) $(MPI_FILES_F)
 DOC_FILES       = $(patsubst $(DOC_TMPL_DIR)/%.tmpl,%,$(wildcard $(DOC_TMPL_DIR)/*.tmpl))
 
 
@@ -78,7 +80,8 @@ clean-files:
 	@if [ -d $(MPI_OUTPUTDIR) ] && [ -z `ls $(MPI_OUTPUTDIR)` ]; then (rmdir $(MPI_OUTPUTDIR)) fi
 
 install-files: all-files
-	@(cd $(MPI_OUTPUTDIR) && $(INSTALL) -m 644 $(MPI_FILES) $(MPI_INSTALLDIR))
+	@(cd $(MPI_OUTPUTDIR) && $(INSTALL) -m 644 $(MPI_FILES_C) $(MPI_INSTALLDIR)/c/wrappers)
+	@(cd $(MPI_OUTPUTDIR) && $(INSTALL) -m 644 $(MPI_FILES_F) $(MPI_INSTALLDIR)/f/wrappers)
 	@(cd $(DOC_OUTPUTDIR) && $(INSTALL) -m 644 $(DOC_FILES) $(DOC_INSTALLDIR))
 
 # Auto-gerenation targets for MPI wrappers
