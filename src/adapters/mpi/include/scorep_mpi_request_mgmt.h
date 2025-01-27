@@ -13,7 +13,7 @@
  * Copyright (c) 2009-2011,
  * University of Oregon, Eugene, USA
  *
- * Copyright (c) 2009-2013, 2017-2019, 2022,
+ * Copyright (c) 2009-2013, 2017-2019, 2022, 2025,
  * Forschungszentrum Juelich GmbH, Germany
  *
  * Copyright (c) 2009-2011,
@@ -26,8 +26,9 @@
  * Deutsches Zentrum fuer Luft- und Raumfahrt, Germany
  *
  * This software may be modified and distributed under the terms of
- * a BSD-style license.  See the COPYING file in the package base
+ * a BSD-style license. See the COPYING file in the package base
  * directory for details.
+ *
  */
 
 #ifndef SCOREP_MPI_REQUEST_MGMT_H
@@ -42,6 +43,7 @@
 
 #include <SCOREP_Types.h>
 #include <SCOREP_DefinitionHandles.h>
+#include <SCOREP_Location.h>
 #include <mpi.h>
 
 #include "scorep_mpi_rma_request.h"
@@ -73,6 +75,24 @@ enum scorep_mpi_requests_flags
 
 typedef uint64_t scorep_mpi_request_flag;
 
+typedef struct
+{
+    size_t count;
+    void*  loc;
+} scorep_mpi_req_mgmt_storage_array;
+
+void
+scorep_mpi_req_mgmt_storage_array_init( SCOREP_Location*                   location,
+                                        size_t                             datatypeBytes,
+                                        scorep_mpi_req_mgmt_storage_array* array );
+
+void
+scorep_mpi_req_mgmt_storage_array_grow( SCOREP_Location*                   location,
+                                        size_t                             datatypeBytes,
+                                        scorep_mpi_req_mgmt_storage_array* array,
+                                        size_t                             newCount );
+
+
 /**
  * @internal
  * This struct contains the management information for the location-specific buffers
@@ -81,12 +101,9 @@ typedef uint64_t scorep_mpi_request_flag;
  */
 typedef struct scorep_mpi_req_mgmt_location_data
 {
-    size_t       req_arr_size;
-    size_t       f2c_arr_size;
-    size_t       status_arr_size;
-    MPI_Request* req_arr;
-    MPI_Request* f2c_arr;
-    MPI_Status*  status_arr;
+    scorep_mpi_req_mgmt_storage_array request_array;
+    scorep_mpi_req_mgmt_storage_array f2c_request_array;
+    scorep_mpi_req_mgmt_storage_array status_array;
 } scorep_mpi_req_mgmt_location_data;
 
 typedef struct
@@ -366,10 +383,10 @@ scorep_mpi_cleanup_request( scorep_mpi_request* req );
 /**
  * @brief Provides thread-local request array for conversion of requests
  *        between Fortran and C (aka F2C)
- * @param size Size of array in number of requests
+ * @param count Size of array in number of requests
  */
 void*
-scorep_mpi_get_request_f2c_array( size_t size );
+scorep_mpi_get_request_f2c_array( size_t count );
 
 /**
  * @brief Copy request array into thread-local buffer for later use
@@ -377,8 +394,8 @@ scorep_mpi_get_request_f2c_array( size_t size );
  * @param arr_req_size Size of array
  */
 void
-scorep_mpi_save_request_array( MPI_Request* arr_req,
-                               size_t       arr_req_size );
+scorep_mpi_save_request_array( MPI_Request* requestArray,
+                               size_t       count );
 
 /**
  * @brief  Retrieve internal request entry for the MPI request handle in thread-local buffer at a certain position
@@ -394,6 +411,6 @@ scorep_mpi_saved_request_get( size_t i );
  * @return pointer to status array
  */
 MPI_Status*
-scorep_mpi_get_status_array( size_t size );
+scorep_mpi_get_status_array( size_t count );
 
 #endif /* SCOREP_MPI_REQUEST_MGMT_H */

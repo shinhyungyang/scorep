@@ -300,6 +300,48 @@ insert_scorep_mpi_request( MPI_Request key, scorep_mpi_request* data )
 }
 //-----------------------------------------------------------------------------
 
+void
+scorep_mpi_req_mgmt_storage_array_init( SCOREP_Location*                   location,
+                                        size_t                             datatypeBytes,
+                                        scorep_mpi_req_mgmt_storage_array* array )
+{
+    UTILS_ASSERT( array->loc == 0 );
+
+    const size_t page_size = SCOREP_Memory_GetPageSize();
+    array->loc   = SCOREP_Location_AllocForMisc( location, page_size );
+    array->count = page_size / datatypeBytes;
+}
+
+
+void
+scorep_mpi_req_mgmt_storage_array_grow( SCOREP_Location*                   location,
+                                        size_t                             datatypeBytes,
+                                        scorep_mpi_req_mgmt_storage_array* array,
+                                        size_t                             newCount )
+{
+    if ( newCount > array->count )
+    {
+        const size_t num_bytes = newCount * datatypeBytes;
+        const size_t page_size = SCOREP_Memory_GetPageSize();
+        const size_t num_pages = ( num_bytes + page_size - 1 ) / page_size;
+        /*
+         * NOTE: We deliberately leak memory here since we do not have the option
+         * to free individual allocations.
+         *
+         * From src/measurement/include/SCOREP_Memory.h:
+         *     These functions are the replacement of malloc and free. Note that there is
+         *     no possibility to free a single allocation but only to free the entire
+         *     allocated memory of a specific type. Due to the usual memory access
+         *     patterns during measurement this design is hopefully justified.
+         *
+         * We do however try and reduce the memory leak by increasing the array
+         * in multiples of SCOREP_PAGE_SIZE.
+         */
+        array->loc   = SCOREP_Location_AllocForMisc( location, num_pages * page_size );
+        array->count = ( num_pages * page_size ) / datatypeBytes;
+    }
+}
+
 SCOREP_MpiRequestId
 scorep_mpi_get_request_id( void )
 {
@@ -909,79 +951,33 @@ scorep_mpi_cleanup_request( scorep_mpi_request* req )
 }
 
 void*
-scorep_mpi_get_request_f2c_array( size_t size )
+scorep_mpi_get_request_f2c_array( size_t count )
 {
     SCOREP_Location*                         location = SCOREP_Location_GetCurrentCPULocation();
     scorep_mpi_req_mgmt_location_data* const storage  = SCOREP_Location_GetSubsystemData( location,
                                                                                           scorep_mpi_subsystem_id );
 
-    if ( size > storage->f2c_arr_size )
-    {
-        size_t num_pages;
-        size_t num_bytes = size * sizeof( MPI_Request );
+    scorep_mpi_req_mgmt_storage_array_grow( location,
+                                            sizeof( MPI_Request ),
+                                            &( storage->f2c_request_array ),
+                                            count );
 
-        num_pages = ( num_bytes + SCOREP_Memory_GetPageSize() - 1 ) / SCOREP_Memory_GetPageSize();
-
-        storage->f2c_arr = SCOREP_Location_AllocForMisc( location,
-                                                         num_pages * SCOREP_Memory_GetPageSize() );
-
-        storage->f2c_arr_size = ( num_pages * SCOREP_Memory_GetPageSize() ) /
-                                sizeof( MPI_Request );
-
-        /*
-         * NOTE: We deliberately leak memory here since we do not have the option
-         * to free individual allocations.
-         *
-         * From src/measurement/include/SCOREP_Memory.h:
-         *     These functions are the replacement of malloc and free. Note that there is
-         *     no possibility to free a single allocation but only to free the entire
-         *     allocated memory of a specific type. Due to the usual memory access
-         *     patterns during measurement this design is hopefully justified.
-         *
-         * We do however try and reduce the memory leak by increasing the array
-         * in multiples of SCOREP_PAGE_SIZE.
-         */
-    }
-
-    return storage->f2c_arr;
+    return storage->f2c_request_array.loc;
 }
 
 void
-scorep_mpi_save_request_array( MPI_Request* arr_req, size_t arr_req_size )
+scorep_mpi_save_request_array( MPI_Request* requestArray, size_t count )
 {
     SCOREP_Location*                         location = SCOREP_Location_GetCurrentCPULocation();
     scorep_mpi_req_mgmt_location_data* const storage  = SCOREP_Location_GetSubsystemData( location,
                                                                                           scorep_mpi_subsystem_id );
 
-    if ( arr_req_size > storage->req_arr_size )
-    {
-        size_t num_pages;
-        size_t num_bytes = arr_req_size * sizeof( MPI_Request );
+    scorep_mpi_req_mgmt_storage_array_grow( location,
+                                            sizeof( MPI_Request ),
+                                            &( storage->request_array ),
+                                            count );
 
-        num_pages = ( num_bytes + SCOREP_Memory_GetPageSize() - 1 ) / SCOREP_Memory_GetPageSize();
-
-        storage->req_arr = SCOREP_Location_AllocForMisc( location,
-                                                         num_pages * SCOREP_Memory_GetPageSize() );
-
-        storage->req_arr_size = ( num_pages * SCOREP_Memory_GetPageSize() ) /
-                                sizeof( MPI_Request );
-
-        /*
-         * NOTE: We deliberately leak memory here since we do not have the option
-         * to free individual allocations.
-         *
-         * From src/measurement/include/SCOREP_Memory.h:
-         *     These functions are the replacement of malloc and free. Note that there is
-         *     no possibility to free a single allocation but only to free the entire
-         *     allocated memory of a specific type. Due to the usual memory access
-         *     patterns during measurement this design is hopefully justified.
-         *
-         * We do however try and reduce the memory leak by increasing the array
-         * in multiples of SCOREP_PAGE_SIZE.
-         */
-    }
-
-    memcpy( storage->req_arr, arr_req, arr_req_size * sizeof( MPI_Request ) );
+    memcpy( storage->request_array.loc, requestArray, count * sizeof( MPI_Request ) );
 }
 
 scorep_mpi_request*
@@ -991,48 +987,26 @@ scorep_mpi_saved_request_get( size_t i )
     scorep_mpi_req_mgmt_location_data* const storage  = SCOREP_Location_GetSubsystemData( location,
                                                                                           scorep_mpi_subsystem_id );
 
-    UTILS_ASSERT( i < storage->req_arr_size );
-    return scorep_mpi_request_get( storage->req_arr[ i ] );
+    UTILS_ASSERT( i < storage->request_array.count );
+    return scorep_mpi_request_get( ( ( MPI_Request* )storage->request_array.loc )[ i ] );
 }
 
 /**
- * Get a pointer to a status array of at least 'size' statuses
- * @param  size minimal requested size
+ * Get a pointer to a status array of at least 'count' statuses
+ * @param  count minimal requested array size
  * @return pointer to status array
  */
 MPI_Status*
-scorep_mpi_get_status_array( size_t size )
+scorep_mpi_get_status_array( size_t count )
 {
     SCOREP_Location*                         location = SCOREP_Location_GetCurrentCPULocation();
     scorep_mpi_req_mgmt_location_data* const storage  = SCOREP_Location_GetSubsystemData( location,
                                                                                           scorep_mpi_subsystem_id );
 
-    if ( size > storage->status_arr_size )
-    {
-        size_t num_pages;
-        size_t num_bytes = size * sizeof( MPI_Status );
+    scorep_mpi_req_mgmt_storage_array_grow( location,
+                                            sizeof( MPI_Status ),
+                                            &( storage->status_array ),
+                                            count );
 
-        num_pages = ( num_bytes + SCOREP_Memory_GetPageSize() - 1 ) / SCOREP_Memory_GetPageSize();
-
-        storage->status_arr = SCOREP_Location_AllocForMisc( location,
-                                                            num_pages * SCOREP_Memory_GetPageSize() );
-
-        storage->status_arr_size = ( num_pages * SCOREP_Memory_GetPageSize() ) /
-                                   sizeof( MPI_Status );
-
-        /*
-         * NOTE: We deliberately leak memory here since we do not have the option to free individual allocations.
-         *
-         * From src/measurement/include/SCOREP_Memory.h:
-         *     These functions are the replacement of malloc and free. Note that there is
-         *     no possibility to free a single allocation but only to free the entire
-         *     allocated memory of a specific type. Due to the usual memory access
-         *     patterns during measurement this design is hopefully justified.
-         *
-         * We do however try and reduce the memory leak by increasing the array
-         * in multiples of SCOREP_PAGE_SIZE.
-         */
-    }
-
-    return storage->status_arr;
+    return storage->status_array.loc;
 }
