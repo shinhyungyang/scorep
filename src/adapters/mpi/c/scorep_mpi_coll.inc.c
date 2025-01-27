@@ -1,7 +1,7 @@
 /*
  * This file is part of the Score-P software (http://www.score-p.org)
  *
- * Copyright (c) 2023,
+ * Copyright (c) 2023, 2025,
  * Forschungszentrum Juelich GmbH, Germany
  *
  * This software may be modified and distributed under the terms of
@@ -806,7 +806,7 @@ COUNT_FUN( scorep_mpi_coll_bytes_neighbor_alltoall )( COUNT_T      sendcount,
     }
     else
     {
-        topo_num_neighbors( comm, &num_sources, &num_destinations );
+        scorep_mpi_topo_num_neighbors( comm, &num_sources, &num_destinations );
     }
 
 
@@ -843,7 +843,7 @@ COUNT_FUN( scorep_mpi_coll_bytes_neighbor_alltoallv )( const COUNT_T* sendcounts
     else
     {
         int indegree, outdegree;
-        topo_num_neighbors( comm, &indegree, &outdegree );
+        scorep_mpi_topo_num_neighbors( comm, &indegree, &outdegree );
 
         for ( int i = 0; i < outdegree; ++i )
         {
@@ -882,7 +882,7 @@ COUNT_FUN( scorep_mpi_coll_bytes_neighbor_alltoallw )( const COUNT_T*      sendc
     else
     {
         int indegree, outdegree;
-        topo_num_neighbors( comm, &indegree, &outdegree );
+        scorep_mpi_topo_num_neighbors( comm, &indegree, &outdegree );
 
         for ( int i = 0; i < outdegree; ++i )
         {
@@ -941,7 +941,7 @@ COUNT_FUN( scorep_mpi_coll_bytes_neighbor_allgatherv )( COUNT_T        sendcount
     else
     {
         int indegree, outdegree;
-        topo_num_neighbors( comm, &indegree, &outdegree );
+        scorep_mpi_topo_num_neighbors( comm, &indegree, &outdegree );
 
 
         *sendbytes = outdegree * sendcount * sendsize;
