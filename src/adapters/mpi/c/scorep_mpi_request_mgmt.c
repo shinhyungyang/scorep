@@ -443,9 +443,21 @@ scorep_mpi_request_comm_idup_create( MPI_Request         request,
                                      MPI_Comm*           newComm,
                                      SCOREP_MpiRequestId id )
 {
+    scorep_mpi_request_comm_idup_create_interop( request, parentComm, SCOREP_MPI_LANGUAGE_C, ( void* )newComm, id );
+}
+
+
+void
+scorep_mpi_request_comm_idup_create_interop( MPI_Request         request,
+                                             MPI_Comm            parentComm,
+                                             scorep_mpi_language originLanguage,
+                                             void*               newComm,
+                                             SCOREP_MpiRequestId id )
+{
     scorep_mpi_request data = { .request           = request,
                                 .request_type      = SCOREP_MPI_REQUEST_TYPE_COMM_IDUP,
                                 .payload.comm_idup = {
+                                    .origin_language    = originLanguage,
                                     .new_comm           = newComm,
                                     .parent_comm_handle = SCOREP_INVALID_INTERIM_COMMUNICATOR
                                 },
@@ -792,9 +804,18 @@ scorep_mpi_request_tested( scorep_mpi_request* req )
     }
 }
 
+
 void
 scorep_mpi_check_request( scorep_mpi_request* req,
                           MPI_Status*         status )
+{
+    scorep_mpi_interop_status interop_status = scorep_mpi_interop_status_create( status );
+    scorep_mpi_check_request_interop( req, &interop_status );
+}
+
+void
+scorep_mpi_check_request_interop( scorep_mpi_request*        req,
+                                  scorep_mpi_interop_status* interopStatus )
 {
     const int p2p_events_active  = ( scorep_mpi_enabled & SCOREP_MPI_ENABLED_P2P );
     const int io_events_active   = ( scorep_mpi_enabled & SCOREP_MPI_ENABLED_IO );
@@ -811,7 +832,7 @@ scorep_mpi_check_request( scorep_mpi_request* req,
     int cancelled = 0;
     if ( req->flags & SCOREP_MPI_REQUEST_FLAG_CAN_CANCEL )
     {
-        PMPI_Test_cancelled( status, &cancelled );
+        scorep_mpi_test_cancelled( interopStatus, &cancelled );
     }
     if ( cancelled )
     {
@@ -824,18 +845,23 @@ scorep_mpi_check_request( scorep_mpi_request* req,
     {
         int count, sz;
 
+        int status_source, status_tag;
+        scorep_mpi_status_source( interopStatus, &status_source );
+        scorep_mpi_status_tag( interopStatus, &status_tag );
+
+        MPI_Comm comm_f08 = MPI_COMM_NULL;
         switch ( req->request_type )
         {
             case SCOREP_MPI_REQUEST_TYPE_RECV:
-                if ( p2p_events_active && status->MPI_SOURCE != MPI_PROC_NULL )
+                if ( p2p_events_active && status_source != MPI_PROC_NULL )
                 {
                     /* if receive request, write receive trace record */
 
                     PMPI_Type_size( req->payload.p2p.datatype, &sz );
-                    PMPI_Get_count( status, req->payload.p2p.datatype, &count );
+                    scorep_mpi_get_count( interopStatus, req->payload.p2p.datatype, &count );
 
-                    SCOREP_MpiIrecv( status->MPI_SOURCE, req->payload.p2p.comm_handle,
-                                     status->MPI_TAG, ( uint64_t )count * sz, req->id );
+                    SCOREP_MpiIrecv( status_source, req->payload.p2p.comm_handle,
+                                     status_tag, ( uint64_t )count * sz, req->id );
                 }
                 break;
 
@@ -847,15 +873,28 @@ scorep_mpi_check_request( scorep_mpi_request* req,
                 break;
 
             case SCOREP_MPI_REQUEST_TYPE_COMM_IDUP:
-                scorep_mpi_comm_create_finalize( *req->payload.comm_idup.new_comm,
-                                                 req->payload.comm_idup.parent_comm_handle );
-                SCOREP_CommCreate( SCOREP_MPI_COMM_HANDLE( *req->payload.comm_idup.new_comm ) );
-                SCOREP_MpiNonBlockingCollectiveComplete( req->payload.comm_idup.parent_comm_handle,
-                                                         SCOREP_INVALID_ROOT_RANK,
-                                                         SCOREP_COLLECTIVE_CREATE_HANDLE,
-                                                         0,
-                                                         0,
-                                                         req->id );
+                switch ( req->payload.comm_idup.origin_language )
+                {
+                    case SCOREP_MPI_LANGUAGE_C:
+                        scorep_mpi_comm_create_finalize( *( MPI_Comm* )req->payload.comm_idup.new_comm,
+                                                         req->payload.comm_idup.parent_comm_handle );
+                        SCOREP_CommCreate( SCOREP_MPI_COMM_HANDLE( *( MPI_Comm* )req->payload.comm_idup.new_comm ) );
+                        SCOREP_MpiNonBlockingCollectiveComplete( req->payload.comm_idup.parent_comm_handle,
+                                                                 SCOREP_INVALID_ROOT_RANK,
+                                                                 SCOREP_COLLECTIVE_CREATE_HANDLE,
+                                                                 0,
+                                                                 0,
+                                                                 req->id );
+                        break;
+#if HAVE( MPI_USEMPIF08_SUPPORT )
+                    case SCOREP_MPI_LANGUAGE_F08:
+                        comm_f08 = PMPI_Comm_f2c( *( MPI_Fint* )req->payload.comm_idup.new_comm );
+                        scorep_mpi_comm_create_finalize( comm_f08,
+                                                         req->payload.comm_idup.parent_comm_handle );
+                        /* TODO: SCOREP_CommCreate and SCOREP_MpiNonBlockingCollectiveComplete */
+                        break;
+#endif /* HAVE( MPI_USEMPIF08_SUPPORT ) */
+                }
                 break;
 
             case SCOREP_MPI_REQUEST_TYPE_RMA:
@@ -889,7 +928,7 @@ scorep_mpi_check_request( scorep_mpi_request* req,
                 if ( io_events_active )
                 {
                     PMPI_Type_size( req->payload.io.datatype, &sz );
-                    PMPI_Get_count( status, req->payload.io.datatype, &count );
+                    scorep_mpi_get_count( interopStatus, req->payload.io.datatype, &count );
 
                     SCOREP_IoHandleHandle io_handle = SCOREP_IoMgmt_GetIoHandle( SCOREP_IO_PARADIGM_MPI,
                                                                                  &( req->payload.io.fh ) );

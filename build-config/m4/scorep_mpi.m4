@@ -224,6 +224,7 @@ AC_DEFUN([AC_SCOREP_MPI], [
 AC_DEFINE([OMPI_WANT_MPI_INTERFACE_WARNING], [0], [Disable deprecation warnings in Open MPI])
 AC_DEFINE([OMPI_OMIT_MPI1_COMPAT_DECLS],     [0], [Possibly expose deprecated MPI-1 bindings in Open MPI 4.0+])
 
+scorep_mpi_usempif08_supported="no"
 if test "x${scorep_mpi_c_supported}" = "xyes"; then
   scorep_mpi_supported="yes"
   if test "x${scorep_mpi_f77_supported}" = "xyes" && test "x${scorep_mpi_f90_supported}" = "xyes"; then
@@ -231,6 +232,7 @@ if test "x${scorep_mpi_c_supported}" = "xyes"; then
   else
     scorep_mpi_usempi_supported="no"
   fi
+  _MPI_F08_WORKING
 else
   scorep_mpi_supported="no"
   scorep_mpi_usempi_supported="no"
@@ -241,7 +243,10 @@ if test "x${scorep_mpi_supported}" = "xno"; then
 fi
 AM_CONDITIONAL([HAVE_MPI_SUPPORT], [test "x${scorep_mpi_supported}" = "xyes"])
 AM_CONDITIONAL([HAVE_MPI_USEMPI_SUPPORT], [test "x${scorep_mpi_usempi_supported}" = "xyes"])
-AM_CONDITIONAL([HAVE_MPI_FORTRAN_SUPPORT], [test "x${scorep_mpi_usempi_supported}" = "xyes"])
+AC_SCOREP_COND_HAVE([MPI_USEMPIF08_SUPPORT],
+    [test "x${scorep_mpi_usempif08_supported}" = "xyes"],
+    [Defined if Score-P is built with support for the F08 interface of MPI])
+AM_CONDITIONAL([HAVE_MPI_FORTRAN_SUPPORT], [test "x${scorep_mpi_usempi_supported}" = "xyes" || test "x${scorep_mpi_usempif08_supported}" = "xyes"])
 
 if test "x${scorep_mpi_supported}" = "xyes"; then
 
@@ -257,9 +262,106 @@ if test "x${scorep_mpi_supported}" = "xyes"; then
   SCOREP_MPI_C_DECLS
   AC_SCOREP_MPI_C_DATATYPES
   AC_SCOREP_MPI_COMPLIANCE
+  AS_IF([test "x${scorep_mpi_usempif08_supported}" = xyes],
+  [
+    SCOREP_MPI_F08_FEATURES
+  ])
+
+  AFS_SUMMARY_PUSH
+  AFS_SUMMARY([C bindings], [$scorep_mpi_c_supported])
+  AFS_SUMMARY([Fortran bindings], [$scorep_mpi_usempi_supported])
+  AFS_SUMMARY([Fortran 2008 bindings], [$scorep_mpi_usempif08_supported])
+  AFS_SUMMARY_POP([MPI support], [$scorep_mpi_supported])
 
 fi # if test "x${scorep_mpi_supported}" = "xyes"
 ])
+
+
+# _MPI_F08_WORKING()
+# ------------------
+# Checks the minimum required compiler and MPI features to enable wrapping
+# procedures from the MPI Fortran 2008 bindings.
+#
+# Outputs:
+# - Set the shell variable scorep_mpi_usempif08_supported to 'yes' on success, or
+#   'no, <reason>' on failure.
+#
+m4_define([_MPI_F08_WORKING],[
+AC_LANG_PUSH([Fortran])
+ac_ext_save="${ac_ext}"
+ac_ext=f90
+AC_MSG_CHECKING([for useable mpi_f08])
+
+scorep_mpi_usempif08_supported="yes"
+
+if test x"$scorep_mpi_usempif08_supported" = xyes; then
+AC_COMPILE_IFELSE(AC_LANG_SOURCE([[program f08
+    use :: mpi_f08
+end program]]), [], [scorep_mpi_usempif08_supported="no, cannot use mpi_f08 module"])
+fi
+
+if test x"$scorep_mpi_usempif08_supported" = xyes; then
+AC_COMPILE_IFELSE(AC_LANG_SOURCE([[program assumed_type
+    implicit none
+    interface
+    subroutine sub_with_assumed_type(buf)
+        type(*) :: buf
+    end subroutine
+    end interface
+end program]]), [], [scorep_mpi_usempif08_supported="no, Fortran compiler does not support assumed type"])
+fi
+
+if test x"$scorep_mpi_usempif08_supported" = xyes; then
+AC_LINK_IFELSE(AC_LANG_SOURCE([[program pmpi_funcs
+    implicit none
+
+    call check_pmpi_comm_size()
+    call check_pmpi_type_size()
+    call check_pmpi_get_count()
+    call check_pmpi_test_cancelled()
+
+    contains
+
+    subroutine check_pmpi_comm_size()
+        use :: mpi_f08, only: MPI_Comm, PMPI_Comm_size
+
+        type(MPI_Comm) :: comm
+        integer :: size, ierror
+        call PMPI_Comm_size(comm, size, ierror)
+    end subroutine
+
+    subroutine check_pmpi_type_size()
+        use :: mpi_f08, only: MPI_Datatype, PMPI_Type_size
+
+        integer :: size, ierror
+        type(MPI_Datatype) :: type
+        call PMPI_Type_size(type, size, ierror)
+    end subroutine
+
+    subroutine check_pmpi_get_count()
+        use :: mpi_f08, only: MPI_Status, MPI_Datatype, PMPI_Get_count
+        type(MPI_Status) :: status
+        type(MPI_Datatype) :: datatype
+        integer :: count, ierror
+        call PMPI_Get_count(status, datatype, count, ierror)
+    end subroutine
+
+    subroutine check_pmpi_test_cancelled()
+        use :: mpi_f08, only: MPI_Status, PMPI_Test_cancelled
+
+        type(MPI_Status) :: status
+        logical :: flag
+        integer :: ierror
+        call PMPI_Test_cancelled(status, flag, ierror)
+    end subroutine
+end program]]), [], [scorep_mpi_usempif08_supported="no, MPI library does not provide all required PMPI procedures"])
+fi
+
+AC_MSG_RESULT([$scorep_mpi_usempif08_supported])
+ac_ext="${ac_ext_save}"
+AC_LANG_POP([Fortran])
+])dnl _MPI_F08_WORKING
+
 
 
 dnl ----------------------------------------------------------------------------
