@@ -315,13 +315,9 @@ mpi_init_location( struct SCOREP_Location* newLocation,
 
     if ( SCOREP_Location_GetId( newLocation ) == 0 )
     {
-        storage->req_arr_size = SCOREP_Memory_GetPageSize() / sizeof( MPI_Request );
-        storage->req_arr      = SCOREP_Location_AllocForMisc( newLocation,
-                                                              SCOREP_Memory_GetPageSize() );
-
-        storage->status_arr_size = SCOREP_Memory_GetPageSize() / sizeof( MPI_Status );
-        storage->status_arr      = SCOREP_Location_AllocForMisc( newLocation,
-                                                                 SCOREP_Memory_GetPageSize() );
+        scorep_mpi_req_mgmt_storage_array_init( newLocation, sizeof( MPI_Request ), &( storage->request_array ) );
+        scorep_mpi_req_mgmt_storage_array_init( newLocation, sizeof( MPI_Request ), &( storage->f2c_request_array ) );
+        scorep_mpi_req_mgmt_storage_array_init( newLocation, sizeof( MPI_Status ), &( storage->status_array ) );
     }
 
     SCOREP_Location_SetSubsystemData( newLocation,
