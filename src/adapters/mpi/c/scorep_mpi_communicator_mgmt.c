@@ -591,6 +591,14 @@ scorep_mpi_comm_handle( MPI_Comm comm )
     }
 }
 
+uint32_t
+scorep_mpi_io_get_unify_key( SCOREP_InterimCommunicatorHandle commHandle )
+{
+    scorep_mpi_comm_definition_payload* comm_payload =
+        SCOREP_InterimCommunicatorHandle_GetPayload( commHandle );
+    return ++comm_payload->io_handle_counter; /* avoid zero as key */
+}
+
 
 /* *INDENT-OFF* */
 /* *INDENT-ON*  */

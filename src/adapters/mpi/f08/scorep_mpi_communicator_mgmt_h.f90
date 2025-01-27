@@ -9,7 +9,7 @@
 ! directory for details.
 !
 module scorep_mpi_communicator_mgmt_h
-    use, intrinsic :: iso_c_binding, only: SCOREP_Mpi_EpochType => c_int8_t
+    use, intrinsic :: iso_c_binding, only: SCOREP_Mpi_EpochType => c_int8_t, c_int32_t
     use :: mpi_f08, only:MPI_Comm
     use :: SCOREP_PublicHandles_H, only:SCOREP_InterimCommunicatorHandle, &
         SCOREP_Mpi_GroupHandle => SCOREP_GroupHandle
@@ -22,7 +22,8 @@ module scorep_mpi_communicator_mgmt_h
     public :: SCOREP_Mpi_GroupHandle
     public :: scorep_mpi_comm_handle, &
               scorep_mpi_comm_create, &
-              scorep_mpi_get_scorep_mpi_rank
+              scorep_mpi_get_scorep_mpi_rank, &
+              scorep_mpi_io_get_unify_key
 
     interface scorep_mpi_comm_handle
         module procedure scorep_mpi_comm_handle
@@ -34,6 +35,16 @@ module scorep_mpi_communicator_mgmt_h
 
     interface scorep_mpi_get_scorep_mpi_rank
         module procedure scorep_mpi_get_scorep_mpi_rank
+    end interface
+
+    interface scorep_mpi_io_get_unify_key
+        function scorep_mpi_io_get_unify_key(commHandle) result(unifyKey) &
+            bind(c, name="scorep_mpi_io_get_unify_key")
+            import
+            implicit none
+            integer(SCOREP_InterimCommunicatorHandle), intent(in), value :: commHandle
+            integer(c_int32_t) :: unifyKey
+        end function
     end interface
 
     interface

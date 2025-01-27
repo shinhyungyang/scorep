@@ -119,10 +119,8 @@ MPI_File_open( MPI_Comm comm, SCOREP_MPI_CONST_DECL char* filename, int amode, M
         {
             SCOREP_EnterWrappedRegion( scorep_mpi_regions[ SCOREP_MPI_REGION__MPI_FILE_OPEN ] );
 
-            SCOREP_InterimCommunicatorHandle    comm_handle  = SCOREP_MPI_COMM_HANDLE( comm );
-            scorep_mpi_comm_definition_payload* comm_payload =
-                SCOREP_InterimCommunicatorHandle_GetPayload( comm_handle );
-            unify_key = ++comm_payload->io_handle_counter /* avoid zero as key */;
+            SCOREP_InterimCommunicatorHandle comm_handle = SCOREP_MPI_COMM_HANDLE( comm );
+            unify_key = scorep_mpi_io_get_unify_key( comm_handle );
             SCOREP_IoMgmt_BeginHandleCreation( SCOREP_IO_PARADIGM_MPI,
                                                SCOREP_IO_HANDLE_FLAG_NONE,
                                                comm_handle,
