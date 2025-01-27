@@ -55,6 +55,7 @@
 #include <scorep_mpi_groups.h>
 #include <scorep_mpi_c.h>
 #include <scorep_mpi_fortran.h>
+#include <scorep_mpi_f08.h>
 #include <scorep_mpi_communicator.h>
 #include <scorep_mpi_communicator_mgmt.h>
 #include <scorep_mpi_request_mgmt.h>
@@ -161,6 +162,9 @@ mpi_subsystem_init( void )
                                         "Win ${id}" );
     /* Set Fortran constants */
     scorep_mpi_fortran_init();
+
+    /* initialize Fortran 08 wrapper */
+    scorep_mpi_f08_init();
 
     /*
      * Order is important!
@@ -318,6 +322,10 @@ mpi_init_location( struct SCOREP_Location* newLocation,
         scorep_mpi_req_mgmt_storage_array_init( newLocation, sizeof( MPI_Request ), &( storage->request_array ) );
         scorep_mpi_req_mgmt_storage_array_init( newLocation, sizeof( MPI_Request ), &( storage->f2c_request_array ) );
         scorep_mpi_req_mgmt_storage_array_init( newLocation, sizeof( MPI_Status ), &( storage->status_array ) );
+#if HAVE( MPI_USEMPIF08_SUPPORT )
+        scorep_mpi_req_mgmt_storage_array_init( newLocation, sizeof( MPI_Request ), &( storage->f08_request_array ) );
+        scorep_mpi_req_mgmt_storage_array_init( newLocation, scorep_mpi_sizeof_f08_status_toF08(), &( storage->f08_status_array ) );
+#endif /* HAVE( MPI_USEMPIF08_SUPPORT ) */
     }
 
     SCOREP_Location_SetSubsystemData( newLocation,

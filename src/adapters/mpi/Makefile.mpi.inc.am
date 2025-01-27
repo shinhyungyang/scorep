@@ -55,6 +55,10 @@ libscorep_adapter_mpi_mgmt_la_SOURCES = \
     $(SRC_ROOT)src/adapters/mpi/include/scorep_mpi_io_mgmt.h \
     $(SRC_ROOT)src/adapters/mpi/c/SCOREP_Mpi_Reg.c \
     $(SRC_ROOT)src/adapters/mpi/include/SCOREP_Mpi_Reg.h \
+    $(SRC_ROOT)src/adapters/mpi/c/scorep_mpi_interop_status.c \
+    $(SRC_ROOT)src/adapters/mpi/include/scorep_mpi_interop_status.h \
+    $(SRC_ROOT)src/adapters/mpi/f08/scorep_mpi_f08.c \
+    $(SRC_ROOT)src/adapters/mpi/include/scorep_mpi_f08.h \
     $(SRC_ROOT)src/adapters/mpi/c/scorep_mpi_topo.c \
     $(SRC_ROOT)src/adapters/mpi/include/scorep_mpi_topo.h \
     $(SRC_ROOT)src/adapters/mpi/include/scorep_mpi_coll.h \
@@ -157,6 +161,187 @@ libscorep_adapter_mpi_mgmt_la_SOURCES += \
 
 endif !HAVE_MPI_USEMPI_SUPPORT
 
+
+if HAVE_MPI_USEMPIF08_SUPPORT
+
+libscorep_adapter_mpi_mgmt_la_SOURCES += \
+    $(SRC_ROOT)src/adapters/mpi/f08/scorep_mpi_coll_f08.c \
+    $(SRC_ROOT)src/adapters/mpi/f08/scorep_mpi_communicator_f08.c \
+    $(SRC_ROOT)src/adapters/mpi/f08/scorep_mpi_communicator_mgmt_f08.c \
+    $(SRC_ROOT)src/adapters/mpi/f08/scorep_mpi_io_mgmt_f08.c \
+    $(SRC_ROOT)src/adapters/mpi/f08/scorep_mpi_request_mgmt_f08.c \
+    $(SRC_ROOT)src/adapters/mpi/f08/scorep_mpi_rma_request_f08.c \
+    $(SRC_ROOT)src/adapters/mpi/f08/scorep_mpi_topo_f08.c \
+    $(SRC_ROOT)src/adapters/mpi/f08/SCOREP_AllocMetric_F08.c \
+    $(SRC_ROOT)src/adapters/mpi/f08/SCOREP_Definitions_F08.c \
+    $(SRC_ROOT)src/adapters/mpi/f08/SCOREP_InMeasurement_F08.c \
+    $(SRC_ROOT)src/adapters/mpi/f08/SCOREP_IoManagement_F08.c
+
+libscorep_adapter_mpi_mgmt_la_LIBADD += \
+    libscorep_adapter_mpi_f08_mgmt.la
+
+noinst_LTLIBRARIES += libscorep_adapter_mpi_f08_mgmt.la
+libscorep_adapter_mpi_f08_mgmt_la_SOURCES= \
+    $(SRC_ROOT)src/adapters/mpi/f08/SCOREP_AllocMetric_H.f90 \
+    $(SRC_ROOT)src/adapters/mpi/f08/SCOREP_Definitions_H.f90 \
+    $(SRC_ROOT)src/adapters/mpi/f08/SCOREP_DefinitionHandles_H.f90 \
+    $(SRC_ROOT)src/adapters/mpi/f08/SCOREP_PublicTypes_H.f90 \
+    $(SRC_ROOT)src/adapters/mpi/f08/SCOREP_PublicHandles_H.f90 \
+    $(SRC_ROOT)src/adapters/mpi/f08/SCOREP_Events_H.f90 \
+    $(SRC_ROOT)src/adapters/mpi/f08/SCOREP_Location_H.f90 \
+    $(SRC_ROOT)src/adapters/mpi/f08/SCOREP_RuntimeManagement_H.F90 \
+    $(SRC_ROOT)src/adapters/mpi/f08/SCOREP_Types_H.f90 \
+    $(SRC_ROOT)src/adapters/mpi/f08/SCOREP_InMeasurement_H.f90 \
+    $(SRC_ROOT)src/adapters/mpi/f08/SCOREP_IoManagement_H.f90 \
+    $(SRC_ROOT)src/adapters/mpi/f08/scorep_mpi_f08_handles.f90 \
+    $(SRC_ROOT)src/adapters/mpi/f08/scorep_mpi_f08_utils.f90 \
+    $(SRC_ROOT)src/adapters/mpi/f08/scorep_mpi_groups_h.f90 \
+    $(SRC_ROOT)src/adapters/mpi/f08/scorep_mpi_coll_h.f90 \
+    $(SRC_ROOT)src/adapters/mpi/f08/scorep_mpi_coll_h_bindc.f90 \
+    $(SRC_ROOT)src/adapters/mpi/f08/scorep_mpi_communicator_h.f90 \
+    $(SRC_ROOT)src/adapters/mpi/f08/scorep_mpi_communicator_mgmt_h.f90 \
+    $(SRC_ROOT)src/adapters/mpi/f08/scorep_mpi_io_h.f90 \
+    $(SRC_ROOT)src/adapters/mpi/f08/scorep_mpi_io_mgmt_h.f90 \
+    $(SRC_ROOT)src/adapters/mpi/f08/scorep_mpi_request_mgmt_h.f90 \
+    $(SRC_ROOT)src/adapters/mpi/f08/scorep_mpi_rma_request_h.f90 \
+    $(SRC_ROOT)src/adapters/mpi/f08/scorep_mpi_interop_status_h.f90 \
+    $(SRC_ROOT)src/adapters/mpi/f08/scorep_mpi_topo_h.f90 \
+    $(SRC_ROOT)src/adapters/mpi/f08/SCOREP_Mpi_Reg_H.f90 \
+    $(SRC_ROOT)src/adapters/mpi/f08/scorep_mpi_f08.F90
+
+libscorep_adapter_mpi_f08_mgmt_la_CPPFLAGS = \
+    $(AM_CPPFLAGS)                             \
+    -I$(INC_DIR_ADAPTERS_MPI)                  \
+    -I$(INC_ROOT)src/adapters/include          \
+    -I$(INC_ROOT)src/measurement/include       \
+    -I$(INC_DIR_DEFINITIONS)                   \
+    -I$(PUBLIC_INC_DIR)                        \
+    $(UTILS_CPPFLAGS)
+
+
+# Add additional dependencies due to Fortran's module files.
+#
+# In general, if a
+#
+#    use :: module_b
+#
+# statement appears in file_a, the compiler needs a module_b.mod (or similar)
+# file for compilation of file_a. This module file is produced as a side effect
+# of the compilation of its containing file. That is, if module_b is defined in
+# file_b, and used in file_a, we need to compile file_b before file_a.
+#
+# We just hardcode these dependencies as Make dependencies between libtool-objects:
+# - If an object file is up-to-date, all module files for modules defined in its
+# source are up-to-date.
+# - In contrast to module-file-dependencies, this is independent of the compiler.
+#
+# NOTE: There exist tools to generate these dependencies automatically.
+# But this is a fairly constrained use-case and these tools would add even more
+# magic to this build system as they are designed for general purpose.
+#
+# Assumptions:
+# - Libtool objects are all put into the same directory and have '.lo' extension.
+# - If the preprocessor is invoked on a source (.F90 extension), the corresponding
+#   object is prefixed by the containing library name. In this case, the prefix is
+#   'libscorep_adapter_mpi_f08_event_la-'.
+# - If the preprocessor is not invoked on a source (.f90 extension), the corresponding
+# - object does not get a prefix (because it does not depend on library-specific
+#   preprocessor settings and can therefore be reused).
+# - Basenames of sources must be unique across subdirectories.
+
+# Using a variable in the following rules prevents them from overriding the
+# automake internal rules for .lo files
+# Use $(no_prefix) for .f90 sources and $(f08_mgmt_la_prefix) for .F90 sources
+no_prefix=
+f08_mgmt_la_prefix=libscorep_adapter_mpi_f08_mgmt_la-
+
+# management_f08
+$(no_prefix)scorep_mpi_coll_h.lo: \
+  $(no_prefix)scorep_mpi_coll_h_bindc.lo
+
+$(no_prefix)scorep_mpi_communicator_h.lo: \
+  $(no_prefix)SCOREP_PublicHandles_H.lo \
+  $(no_prefix)SCOREP_PublicTypes_H.lo \
+  $(no_prefix)scorep_mpi_communicator_mgmt_h.lo \
+  $(no_prefix)scorep_mpi_f08_utils.lo
+
+$(no_prefix)scorep_mpi_communicator_mgmt_h.lo: \
+  $(no_prefix)SCOREP_PublicHandles_H.lo \
+  $(no_prefix)SCOREP_PublicTypes_H.lo
+
+$(f08_mgmt_la_prefix)scorep_mpi_f08.lo: \
+  $(no_prefix)scorep_mpi_f08_handles.lo \
+  $(no_prefix)SCOREP_AllocMetric_H.lo \
+  $(no_prefix)SCOREP_Definitions_H.lo \
+  $(no_prefix)SCOREP_DefinitionHandles_H.lo \
+  $(no_prefix)SCOREP_Events_H.lo \
+  $(no_prefix)SCOREP_Location_H.lo \
+  $(no_prefix)SCOREP_PublicHandles_H.lo \
+  $(no_prefix)SCOREP_PublicTypes_H.lo \
+  $(f08_mgmt_la_prefix)SCOREP_RuntimeManagement_H.lo \
+  $(no_prefix)SCOREP_Types_H.lo \
+  $(no_prefix)SCOREP_InMeasurement_H.lo \
+  $(no_prefix)SCOREP_IoManagement_H.lo \
+  $(no_prefix)scorep_mpi_groups_h.lo \
+  $(no_prefix)SCOREP_Mpi_Reg_H.lo \
+  $(no_prefix)scorep_mpi_coll_h.lo \
+  $(no_prefix)scorep_mpi_communicator_h.lo \
+  $(no_prefix)scorep_mpi_communicator_mgmt_h.lo \
+  $(no_prefix)scorep_mpi_io_h.lo \
+  $(no_prefix)scorep_mpi_io_mgmt_h.lo \
+  $(no_prefix)scorep_mpi_rma_request_h.lo \
+  $(no_prefix)scorep_mpi_request_mgmt_h.lo \
+  $(no_prefix)scorep_mpi_topo_h.lo
+
+$(no_prefix)scorep_mpi_io_h.lo: \
+  $(no_prefix)SCOREP_PublicTypes_H.lo
+
+$(no_prefix)scorep_mpi_io_mgmt_h.lo: \
+  $(no_prefix)SCOREP_PublicHandles_H.lo
+
+$(no_prefix)scorep_mpi_request_mgmt_h.lo: \
+  $(no_prefix)scorep_mpi_interop_status_h.lo \
+  $(no_prefix)SCOREP_PublicTypes_H.lo
+
+$(no_prefix)scorep_mpi_rma_request_h.lo: \
+  $(no_prefix)SCOREP_PublicHandles_H.lo \
+  $(no_prefix)SCOREP_PublicTypes_H.lo
+
+$(no_prefix)scorep_mpi_topo_h.lo: \
+  $(no_prefix)scorep_mpi_f08_utils.lo
+
+# f08/external_interfaces
+$(no_prefix)SCOREP_DefinitionHandles_H.lo: \
+  $(no_prefix)SCOREP_PublicTypes_H.lo
+
+$(no_prefix)SCOREP_Definitions_H.lo: \
+  $(no_prefix)SCOREP_PublicHandles_H.lo
+
+$(no_prefix)SCOREP_Events_H.lo: \
+  $(no_prefix)SCOREP_PublicTypes_H.lo \
+  $(no_prefix)SCOREP_PublicHandles_H.lo \
+  $(no_prefix)SCOREP_DefinitionHandles_H.lo
+
+$(no_prefix)SCOREP_IoManagement_H.lo: \
+  $(no_prefix)SCOREP_Types_H.lo \
+  $(no_prefix)SCOREP_PublicTypes_H.lo \
+  $(no_prefix)SCOREP_PublicHandles_H.lo \
+  $(no_prefix)scorep_mpi_f08_utils.lo
+
+$(no_prefix)SCOREP_PublicHandles_H.lo: \
+  $(no_prefix)SCOREP_PublicTypes_H.lo
+
+$(no_prefix)SCOREP_Types_H.lo: \
+  $(no_prefix)SCOREP_PublicTypes_H.lo
+
+$(no_prefix)SCOREP_InMeasurement_H.lo: \
+  $(no_prefix)SCOREP_Types_H.lo
+
+$(no_prefix)SCOREP_Mpi_F08_Reg.lo: \
+  $(no_prefix)SCOREP_PublicTypes_H.lo
+
+endif HAVE_MPI_USEMPIF08_SUPPORT
+
 if HAVE_MPI_FORTRAN_SUPPORT
 libscorep_adapter_mpi_mgmt_la_LINK = $(FCLINK)
 if HAVE_BUILD_STATIC_LT_LIBRARIES
@@ -219,15 +404,13 @@ libscorep_adapter_mpi_event_la_LIBADD += \
     libscorep_adapter_mpi_event_fortran_sub1.la \
     libscorep_adapter_mpi_event_fortran_sub2.la \
     libscorep_adapter_mpi_event_fortran_sub3.la \
-    libscorep_adapter_mpi_event_fortran_sub4.la \
-    libscorep_adapter_mpi_event_fortran_f08_abort.la
+    libscorep_adapter_mpi_event_fortran_sub4.la
 
 noinst_LTLIBRARIES += \
     libscorep_adapter_mpi_event_fortran_sub1.la \
     libscorep_adapter_mpi_event_fortran_sub2.la \
     libscorep_adapter_mpi_event_fortran_sub3.la \
-    libscorep_adapter_mpi_event_fortran_sub4.la \
-    libscorep_adapter_mpi_event_fortran_f08_abort.la
+    libscorep_adapter_mpi_event_fortran_sub4.la
 
 SCOREP_MPI_EVENT_FORTRAN_SOURCES = \
     $(SRC_ROOT)src/adapters/mpi/f/wrappers/SCOREP_Mpi_F_Env.c \
@@ -278,10 +461,26 @@ libscorep_adapter_mpi_event_fortran_sub4_la_CPPFLAGS = \
     $(SCOREP_MPI_EVENT_FORTRAN_CPPFLAGS) \
     -DFSUB=SCOREP_FORTRAN_SUB4
 
-libscorep_adapter_mpi_event_fortran_f08_abort_la_SOURCES = \
-    $(SRC_ROOT)src/adapters/mpi/f/SCOREP_Mpi_F_Env.f90
-
 endif HAVE_MPI_USEMPI_SUPPORT
+
+if HAVE_MPI_FORTRAN_SUPPORT
+
+libscorep_adapter_mpi_event_la_LIBADD += \
+    libscorep_adapter_mpi_f08_abort.la
+
+noinst_LTLIBRARIES += libscorep_adapter_mpi_f08_abort.la
+
+libscorep_adapter_mpi_f08_abort_la_SOURCES= \
+    $(SRC_ROOT)src/adapters/mpi/f08/SCOREP_Mpi_F08_Abort.f90
+
+libscorep_adapter_mpi_f08_abort_la_CPPFLAGS = \
+    $(AM_CPPFLAGS) \
+    -I$(INC_DIR_DEFINITIONS) \
+    -I$(PUBLIC_INC_DIR) \
+    $(UTILS_CPPFLAGS)
+
+endif HAVE_MPI_FORTRAN_SUPPORT
+
 
 if HAVE_MPI_FORTRAN_SUPPORT
 libscorep_adapter_mpi_event_la_LINK = $(FCLINK)
@@ -297,8 +496,23 @@ libscorep_adapter_mpi_event_la_LDFLAGS = \
     $(library_api_version_ldflags)
 
 
+if HAVE_MPI_USEMPIF08_SUPPORT
+
+# Tell Automake to clean module files that may have been produced as side
+# effects by the Fortran compiler.
+# The extension for module files (if they are generated at all), depends on the
+# compiler.
+CLEAN_LOCAL += clean-local-fortran-modules
+clean-local-fortran-modules:
+	-test -z "$(FC_MODEXT)" || rm -f *.$(FC_MODEXT)
+
+endif HAVE_MPI_USEMPIF08_SUPPORT
+
+
 endif HAVE_MPI_SUPPORT
 
 EXTRA_DIST += \
     $(SRC_ROOT)src/adapters/mpi/include/scorep_mpi_coll.inc.h \
-    $(SRC_ROOT)src/adapters/mpi/c/scorep_mpi_coll.inc.c
+    $(SRC_ROOT)src/adapters/mpi/c/scorep_mpi_coll.inc.c \
+    $(SRC_ROOT)src/adapters/mpi/f08/scorep_mpi_coll_f08.inc.c \
+    $(SRC_ROOT)src/adapters/mpi/f08/scorep_mpi_coll_h.inc.f90

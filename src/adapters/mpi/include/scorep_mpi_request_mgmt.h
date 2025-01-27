@@ -40,13 +40,13 @@
 
    @brief Contains the declarations for the handling of MPI Requests.
  */
-
 #include <SCOREP_Types.h>
 #include <SCOREP_DefinitionHandles.h>
 #include <SCOREP_Location.h>
 #include <mpi.h>
 
 #include "scorep_mpi_rma_request.h"
+#include "scorep_mpi_interop_status.h"
 
 #include <stddef.h>
 
@@ -104,6 +104,10 @@ typedef struct scorep_mpi_req_mgmt_location_data
     scorep_mpi_req_mgmt_storage_array request_array;
     scorep_mpi_req_mgmt_storage_array f2c_request_array;
     scorep_mpi_req_mgmt_storage_array status_array;
+#if HAVE( MPI_USEMPIF08_SUPPORT )
+    scorep_mpi_req_mgmt_storage_array f08_request_array;
+    scorep_mpi_req_mgmt_storage_array f08_status_array;
+#endif /* HAVE( MPI_USEMPIF08_SUPPORT ) */
 } scorep_mpi_req_mgmt_location_data;
 
 typedef struct
@@ -134,7 +138,8 @@ typedef struct
 
 typedef struct
 {
-    MPI_Comm*                        new_comm;
+    scorep_mpi_language              origin_language;
+    void*                            new_comm;
     SCOREP_InterimCommunicatorHandle parent_comm_handle;
 } scorep_mpi_request_comm_idup_data;
 
@@ -231,6 +236,14 @@ scorep_mpi_request_comm_idup_create( MPI_Request         request,
                                      MPI_Comm            parentComm,
                                      MPI_Comm*           newcomm,
                                      SCOREP_MpiRequestId id  );
+
+
+void
+scorep_mpi_request_comm_idup_create_interop( MPI_Request         request,
+                                             MPI_Comm            parentComm,
+                                             scorep_mpi_language originLanguage,
+                                             void*               newComm,
+                                             SCOREP_MpiRequestId id );
 
 /**
  * @brief Create entry for an RMA request handle
@@ -377,6 +390,12 @@ void
 scorep_mpi_check_request( scorep_mpi_request* req,
                           MPI_Status*         status );
 
+
+void
+scorep_mpi_check_request_interop( scorep_mpi_request*        req,
+                                  scorep_mpi_interop_status* interopStatus );
+
+
 void
 scorep_mpi_cleanup_request( scorep_mpi_request* req );
 
@@ -412,5 +431,23 @@ scorep_mpi_saved_request_get( size_t i );
  */
 MPI_Status*
 scorep_mpi_get_status_array( size_t count );
+
+
+#if HAVE( MPI_USEMPIF08_SUPPORT )
+
+extern int
+scorep_mpi_sizeof_f08_status_toF08();
+
+void
+scorep_mpi_save_f08_request_array_fromF08( MPI_Fint* requestArray,
+                                           size_t    arraySize );
+
+scorep_mpi_request*
+scorep_mpi_saved_f08_request_get_fromF08( size_t arrayIndex );
+
+void*
+scorep_mpi_get_f08_status_array_fromF08( size_t arraySize );
+
+#endif /* HAVE( MPI_USEMPIF08_SUPPORT ) */
 
 #endif /* SCOREP_MPI_REQUEST_MGMT_H */
