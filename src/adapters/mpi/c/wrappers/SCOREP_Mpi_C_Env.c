@@ -57,6 +57,7 @@
 
 #include <config.h>
 #include "SCOREP_Mpi_C_Reg.h"
+#include <scorep_mpi_groups.h>
 #include <scorep_mpi_c.h>
 #include <scorep_mpi_communicator.h>
 #include <UTILS_Error.h>

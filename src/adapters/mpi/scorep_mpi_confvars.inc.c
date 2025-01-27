@@ -35,7 +35,7 @@
  *
  */
 
-#include "c/wrappers/SCOREP_Mpi_C_Reg.h"
+#include "include/scorep_mpi_groups.h"
 #include <SCOREP_Config.h>
 
 

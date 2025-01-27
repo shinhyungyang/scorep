@@ -40,6 +40,8 @@ if HAVE_MPI_SUPPORT
 lib_LTLIBRARIES += libscorep_adapter_mpi_mgmt.la
 libscorep_adapter_mpi_mgmt_la_SOURCES = \
     $(SRC_ROOT)src/adapters/mpi/scorep_mpi_init.c \
+    $(SRC_ROOT)src/adapters/mpi/c/scorep_mpi_groups.c \
+    $(SRC_ROOT)src/adapters/mpi/include/scorep_mpi_groups.h \
     $(SRC_ROOT)src/adapters/mpi/c/scorep_mpi_request_mgmt.c \
     $(SRC_ROOT)src/adapters/mpi/include/scorep_mpi_request_mgmt.h \
     $(SRC_ROOT)src/adapters/mpi/c/scorep_mpi_communicator_mgmt.c \
