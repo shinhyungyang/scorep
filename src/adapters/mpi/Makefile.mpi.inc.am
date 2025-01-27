@@ -463,6 +463,79 @@ libscorep_adapter_mpi_event_fortran_sub4_la_CPPFLAGS = \
 
 endif HAVE_MPI_USEMPI_SUPPORT
 
+if HAVE_MPI_USEMPIF08_SUPPORT
+
+noinst_LTLIBRARIES += libscorep_adapter_mpi_f08_event.la
+libscorep_adapter_mpi_f08_event_la_SOURCES= \
+    $(SRC_ROOT)src/adapters/mpi/f08/wrappers/SCOREP_Mpi_F08_Cg.F90 \
+    $(SRC_ROOT)src/adapters/mpi/f08/wrappers/SCOREP_Mpi_F08_Coll.F90 \
+    $(SRC_ROOT)src/adapters/mpi/f08/wrappers/SCOREP_Mpi_F08_Env.F90 \
+    $(SRC_ROOT)src/adapters/mpi/f08/wrappers/SCOREP_Mpi_F08_Err.F90 \
+    $(SRC_ROOT)src/adapters/mpi/f08/wrappers/SCOREP_Mpi_F08_Ext.F90 \
+    $(SRC_ROOT)src/adapters/mpi/f08/wrappers/SCOREP_Mpi_F08_Io.F90 \
+    $(SRC_ROOT)src/adapters/mpi/f08/wrappers/SCOREP_Mpi_F08_Misc.F90 \
+    $(SRC_ROOT)src/adapters/mpi/f08/wrappers/SCOREP_Mpi_F08_P2p.F90 \
+    $(SRC_ROOT)src/adapters/mpi/f08/wrappers/SCOREP_Mpi_F08_Request.F90 \
+    $(SRC_ROOT)src/adapters/mpi/f08/wrappers/SCOREP_Mpi_F08_Rma.F90 \
+    $(SRC_ROOT)src/adapters/mpi/f08/wrappers/SCOREP_Mpi_F08_Spawn.F90 \
+    $(SRC_ROOT)src/adapters/mpi/f08/wrappers/SCOREP_Mpi_F08_Topo.F90 \
+    $(SRC_ROOT)src/adapters/mpi/f08/wrappers/SCOREP_Mpi_F08_Type.F90
+
+libscorep_adapter_mpi_f08_event_la_CPPFLAGS = \
+    $(AM_CPPFLAGS) \
+    -I$(INC_ROOT)src/adapters/mpi \
+    -I$(INC_ROOT)src/adapters/include \
+    -I$(INC_ROOT)src/measurement/include \
+    -I$(INC_DIR_DEFINITIONS) \
+    -I$(PUBLIC_INC_DIR) \
+    $(UTILS_CPPFLAGS)
+
+libscorep_adapter_mpi_event_la_LIBADD += \
+    libscorep_adapter_mpi_f08_event.la
+
+f08_event_la_prefix=libscorep_adapter_mpi_f08_event_la-
+# wrappers
+$(f08_event_la_prefix)SCOREP_Mpi_F08_Cg.lo: \
+  $(f08_mgmt_la_prefix)scorep_mpi_f08.lo
+
+$(f08_event_la_prefix)SCOREP_Mpi_F08_Coll.lo: \
+  $(f08_mgmt_la_prefix)scorep_mpi_f08.lo
+
+$(f08_event_la_prefix)SCOREP_Mpi_F08_Env.lo: \
+  $(f08_mgmt_la_prefix)scorep_mpi_f08.lo
+
+$(f08_event_la_prefix)SCOREP_Mpi_F08_Err.lo: \
+  $(f08_mgmt_la_prefix)scorep_mpi_f08.lo
+
+$(f08_event_la_prefix)SCOREP_Mpi_F08_Ext.lo: \
+  $(f08_mgmt_la_prefix)scorep_mpi_f08.lo
+
+$(f08_event_la_prefix)SCOREP_Mpi_F08_Io.lo: \
+  $(f08_mgmt_la_prefix)scorep_mpi_f08.lo
+
+$(f08_event_la_prefix)SCOREP_Mpi_F08_Misc.lo: \
+  $(f08_mgmt_la_prefix)scorep_mpi_f08.lo
+
+$(f08_event_la_prefix)SCOREP_Mpi_F08_P2p.lo: \
+  $(f08_mgmt_la_prefix)scorep_mpi_f08.lo
+
+$(f08_event_la_prefix)SCOREP_Mpi_F08_Request.lo: \
+  $(f08_mgmt_la_prefix)scorep_mpi_f08.lo
+
+$(f08_event_la_prefix)SCOREP_Mpi_F08_Rma.lo: \
+  $(f08_mgmt_la_prefix)scorep_mpi_f08.lo
+
+$(f08_event_la_prefix)SCOREP_Mpi_F08_Spawn.lo: \
+  $(f08_mgmt_la_prefix)scorep_mpi_f08.lo
+
+$(f08_event_la_prefix)SCOREP_Mpi_F08_Topo.lo: \
+  $(f08_mgmt_la_prefix)scorep_mpi_f08.lo
+
+$(f08_event_la_prefix)SCOREP_Mpi_F08_Type.lo: \
+  $(f08_mgmt_la_prefix)scorep_mpi_f08.lo
+
+else !HAVE_MPI_USEMPIF08_SUPPORT
+
 if HAVE_MPI_FORTRAN_SUPPORT
 
 libscorep_adapter_mpi_event_la_LIBADD += \
@@ -480,6 +553,8 @@ libscorep_adapter_mpi_f08_abort_la_CPPFLAGS = \
     $(UTILS_CPPFLAGS)
 
 endif HAVE_MPI_FORTRAN_SUPPORT
+
+endif !HAVE_MPI_USEMPIF08_SUPPORT
 
 
 if HAVE_MPI_FORTRAN_SUPPORT

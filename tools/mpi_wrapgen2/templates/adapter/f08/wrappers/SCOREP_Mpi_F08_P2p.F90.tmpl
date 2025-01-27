@@ -1,0 +1,52 @@
+!
+! This file is part of the Score-P software (http://www.score-p.org)
+!
+! Copyright (c) 2025,
+! Forschungszentrum Juelich GmbH, Germany
+!
+! This software may be modified and distributed under the terms of
+! a BSD-style license. See the COPYING file in the package base
+! directory for details.
+!
+{% import '_common/file_macros_f.tmpl' as file_macros %}
+{{ file_macros.generator_comment(self._TemplateReference__context.name) }}
+
+{{ file_macros.doxy_file_header('F08 wrappers for point-to-point communication') }}
+
+{{ file_macros.common_includes_f08() }}
+
+{% set procedures = [
+'MPI_Bsend',
+'MPI_Bsend_init',
+'MPI_Buffer_attach',
+'MPI_Buffer_detach',
+'MPI_Ibsend',
+'MPI_Improbe',
+'MPI_Imrecv',
+'MPI_Iprobe',
+'MPI_Irecv',
+'MPI_Irsend',
+'MPI_Isend',
+'MPI_Issend',
+'MPI_Mprobe',
+'MPI_Mrecv',
+'MPI_Probe',
+'MPI_Recv',
+'MPI_Recv_init',
+'MPI_Rsend',
+'MPI_Rsend_init',
+'MPI_Send',
+'MPI_Send_init',
+'MPI_Sendrecv',
+'MPI_Sendrecv_replace',
+'MPI_Ssend',
+'MPI_Ssend_init',
+'MPI_Isendrecv',
+'MPI_Isendrecv_replace',
+'MPI_Precv_init',
+'MPI_Psend_init'
+] %}
+
+{% call file_macros.doxy_name_space('F08 wrappers', '') %}
+{{ wrapgen.generate_for_procedures(procedures, wrapgen.callbacks.generator_callback_f08_wrapper) }}
+{% endcall %}

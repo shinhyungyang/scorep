@@ -37,6 +37,7 @@ Major features:
   Score-P instrumenter. Users who have library wrappers from previous
   Score-P versions will need to rebuild them. Refer to the `--update`
   option for `scorep-libwrap-init` to learn how to achieve this.
+- Added support for the Fortran 2008 bindings of MPI via `use mpi_f08`.
 
 Features and improvements:
 
