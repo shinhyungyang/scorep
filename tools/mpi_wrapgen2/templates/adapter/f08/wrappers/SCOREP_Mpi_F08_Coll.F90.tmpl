@@ -1,0 +1,75 @@
+!
+! This file is part of the Score-P software (http://www.score-p.org)
+!
+! Copyright (c) 2025,
+! Forschungszentrum Juelich GmbH, Germany
+!
+! This software may be modified and distributed under the terms of
+! a BSD-style license. See the COPYING file in the package base
+! directory for details.
+!
+{% import '_common/file_macros_f.tmpl' as file_macros %}
+{{ file_macros.generator_comment(self._TemplateReference__context.name) }}
+
+{{ file_macros.doxy_file_header('F08 wrappers for collective communication') }}
+
+{{ file_macros.common_includes_f08() }}
+
+{% set procedures = [
+'MPI_Allgather',
+'MPI_Allgatherv',
+'MPI_Allreduce',
+'MPI_Alltoall',
+'MPI_Alltoallv',
+'MPI_Alltoallw',
+'MPI_Barrier',
+'MPI_Bcast',
+'MPI_Exscan',
+'MPI_Gather',
+'MPI_Gatherv',
+'MPI_Iallgather',
+'MPI_Iallgatherv',
+'MPI_Iallreduce',
+'MPI_Ialltoall',
+'MPI_Ialltoallv',
+'MPI_Ialltoallw',
+'MPI_Ibarrier',
+'MPI_Ibcast',
+'MPI_Iexscan',
+'MPI_Igather',
+'MPI_Igatherv',
+'MPI_Ireduce',
+'MPI_Ireduce_scatter',
+'MPI_Ireduce_scatter_block',
+'MPI_Iscan',
+'MPI_Iscatter',
+'MPI_Iscatterv',
+'MPI_Reduce',
+'MPI_Reduce_local',
+'MPI_Reduce_scatter',
+'MPI_Reduce_scatter_block',
+'MPI_Scan',
+'MPI_Scatter',
+'MPI_Scatterv',
+'MPI_Allgather_init',
+'MPI_Allgatherv_init',
+'MPI_Allreduce_init',
+'MPI_Alltoall_init',
+'MPI_Alltoallv_init',
+'MPI_Alltoallw_init',
+'MPI_Barrier_init',
+'MPI_Bcast_init',
+'MPI_Exscan_init',
+'MPI_Gather_init',
+'MPI_Gatherv_init',
+'MPI_Reduce_init',
+'MPI_Reduce_scatter_block_init',
+'MPI_Reduce_scatter_init',
+'MPI_Scan_init',
+'MPI_Scatter_init',
+'MPI_Scatterv_init',
+] -%}
+
+{% call file_macros.doxy_name_space('F08 wrappers', '') %}
+{{ wrapgen.generate_for_procedures(procedures, wrapgen.callbacks.generator_callback_f08_wrapper) }}
+{% endcall %}

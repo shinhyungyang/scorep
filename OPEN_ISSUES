@@ -230,10 +230,6 @@ various Score-P components.
     accidentally removed deprecated-only MPI functions, without
     removing the prototypes in `mpi.h`.
 
-  - Score-P does not yet support the `USE mpi_f08` Fortran language
-    binding. On detection of the use of this binding, Score-P aborts
-    during MPI initialization.
-
   - Score-P leaks memory in the MPI requests management as the Score-P
     memory management does not allow freeing individual allocations.
     We try to reduce this leakage. Gradually increasing the number of
@@ -242,6 +238,33 @@ various Score-P components.
 
   - The MPI sessions model is not supported and `MPI_Session_init`
     aborts the measurement.
+
+  - Fortran 2008 bindings:
+
+    - When instrumented with a Score-P that lacks F08 support, applications that
+      initialize MPI with the `mpi` module, but call functions from `mpi_f08`,
+      might crash or produce inconsistent measurements.
+      Verify with `scorep-info config-summary | grep "Fortran 2008 bindings"`
+      that Score-P is built with F08 support.
+
+    - The deprecated functions `MPI_KEYVAL_CREATE`, `MPI_KEYVAL_FREE`,
+      `MPI_ATRR_PUT`, `MPI_ATTR_GET`, `MPI_ATTR_DELETE` are not supported. These
+      functions are deprecated since MPI 2.0 and the MPI standard does not
+      define an F08 binding for them. Please update your program to use the
+      appropriate MPI 2.0 replacements.
+
+    - Due to the delayed call to `MPI_FINALIZE`, user-defined attribute
+      deletion callbacks that are invoked during MPI finalization might see
+      invalid values for `extrastate`. Either invoke the deletion callback
+      explicitly before `MPI_FINALIZE`, or declare the actual argument for
+      `extrastate` as `SAVE`.
+
+    - When sampling is active, the Score-P internal function
+      `scorep_in_measurement_increment_fromF08` might be recorded in the
+      profile.
+
+    - `MPI_ALLTOALLW` allocates temporary arrays for type conversions from F08
+      to C. On large communicators, this might consume a large amount of memory.
 
 --------------------------------------------------------------------------------
 

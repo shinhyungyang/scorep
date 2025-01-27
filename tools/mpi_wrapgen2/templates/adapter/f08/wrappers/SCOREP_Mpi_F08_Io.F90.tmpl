@@ -1,0 +1,83 @@
+!
+! This file is part of the Score-P software (http://www.score-p.org)
+!
+! Copyright (c) 2025,
+! Forschungszentrum Juelich GmbH, Germany
+!
+! This software may be modified and distributed under the terms of
+! a BSD-style license. See the COPYING file in the package base
+! directory for details.
+!
+{% import '_common/file_macros_f.tmpl' as file_macros %}
+{{ file_macros.generator_comment(self._TemplateReference__context.name) }}
+
+{{ file_macros.doxy_file_header('F08 wrappers for parallel I/O') }}
+
+{{ file_macros.common_includes_f08() }}
+
+{% set procedures = [
+'MPI_File_call_errhandler',
+'MPI_File_close',
+'MPI_File_create_errhandler',
+'MPI_File_delete',
+'MPI_File_get_amode',
+'MPI_File_get_atomicity',
+'MPI_File_get_byte_offset',
+'MPI_File_get_errhandler',
+'MPI_File_get_group',
+'MPI_File_get_info',
+'MPI_File_get_position',
+'MPI_File_get_position_shared',
+'MPI_File_get_size',
+'MPI_File_get_type_extent',
+'MPI_File_get_view',
+'MPI_File_iread',
+'MPI_File_iread_all',
+'MPI_File_iread_at',
+'MPI_File_iread_at_all',
+'MPI_File_iread_shared',
+'MPI_File_iwrite',
+'MPI_File_iwrite_all',
+'MPI_File_iwrite_at',
+'MPI_File_iwrite_at_all',
+'MPI_File_iwrite_shared',
+'MPI_File_open',
+'MPI_File_preallocate',
+'MPI_File_read',
+'MPI_File_read_all',
+'MPI_File_read_all_begin',
+'MPI_File_read_all_end',
+'MPI_File_read_at',
+'MPI_File_read_at_all',
+'MPI_File_read_at_all_begin',
+'MPI_File_read_at_all_end',
+'MPI_File_read_ordered',
+'MPI_File_read_ordered_begin',
+'MPI_File_read_ordered_end',
+'MPI_File_read_shared',
+'MPI_File_seek',
+'MPI_File_seek_shared',
+'MPI_File_set_atomicity',
+'MPI_File_set_errhandler',
+'MPI_File_set_info',
+'MPI_File_set_size',
+'MPI_File_set_view',
+'MPI_File_sync',
+'MPI_File_write',
+'MPI_File_write_all',
+'MPI_File_write_all_begin',
+'MPI_File_write_all_end',
+'MPI_File_write_at',
+'MPI_File_write_at_all',
+'MPI_File_write_at_all_begin',
+'MPI_File_write_at_all_end',
+'MPI_File_write_ordered',
+'MPI_File_write_ordered_begin',
+'MPI_File_write_ordered_end',
+'MPI_File_write_shared',
+'MPI_Register_datarep'
+] %}
+
+{% call file_macros.doxy_name_space('F08 wrappers', '') %}
+{{ wrapgen.generate_for_procedures(procedures, wrapgen.callbacks.generator_callback_f08_wrapper) }}
+{% endcall %}

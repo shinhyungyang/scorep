@@ -1,0 +1,41 @@
+!
+! This file is part of the Score-P software (http://www.score-p.org)
+!
+! Copyright (c) 2025,
+! Forschungszentrum Juelich GmbH, Germany
+!
+! This software may be modified and distributed under the terms of
+! a BSD-style license. See the COPYING file in the package base
+! directory for details.
+!
+{% import '_common/file_macros_f.tmpl' as file_macros %}
+{{ file_macros.generator_comment(self._TemplateReference__context.name) }}
+
+{{ file_macros.doxy_file_header('C wrappers for request handling') }}
+
+{{ file_macros.common_includes_f08() }}
+
+{% set procedures = [
+'MPI_Cancel',
+'MPI_Request_free',
+'MPI_Request_get_status',
+'MPI_Start',
+'MPI_Startall',
+'MPI_Test',
+'MPI_Test_cancelled',
+'MPI_Testall',
+'MPI_Testany',
+'MPI_Testsome',
+'MPI_Wait',
+'MPI_Waitall',
+'MPI_Waitany',
+'MPI_Waitsome',
+'MPI_Parrived',
+'MPI_Pready',
+'MPI_Pready_list',
+'MPI_Pready_range'
+] %}
+
+{% call file_macros.doxy_name_space('F08 wrappers', '') %}
+{{ wrapgen.generate_for_procedures(procedures, wrapgen.callbacks.generator_callback_f08_wrapper) }}
+{% endcall %}

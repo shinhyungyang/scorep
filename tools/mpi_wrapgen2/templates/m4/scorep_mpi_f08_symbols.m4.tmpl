@@ -1,0 +1,168 @@
+##
+## This file is part of the Score-P software (http://www.score-p.org)
+##
+## Copyright (c) 2025,
+## Forschungszentrum Juelich GmbH, Germany
+##
+## This software may be modified and distributed under the terms of
+## a BSD-style license. See the COPYING file in the package base
+## directory for details.
+##
+
+{% import '_common/file_macros_m4.tmpl' as file_macros -%}
+{{ file_macros.generator_comment(self._TemplateReference__context.name) }}
+
+
+# SCOREP_MPI_F08_SYMBOLS()
+# ------------------------
+#
+# Determine which MPI procedures are provided by the 'mpi_f08' module and
+# their specific (linker) names.
+#
+# Outputs:
+# - For each MPI procedure MPI_Xxx that is properly supported, AC_DEFINE
+#   SCOREP_F08_SYMBOL_NAME_MPI_XXX with the value of specific symbol name.
+# - For each MPI procedure MPI_Xxx that is properly supported, AC_DEFINE
+#   HAVE_F08_TS_BUFFERS_MPI_XXX as '1' if the procedure uses the Fortran-TS29113
+#   method to pass choice buffers via 'type(*), dimension(..)', else as '0'.
+#
+#
+# These checks are necessary because:
+# 1. Although the MPI standard specifies a naming scheme (Version 4.0, section
+#    19.1.5), there are multiple possible standard conforming names for each
+#    specific procedure.
+# 2. Some MPI implementations do not conform fully to the standard and provide
+#    other names.
+#
+# On point 1:
+# <quote>
+# Advice to users. Although for each support method and MPI routine (e.g.,
+# MPI_ISEND in mpi_f08), multiple routines may need to be provided to intercept
+# the specific procedures in the MPI library (e.g., MPI_Isend_f08 and
+# MPI_Isend_f08ts), [...]
+# </quote>
+# Therefore, we need to check the MPI implementation for the actually provided
+# name.
+#
+#
+# On point 2:
+# <quote>
+# In Fortran, when using USE mpi_f08, for each MPI procedure that had at least
+# one count or byte displacement parameter that used the INTEGER or
+# INTEGER(KIND=MPI_ADDRESS_KIND) types prior to MPI-4.0, a polymorphic interface
+# containing two specific procedures is provided. One of the specific procedures
+# has the same name and dummy parameter types as in versions prior to MPI-4.0.
+# INTEGER and/or INTEGER(KIND=MPI_ADDRESS_KIND) for count and byte displacement
+# parameters. The other specific procedure has the same name followed by “_c”,
+# and then suffixed by the token specified in Table 19.1 for USE mpi_f08. [...]
+# </quote>
+#
+# MPICH (4.0) uses the non-conforming names 'mpi_xxx_f08_large' or
+# 'mpi_xxx_f08ts_large' instead.
+#
+AC_DEFUN([SCOREP_MPI_F08_SYMBOLS], [
+AC_REQUIRE([AC_PROG_GREP])
+AC_REQUIRE([AC_PROG_SED])
+AC_LANG_PUSH([Fortran])
+# For each MPI procedure in the standard, get the specific name of the procedure
+# in the mpi_f08 module. This is done as follows:
+# 1. Compile a small test program that calls the MPI procedure by its binding
+#    name.
+# 2. Extract the specific name from the output of nm on the object file
+#    -  Remove possible prefixes: Procedures in modules might get a prefix
+#       (e.g. module_name_MOD_function_name for gfortran).
+#    -  Remove possible trailing underscores. This is necessary because of name
+#       mangling: Fortran compilers possibly decorate object names by one or two
+#       trailing underscores.
+#    -  Check whether we found exactly one symbol.
+#    -  Check whether the found symbol is not the same as the previous symbol:
+#       The MPI implementation may define MPI_COUNT_KIND == MPI_ADDRESS_KIND ==
+#       MPI_OFFSET_KIND.
+#       In this case---and when the signatures of the normal and large count
+#       procedure only differ in arguments of these kinds---the compile check
+#       cannot differentiate between the procedures.
+#       Because a large count procedure is always immediately checked after the
+#       corresponding normal procedure, it is enough to ensure that the current symbol
+#       differs from the previous symbol.
+#       From a practical standpoint, if the compile checks cannot find a
+#       large count procedure, then the user also cannot call it and we don't
+#       need to wrap it.
+#     - Some MPIs do not provide Fortran symbols for all PMPI_ procedures.
+#       In all cases where we observed this bug in some MPI, an additional
+#       AC_LINK_IFELSE check for the PMPI symbol is performed.
+#     - Determine the method to pass choice buffers from the symbol name. We
+#       assume that routines with the '_f08ts' suffix use the Fortran-TS29113
+#       method. Work around known deviations by additional AC_COMPILE_IFELSE
+#       checks.
+# 3. If the program compiled without errors and the name extraction worked,
+#    define a preprocessor macro that holds the specific name.
+mpi_f08_previous_symbol=""
+m4_foreach([SYM], [_MPI_F08_SYMBOLS],
+    [AC_MSG_CHECKING([for F08 name of MPI_]SYM)
+     AC_COMPILE_IFELSE(AC_LANG_SOURCE(_MPI_F08_[]SYM),
+        [sym_no_suffix="$(echo SYM | $SED 's/_C$//i')"
+         mpi_f08_symbol="$($NM -u conftest.$ac_objext | $SED -n -e 's/.* U \w*\(MPI_'"$sym_no_suffix"'\w*\)$/\1/i p' | $SED -e 's/__\?$//')"
+         line_count="$(echo "$mpi_f08_symbol" | $GREP --count '')"
+         AS_IF([test "x$mpi_f08_symbol" != x -a "x$line_count" = x1],
+            [AS_IF([test "x$mpi_f08_previous_symbol" != "x$mpi_f08_symbol"],
+                [mpi_f08_previous_symbol="$mpi_f08_symbol"
+                 linkcheck_pass="yes"
+                 m4_ifdef(_MPI_F08_LINKCHECK_[]SYM,
+                    [AC_LINK_IFELSE(AC_LANG_SOURCE(_MPI_F08_LINKCHECK_[]SYM),
+                        [linkcheck_pass="yes"],
+                        [linkcheck_pass="no"])])
+                 AS_IF([test "x$linkcheck_pass" = "xyes"],
+                    [AC_DEFINE_UNQUOTED(SCOREP_F08_SYMBOL_NAME_MPI_[]SYM, [$mpi_f08_symbol], [The specific procedure name for MPI_]SYM)
+                     choice_buffers_with_ts="$(echo "$mpi_f08_symbol" | $GREP -i '_f08ts')"
+                     AS_IF([test "x$scorep_fortran_ts_buffers" = "xyes"],
+                        [m4_ifdef(_MPI_F08_TSBUFFERS_CHECK_[]SYM,
+                            [AC_COMPILE_IFELSE(AC_LANG_SOURCE(_MPI_F08_TSBUFFERS_CHECK_[]SYM),
+                                [choice_buffers_with_ts="yes"])])])
+                     AS_IF([test "x$choice_buffers_with_ts" != x],
+                        [AS_IF([test "x$scorep_fortran_ts_buffers" = "xyes"],
+                            [AC_DEFINE_UNQUOTED(HAVE_F08_TS_BUFFERS_MPI_[]SYM, [1], [Choice buffers are implemented with TS 29113 'type(*), dimension(..)' for MPI_]SYM)],
+                            [AC_MSG_ERROR([Compiler/MPI mismatch: Got an _f08ts symbol in the MPI library, but the compiler does not support the 'type(*), dimension(..)' feature of TS 29113])])],
+                        [AC_DEFINE_UNQUOTED(HAVE_F08_TS_BUFFERS_MPI_[]SYM, [0], [Choice buffers are implemented with non-standard extension' for MPI_]SYM)])
+                     AC_MSG_RESULT([$mpi_f08_symbol])],
+                    [AC_MSG_RESULT([no. PMPI symbol not provided in the MPI library])])],
+                [AC_MSG_RESULT([no, large count symbol is the same as the normal symbol])])],
+            [AC_MSG_RESULT([no, could not extract the procedure name, got "$mpi_f08_symbol"])])],
+        [AC_MSG_RESULT([no])])
+        ])
+
+AC_LANG_POP([Fortran])
+AS_UNSET([mpi_f08_previous_symbol])
+AS_UNSET([sym_no_suffix])
+AS_UNSET([mpi_f08_symbol])
+AS_UNSET([line_count])
+AS_UNSET([linkcheck_pass])
+AS_UNSET([choice_buffers_with_ts])
+])dnl SCOREP_MPI_F08_SYMBOLS
+
+m4_define([_MPI_F08_SYMBOLS],
+    [{{ wrapgen.generate_for_procedures(wrapgen.ProcedureSets.ALL_F08, wrapgen.callbacks.generator_callback_ac_f08_list_entry_for_symbol_check, sort=True) }}])
+
+# Start F08 symbol checks
+{{ wrapgen.generate_for_procedures(wrapgen.ProcedureSets.ALL_F08, wrapgen.callbacks.generator_callback_ac_f08_symbol_check, sort=True) -}}
+# End F08 symbol checks
+
+# Start F08 symbol checks with linking
+{{ wrapgen.generate_for_procedures([
+"MPI_Allreduce_init",
+"MPI_Group_from_session_pset",
+"MPI_Session_call_errhandler"], wrapgen.callbacks.generator_callback_ac_f08_linkcheck, sort=True) -}}
+# End F08 symbol checks with linking
+
+# Start F08 checks for routines using the TS buffer convention
+m4_define([_MPI_F08_TSBUFFERS_CHECK_FREE_MEM], [[subroutine check_mpi_free_mem(a_,b_)
+use :: mpi_f08, this_procedure => MPI_Free_mem,&
+&profiling_procedure => PMPI_Free_mem
+implicit none
+
+type(*), DIMENSION(..), INTENT(IN), ASYNCHRONOUS :: a_
+INTEGER, INTENT(OUT), OPTIONAL :: b_
+
+call profiling_procedure(a_,b_)
+end subroutine
+]])
+# Start F08 checks for routines using the TS buffer convention
