@@ -144,26 +144,7 @@ int MPI_Win_free(MPI_Win* win)
       SCOREP_EnterWrappedRegion(scorep_mpi_regions[SCOREP_MPI_REGION__MPI_WIN_FREE]);
       SCOREP_RmaCollectiveBegin( SCOREP_RMA_SYNC_LEVEL_PROCESS );
 
-      #if (MPI_VERSION >= 3)
-      // determine collective type of operation
-      int* create_kind = NULL;
-      int flag        = 0;
-      PMPI_Win_get_attr( *win, MPI_WIN_CREATE_FLAVOR, &create_kind, &flag );
-      if (flag)
-      {
-        switch ( *create_kind )
-        {
-            case MPI_WIN_FLAVOR_CREATE:
-            case MPI_WIN_FLAVOR_DYNAMIC:
-                collective_type = SCOREP_COLLECTIVE_DESTROY_HANDLE;
-                break;
-            case MPI_WIN_FLAVOR_ALLOCATE:
-            case MPI_WIN_FLAVOR_SHARED:
-                collective_type = SCOREP_COLLECTIVE_DESTROY_HANDLE_AND_DEALLOCATE;
-                break;
-        }
-      }
-      #endif
+      collective_type = scorep_mpi_win_collective_type( *win );
     }
     else if ( SCOREP_IsUnwindingEnabled() )
     {

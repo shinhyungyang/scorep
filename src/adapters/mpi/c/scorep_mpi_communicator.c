@@ -243,6 +243,34 @@ scorep_mpi_win_handle( MPI_Win win )
     }
 }
 
+SCOREP_CollectiveType
+scorep_mpi_win_collective_type( MPI_Win win )
+{
+    SCOREP_CollectiveType collective_type = SCOREP_COLLECTIVE_DESTROY_HANDLE;
+#if ( MPI_VERSION >= 3 )
+    // determine collective type of operation
+    int* create_kind = NULL;
+    int  flag        = 0;
+    PMPI_Win_get_attr( win, MPI_WIN_CREATE_FLAVOR, &create_kind, &flag );
+    if ( flag )
+    {
+        switch ( *create_kind )
+        {
+            case MPI_WIN_FLAVOR_CREATE:
+            case MPI_WIN_FLAVOR_DYNAMIC:
+                collective_type = SCOREP_COLLECTIVE_DESTROY_HANDLE;
+                break;
+            case MPI_WIN_FLAVOR_ALLOCATE:
+            case MPI_WIN_FLAVOR_SHARED:
+                collective_type = SCOREP_COLLECTIVE_DESTROY_HANDLE_AND_DEALLOCATE;
+                break;
+        }
+    }
+#endif
+    return collective_type;
+}
+
+
 void
 scorep_mpi_win_set_name( MPI_Win win, const char* name )
 {

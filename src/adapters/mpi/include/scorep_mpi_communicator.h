@@ -13,7 +13,7 @@
  * Copyright (c) 2009-2013,
  * University of Oregon, Eugene, USA
  *
- * Copyright (c) 2009-2013, 2017,
+ * Copyright (c) 2009-2013, 2017, 2025,
  * Forschungszentrum Juelich GmbH, Germany
  *
  * Copyright (c) 2009-2013,
@@ -23,7 +23,7 @@
  * Technische Universitaet Muenchen, Germany
  *
  * This software may be modified and distributed under the terms of
- * a BSD-style license.  See the COPYING file in the package base
+ * a BSD-style license. See the COPYING file in the package base
  * directory for details.
  *
  */
@@ -126,6 +126,9 @@ scorep_mpi_win_free( MPI_Win win );
  */
 extern SCOREP_RmaWindowHandle
 scorep_mpi_win_handle( MPI_Win win );
+
+extern SCOREP_CollectiveType
+scorep_mpi_win_collective_type( MPI_Win win );
 
 
 /**
