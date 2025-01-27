@@ -51,6 +51,8 @@
 #include <SCOREP_Location.h>
 #include <SCOREP_Definitions.h>
 
+#include "c/wrappers/SCOREP_Mpi_C_Reg.h"
+#include <scorep_mpi_groups.h>
 #include <scorep_mpi_c.h>
 #include <scorep_mpi_fortran.h>
 #include <scorep_mpi_communicator.h>
@@ -90,42 +92,6 @@ SCOREP_AttributeHandle scorep_mpi_memory_dealloc_size_attribute = SCOREP_INVALID
 #include "scorep_mpi_confvars.inc.c"
 
 size_t scorep_mpi_subsystem_id;
-
-static void
-enable_derived_groups( void )
-{
-    /* See derived groups in enum scorep_mpi_groups. */
-    #define ENABLE_DERIVED_GROUP( G1, G2 ) \
-    if ( ( scorep_mpi_enabled & SCOREP_MPI_ENABLED_##G1 ) && ( scorep_mpi_enabled & SCOREP_MPI_ENABLED_##G2 ) ) \
-    { \
-        scorep_mpi_enabled |= SCOREP_MPI_ENABLED_##G1##_##G2; \
-    }
-
-    ENABLE_DERIVED_GROUP( CG, ERR );
-    ENABLE_DERIVED_GROUP( CG, EXT );
-    ENABLE_DERIVED_GROUP( CG, MISC );
-    ENABLE_DERIVED_GROUP( IO, ERR );
-    ENABLE_DERIVED_GROUP( IO, MISC );
-    ENABLE_DERIVED_GROUP( RMA, ERR );
-    ENABLE_DERIVED_GROUP( RMA, EXT );
-    ENABLE_DERIVED_GROUP( RMA, MISC );
-    ENABLE_DERIVED_GROUP( TYPE, EXT );
-    ENABLE_DERIVED_GROUP( TYPE, MISC );
-
-    #undef ENABLE_DERIVED_GROUP
-
-    /* Enable REQUEST group if any of its depending groups is enabled */
-    uint64_t enable_request_mask = SCOREP_MPI_ENABLED_CG   |
-                                   SCOREP_MPI_ENABLED_COLL |
-                                   SCOREP_MPI_ENABLED_EXT  |
-                                   SCOREP_MPI_ENABLED_IO   |
-                                   SCOREP_MPI_ENABLED_P2P  |
-                                   SCOREP_MPI_ENABLED_RMA;
-    if ( scorep_mpi_enabled & enable_request_mask )
-    {
-        scorep_mpi_enabled |= SCOREP_MPI_ENABLED_REQUEST;
-    }
-}
 
 static void
 deprecate_xnonblock( void )
@@ -206,7 +172,7 @@ mpi_subsystem_init( void )
      * needs to run after `enable_derived_groups`.
      */
     scorep_mpi_win_init();
-    enable_derived_groups();
+    scorep_mpi_enable_derived_groups();
     scorep_mpi_register_regions();
 
     if ( scorep_mpi_memory_recording )
