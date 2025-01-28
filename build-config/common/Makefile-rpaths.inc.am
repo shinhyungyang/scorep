@@ -3,7 +3,7 @@
 ##
 ## This file is part of the Score-P software ecosystem (http://www.score-p.org)
 ##
-## Copyright (c) 2023-2024,
+## Copyright (c) 2023-2025,
 ## Forschungszentrum Juelich GmbH, Germany
 ##
 ## Copyright (c) 2024,
@@ -38,10 +38,10 @@
 #    self-contained, i.e., all their NEEDED entries must be resolvable
 #    at load-time, either from the environment or potential RPATH or
 #    RUNPATH entries in the .so. For shared builds, we enforce
-#    self-contained installed libraries by using `ldd` and checking
-#    for non-resolved dependencies, see rule
-#    `shared-objects-self-contained`. So far, a corresponding check
-#    for installed programs hasn't been implemented.
+#    self-contained installed libraries and programs by using
+#    `ldd` and checking for non-resolved dependencies. See rules
+#    `shared-objects-self-contained` and
+#    `bin-programs-self-contained`.
 #
 # 2. Installed libtool libraries must not LIBADD other installed
 #    libtool libraries. In particular, Score-P adapters must not
@@ -298,6 +298,7 @@ if HAVE_BUILD_STATIC_LT_LIBRARIES
 
 # Nothing to do in the pure-static case.
 shared-objects-self-contained:
+bin-programs-self-contained:
 
 else !HAVE_BUILD_STATIC_LT_LIBRARIES
 
@@ -332,10 +333,40 @@ shared-objects-self-contained:
 	    exit 1; \
 	fi
 
+bin_prog      = $(bin_PROGRAMS)
+bin_prog_skip = $(SKIP_SELF_CONTAINED_TEST_PRGS:=$(EXEEXT))
+bin-programs-self-contained:
+	@$(am__tty_colors); \
+	selfcontained=yes; \
+	list='$(bin_prog)'; test -n "$(bindir)" || list=; \
+	skiplist='$(bin_prog_skip)'; test -n "$(bindir)" || skiplist=; \
+	for prg in $$list; do \
+	    case " $$skiplist " in \
+	    (*" $$prg "*) \
+	        echo "  $${blu}SKIP$${std}     ldd $(bindir)/$$prg"; \
+	        continue ;; \
+	    esac; \
+	    if LC_ALL=C ldd "$(bindir)/$$prg" 2>/dev/null | ${GREP} 'not found' >/dev/null; then \
+	        selfcontained=no; \
+	        echo "  $${red}FAIL$${std}     ldd $(bindir)/$$prg"; \
+	        LC_ALL=C ldd "$(bindir)/$$prg" | \
+	            sed -e 's/^\s\+//' \
+	                -e "s/.*not found\$$/$${red}&$${std}/" \
+	                -e 's/^/           /'; \
+	    else \
+	        echo "  $${grn}PASS$${std}     ldd $(bindir)/$$prg"; \
+	    fi; \
+	done; \
+	if test "x$$selfcontained" = xno; then \
+	    echo "$${red}FAIL:$${std} program not self-contained"; \
+	    exit 1; \
+	fi
+
 else !AFS_BUILD_EQUALS_HOST
 
 # Cannot use ldd if build and host differ.
 shared-objects-self-contained:
+bin-programs-self-contained:
 
 endif !AFS_BUILD_EQUALS_HOST
 

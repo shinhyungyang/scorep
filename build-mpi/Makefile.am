@@ -15,7 +15,7 @@
 ## Copyright (c) 2009-2011,
 ## University of Oregon, Eugene, USA
 ##
-## Copyright (c) 2009-2015, 2017-2018, 2022-2024,
+## Copyright (c) 2009-2015, 2017-2018, 2022-2025,
 ## Forschungszentrum Juelich GmbH, Germany
 ##
 ## Copyright (c) 2009-2011,
@@ -141,7 +141,7 @@ foreign_instrumenter_check_prerequisites = \
 $(foreign_instrumenter_check_prerequisites):
 	@$(am__cd) $(LIB_DIR_SCOREP) && $(MAKE) $(AM_MAKEFLAGS) $@
 
-INSTALLCHECK_LOCAL += instrumenter-checks shared-objects-self-contained
+INSTALLCHECK_LOCAL += instrumenter-checks shared-objects-self-contained bin-programs-self-contained
 instrumenter-checks: $(instrumenter_configuration_files) \
                      $(foreign_instrumenter_check_prerequisites)
 	@fail= failcom='exit 1'; \

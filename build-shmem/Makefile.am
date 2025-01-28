@@ -6,7 +6,7 @@
 ## Copyright (c) 2013-2015, 2017,
 ## Technische Universitaet Dresden, Germany
 ##
-## Copyright (c) 2015, 2017-2018, 2022-2024,
+## Copyright (c) 2015, 2017-2018, 2022-2025,
 ## Forschungszentrum Juelich GmbH, Germany
 ##
 ## This software may be modified and distributed under the terms of
@@ -150,7 +150,7 @@ $(foreign_instrumenter_check_prerequisites):
 $(instrumenter_configuration_files): ../installcheck/instrumenter_checks/instrumenter-configurations.sh
 	@../installcheck/instrumenter_checks/instrumenter-configurations.sh
 
-INSTALLCHECK_LOCAL += instrumenter-checks shared-objects-self-contained
+INSTALLCHECK_LOCAL += instrumenter-checks shared-objects-self-contained bin-programs-self-contained
 instrumenter-checks: $(instrumenter_configuration_files) \
                      $(instrumenter_check_paradigm_makefiles) \
                      $(foreign_instrumenter_check_prerequisites)
