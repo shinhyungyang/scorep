@@ -13,7 +13,7 @@
  * Copyright (c) 2009-2013,
  * University of Oregon, Eugene, USA
  *
- * Copyright (c) 2009-2013, 2017, 2024,
+ * Copyright (c) 2009-2013, 2017, 2024-2025,
  * Forschungszentrum Juelich GmbH, Germany
  *
  * Copyright (c) 2009-2013, 2015,
@@ -74,19 +74,19 @@ scorep_profile_create_node( SCOREP_Profile_LocationData* location,
     }
 
     /* Initialize values */
-    node->callpath_handle     = SCOREP_INVALID_CALLPATH;
     node->parent              = parent;
     node->first_child         = NULL;
     node->next_sibling        = NULL;
     node->first_double_sparse = NULL;
     node->first_int_sparse    = NULL;
-    node->flags               = 0;
     node->count               = 0;    /* Is increased to one during SCOREP_Profile_Enter() */
     node->hits                = 0;
     node->first_enter_time    = timestamp;
     node->last_exit_time      = timestamp;
+    node->type_specific_data  = data;
+    node->callpath_handle     = SCOREP_INVALID_CALLPATH;
     node->node_type           = type;
-    scorep_profile_copy_type_data( &node->type_specific_data, data, type );
+    node->flags               = 0;
 
     /* Initialize dense metric values */
     scorep_profile_init_dense_metric( &node->inclusive_time );
@@ -525,6 +525,7 @@ scorep_profile_find_create_child( SCOREP_Profile_LocationData* location,
 {
     /* Search matching node */
     UTILS_ASSERT( parent != NULL );
+    scorep_profile_node* prev  = NULL;
     scorep_profile_node* child = parent->first_child;
     while ( ( child != NULL ) &&
             ( ( child->node_type != node_type ) ||
@@ -532,6 +533,7 @@ scorep_profile_find_create_child( SCOREP_Profile_LocationData* location,
                                                    child->type_specific_data,
                                                    node_type ) ) ) )
     {
+        prev  = child;
         child = child->next_sibling;
     }
 
@@ -542,6 +544,14 @@ scorep_profile_find_create_child( SCOREP_Profile_LocationData* location,
                                             specific_data,
                                             timestamp,
                                             scorep_profile_get_task_context( parent ) );
+        child->next_sibling = parent->first_child;
+        parent->first_child = child;
+    }
+
+    /* If found and not head of list -> make it the head node */
+    else if ( prev != NULL )
+    {
+        prev->next_sibling  = child->next_sibling;
         child->next_sibling = parent->first_child;
         parent->first_child = child;
     }
