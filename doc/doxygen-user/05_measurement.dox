@@ -992,9 +992,8 @@ The following values from <tt>hipDeviceProp_t</tt> are added as properties to th
   <dt><tt>sharedMemPerBlock</tt></dt>
   <dd>Size of shared memory region (in bytes)</dd>
 
-  <!-- Documentation looks wrong, see https://github.com/ROCm-Developer-Tools/HIP/issues/3035 -->
   <dt><tt>totalConstMem</tt></dt>
-  <dd></dd>
+  <dd>Size of shared constant memory region on the device (in bytes)</dd>
 
   <dt><tt>regsPerBlock</tt></dt>
   <dd>Registers per block</dd>
