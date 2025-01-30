@@ -1,7 +1,7 @@
 /*
  * This file is part of the Score-P software (http://www.score-p.org)
  *
- * Copyright (c) 2013-2014, 2017, 2019-2024,
+ * Copyright (c) 2013-2014, 2017, 2019-2025,
  * Forschungszentrum Juelich GmbH, Germany
  *
  * Copyright (c) 2014-2020, 2022,
@@ -511,15 +511,23 @@ SCOREP_Config_CudaAdapter::addCFlags( std::string& cflags,
 {
 }
 
-#if !HAVE_BACKEND( CUDA_TESTS ) && HAVE_BACKEND( BUILD_SHARED_LT_LIBRARIES )
 void
 SCOREP_Config_CudaAdapter::addLdFlags( std::string& ldflags,
                                        bool         build_check,
                                        bool         nvcc )
 {
-    ldflags += SCOREP_BACKEND_CUDA_STUBS_LDFLAGS;
+#if !HAVE_BACKEND( CUDA_TESTS ) && HAVE_BACKEND( BUILD_SHARED_LT_LIBRARIES )
+    ldflags += " " SCOREP_BACKEND_CUDA_STUBS_LDFLAGS;
+#endif /* !HAVE_BACKEND( CUDA_TESTS ) && HAVE_BACKEND( BUILD_SHARED_LT_LIBRARIES ) */
+#if SCOREP_BACKEND_COMPILER_CC_PGI && \
+    SCOREP_BACKEND_COMPILER_CXX_PGI && \
+    SCOREP_BACKEND_COMPILER_FC_PGI
+    if ( !nvcc )
+    {
+        ldflags += " -cuda";
+    }
+#endif /* SCOREP_BACKEND_COMPILER_{CC|CXX|FC}_PGI */
 }
-#endif // !HAVE_BACKEND( CUDA_TESTS ) && HAVE_BACKEND( BUILD_SHARED_LT_LIBRARIES )
 
 void
 SCOREP_Config_CudaAdapter::appendInitStructName( std::deque<std::string>& initStructs )
