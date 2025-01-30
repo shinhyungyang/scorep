@@ -1,7 +1,7 @@
 /*
  * This file is part of the Score-P software (http://www.score-p.org)
  *
- * Copyright (c) 2022-2024,
+ * Copyright (c) 2022-2025,
  * Technische Universitaet Dresden, Germany
  *
  * This software may be modified and distributed under the terms of
@@ -407,10 +407,8 @@ define_device( scorep_hip_device* device )
                                              buffer );
 
     snprintf( buffer, sizeof( buffer ), "%zu", device->properties.totalConstMem );
-    /* Documentation looks wrong,
-     * see https://github.com/ROCm-Developer-Tools/HIP/issues/3035 */
     SCOREP_SystemTreeNodeHandle_AddProperty( device->system_tree_node,
-                                             "",
+                                             "Size of shared constant memory region on the device (in bytes)",
                                              buffer );
 
     snprintf( buffer, sizeof( buffer ), "%d", device->properties.regsPerBlock );
