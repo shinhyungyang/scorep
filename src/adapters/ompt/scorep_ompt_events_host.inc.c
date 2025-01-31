@@ -1,7 +1,7 @@
 /*
  * This file is part of the Score-P software (http://www.score-p.org)
  *
- * Copyright (c) 2022-2024,
+ * Copyright (c) 2022-2025,
  * Forschungszentrum Juelich GmbH, Germany
  *
  * This software may be modified and distributed under the terms of
@@ -280,6 +280,21 @@ static THREAD_LOCAL_STORAGE_SPECIFIER task_t* tasks_free_list;
 static bool        adapter_ready;
 static UTILS_Mutex adapter_ready_mutex = UTILS_MUTEX_INIT;
 
+/* Some OpenMP runtimes, e.g. LLVM 16.x.x to LLVM 17.x.x, may initialize
+ * the OpenMP runtime during _dl_start_user when the application is built
+ * with accelerator support. This leads to a situation where we are not able
+ * to initialize the whole Score-P measurement system, as other adapters, e.g.
+ * CUDA, require initialization after _dl_start_user. This led to crashes of
+ * Score-P in the initialization process. To prevent this, we defer the complete
+ * initialization of the adapter until the first OpenMP user event is triggered.
+ * Initializing on a thread-begin or implicit-task-begin event might still cause
+ * the same issue, as they are still triggered from _dl_start_user.
+ *
+ * This macro should be added to all OMPT callbacks, which might get invoked after
+ * _dl_start_user, and are the first callback in a chain of events, e.g. task_create,
+ * but not task_schedule.
+ *
+ * More information can be found in #298, !398. */
 #define SCOREP_OMPT_ENSURE_INITIALIZED() \
     bool ready = UTILS_Atomic_LoadN_bool( &adapter_ready, UTILS_ATOMIC_SEQUENTIAL_CONSISTENT ); \
     if ( !ready ) \
