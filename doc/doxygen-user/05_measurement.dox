@@ -1105,6 +1105,98 @@ This applies to all types of Kokkos events. Users should note that the Kokkos
 tools interface allows explicit naming of parallel regions, and those names,
 if provided, will be the names used for filtering.
 
+
+@section ompt_target_adapter @openmp Target Performance Measurement
+@seclabel{ompt_target_adapter}
+
+If @scorep has been built with support for the @openmp Tools Interface (@ompt),
+it is capable of recording @openmp regions and activities. Depending on
+the runtime support, this may include activities on accelerator devices.
+
+Support for the @openmp Tools Interface is reported in the configure
+summary, available via <tt>scorep-info config-summary</tt>:
+
+<pre>
+OMPT support:             yes
+  OMPT header:            yes
+  OMPT tool:              yes
+  OMPT C support:         yes
+  OMPT C++ support:       yes
+  OMPT critical checks passed: \
+                          yes
+  OMPT remediable checks passed: \
+                          yes
+  OMPT target support:    yes
+  OMPT is default:        yes
+</pre>
+
+For recording @openmptarget activities, support for host-side activities needs
+to be present. In addition, <tt>@ompt target support</tt> needs to report
+<tt>yes</tt>. For this, @openmp 5.1 enum values, required for recording
+activities on the host, need to be present in the <tt>omp-tools.h</tt> header
+of the @openmp runtime.
+
+To enable @openmptarget measurements in @scorep the user has to:
+<ul>
+  <li> Instrument and build the application with @scorep and the @openmp Tools
+       Interface (@ompt) enabled, e.g. via <tt>\-\-thread=omp:ompt</tt>.
+  <li> Select features for the measurement using the environment variable
+       \confvar{SCOREP_OPENMP_TARGET_ENABLE}, if desired. Please refer to the
+       description of this variable for a list of available features. By
+       default, all features are enabled.
+</ul>
+At measurement-time, @scorep will try to enable recording of @openmptarget
+activities. In case the runtime does not support host-side callbacks for
+@openmptarget activities, a warning is printed and no @openmptarget activities
+are recorded, e.g.:
+
+<pre>
+Warning: [OMPT] Failed to register device_initialize, disabling related callbacks.
+Warning: [OMPT] Failed to register target_data_op_emi, disabling callback.
+Warning: [OMPT] Failed to register target_submit_emi, disabling callback.
+</pre>
+
+On each accelerator device initialization, @scorep tries to activate the
+measurement of accelerator-side events for that device, using the @openmp
+device tracing interface. If activation fails, a warning is shown, e.g.:
+
+<pre>
+Warning: [OMPT] Device Tracing interface could not be initialized and will be
+         disabled for device sm_86 (0). This will lead to accelerator events
+         not being recorded by the OMPT adapter. Function get_device_time could
+         not be enabled.
+</pre>
+
+Note that in this case, host-side activities are still recorded. These could
+be augmented by accelerator events from the native accelerator adapters, i.e.,
+CUDA or HIP, see Sections @secref{cuda_adapter} and @secref{hip_adapter}.
+Device tracing can also be disabled explicitly via
+\confvar{SCOREP_OPENMP_TARGET_DEVICE_TRACING_ENABLE}.
+
+@note @openmp runtimes are allowed to handle accelerator-related events
+      asynchronously to reduce overhead. Synchronization with the accelerator
+      then happens implicitly, when necessary. Host-side activities related
+      to @openmptarget will then only show the time needed to \a queue events
+      on that accelerator. This is similar to API calls in CUDA and HIP.
+      As a result, the time to wait for a kernel to finish might show up in a
+      later event, e.g. data transfer. Accelerator events are not affected by
+      this behavior.
+
+The @openmp Tools Interface uses an extra buffer to store its activity records.
+The size of this buffer can be controlled via the environment variable
+\confvar{SCOREP_OPENMP_TARGET_BUFFER_CHUNK_SIZE} (default: 8k).
+
+The @openmp specification does not include handling of parallel events on
+accelerator devices. To circumvent this limitation, @scorep uses so called
+<tt>@openmp virtual streams</tt> to represent the device streams. These virtual
+streams may not accurately represent the actual device streams, but are used
+to provide a consistent view of the @openmptarget activities. <br>For each
+virtual stream, a @scorep location is created with the name
+<tt>OMP Target[D:S]</tt>. Here, <tt>D</tt> denotes the @openmp device and
+<tt>S</tt> the virtual stream identifier. The former corresponds to the @openmp
+device number as seen by the process.
+
+
 @section substrate_plugins Substrate Plugins
 @seclabel{substrate_plugins}
 

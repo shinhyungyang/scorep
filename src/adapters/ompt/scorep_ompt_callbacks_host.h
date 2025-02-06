@@ -1,7 +1,7 @@
 /*
  * This file is part of the Score-P software (http://www.score-p.org)
  *
- * Copyright (c) 2022,
+ * Copyright (c) 2022-2023,
  * Forschungszentrum Juelich GmbH, Germany
  *
  * This software may be modified and distributed under the terms of
@@ -19,28 +19,6 @@
 
 #include <UTILS_Mutex.h>
 #include <SCOREP_DefinitionHandles.h>
-
-extern SCOREP_ParameterHandle scorep_ompt_parameter_loop_type;
-
-typedef struct scorep_ompt_cpu_location_data
-{
-    struct task_t* task;
-    UTILS_Mutex    protect_task_exchange; /* task and potentially task members
-                                             need to be modified in an atomic way;
-                                             cannot be done with UTILS_Atomic_ExchangeN. */
-
-    /* Have the mutexes on different cache lines */
-    char        pad[ SCOREP_CACHELINESIZE -
-                     ( sizeof( struct task_t* ) + sizeof( UTILS_Mutex ) ) ];
-    UTILS_Mutex preserve_order; /* preserve event order by preventing
-                                    trigger_overdue to write itask_begin of new
-                                    parallel region into location before
-                                    ibarrier_end and itask_end of previous
-                                    region are processed. */
-
-    bool is_ompt_location;      /* ignore non-ompt location in overdue processing */
-} scorep_ompt_cpu_location_data;
-
 
 /* sort cb declarations alphabetically */
 /* keep_ompt_names_and_naming_scheme */

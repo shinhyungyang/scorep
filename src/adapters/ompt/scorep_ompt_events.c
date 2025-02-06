@@ -1,6 +1,8 @@
 /*
  * This file is part of the Score-P software (http://www.score-p.org)
  *
+ * Copyright (c) 2022-2023, 2025,
+ * Forschungszentrum Juelich GmbH, Germany
  *
  * This software may be modified and distributed under the terms of
  * a BSD-style license. See the COPYING file in the package base
@@ -23,4 +25,12 @@
 #include "scorep_ompt_regions.inc.c"
 #include "scorep_ompt_mutex.inc.c"
 #include "scorep_ompt_events_host.inc.c"
+#if HAVE( SCOREP_OMPT_TARGET_SUPPORT )
 #include "scorep_ompt_events_device.inc.c"
+#include "scorep_ompt_events_device_id_mapping.inc.c"
+#include "scorep_ompt_events_device_tracing.inc.c"
+#include "scorep_ompt_events_device_target.inc.c"
+#include "scorep_ompt_events_device_data_op.inc.c"
+#include "scorep_ompt_events_device_submit.inc.c"
+#include "scorep_ompt_events_device_callbacks.inc.c"
+#endif /* HAVE( SCOREP_OMPT_TARGET_SUPPORT ) */

@@ -177,31 +177,8 @@ SCOREP_OPENCL
 SCOREP_IO_RECORDING
 
 ## Configure internal/external libraries
-scorep_otf2_config_backend_arg=
-AS_IF([test "x${ac_scorep_cross_compiling}" = xyes],
-    [scorep_otf2_config_backend_arg="--target=backend"
-     AS_IF([test "x${ac_scorep_platform}" = xmic],
-         [scorep_otf2_config_backend_arg="--target=mic"])])
-AS_IF([test "x${scorep_otf2_bindir}" != x],
-    [otf2_config_cmd="${scorep_otf2_bindir}/otf2-config ${scorep_otf2_config_backend_arg}"
-     AC_SUBST([OTF2_LIBS], [$($otf2_config_cmd --libs)])
-     AC_SUBST([OTF2_LDFLAGS], [$($otf2_config_cmd --ltldflags)])
-     AC_SUBST([OTF2_CPPFLAGS], [$($otf2_config_cmd --cppflags)])
-     AC_SUBST([OTF2_BINDIR],   ["${scorep_otf2_bindir}"])],
-    [# OTF2_* Makefile variables are evaluated by calling otf2-config,
-     # once it has been installed. When used earlier, a compile/link will fail.
-     m4_define([OTF2_CONFIG], [\$(DESTDIR)\$(bindir)/otf2-config])dnl
-     AC_SUBST([OTF2_LIBS], ["\$\$(if test -x \"OTF2_CONFIG\"; then echo \$\$(OTF2_CONFIG \$\${scorep_otf2_config_backend_arg} --libs); else echo \"-lOTF2_LIBS_not_provided_yet\"; fi)"])
-     AC_SUBST([OTF2_LDFLAGS], ["\$\$(if test -x \"OTF2_CONFIG\"; then echo \$\$(OTF2_CONFIG \$\${scorep_otf2_config_backend_arg} --ltldflags | sed 's|-L|-L\$(DESTDIR)|g;s|-R|-R\$(DESTDIR)|g'); else echo \"-LOTF2_LDFLAGS_not_provided_yet -ROTF2_LDFLAGS_not_provided_yet\"; fi)"])
-     AC_SUBST([OTF2_CPPFLAGS], ["\$\$(if test -x \"OTF2_CONFIG\"; then echo \$\$(OTF2_CONFIG \$\${scorep_otf2_config_backend_arg} --cppflags | sed 's|-I|-I\$(DESTDIR)|g'); else echo \"-IOTF2_CPPFLAGS_not_provided_yet\"; fi)"])
-     m4_undefine([OTF2_CONFIG])dnl
-     AC_SUBST([OTF2_BINDIR], ["${BINDIR}"])])
-AM_CONDITIONAL([HAVE_SCOREP_EXTERNAL_OTF2], [test "x${scorep_otf2_bindir}" != x])
-
-
-AS_IF([test -n "${scorep_opari2_bindir}"],
-      [AC_SUBST([OPARI2_CPPFLAGS], ["`${scorep_opari2_bindir}/opari2-config --cflags`"])],
-      [AC_SUBST([OPARI2_CPPFLAGS], ['-I$(srcdir)/../vendor/opari2/include'])])
+SCOREP_VENDOR_EXTERNALS_OTF2_FLAGS
+SCOREP_VENDOR_EXTERNALS_OPARI2_CPPFLAGS
 
 # we need an openmpi conditional because of a bug in the pgi-openmpi
 # configuration. We might extend this hack for other MPI
