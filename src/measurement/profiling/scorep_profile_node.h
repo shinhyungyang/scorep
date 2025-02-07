@@ -13,7 +13,7 @@
  * Copyright (c) 2009-2012,
  * University of Oregon, Eugene, USA
  *
- * Copyright (c) 2009-2012,
+ * Copyright (c) 2009-2012, 2024-2025,
  * Forschungszentrum Juelich GmbH, Germany
  *
  * Copyright (c) 2009-2012, 2015,
@@ -52,7 +52,7 @@
 /**
    Type for the type dependent data. Each node has special type and a field where it might
    store type dependent data. Currently, 8 bytes are reserved for type dependent data,
-   which should be enough to store a pointer, an handle, an integer value, or an double
+   which should be enough to store a pointer, a handle, an integer value, or a double
    value.
  */
 typedef struct
@@ -74,7 +74,10 @@ typedef struct
 /**
    List of profile node types.  Each node has special type and a field where it might
    store type dependent data. In order to add new node types, add a new entry here, and
-   the copy and compare functions to scorep_profile_type_data_funcs in scorep_profile_node.c.
+   update the following functions accordingly:
+     - scorep_profile_hash_for_type_data
+     - scorep_profile_less_than_for_type_data
+     - scorep_profile_compare_type_data
  */
 typedef enum
 {
@@ -85,10 +88,15 @@ typedef enum
     SCOREP_PROFILE_NODE_THREAD_START,
     SCOREP_PROFILE_NODE_COLLAPSE,
     SCOREP_PROFILE_NODE_TASK_ROOT
-} scorep_profile_node_type;
+} scorep_profile_node_type_enum;
 
 /**
-   Speciefies whether the current call happens in the context of an untied or tied task.
+   Wrapper for enum scorep_profile_node_type_enum.
+ */
+typedef uint8_t scorep_profile_node_type;
+
+/**
+   Specifies whether the current call happens in the context of an untied or tied task.
  */
 typedef enum
 {
@@ -134,7 +142,6 @@ typedef enum
  */
 typedef struct scorep_profile_node_struct
 {
-    SCOREP_CallpathHandle                callpath_handle;
     struct scorep_profile_node_struct*   parent;
     struct scorep_profile_node_struct*   first_child;
     struct scorep_profile_node_struct*   next_sibling;
@@ -146,8 +153,9 @@ typedef struct scorep_profile_node_struct
     uint64_t                             hits;             // For samples
     uint64_t                             first_enter_time; // Required by Scalasca
     uint64_t                             last_exit_time;   // Required by Scalasca
-    scorep_profile_node_type             node_type;
     scorep_profile_type_data_t           type_specific_data;
+    SCOREP_CallpathHandle                callpath_handle;
+    scorep_profile_node_type             node_type;
     uint8_t                              flags;
 } scorep_profile_node;
 
@@ -666,9 +674,37 @@ scorep_profile_type_set_ptr_value( scorep_profile_type_data_t* data,
    @param type Specifies the node type in which @a data belongs.
    @return a 64-bit hash value.
  */
-uint64_t
+static inline uint64_t
 scorep_profile_hash_for_type_data( scorep_profile_type_data_t data,
-                                   scorep_profile_node_type   type );
+                                   scorep_profile_node_type   type )
+{
+    switch ( type )
+    {
+        case SCOREP_PROFILE_NODE_REGULAR_REGION:
+        case SCOREP_PROFILE_NODE_THREAD_START:
+        case SCOREP_PROFILE_NODE_TASK_ROOT:
+            return data.handle;
+
+        case SCOREP_PROFILE_NODE_THREAD_ROOT:
+        case SCOREP_PROFILE_NODE_COLLAPSE:
+            return data.value;
+
+        case SCOREP_PROFILE_NODE_PARAMETER_STRING:
+        case SCOREP_PROFILE_NODE_PARAMETER_INTEGER:
+        {
+            uint64_t val = data.handle;
+            val  = ( val >> 1 ) | ( val << 31 );
+            val += data.value;
+
+            return val;
+        }
+
+        default:
+            break;
+    }
+
+    UTILS_BUG( "Unknown profile node type" );
+}
 
 /**
    Provides an ordering for type-dependent data. Both objects are assumed to
@@ -678,10 +714,36 @@ scorep_profile_hash_for_type_data( scorep_profile_type_data_t data,
    @param type Specifies the node type in which @a data1 and @a data2 belong.
    @return true, if @a data1 is less than @a data2.
  */
-bool
+static inline bool
 scorep_profile_less_than_for_type_data( scorep_profile_type_data_t data1,
                                         scorep_profile_type_data_t data2,
-                                        scorep_profile_node_type   type );
+                                        scorep_profile_node_type   type )
+{
+    switch ( type )
+    {
+        case SCOREP_PROFILE_NODE_REGULAR_REGION:
+        case SCOREP_PROFILE_NODE_THREAD_START:
+        case SCOREP_PROFILE_NODE_TASK_ROOT:
+            return data1.handle < data2.handle;
+
+        case SCOREP_PROFILE_NODE_THREAD_ROOT:
+        case SCOREP_PROFILE_NODE_COLLAPSE:
+            return data1.value < data2.value;
+
+        case SCOREP_PROFILE_NODE_PARAMETER_STRING:
+        case SCOREP_PROFILE_NODE_PARAMETER_INTEGER:
+            if ( data1.handle == data2.handle )
+            {
+                return data1.value < data2.value;
+            }
+            return data1.handle < data2.handle;
+
+        default:
+            break;
+    }
+
+    UTILS_BUG( "Unknown profile node type" );
+}
 
 /**
    Compares the type dependent data. Both objects are assumed to be of the same type
@@ -691,20 +753,34 @@ scorep_profile_less_than_for_type_data( scorep_profile_type_data_t data1,
    @param type  Specifies the node type to which @a data1 and @a data2 belong.
    @return true, if @a data1 equals @a data2.
  */
-bool
+static inline bool
 scorep_profile_compare_type_data( scorep_profile_type_data_t data1,
                                   scorep_profile_type_data_t data2,
-                                  scorep_profile_node_type   type );
+                                  scorep_profile_node_type   type )
+{
+    switch ( type )
+    {
+        case SCOREP_PROFILE_NODE_REGULAR_REGION:
+        case SCOREP_PROFILE_NODE_PARAMETER_STRING:
+        case SCOREP_PROFILE_NODE_PARAMETER_INTEGER:
+            return ( data1.handle == data2.handle ) &&
+                   ( data1.value == data2.value );
 
-/**
-   Creates a copy of type dependent data.
-   @param data The data which is copied.
-   @param type  Specifies the node type of @a data.
- */
-void
-scorep_profile_copy_type_data( scorep_profile_type_data_t* destination,
-                               scorep_profile_type_data_t  source,
-                               scorep_profile_node_type    type );
+        case SCOREP_PROFILE_NODE_THREAD_START:
+        case SCOREP_PROFILE_NODE_TASK_ROOT:
+            return data1.handle == data2.handle;
+
+        case SCOREP_PROFILE_NODE_THREAD_ROOT:
+        case SCOREP_PROFILE_NODE_COLLAPSE:
+            return data1.value == data2.value;
+
+        default:
+            break;
+    }
+
+    UTILS_BUG( "Unknown profile node type" );
+}
+
 
 
 #endif /* SCOREP_PROFILE_NODE_H */
