@@ -6,7 +6,7 @@ dnl
 dnl Copyright (c) 2017,
 dnl Technische Universitaet Dresden, Germany
 dnl
-dnl Copyright (c) 2023, 2024,
+dnl Copyright (c) 2023-2025,
 dnl Forschungszentrum Juelich GmbH, Germany
 dnl
 dnl This software may be modified and distributed under the terms of
@@ -247,6 +247,9 @@ _AC_CC[]=$LLVM_PLUGIN_TARGET_[]_AC_CC
 
 AC_MSG_CHECKING([whether $[]_AC_CC compiler plug-in can be loaded])
 for compiler_backend_flag_arg in "-Xclang" "-Xflang"; do
+    # llvm_plugin_supported_[]_AC_LANG_ABBREV[] is used as the predicate
+    # for success, it is created by the plugin when successfully loaded.
+    rm -f llvm_plugin_supported_[]_AC_LANG_ABBREV[]
     _AC_LANG_PREFIX[]FLAGS="-fpass-plugin=$PWD/lib/confmodule.so $compiler_backend_flag_arg -load $compiler_backend_flag_arg $PWD/lib/confmodule.so -mllvm -lang=[]_AC_LANG_ABBREV[]"
     AC_COMPILE_IFELSE([AC_LANG_SOURCE(_INPUT_LLVM_TEST_[]_AC_LANG_PREFIX)],
         [AS_IF([test -f llvm_plugin_supported_[]_AC_LANG_ABBREV[]],
@@ -329,11 +332,15 @@ runFunction( Function& F )
 
 struct ConfigureTest : PassInfoMixin<ConfigureTest>
 {
-    PreservedAnalyses
-    run( Module& M, ModuleAnalysisManager& MAM )
+    ~ConfigureTest()
     {
         std::ofstream file( "llvm_plugin_supported_" + Language );
         file.close();
+    }
+
+    PreservedAnalyses
+    run( Module& M, ModuleAnalysisManager& MAM )
+    {
         bool preserved = true;
         for ( auto& F : M )
         {
