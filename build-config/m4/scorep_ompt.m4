@@ -1439,16 +1439,17 @@ main( void )
 }
 ]]) dnl _INPUT_OMPT_KNOWN_ISSUE_MISSING_WORK_SECTIONS_END
 
-# _INPUT_OMPT_KNOWN_ISSUE_teams_dispatch_implicit_task
+# _INPUT_OMPT_KNOWN_ISSUE_TEAMS_DISPATCH_IMPLICIT_TASK
 # ---------------------------------------------
 # Test code to check if teams callback dispatches additional
 # implicit task callback with flag initial
 #
-m4_define([_INPUT_OMPT_KNOWN_ISSUE_teams_dispatch_implicit_task], [[
+m4_define([_INPUT_OMPT_KNOWN_ISSUE_TEAMS_DISPATCH_IMPLICIT_TASK], [[
 #include <assert.h>
 #include <omp.h>
 #include <omp-tools.h>
 #include <stdatomic.h>
+#include <stdio.h>
 
 static ompt_finalize_tool_t ompt_finalize_tool;
 atomic_int_least32_t        num_implicit_tasks = 0;
@@ -1514,10 +1515,10 @@ summary()
     const int fetched_created_teams   = atomic_load( &teams_created );
     const int expected_initial_tasks  = ( fetched_created_teams + 1 ) * 2;
     const int expected_implicit_tasks = 0;
-    printf( "------------------------------\n");
-    printf( "Expected: initial_tasks encountered = %u | implicit_tasks encountered = %u\n", expected_initial_tasks, expected_implicit_tasks );
-    printf( "Actual:   initial_tasks encountered = %u | implicit_tasks encountered = %u\n", fetched_initial_tasks, fetched_implicit_tasks );
-    printf( "------------------------------\n");
+    fprintf( stderr, "------------------------------\n");
+    fprintf( stderr, "Expected: initial_tasks encountered = %u | implicit_tasks encountered = %u\n", expected_initial_tasks, expected_implicit_tasks );
+    fprintf( stderr, "Actual:   initial_tasks encountered = %u | implicit_tasks encountered = %u\n", fetched_initial_tasks, fetched_implicit_tasks );
+    fprintf( stderr, "------------------------------\n");
     assert( fetched_initial_tasks == expected_initial_tasks );
     assert( fetched_implicit_tasks == expected_implicit_tasks );
 }
