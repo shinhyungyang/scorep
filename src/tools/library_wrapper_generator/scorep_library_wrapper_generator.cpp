@@ -160,12 +160,16 @@ public:
                 << "\n";
         }
 
-        out << "#ifdef __cplusplus\n"
-            << "extern \"C\"\n"
-            << "{\n"
-            << "#endif\n"
-            << "\n"
-            << "/* wrapper declarations */\n"
+        if ( !generator.m_config.create_internal_wrapper_code_file )
+        {
+            out << "#ifdef __cplusplus\n"
+                << "extern \"C\"\n"
+                << "{\n"
+                << "#endif\n"
+                << "\n";
+        }
+
+        out << "/* wrapper declarations */\n"
             << "\n"
             << DEFINE_LIBWRAP_PROCESS_FUNC
             << "    SCOREP_LIBWRAP_DECLARE_ORIGINAL_TYPE( rettype, func, args ); \\\n"
@@ -266,9 +270,12 @@ public:
 
     ~macro_writer_adapter()
     {
-        out << "#ifdef __cplusplus\n"
-            << "}\n"
-            << "#endif" << endl;
+        if ( !generator.m_config.create_internal_wrapper_code_file )
+        {
+            out << "#ifdef __cplusplus\n"
+                << "}\n"
+                << "#endif" << endl;
+        }
     }
 
     SCOREP_Libwrap_Generator& generator;
