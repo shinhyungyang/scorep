@@ -13,7 +13,7 @@
  * Copyright (c) 2009-2013,
  * University of Oregon, Eugene, USA
  *
- * Copyright (c) 2009-2015, 2017-2018, 2021,
+ * Copyright (c) 2009-2015, 2017-2018, 2021, 2024,
  * Forschungszentrum Juelich GmbH, Germany
  *
  * Copyright (c) 2009-2014,
@@ -418,6 +418,43 @@ SCOREP_IsInitialized( void )
     return initialized && !finalized;
 }
 
+void
+SCOREP_InitConfigVariables( void )
+{
+    UTILS_DEBUG_ENTRY();
+
+    static bool config_initialized = false;
+
+    if ( SCOREP_IN_SIGNAL_CONTEXT() )
+    {
+        UTILS_FATAL( "Cannnot initialize measurement from the signal handler." );
+    }
+
+    if ( config_initialized )
+    {
+        return;
+    }
+    config_initialized = true;
+
+    /* initialize the config system */
+    SCOREP_ConfigInit();
+
+    /* Register all config variables */
+    SCOREP_RegisterAllConfigVariables();
+
+    /* Parse the environment */
+    if ( SCOREP_ConfigApplyEnv() != SCOREP_SUCCESS )
+    {
+        UTILS_FATAL( "Error while parsing environment variables. Please check "
+                     "the error messages above for invalid values of Score-P "
+                     "environment variables. A comprehensive list of variables "
+                     "and valid values is available via "
+                     "\'scorep-info config-vars --full\'." );
+    }
+
+    UTILS_DEBUG_EXIT();
+}
+
 /**
  * Initialize the measurement system from the subsystem layer.
  */
@@ -456,22 +493,7 @@ SCOREP_InitMeasurementWithArgs( int argc, char* argv[] )
     UTILS_DEBUG_ENTRY();
 
     /* == Initialize the configuration variables and read them from the environment == */
-
-    /* initialize the config system */
-    SCOREP_ConfigInit();
-
-    /* Register all config variables */
-    SCOREP_RegisterAllConfigVariables();
-
-    /* Parse the environment */
-    if ( SCOREP_ConfigApplyEnv() != SCOREP_SUCCESS )
-    {
-        UTILS_FATAL( "Error while parsing environment variables. Please check "
-                     "the error messages above for invalid values of Score-P "
-                     "environment variables. A comprehensive list of variables "
-                     "and valid values is available via "
-                     "\'scorep-info config-vars --full\'." );
-    }
+    SCOREP_InitConfigVariables();
 
     /*
      * @dependsOn Environment variables

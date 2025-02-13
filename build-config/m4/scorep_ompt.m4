@@ -1,7 +1,7 @@
 dnl
 dnl This file is part of the Score-P software (http://www.score-p.org)
 dnl
-dnl Copyright (c) 2022-2024,
+dnl Copyright (c) 2022-2025,
 dnl Forschungszentrum Juelich GmbH, Germany
 dnl
 dnl This software may be modified and distributed under the terms of
@@ -30,6 +30,8 @@ AS_IF([test "x${scorep_have_addr2line}${afs_have_thread_local_storage}${scorep_h
                    [AFS_SUMMARY([OMPT critical checks passed], [$have_ompt_critical_checks_passed${ompt_reason_critical_checks_passed:+, $ompt_reason_critical_checks_passed}])])
                AS_IF([test "x${have_ompt_remediable_checks_passed}" != xunknown],
                    [AFS_SUMMARY([OMPT remediable checks passed], [$have_ompt_remediable_checks_passed${ompt_reason_remediable_checks_passed:+, $ompt_reason_remediable_checks_passed}])])
+               AS_IF([test "x${have_ompt_target_support}" != xunknown],
+                   [AFS_SUMMARY([OMPT target support], [$have_ompt_target_support${ompt_reason_target:+, $ompt_reason_target}])])
                AS_IF([test "x${have_ompt_support}" = xyes && test "x${have_ompt_critical_checks_passed}" = xyes],
                    [scorep_enable_default_ompt=yes
                     AS_IF([test "x$scorep_enable_default_opari2" = xyes],
@@ -55,6 +57,7 @@ AC_REQUIRE([SCOREP_ENABLE_DEFAULT])
 have_ompt_header=no
 have_ompt_tool=no
 have_ompt_support=no
+have_ompt_target_support=unknown
 have_ompt_critical_checks_passed=unknown
 have_ompt_remediable_checks_passed=unknown
 have_ompt_c_support=no
@@ -95,9 +98,22 @@ AS_IF([test "x$have_ompt_support" = xyes],
     [_CHECK_OMPT_REMEDIABLE_ISSUES
      _ADD_COMPILER_SPECIFIC_COMPILE_FLAGS])
 
+AS_IF([test "x$have_ompt_support" = xyes],
+    [_CHECK_OMPT_TARGET_SUPPORT])
+
 AC_SCOREP_COND_HAVE([SCOREP_OMPT_SUPPORT],
     [test "x$have_ompt_support" = xyes],
     [Defined if OMPT is supported for at least one language])
+
+AC_SCOREP_COND_HAVE([SCOREP_OMPT_TARGET_SUPPORT],
+    [test "x$have_ompt_target_support" = xyes],
+    [Defined if required OMPT target symbols are defined in the OMPT header])
+
+AC_SCOREP_COND_HAVE([SCOREP_OMPT_TARGET_NEEDS_HASHMAP],
+    [test "x$ac_cv_sizeof_ompt_id_t" != "x" &&
+     test "x$ac_cv_sizeof_voidp" != "x"     &&
+     test "$ac_cv_sizeof_voidp" -gt "$ac_cv_sizeof_ompt_id_t"],
+    [Defined if size of void pointer is larger than size of ompt_id_t type.])
 dnl
 ])dnl SCOREP_OMPT
 
@@ -280,7 +296,82 @@ AS_CASE([${ax_cv_c_compiler_vendor}],
     [ompt_cflags=""])
 
 AC_SUBST([SCOREP_OMPT_CFLAGS], [${ompt_cflags}])
-])
+])dnl _ADD_COMPILER_SPECIFIC_COMPILE_FLAGS
+
+# _CHECK_OMPT_TARGET_SUPPORT()
+# ----------------------------
+# Checks if symbols required for OMPT target support are defined in the OMPT
+# header. If any is missing, target support will be disabled. This check
+# deliberately does not check if the callbacks can be enabled, as this might
+# rely on the machine where the application is ran, and might differ between
+# login and compute nodes. Since these callbacks are not essential, we can
+# still enable OMPT host support even if the target ones are not available.
+# In that case, the adapter will issue a warning and disable the related
+# callbacks.
+m4_define([_CHECK_OMPT_TARGET_SUPPORT], [
+# Check for symbols added in OpenMP 5.1, which may not be defined in the OMPT header.
+# If any is missing, target support will be disabled.
+AC_LANG_PUSH([C])
+CFLAGS_save="${CFLAGS}"
+CFLAGS="${OPENMP_CFLAGS} ${CFLAGS}"
+AC_COMPILE_IFELSE([AC_LANG_PROGRAM([#include <omp-tools.h>], [
+/* Essential types */
+ompt_device_t*                     device;
+ompt_target_t                      target_kind;
+ompt_target_data_op_t              target_data_op;
+
+/* Device tracing */
+ompt_buffer_t*                     buffer;
+ompt_record_ompt_t*                record;
+ompt_buffer_cursor_t               cursor;
+ompt_function_lookup_t             lookup;
+ompt_get_device_time_t             get_device_time;
+ompt_set_trace_ompt_t              set_trace_ompt;
+ompt_start_trace_t                 start_trace;
+ompt_flush_trace_t                 flush_trace;
+ompt_advance_buffer_cursor_t       advance_buffer_cursor;
+ompt_get_record_ompt_t             get_record_ompt;
+ompt_stop_trace_t                  stop_trace;
+ompt_pause_trace_t                 pause_trace;
+
+/* Enum values */
+ompt_target_data_op_t optype1   = ompt_target_data_transfer_to_device;
+ompt_target_data_op_t optype2   = ompt_target_data_transfer_from_device;
+ompt_target_data_op_t optype3   = ompt_target_data_alloc;
+ompt_target_data_op_t optype4   = ompt_target_data_delete;
+ompt_target_t         kind1     = ompt_target;
+ompt_target_t         kind2     = ompt_target_enter_data;
+ompt_target_t         kind3     = ompt_target_exit_data;
+ompt_target_t         kind4     = ompt_target_update;
+ompt_callbacks_t      callback1 = ompt_callback_device_initialize;
+ompt_callbacks_t      callback2 = ompt_callback_device_finalize;
+ompt_callbacks_t      callback3 = ompt_callback_target_emi;
+ompt_callbacks_t      callback4 = ompt_callback_target_data_op_emi;
+ompt_callbacks_t      callback5 = ompt_callback_target_submit_emi;
+    ])],
+    [# Check for optional symbols
+     have_ompt_target_support=yes
+     AC_CHECK_DECLS([ompt_callback_target,
+                     ompt_callback_target_data_op,
+                     ompt_callback_target_submit,
+                     ompt_target_nowait,
+                     ompt_target_enter_data_nowait,
+                     ompt_target_exit_data_nowait,
+                     ompt_target_update_nowait,
+                     ompt_target_data_alloc_async,
+                     ompt_target_data_delete_async,
+                     ompt_target_data_transfer_from_device_async,
+                     ompt_target_data_transfer_to_device_async,
+                     ompt_target_data_associate,
+                     ompt_target_data_disassociate], [], [], [[#include <omp-tools.h>]])],
+    [have_ompt_target_support=no
+     ompt_reason_target="missing symbols in omp-tools.h header"])
+CFLAGS="${CFLAGS_save}"
+AC_LANG_POP([C])
+
+AC_SCOREP_CHECK_SIZEOF([ompt_id_t], [], [[#include <omp-tools.h>]])
+AC_SCOREP_CHECK_SIZEOF([void*], [], [[#include <omp-tools.h>]])
+])dnl _CHECK_OMPT_TARGET_SUPPORT
 
 # _INPUT_IGNORED()
 # ----------------

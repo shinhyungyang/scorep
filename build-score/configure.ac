@@ -68,21 +68,7 @@ AC_PROG_AWK
 AC_PROG_GREP
 AC_PROG_SED
 
-# Get CC and CXX (without leading whitespace) that was used to build
-# cubelib. Might contain language and architecture options like
-# '-std=c++11' or '-q64'.
-# Cubelib's CC and CXX need to be known at configure time. Obtaining
-# CPPFLAGS, LDFLAGS, and LIBS can be postponed to make time, see
-# build-config/m4/scorep_cube4.m4 and build-score/Makefile.am
-AS_IF([test "x${scorep_cubelib_bindir}" != x],
-    [# Get from external cube installation
-     cubelib_config_cmd="${scorep_cubelib_bindir}/cubelib-config"
-     CC="`$cubelib_config_cmd --cc | ${SED} 's/^[ \t]*//'`"
-     CXX="`$cubelib_config_cmd --cxx | ${SED} 's/^[ \t]*//'`"],
-    [# Get from internal cubelib
-     CC="`GREP_OPTIONS= ${GREP} ^CC= ../vendor/cubelib/build-frontend/config.log | ${AWK} -F\' '{gsub(/^ +/,"",$2); print $2}'`"
-     CXX="`GREP_OPTIONS= ${GREP} ^CXX= ../vendor/cubelib/build-frontend/config.log | ${AWK} -F\' '{gsub(/^ +/,"",$2); print $2}'`"])
-AM_CONDITIONAL([HAVE_SCOREP_EXTERNAL_CUBELIB], [test "x${scorep_cubelib_bindir}" != x])
+SCOREP_VENDOR_EXTERNALS_CUBELIB_GET_COMPILERS
 
 # Provide CFLAGS, CXXFLAGS, ands LDFLAGS for build-score via
 # *FLAGS_FOR_BUILD_SCORE environment variables. If not set,
@@ -133,7 +119,7 @@ AFS_PROG_CXX_SUMMARY
 
 AC_SCOREP_GIT_CONTROLLED
 
-SCOREP_CUBELIB
+SCOREP_VENDOR_EXTERNALS_CUBELIB
 SCOREP_ESTIMATOR
 
 AFS_COMMON_UTILS([build], [<SCOREP_ErrorCodes.h>], [../src/utils/include])

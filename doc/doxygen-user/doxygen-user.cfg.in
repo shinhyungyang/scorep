@@ -223,7 +223,9 @@ ALIASES                = scorep=Score-P \
                          mpi=MPI \
                          pmpi=PMPI \
                          openmp=OpenMP \
+                         "openmptarget=OpenMP target" \
                          pomp2=POMP2 \
+                         ompt=OMPT \
                          ibm=IBM \
                          "bluegene=Blue Gene" \
                          "crayxt=Cray XT" \

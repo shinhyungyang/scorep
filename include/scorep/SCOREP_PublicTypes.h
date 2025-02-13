@@ -13,7 +13,7 @@
  * Copyright (c) 2009-2011,
  * University of Oregon, Eugene, USA
  *
- * Copyright (c) 2009-2011, 2018, 2022,
+ * Copyright (c) 2009-2011, 2018, 2022-2023,
  * Forschungszentrum Juelich GmbH, Germany
  *
  * Copyright (c) 2009-2011,
@@ -338,6 +338,7 @@ typedef enum SCOREP_ParadigmClass
  * - SCOREP_PARADIGM_IO refers to I/O instrumentation
  * - SCOREP_PARADIGM_KOKKOS refers to Kokkos instrumentation
  * - SCOREP_PARADIGM_HIP refers to ROCm/HIP instrumentation
+ * - SCOREP_PARADIGM_OPENMP_TARGET refers to OpenMP target instrumentation via OMPT
  * - SCOREP_INVALID_PARADIGM_TYPE for internal use only
  */
 #define SCOREP_PARADIGMS \
@@ -357,8 +358,8 @@ typedef enum SCOREP_ParadigmClass
     SCOREP_PARADIGM( OPENACC,            "openacc",            OPENACC ) \
     SCOREP_PARADIGM( IO,                 "io",                 NONE ) \
     SCOREP_PARADIGM( KOKKOS,             "kokkos",             KOKKOS ) \
-    SCOREP_PARADIGM( HIP,                "hip",                HIP )
-
+    SCOREP_PARADIGM( HIP,                "hip",                HIP ) \
+    SCOREP_PARADIGM( OPENMP_TARGET,      "openmp target",      OPENMP_TARGET )
 
 typedef enum SCOREP_ParadigmType
 {

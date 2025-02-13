@@ -1,7 +1,7 @@
 /*
  * This file is part of the Score-P software (http://www.score-p.org)
  *
- * Copyright (c) 2022-2024,
+ * Copyright (c) 2022-2025,
  * Forschungszentrum Juelich GmbH, Germany
  *
  * This software may be modified and distributed under the terms of
@@ -26,6 +26,7 @@
 #include <string.h>
 #include <inttypes.h>
 
+#include <SCOREP_AcceleratorManagement.h>
 #include <SCOREP_InMeasurement.h>
 #include <UTILS_Atomic.h>
 #include <SCOREP_Location.h>
@@ -196,12 +197,25 @@ typedef struct parallel_t
 } parallel_t;
 
 
+
+/* Parameters being used for transferring additional information about
+ * certain regions */
+typedef struct parameters_t
+{
+    SCOREP_ParameterHandle loop_type;
+    SCOREP_ParameterHandle target_type;
+    SCOREP_ParameterHandle callsite_id;
+    SCOREP_ParameterHandle requested_num_teams;
+    SCOREP_ParameterHandle granted_num_teams;
+} parameters_t;
+
+
 /* *INDENT-OFF* */
 static void complete_adapter_init( void );
 static void on_first_parallel_begin( ompt_data_t* encounteringTaskData );
 static void init_parallel_obj( parallel_t* parallel, struct scorep_thread_private_data* parent, uint32_t requestedParallelism, const void* codeptrRa, uint32_t refCount );
 static void on_initial_task( int flags );
-static void implicit_task_end_impl( task_t* task, char* utilsDebugcaller );
+static void implicit_task_end_impl( task_t* task, char* utilsDebugCaller );
 static void barrier_implicit_parallel_end( ompt_data_t* taskData );
 static void barrier_implicit_parallel_end_finalize_tool( ompt_data_t* taskData );
 static void barrier_implicit_parallel_end_impl( task_t* task, char* utilsDebugCaller );
@@ -266,6 +280,21 @@ static THREAD_LOCAL_STORAGE_SPECIFIER task_t* tasks_free_list;
 static bool        adapter_ready;
 static UTILS_Mutex adapter_ready_mutex = UTILS_MUTEX_INIT;
 
+/* Some OpenMP runtimes, e.g. LLVM 16.x.x to LLVM 17.x.x, may initialize
+ * the OpenMP runtime during _dl_start_user when the application is built
+ * with accelerator support. This leads to a situation where we are not able
+ * to initialize the whole Score-P measurement system, as other adapters, e.g.
+ * CUDA, require initialization after _dl_start_user. This led to crashes of
+ * Score-P in the initialization process. To prevent this, we defer the complete
+ * initialization of the adapter until the first OpenMP user event is triggered.
+ * Initializing on a thread-begin or implicit-task-begin event might still cause
+ * the same issue, as they are still triggered from _dl_start_user.
+ *
+ * This macro should be added to all OMPT callbacks, which might get invoked after
+ * _dl_start_user, and are the first callback in a chain of events, e.g. task_create,
+ * but not task_schedule.
+ *
+ * More information can be found in #298, !398. */
 #define SCOREP_OMPT_ENSURE_INITIALIZED() \
     bool ready = UTILS_Atomic_LoadN_bool( &adapter_ready, UTILS_ATOMIC_SEQUENTIAL_CONSISTENT ); \
     if ( !ready ) \
@@ -301,15 +330,19 @@ static UTILS_Mutex adapter_ready_mutex = UTILS_MUTEX_INIT;
 
 
 /* Score-P parameters */
-SCOREP_ParameterHandle parameter_loop_type;
+static parameters_t parameters;
 
 
 static void
 init_parameters( void )
 {
 #if !HAVE( SCOREP_OMPT_MISSING_WORK_LOOP_SCHEDULE )
-    parameter_loop_type = SCOREP_Definitions_NewParameter( "schedule", SCOREP_PARAMETER_STRING );
+    parameters.loop_type = SCOREP_Definitions_NewParameter( "schedule", SCOREP_PARAMETER_STRING );
 #endif /* !HAVE( SCOREP_OMPT_MISSING_WORK_LOOP_SCHEDULE ) */
+    parameters.target_type         = SCOREP_Definitions_NewParameter( "target type", SCOREP_PARAMETER_STRING );
+    parameters.callsite_id         = SCOREP_AcceleratorMgmt_GetCallsiteParameter();
+    parameters.granted_num_teams   = SCOREP_Definitions_NewParameter( "teams granted", SCOREP_PARAMETER_UINT64 );
+    parameters.requested_num_teams = SCOREP_Definitions_NewParameter( "teams requested", SCOREP_PARAMETER_UINT64 );
 }
 
 
@@ -1738,7 +1771,7 @@ scorep_ompt_cb_host_work( ompt_work_t           work_type,
                 #endif  /* DECL_OMPT_WORK_LOOP_OTHER */
                     SCOREP_EnterRegion( work_begin( task, codeptr_ra, TOOL_EVENT_LOOP ) );
                     #if !HAVE( SCOREP_OMPT_MISSING_WORK_LOOP_SCHEDULE )
-                    SCOREP_TriggerParameterString( parameter_loop_type, looptype2string( work_type ) );
+                    SCOREP_TriggerParameterString( parameters.loop_type, looptype2string( work_type ) );
                     #endif /* !HAVE( SCOREP_OMPT_MISSING_WORK_LOOP_SCHEDULE ) */
                     break;
                 case ompt_work_sections:
