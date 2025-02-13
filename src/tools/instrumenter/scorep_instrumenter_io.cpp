@@ -79,6 +79,20 @@ SCOREP_Instrumenter_Posix::SCOREP_Instrumenter_Posix
 #endif
 }
 
+bool
+SCOREP_Instrumenter_Posix::checkOption( const std::string& arg )
+{
+    if ( ( arg == getName() ) || ( arg == m_name ) )
+    {
+        std::cerr <<
+            "[Score-P] WARNING: I/O paradigm '" << m_name << "' is deprecated.\n" <<
+            "                   Instrumentation is always performed, but must be activated at the time of measurement." <<
+            std::endl;
+    }
+
+    return SCOREP_Instrumenter_IoParadigm::checkOption( arg );
+}
+
 /* **************************************************************************************
  * class SCOREP_Instrumenter_Io
  * *************************************************************************************/

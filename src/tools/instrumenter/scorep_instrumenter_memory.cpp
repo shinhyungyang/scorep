@@ -55,6 +55,20 @@ SCOREP_Instrumenter_MemoryAdapter::SCOREP_Instrumenter_MemoryAdapter( void )
 }
 
 
+bool
+SCOREP_Instrumenter_MemoryAdapter::checkOption( const std::string& arg )
+{
+    if ( arg == "--" + m_name || arg == "--no" + m_name )
+    {
+        std::cerr <<
+            "[Score-P] WARNING: Option '" << arg << "' is deprecated.\n" <<
+            "                   Instrumentation is always performed, but must be activated at the time of measurement." <<
+            std::endl;
+    }
+
+    return SCOREP_Instrumenter_Adapter::checkOption( arg );
+}
+
 void
 SCOREP_Instrumenter_MemoryAdapter::printHelp( void )
 {

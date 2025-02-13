@@ -66,6 +66,9 @@ class SCOREP_Instrumenter_Posix : public SCOREP_Instrumenter_IoParadigm
 {
 public:
     SCOREP_Instrumenter_Posix( SCOREP_Instrumenter_Selector* selector );
+
+    bool
+    checkOption( const std::string& arg ) override;
 };
 
 /* **************************************************************************************
