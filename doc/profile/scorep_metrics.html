@@ -824,23 +824,23 @@ contribute the most time.
     <dd><a href="#omp_time">OpenMP Time</a></dd>
     <dt><b>Sub-metrics:</b></dt>
     <dd>
-        <a href="#omp_target_transfer">OpenMP Target Data Transfer Time</a><br/>
+        <a href="#omp_target_transfer">OpenMP Target Memory Management Time</a><br/>
         <a href="#omp_target_kernel_launches">OpenMP Target Kernel Launch Time</a><br/>
-        <a href="#omp_target_other">OpenMP Target Other Time</a>
     </dd>
 </dl>
 
 <hr width="75%" align="center">
 
-<a name="omp_target_transfer"><h3>OpenMP Target Data Transfer Time</h3></a>
+<a name="omp_target_transfer"><h3>OpenMP Target Memory Management Time</h3></a>
 (only available after <a href="#remapping_info">remapping</a>)
 <dl>
     <dt><b>Description:</b></dt>
     <dd>
         Time spent queuing and waiting for data transfer operations to finish.
         This includes direct transfers initiated by OpenMP API functions like
-        <tt>omp_target_memcpy</tt>, explicit transfers via OpenMP directive
-        and indirect transfers for kernels.
+        <tt>omp_target_memcpy</tt>, explicit transfers via OpenMP directives,
+        indirect transfers for kernels, and memory management operations, like
+        allocations.
     </dd>
     <dt><b>Unit:</b></dt>
     <dd>Seconds</dd>
@@ -867,26 +867,6 @@ contribute the most time.
     <dt><b>Description:</b></dt>
     <dd>
         Time spent to launch OpenMP target kernels and wait for their completion, if not asynchronous.
-    </dd>
-    <dt><b>Unit:</b></dt>
-    <dd>Seconds</dd>
-    <dt><b>Parent metric:</b></dt>
-    <dd><a href="#omp_target_time">OpenMP Target Time</a></dd>
-    <dt><b>Sub-metrics:</b></dt>
-    <dd>
-        None
-    </dd>
-</dl>
-
-<hr width="75%" align="center">
-
-<a name="omp_target_other"><h3>OpenMP Target Other Time</h3></a>
-(only available after <a href="#remapping_info">remapping</a>)
-<dl>
-    <dt><b>Description:</b></dt>
-    <dd>
-        Time spent in other constructs related to launch OpenMP target kernels and wait for their completion,
-        or are related to data-transfers to and from accelerator devices.
     </dd>
     <dt><b>Unit:</b></dt>
     <dd>Seconds</dd>
