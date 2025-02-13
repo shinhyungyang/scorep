@@ -1,7 +1,7 @@
 /*
  * This file is part of the Score-P software (http://www.score-p.org)
  *
- * Copyright (c) 2020, 2022-2023,
+ * Copyright (c) 2020, 2022-2023, 2025,
  * Technische Universitaet Dresden, Germany
  *
  * This software may be modified and distributed under the terms of
@@ -249,6 +249,7 @@ kokkos_subsystem_pre_unify( void )
     SCOREP_GroupHandle group_handle = SCOREP_Definitions_NewGroup(
         SCOREP_GROUP_KOKKOS_GROUP, "KOKKOS_GROUP",
         global_location_number, global_location_ids );
+    free( global_location_ids );
 
     if ( kokkos_interim_communicator_handle !=
          SCOREP_INVALID_INTERIM_COMMUNICATOR )

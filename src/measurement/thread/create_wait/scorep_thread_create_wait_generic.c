@@ -4,7 +4,7 @@
  * Copyright (c) 2014-2016, 2018, 2022,
  * Forschungszentrum Juelich GmbH, Germany
  *
- * Copyright (c) 2014-2016, 2019-2020, 2022,
+ * Copyright (c) 2014-2016, 2019-2020, 2022, 2025,
  * Technische Universitaet Dresden, Germany
  *
  * Copyright (c) 2015,
@@ -225,6 +225,7 @@ create_wait_subsystem_pre_unify( void )
         "SCOREP_GROUP_PTHREAD",
         n_locations,
         location_ids );
+    free( location_ids );
 
     /* Define the final communicator over this group */
     SCOREP_LOCAL_HANDLE_DEREF( thread_team,
