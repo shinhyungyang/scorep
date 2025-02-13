@@ -387,7 +387,9 @@
                             ${omp_sync_critical}[${i}] = 1;
                         };
 
-                        if ( ${name} =~ /^omp_(destroy|init|set|test|unset)(_nest){0,1}_lock$/ )
+                        if ( ( ${role} eq "wrapper" )
+                             and
+                             ( ${name} =~ /_lock/ ) )
                         {
                             ${omp_sync_lock_api}[${i}] = 1;
                         };
