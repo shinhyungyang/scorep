@@ -26,7 +26,8 @@ Major features:
   All adapters, except for the Pthreads adapter, are now enabled by
   default when instrumenting an application. However, they need to be
   explicitly enabled at measurement time. To enable the POSIX I/O adapter,
-  use `SCOREP_IO_POSIX=yes`.
+  use `SCOREP_IO_POSIX=yes`. Instrumenter options to enable/disable
+  affected paradigms are now deprecated.
   User library wrappers can now be loaded as plug-ins at runtime using
   `SCOREP_LIBWRAP_ENABLE=<library...>` instead of being specified at the
   time of instrumentation with the `--libwrap=<library...>` flag. In
