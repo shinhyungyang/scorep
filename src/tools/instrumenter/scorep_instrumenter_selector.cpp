@@ -7,7 +7,7 @@
  * Copyright (c) 2014,
  * German Research School for Simulation Sciences GmbH, Juelich/Aachen, Germany
  *
- * Copyright (c) 2014-2017, 2022,
+ * Copyright (c) 2014-2017, 2022, 2025,
  * Technische Universitaet Dresden, Germany
  *
  * This software may be modified and distributed under the terms of
@@ -160,8 +160,6 @@ SCOREP_Instrumenter_Selector::checkOption( const std::string& arg )
     {
         return true;
     }
-    std::cerr << "ERROR: Unknown paradigm '" << arg << "' specified for '--" << m_name << "'\n"
-              << "       Type 'scorep --" << m_name << "=help' to get a list of supported paradigms" << std::endl;
     std::cerr << "[Score-P] ERROR: Unknown paradigm '" << arg << "' specified for '--" << m_name << "'\n"
               << "                 Type 'scorep --" << m_name << "=help' to get a list of supported paradigms" << std::endl;
     exit( EXIT_FAILURE );
