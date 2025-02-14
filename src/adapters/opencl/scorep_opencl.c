@@ -248,23 +248,6 @@ scorep_opencl_init( void )
             opencl_kernel_file_handle = SCOREP_Definitions_NewSourceFile( "OPENCL_KERNEL" );
         }
 
-        if ( scorep_opencl_record_memcpy )
-        {
-            /* create interim communicator once for a process */
-            scorep_opencl_interim_communicator_handle =
-                SCOREP_Definitions_NewInterimCommunicator(
-                    SCOREP_INVALID_INTERIM_COMMUNICATOR,
-                    SCOREP_PARADIGM_OPENCL,
-                    0,
-                    NULL );
-
-            scorep_opencl_window_handle =
-                SCOREP_Definitions_NewRmaWindow(
-                    "OPENCL_WINDOW",
-                    scorep_opencl_interim_communicator_handle,
-                    SCOREP_RMA_WINDOW_FLAG_NONE );
-        }
-
         queue_max_buffer_entries = scorep_opencl_queue_size
                                    / sizeof( scorep_opencl_buffer_entry );
 
@@ -607,6 +590,23 @@ opencl_get_cpu_location_id( SCOREP_Location* hostLocation )
 static void
 opencl_set_cpu_location_id( SCOREP_Location* hostLocation )
 {
+    if ( scorep_opencl_interim_communicator_handle == SCOREP_INVALID_INTERIM_COMMUNICATOR )
+    {
+        /* create interim communicator once for a process */
+        scorep_opencl_interim_communicator_handle =
+            SCOREP_Definitions_NewInterimCommunicator(
+                SCOREP_INVALID_INTERIM_COMMUNICATOR,
+                SCOREP_PARADIGM_OPENCL,
+                0,
+                NULL );
+
+        scorep_opencl_window_handle =
+            SCOREP_Definitions_NewRmaWindow(
+                "OPENCL_WINDOW",
+                scorep_opencl_interim_communicator_handle,
+                SCOREP_RMA_WINDOW_FLAG_NONE );
+    }
+
     uint32_t location_id = opencl_get_cpu_location_id( hostLocation );
 
     // set location data only if they are not available

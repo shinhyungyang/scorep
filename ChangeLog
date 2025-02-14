@@ -186,8 +186,8 @@ Bugfixes:
 - The instrumenter now identifies the file suffixes `.cuf` and `.CUF`
   as CUDA Fortran files.
 - Avoid creating group/communicator/window definitions with no members
-  and no global paradigm group. This affects the CUDA and Kokkos
-  adapters.
+  and no global paradigm group. This affects the CUDA, Kokkos, and
+  OpenCL adapters.
 
 ------------------- Released version 8.4 -----------------------------
 
