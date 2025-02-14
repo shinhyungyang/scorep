@@ -17,9 +17,33 @@
  * @file
  */
 
+static inline void
+init_rma_window( void )
+{
+    if ( scorep_ompt_interim_communicator_handle != SCOREP_INVALID_INTERIM_COMMUNICATOR )
+    {
+        return;
+    }
+
+    scorep_ompt_interim_communicator_handle =
+        SCOREP_Definitions_NewInterimCommunicator(
+            SCOREP_INVALID_INTERIM_COMMUNICATOR,
+            SCOREP_PARADIGM_OPENMP_TARGET,
+            0,
+            NULL );
+    scorep_ompt_rma_window_handle =
+        SCOREP_Definitions_NewRmaWindow(
+            "OPENMP_TARGET_WINDOW",
+            scorep_ompt_interim_communicator_handle,
+            SCOREP_RMA_WINDOW_FLAG_NONE );
+}
+
+
 static inline uint64_t
 get_host_local_rank( void )
 {
+    init_rma_window();
+
     /* Ensure that the local rank for the host thread is set to ensure
      * that the data transfer shows up correctly. */
     scorep_ompt_cpu_location_data* data =

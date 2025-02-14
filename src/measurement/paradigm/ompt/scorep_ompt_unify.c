@@ -40,6 +40,11 @@ scorep_ompt_unify_pre( void )
         "OpenMP Target",
         ( uint64_t )scorep_ompt_my_location_count,
         scorep_ompt_my_location_ids );
+    if ( scorep_ompt_my_location_count == 0 )
+    {
+        UTILS_DEBUG_EXIT();
+        return;
+    }
 
     /* Create subgroup for our locations as indices into the globally collated
      * OpenMP locations */
