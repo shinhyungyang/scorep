@@ -89,8 +89,8 @@ SCOREP_RmaWindowHandle           scorep_hip_window_handle               = SCOREP
 SCOREP_InterimCommunicatorHandle scorep_hip_interim_communicator_handle = SCOREP_INVALID_INTERIM_COMMUNICATOR;
 static UTILS_Mutex               window_handle_once;
 
-uint64_t  scorep_hip_global_location_count = 0;
-uint64_t* scorep_hip_global_location_ids   = NULL;
+uint64_t  scorep_hip_my_location_count = 0;
+uint64_t* scorep_hip_my_location_ids   = NULL;
 
 static uint64_t previous_activity_scorep_time;
 static uint64_t previous_activity_hip_time;
@@ -2257,10 +2257,10 @@ assign_cpu_locations( SCOREP_Location* location,
             location, scorep_hip_subsystem_id );
         if ( location_data->local_rank != SCOREP_HIP_NO_RANK )
         {
-            UTILS_BUG_ON( location_data->local_rank >= scorep_hip_global_location_count,
+            UTILS_BUG_ON( location_data->local_rank >= scorep_hip_my_location_count,
                           "HIP rank exceeds total number of assigned ranks." );
 
-            scorep_hip_global_location_ids[ location_data->local_rank ] =
+            scorep_hip_my_location_ids[ location_data->local_rank ] =
                 SCOREP_Location_GetGlobalId( location );
         }
     }
@@ -2278,10 +2278,10 @@ assign_gpu_locations( stream_table_key_t   key,
     UTILS_BUG_ON( stream->local_rank == SCOREP_HIP_NO_RANK,
                   "HIP stream without assigned rank." );
 
-    UTILS_BUG_ON( stream->local_rank >= scorep_hip_global_location_count,
+    UTILS_BUG_ON( stream->local_rank >= scorep_hip_my_location_count,
                   "HIP rank exceeds total number of assigned ranks." );
 
-    scorep_hip_global_location_ids[ stream->local_rank ] =
+    scorep_hip_my_location_ids[ stream->local_rank ] =
         SCOREP_Location_GetGlobalId( stream->device_location );
 }
 
@@ -2289,18 +2289,18 @@ void
 scorep_hip_collect_comm_locations( void )
 {
     // Precondition from static initialization:
-    // scorep_hip_global_location_count = 0;
+    // scorep_hip_my_location_count = 0;
     if ( scorep_hip_interim_communicator_handle == SCOREP_INVALID_INTERIM_COMMUNICATOR )
     {
         return;
     }
-    scorep_hip_global_location_count = UTILS_Atomic_LoadN_uint32(
+    scorep_hip_my_location_count = UTILS_Atomic_LoadN_uint32(
         &local_rank_counter, UTILS_ATOMIC_SEQUENTIAL_CONSISTENT );
-    UTILS_ASSERT( scorep_hip_global_location_count > 0 );
+    UTILS_ASSERT( scorep_hip_my_location_count > 0 );
 
     /* allocate the HIP communication group array */
-    scorep_hip_global_location_ids = calloc( scorep_hip_global_location_count,
-                                             sizeof( *scorep_hip_global_location_ids ) );
+    scorep_hip_my_location_ids = calloc( scorep_hip_my_location_count,
+                                         sizeof( *scorep_hip_my_location_ids ) );
 
     /* Assign CPU locations */
     SCOREP_Location_ForAll( assign_cpu_locations, NULL );

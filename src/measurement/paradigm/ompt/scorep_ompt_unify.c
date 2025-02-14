@@ -4,6 +4,9 @@
  * Copyright (c) 2023,
  * Forschungszentrum Juelich GmbH, Germany
  *
+ * Copyright (c) 2025,
+ * Technische Universitaet Dresden, Germany
+ *
  * This software may be modified and distributed under the terms of
  * a BSD-style license. See the COPYING file in the package base
  * directory for details.
@@ -35,19 +38,21 @@ scorep_ompt_unify_pre( void )
     uint32_t offset = scorep_unify_helper_define_comm_locations(
         SCOREP_GROUP_OPENMP_TARGET_LOCATIONS,
         "OpenMP Target",
-        ( uint64_t )scorep_ompt_global_location_count,
-        scorep_ompt_global_location_ids );
+        ( uint64_t )scorep_ompt_my_location_count,
+        scorep_ompt_my_location_ids );
 
-    for ( uint32_t i = 0; i < scorep_ompt_global_location_count; ++i )
+    /* Create subgroup for our locations as indices into the globally collated
+     * OpenMP locations */
+    for ( uint32_t i = 0; i < scorep_ompt_my_location_count; ++i )
     {
-        scorep_ompt_global_location_ids[ i ] = i + offset;
+        scorep_ompt_my_location_ids[ i ] = i + offset;
     }
 
     SCOREP_GroupHandle group_handle = SCOREP_Definitions_NewGroup(
         SCOREP_GROUP_OPENMP_TARGET_GROUP,
         "OPENMP_TARGET_GROUP",
-        scorep_ompt_global_location_count,
-        scorep_ompt_global_location_ids );
+        scorep_ompt_my_location_count,
+        scorep_ompt_my_location_ids );
 
     SCOREP_LOCAL_HANDLE_DEREF( scorep_ompt_interim_communicator_handle,
                                InterimCommunicator )->unified =

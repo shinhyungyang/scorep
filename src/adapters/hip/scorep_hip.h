@@ -1,7 +1,7 @@
 /*
  * This file is part of the Score-P software (http://www.score-p.org)
  *
- * Copyright (c) 2022,
+ * Copyright (c) 2022, 2025,
  * Technische Universitaet Dresden, Germany
  *
  * This software may be modified and distributed under the terms of
@@ -35,8 +35,8 @@ extern size_t scorep_hip_subsystem_id;
 
 extern uint64_t                         scorep_hip_features;
 extern uint64_t                         scorep_hip_activity_buffer_size;
-extern uint64_t                         scorep_hip_global_location_count;
-extern uint64_t*                        scorep_hip_global_location_ids;
+extern uint64_t                         scorep_hip_my_location_count;
+extern uint64_t*                        scorep_hip_my_location_ids;
 extern SCOREP_InterimCommunicatorHandle scorep_hip_interim_communicator_handle;
 
 void

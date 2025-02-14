@@ -1,7 +1,7 @@
 /*
  * This file is part of the Score-P software (http://www.score-p.org)
  *
- * Copyright (c) 2022,
+ * Copyright (c) 2022, 2025,
  * Technische Universitaet Dresden, Germany
  *
  * Copyright (c) 2022-2024,
@@ -107,7 +107,7 @@ add_device_stream( scorep_ompt_target_device_t* device,
         device->location_group );
     UTILS_BUG_ON( !stream->scorep_location );
     stream->local_rank = UTILS_Atomic_FetchAdd_uint32(
-        &scorep_ompt_global_location_count,
+        &scorep_ompt_my_location_count,
         1,
         UTILS_ATOMIC_SEQUENTIAL_CONSISTENT );
     stream->next = NULL;

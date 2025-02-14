@@ -7,7 +7,7 @@
  * Copyright (c) 2009-2013,
  * Gesellschaft fuer numerische Simulation mbH Braunschweig, Germany
  *
- * Copyright (c) 2009-2014, 2016,
+ * Copyright (c) 2009-2014, 2016, 2025,
  * Technische Universitaet Dresden, Germany
  *
  * Copyright (c) 2009-2013,
@@ -110,8 +110,8 @@ extern size_t scorep_cupti_activity_buffer_size;
  */
 extern size_t scorep_cupti_activity_buffer_chunk_size;
 
-extern size_t    scorep_cuda_global_location_number;
-extern uint64_t* scorep_cuda_global_location_ids;
+extern size_t    scorep_cuda_my_location_count;
+extern uint64_t* scorep_cuda_my_location_ids;
 
 /* handles for CUDA communication unification */
 extern SCOREP_InterimCommunicatorHandle scorep_cuda_interim_communicator_handle;
