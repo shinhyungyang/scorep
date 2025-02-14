@@ -1,7 +1,7 @@
 /*
  * This file is part of the Score-P software (http://www.score-p.org)
  *
- * Copyright (c) 2020, 2022, 2024,
+ * Copyright (c) 2020, 2022, 2024-2025,
  * Technische Universitaet Dresden, Germany
  *
  * Copyright (c) 2022,
@@ -75,7 +75,6 @@ static SCOREP_SourceFileHandle kokkos_file_handle = SCOREP_INVALID_SOURCE_FILE;
 static SCOREP_RegionHandle kokkos_deep_copy_region = SCOREP_INVALID_REGION;
 
 // declarations for event lib
-static SCOREP_RmaWindowHandle kokkos_rma_window;
 #define KOKKOS_RMA_MAGIC 0xDEADBEEF
 
 /*
@@ -343,8 +342,6 @@ init_kokkos( void )
                 SCOREP_PARADIGM_KOKKOS,
                 SCOREP_REGION_DATA_TRANSFER );
             SCOREP_RegionHandle_SetGroup( kokkos_deep_copy_region, "Kokkos deep copy" );
-
-            kokkos_rma_window = scorep_kokkos_define_rma_win();
         }
         kokkos_initialized = true;
     }
@@ -721,17 +718,19 @@ kokkosp_begin_deep_copy( SpaceHandle dstHandle,
     // Do the RMA
     uint32_t target_rank = get_device_location_rank();
 
+    SCOREP_RmaWindowHandle rma_window = scorep_kokkos_get_rma_win();
+
     if ( !is_spacehandle_device( dstHandle.name ) )
     {
         // dest is host, so a host-perspective get is forced
-        SCOREP_RmaGet( kokkos_rma_window,
+        SCOREP_RmaGet( rma_window,
                        target_rank,
                        size,
                        KOKKOS_RMA_MAGIC );
     }
     else
     {
-        SCOREP_RmaPut( kokkos_rma_window,
+        SCOREP_RmaPut( rma_window,
                        target_rank,
                        size,
                        KOKKOS_RMA_MAGIC );
@@ -765,7 +764,7 @@ kokkosp_end_deep_copy( void )
     /* We ignore host->host or device->device transfers */
     if ( data->active_deep_copy )
     {
-        SCOREP_RmaOpCompleteBlocking( kokkos_rma_window,
+        SCOREP_RmaOpCompleteBlocking( scorep_kokkos_get_rma_win(),
                                       KOKKOS_RMA_MAGIC );
         data->active_deep_copy = false;
     }

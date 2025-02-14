@@ -68,8 +68,8 @@ static SCOREP_Location* kokkos_device_location;
 
 static uint32_t kokkos_location_rank = 0;
 
-static SCOREP_InterimCommunicatorHandle kokkos_interim_communicator_handle =
-    SCOREP_INVALID_INTERIM_COMMUNICATOR;
+static SCOREP_InterimCommunicatorHandle kokkos_interim_communicator_handle;
+static SCOREP_RmaWindowHandle           kokkos_rma_window;
 
 static void
 init_host_location( SCOREP_Location* location )
@@ -131,21 +131,32 @@ scorep_kokkos_get_device_location( void )
 }
 
 SCOREP_RmaWindowHandle
-scorep_kokkos_define_rma_win( void )
+scorep_kokkos_get_rma_win( void )
 {
-    kokkos_interim_communicator_handle =
-        SCOREP_Definitions_NewInterimCommunicator(
-            SCOREP_INVALID_INTERIM_COMMUNICATOR,
-            SCOREP_PARADIGM_KOKKOS,
-            0, NULL );
-    return SCOREP_Definitions_NewRmaWindow( "KOKKOS_WINDOW",
-                                            kokkos_interim_communicator_handle,
-                                            SCOREP_RMA_WINDOW_FLAG_NONE );
+    if ( kokkos_interim_communicator_handle == SCOREP_INVALID_INTERIM_COMMUNICATOR )
+    {
+        kokkos_interim_communicator_handle =
+            SCOREP_Definitions_NewInterimCommunicator(
+                SCOREP_INVALID_INTERIM_COMMUNICATOR,
+                SCOREP_PARADIGM_KOKKOS,
+                0, NULL );
+
+        kokkos_rma_window = SCOREP_Definitions_NewRmaWindow( "KOKKOS_WINDOW",
+                                                             kokkos_interim_communicator_handle,
+                                                             SCOREP_RMA_WINDOW_FLAG_NONE );
+    }
+
+    return kokkos_rma_window;
 }
 
 static size_t
 create_comm_group( uint64_t** globalLocationIds )
 {
+    if ( kokkos_interim_communicator_handle == SCOREP_INVALID_INTERIM_COMMUNICATOR )
+    {
+        return 0;
+    }
+
     /* At least the current CPU location */
     size_t count = 1;
 
@@ -237,6 +248,12 @@ kokkos_subsystem_pre_unify( void )
     uint32_t offset = scorep_unify_helper_define_comm_locations(
         SCOREP_GROUP_KOKKOS_LOCATIONS, "KOKKOS",
         my_location_count, my_location_ids );
+    if ( my_location_count == 0 )
+    {
+        free( my_location_ids );
+        return SCOREP_SUCCESS;
+    }
+
     UTILS_DEBUG( "Unifying %d location", my_location_count );
 
     /* Create subgroup for our locations as indices into the globally collated
