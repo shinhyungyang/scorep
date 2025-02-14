@@ -211,6 +211,14 @@ create_wait_subsystem_pre_unify( void )
         "PTHREAD",
         n_locations,
         location_ids );
+    /* Just a safety and consistency condition with other users of
+     * scorep_unify_helper_define_comm_locations(). There should always be the
+     * main thread. */
+    if ( n_locations == 0 )
+    {
+        free( location_ids );
+        return SCOREP_SUCCESS;
+    }
 
     /* Assign this process's pthread locations the global position in the
      * SCOREP_GROUP_PTHREAD_LOCATIONS group */
