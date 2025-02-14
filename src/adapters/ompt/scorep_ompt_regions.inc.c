@@ -1,7 +1,7 @@
 /*
  * This file is part of the Score-P software (http://www.score-p.org)
  *
- * Copyright (c) 2022-2024,
+ * Copyright (c) 2022-2025,
  * Forschungszentrum Juelich GmbH, Germany
  *
  * This software may be modified and distributed under the terms of
@@ -425,11 +425,6 @@ codeptr_hash_value_ctor( codeptr_hash_key_t* key,
         char         unique_name[ type_strlen + append ];
         memcpy( &unique_name[ 0 ], region_fallback[ key->type ].name, type_strlen );
         snprintf( &unique_name[ type_strlen ], append, " @%s:%u", file_name, line_no );
-        /* For OpenMP target, also remove line_no to ensure that Vampir sets the correct paradigm */
-        if ( key->type > TOOL_HOST_EVENTS )
-        {
-            line_no = SCOREP_INVALID_LINE_NO;
-        }
 
         region = SCOREP_Definitions_NewRegion( unique_name,
                                                unique_name,
