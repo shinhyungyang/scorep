@@ -34,6 +34,10 @@ scorep_opencl_define_locations( void )
         SCOREP_GROUP_OPENCL_LOCATIONS,
         "OPENCL", scorep_opencl_my_location_count,
         scorep_opencl_my_location_ids );
+    if ( scorep_opencl_my_location_count == 0 )
+    {
+        return;
+    }
 
     /* Create subgroup for our locations as indices into the globally collated
      * OpenCL locations */
