@@ -58,6 +58,10 @@ scorep_cuda_define_cuda_locations( void )
         SCOREP_GROUP_CUDA_LOCATIONS,
         "CUDA", scorep_cuda_my_location_count,
         scorep_cuda_my_location_ids );
+    if ( scorep_cuda_my_location_count == 0 )
+    {
+        return;
+    }
 
     /* Create subgroup for our locations as indices into the globally collated
      * CUDA locations */

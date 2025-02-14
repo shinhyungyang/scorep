@@ -1920,16 +1920,9 @@ handle_cuda_memcpy( const CUpti_CallbackData* cbInfo,
 
             SCOREP_CUPTI_LOCK();
 
-            if ( kind != cudaMemcpyDeviceToDevice &&
-                 context->location_id == SCOREP_CUPTI_NO_ID )
-            {
-                context->location_id = scorep_cupti_location_counter++;
-            }
-
-            if ( SCOREP_CUPTI_NO_ID == stream->location_id )
-            {
-                stream->location_id = scorep_cupti_location_counter++;
-            }
+            scorep_cupti_activate_rma( kind == cudaMemcpyDeviceToDevice,
+                                       context,
+                                       stream );
 
             SCOREP_CUPTI_UNLOCK();
         }
@@ -2166,23 +2159,6 @@ scorep_cupti_callbacks_init( void )
         /* if GPU streams are necessary */
         if ( scorep_cuda_record_kernels || scorep_cuda_record_memcpy || scorep_cuda_record_gpumemusage )
         {
-            if ( scorep_cuda_record_memcpy )
-            {
-                /* create interim communicator once for a process */
-                scorep_cuda_interim_communicator_handle =
-                    SCOREP_Definitions_NewInterimCommunicator(
-                        SCOREP_INVALID_INTERIM_COMMUNICATOR,
-                        SCOREP_PARADIGM_CUDA,
-                        0,
-                        NULL );
-
-                scorep_cuda_window_handle =
-                    SCOREP_Definitions_NewRmaWindow(
-                        "CUDA_WINDOW",
-                        scorep_cuda_interim_communicator_handle,
-                        SCOREP_RMA_WINDOW_FLAG_NONE );
-            }
-
             {
                 SCOREP_SourceFileHandle scorep_cuda_sync_file_handle =
                     SCOREP_Definitions_NewSourceFile( "CUDA_SYNC" );

@@ -7,7 +7,7 @@
  * Copyright (c) 2009-2013,
  * Gesellschaft fuer numerische Simulation mbH Braunschweig, Germany
  *
- * Copyright (c) 2009-2014, 2016, 2022,
+ * Copyright (c) 2009-2014, 2016, 2022, 2025,
  * Technische Universitaet Dresden, Germany
  *
  * Copyright (c) 2009-2013,
@@ -637,17 +637,7 @@ scorep_cupti_activity_write_memcpy( CUpti_ActivityMemcpy* memcpy,
         contextActivity->gpu_idle = true;
     }
 
-    /* remember this CUDA stream is doing CUDA communication */
-    if ( kind != SCOREP_CUPTI_DEV2DEV &&
-         context->location_id == SCOREP_CUPTI_NO_ID )
-    {
-        context->location_id = scorep_cupti_location_counter++;
-    }
-
-    if ( SCOREP_CUPTI_NO_ID == stream->location_id )
-    {
-        stream->location_id = scorep_cupti_location_counter++;
-    }
+    scorep_cupti_activate_rma( kind == SCOREP_CUPTI_DEV2DEV, context, stream );
 
     if ( kind == SCOREP_CUPTI_HOST2DEV )
     {
