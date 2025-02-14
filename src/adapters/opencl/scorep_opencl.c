@@ -1,7 +1,7 @@
 /*
  * This file is part of the Score-P software (http://www.score-p.org)
  *
- * Copyright (c) 2014-2017, 2020, 2022,
+ * Copyright (c) 2014-2017, 2020, 2022, 2025,
  * Technische Universitaet Dresden, Germany
  *
  * Copyright (c) 2015, 2020, 2022,
@@ -146,10 +146,10 @@ typedef struct scorep_opencl_location
 static scorep_opencl_location* location_list = NULL;
 
 /** count communicating locations (for OpenCL communication unification) */
-size_t scorep_opencl_global_location_number = 0;
+size_t scorep_opencl_my_location_count = 0;
 
 /** pointer to the array containing all communicating locations */
-uint64_t* scorep_opencl_global_location_ids = NULL;
+uint64_t* scorep_opencl_my_location_ids = NULL;
 
 /** handles for OpenCL communication unification */
 SCOREP_InterimCommunicatorHandle scorep_opencl_interim_communicator_handle =
@@ -621,7 +621,7 @@ opencl_set_cpu_location_id( SCOREP_Location* hostLocation )
 
         SCOREP_OPENCL_LOCK();
 
-        loc_data->location_id = scorep_opencl_global_location_number++;
+        loc_data->location_id = scorep_opencl_my_location_count++;
 
         // prepend to communicating location list
         loc_data->next = location_list;
@@ -748,7 +748,7 @@ scorep_opencl_retain_buffer( scorep_opencl_queue*        queue,
     {
         SCOREP_OPENCL_LOCK();
         // set location counter and create RMA window
-        queue->location_id = scorep_opencl_global_location_number++;
+        queue->location_id = scorep_opencl_my_location_count++;
         SCOREP_OPENCL_UNLOCK();
     }
 
@@ -1384,14 +1384,14 @@ kernel_hash_get( const char* name )
 static void
 opencl_create_comm_group( void )
 {
-    if ( scorep_opencl_global_location_number == 0 )
+    if ( scorep_opencl_my_location_count == 0 )
     {
         return;
     }
 
     // allocate the OpenCL communication group array
-    scorep_opencl_global_location_ids = ( uint64_t* )malloc(
-        scorep_opencl_global_location_number * sizeof( uint64_t ) );
+    scorep_opencl_my_location_ids = ( uint64_t* )malloc(
+        scorep_opencl_my_location_count * sizeof( uint64_t ) );
 
     /* Add all queue and host locations that are involved in OpenCL
        communication. Ensure the array boundary (count). */
@@ -1402,11 +1402,11 @@ opencl_create_comm_group( void )
     scorep_opencl_queue* queue = cl_queue_list;
     while ( queue != NULL )
     {
-        if ( count < scorep_opencl_global_location_number )
+        if ( count < scorep_opencl_my_location_count )
         {
             if ( SCOREP_OPENCL_NO_ID != queue->location_id )
             {
-                scorep_opencl_global_location_ids[ queue->location_id ] =
+                scorep_opencl_my_location_ids[ queue->location_id ] =
                     SCOREP_Location_GetGlobalId( queue->location );
 
                 count++;
@@ -1427,9 +1427,9 @@ opencl_create_comm_group( void )
     scorep_opencl_location* location = location_list;
     while ( location != NULL )
     {
-        if ( count < scorep_opencl_global_location_number )
+        if ( count < scorep_opencl_my_location_count )
         {
-            scorep_opencl_global_location_ids[ location->location_id ] =
+            scorep_opencl_my_location_ids[ location->location_id ] =
                 SCOREP_Location_GetGlobalId( location->location );
 
             count++;

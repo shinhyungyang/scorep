@@ -7,7 +7,7 @@
  * Copyright (c) 2009-2012,
  * Gesellschaft fuer numerische Simulation mbH Braunschweig, Germany
  *
- * Copyright (c) 2009-2014, 2016,
+ * Copyright (c) 2009-2014, 2016, 2025,
  * Technische Universitaet Dresden, Germany
  *
  * Copyright (c) 2009-2012,
@@ -68,9 +68,9 @@ SCOREP_InterimCommunicatorHandle scorep_cuda_interim_communicator_handle =
 SCOREP_RmaWindowHandle scorep_cuda_window_handle =
     SCOREP_INVALID_RMA_WINDOW;
 
-size_t scorep_cuda_global_location_number = 0;
+size_t scorep_cuda_my_location_count = 0;
 
-uint64_t* scorep_cuda_global_location_ids = NULL;
+uint64_t* scorep_cuda_my_location_ids = NULL;
 
 void
 scorep_cuda_set_features( void )

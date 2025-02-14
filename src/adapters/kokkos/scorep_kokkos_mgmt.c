@@ -231,25 +231,25 @@ kokkos_subsystem_init_location( SCOREP_Location* location,
 static SCOREP_ErrorCode
 kokkos_subsystem_pre_unify( void )
 {
-    uint64_t* global_location_ids;
-    size_t    global_location_number = create_comm_group( &global_location_ids );
+    uint64_t* my_location_ids;
+    size_t    my_location_count = create_comm_group( &my_location_ids );
 
-    size_t   i      = 0;
     uint32_t offset = scorep_unify_helper_define_comm_locations(
         SCOREP_GROUP_KOKKOS_LOCATIONS, "KOKKOS",
-        global_location_number, global_location_ids );
-    UTILS_DEBUG( "Unifying %d location", global_location_number );
+        my_location_count, my_location_ids );
+    UTILS_DEBUG( "Unifying %d location", my_location_count );
 
-    /* add the offset */
-    for ( i = 0; i < global_location_number; i++ )
+    /* Create subgroup for our locations as indices into the globally collated
+     * Kokkos locations */
+    for ( size_t i = 0; i < my_location_count; i++ )
     {
-        global_location_ids[ i ] = i + offset;
+        my_location_ids[ i ] = i + offset;
     }
 
     SCOREP_GroupHandle group_handle = SCOREP_Definitions_NewGroup(
         SCOREP_GROUP_KOKKOS_GROUP, "KOKKOS_GROUP",
-        global_location_number, global_location_ids );
-    free( global_location_ids );
+        my_location_count, my_location_ids );
+    free( my_location_ids );
 
     if ( kokkos_interim_communicator_handle !=
          SCOREP_INVALID_INTERIM_COMMUNICATOR )

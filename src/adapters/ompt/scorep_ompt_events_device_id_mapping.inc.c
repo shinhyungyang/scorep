@@ -4,6 +4,9 @@
  * Copyright (c) 2023-2024,
  * Forschungszentrum Juelich GmbH, Germany
  *
+ * Copyright (c) 2025,
+ * Technische Universitaet Dresden, Germany
+ *
  * This software may be modified and distributed under the terms of
  * a BSD-style license. See the COPYING file in the package base
  * directory for details.
@@ -26,7 +29,7 @@ get_host_local_rank( void )
     if ( data->local_rank == SCOREP_OMPT_INVALID_LOCAL_RANK )
     {
         data->local_rank = UTILS_Atomic_FetchAdd_uint32(
-            &scorep_ompt_global_location_count,
+            &scorep_ompt_my_location_count,
             1,
             UTILS_ATOMIC_SEQUENTIAL_CONSISTENT );
         UTILS_DEBUG( "[%s] Added location id %" PRIu32,
