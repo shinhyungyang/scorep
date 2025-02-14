@@ -88,28 +88,6 @@ ompt_start_tool( unsigned int omp_version, /* == _OPENMP */
 }
 
 
-static inline void
-init_rma_window( void )
-{
-    if ( scorep_ompt_interim_communicator_handle != SCOREP_INVALID_INTERIM_COMMUNICATOR )
-    {
-        return;
-    }
-
-    scorep_ompt_interim_communicator_handle =
-        SCOREP_Definitions_NewInterimCommunicator(
-            SCOREP_INVALID_INTERIM_COMMUNICATOR,
-            SCOREP_PARADIGM_OPENMP_TARGET,
-            0,
-            NULL );
-    scorep_ompt_rma_window_handle =
-        SCOREP_Definitions_NewRmaWindow(
-            "OPENMP_TARGET_WINDOW",
-            scorep_ompt_interim_communicator_handle,
-            SCOREP_RMA_WINDOW_FLAG_NONE );
-}
-
-
 static int
 initialize_tool( ompt_function_lookup_t lookup,
                  int                    initialDeviceNum,
@@ -552,13 +530,6 @@ ompt_subsystem_init( void )
 static SCOREP_ErrorCode
 ompt_subsystem_begin( void )
 {
-    /* Only initialize RMA window if OpenMP target recording is enabled.
-     * The host side of OMPT does not require having an RMA window. */
-    if ( scorep_ompt_target_features > 0 )
-    {
-        init_rma_window();
-    }
-
     UTILS_DEBUG( "[%s] start recording OMPT events", UTILS_FUNCTION_NAME );
     scorep_ompt_record_events = true;
     return SCOREP_SUCCESS;
@@ -631,10 +602,6 @@ ompt_subsystem_init_location( struct SCOREP_Location* newLocation,
 static SCOREP_ErrorCode
 ompt_subsystem_pre_unify( void )
 {
-    if ( scorep_ompt_interim_communicator_handle == SCOREP_INVALID_INTERIM_COMMUNICATOR )
-    {
-        return SCOREP_SUCCESS;
-    }
     #if HAVE( SCOREP_OMPT_TARGET_SUPPORT )
     collect_comm_locations();
     #endif /* HAVE( SCOREP_OMPT_TARGET_SUPPORT ) */
@@ -646,10 +613,6 @@ ompt_subsystem_pre_unify( void )
 static SCOREP_ErrorCode
 ompt_subsystem_post_unify( void )
 {
-    if ( scorep_ompt_interim_communicator_handle == SCOREP_INVALID_INTERIM_COMMUNICATOR )
-    {
-        return SCOREP_SUCCESS;
-    }
     scorep_ompt_unify_post();
     return SCOREP_SUCCESS;
 }
