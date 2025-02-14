@@ -86,7 +86,7 @@
                 global(omp_flush);
 
                 // OpenMP Target-specific masks
-                global(omp_target_other);
+                global(omp_target);
                 global(omp_target_transfer);
                 global(omp_target_kernel_launches);
                 global(omp_target_kernel_executions);
@@ -387,7 +387,9 @@
                             ${omp_sync_critical}[${i}] = 1;
                         };
 
-                        if ( ${name} =~ /^omp_(destroy|init|set|test|unset)(_nest){0,1}_lock$/ )
+                        if ( ( ${role} eq "wrapper" )
+                             and
+                             ( ${name} =~ /_lock/ ) )
                         {
                             ${omp_sync_lock_api}[${i}] = 1;
                         };
@@ -413,16 +415,12 @@
                     {
                         ${includesOpenMPTarget} = 1;
                         ${includesOpenMP} = 1;
+                        ${omp_target}[${i}] = 1;
 
                         if ( ${role} eq "function"
                              or ${role} eq "kernel" )
                         {
                             ${omp_target_kernel_executions}[${i}] = 1;
-                        };
-
-                        if ( ${role} eq "taskwait" )
-                        {
-                            ${omp_target_other}[${i}] = 1;
                         };
 
                         if ( ${role} eq "data transfer"
@@ -795,7 +793,7 @@
 
                 if ( ${includesOpenMPTarget} == 0 )
                 {
-                    cube::metric::set::omp_target_other("value", "VOID");
+                    cube::metric::set::omp_target_time("value", "VOID");
                     cube::metric::set::omp_target_transfer("value", "VOID");
                     cube::metric::set::omp_target_kernel_launches("value", "VOID");
                     cube::metric::set::omp_target_kernel_executions("value", "VOID");
@@ -1455,7 +1453,7 @@
                 <cubepl>
                     metric::omp_synchronization() + metric::omp_flush() + metric::omp_target_time()
                 </cubepl>
-                <metric type="POSTDERIVED">
+                <metric type="PREDERIVED_EXCLUSIVE">
                     <disp_name>OpenMP Target</disp_name>
                     <uniq_name>omp_target_time</uniq_name>
                     <dtype>FLOAT</dtype>
@@ -1463,7 +1461,7 @@
                     <url>@mirror@scorep_metrics.html#omp_target_time</url>
                     <descr>Time spent in the OpenMP target parts of the OpenMP specification</descr>
                     <cubepl>
-                        metric::omp_target_transfer() + metric::omp_target_kernel_launches() + metric::omp_target_other()
+                        ${omp_target}[${calculation::callpath::id}] * ( metric::time(e) - metric::omp_target_kernel_executions(e) - metric::omp_idle_threads(e) )
                     </cubepl>
                     <metric type="PREDERIVED_EXCLUSIVE">
                         <disp_name>Memory management</disp_name>
@@ -1485,17 +1483,6 @@
                         <descr>Time needed to launch OpenMP kernels</descr>
                         <cubepl>
                             ${omp_target_kernel_launches}[${calculation::callpath::id}] * ( metric::time(e) - metric::omp_idle_threads(e) )
-                        </cubepl>
-                    </metric>
-                    <metric type="PREDERIVED_EXCLUSIVE">
-                        <disp_name>Other</disp_name>
-                        <uniq_name>omp_target_other</uniq_name>
-                        <dtype>FLOAT</dtype>
-                        <uom>sec</uom>
-                        <url>@mirror@scorep_metrics.html#omp_target_other</url>
-                        <descr>Time spent on memory management including data transfer from host to device and vice versa</descr>
-                        <cubepl>
-                            ${omp_target_other}[${calculation::callpath::id}] * ( metric::time(e) - metric::omp_idle_threads(e) )
                         </cubepl>
                     </metric>
                 </metric>
