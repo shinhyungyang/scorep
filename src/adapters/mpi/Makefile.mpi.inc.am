@@ -38,6 +38,7 @@ if HAVE_MPI_SUPPORT
 # runtime management library for the MPI adapter
 
 lib_LTLIBRARIES += libscorep_adapter_mpi_mgmt.la
+
 libscorep_adapter_mpi_mgmt_la_SOURCES = \
     $(SRC_ROOT)src/adapters/mpi/scorep_mpi_init.c \
     $(SRC_ROOT)src/adapters/mpi/c/scorep_mpi_groups.c \
@@ -71,6 +72,7 @@ libscorep_adapter_mpi_mgmt_la_CPPFLAGS = \
     -I$(INC_DIR_DEFINITIONS) \
     -I$(INC_DIR_COMMON_HASH) \
     @SCOREP_TIMER_CPPFLAGS@
+
 libscorep_adapter_mpi_mgmt_la_LIBADD = \
     $(LIB_DIR_SCOREP)libutils.la \
     $(backend_libutils_la_needs_LIBS) \
@@ -81,7 +83,6 @@ BACKEND_TARGETS += $(LIB_DIR_SCOREP)libutils.la \
 
 if HAVE_MPI_USEMPI_SUPPORT
 
-libscorep_adapter_mpi_mgmt_la_LINK = $(F77LINK)
 libscorep_adapter_mpi_mgmt_la_SOURCES += \
     $(SRC_ROOT)src/adapters/mpi/f/scorep_mpi_fortran.c \
     $(SRC_ROOT)src/adapters/mpi/f/scorep_mpi_f2c.c
@@ -166,11 +167,16 @@ endif SCOREP_COMPILER_FC_PGI
 
 else !HAVE_MPI_USEMPI_SUPPORT
 
-libscorep_adapter_mpi_mgmt_la_LINK = $(LINK)
 libscorep_adapter_mpi_mgmt_la_SOURCES += \
    $(SRC_ROOT)src/adapters/mpi/f/scorep_mpi_fortran_mockup.c
 
 endif !HAVE_MPI_USEMPI_SUPPORT
+
+if HAVE_MPI_FORTRAN_SUPPORT
+libscorep_adapter_mpi_mgmt_la_LINK = $(F77LINK)
+else !HAVE_MPI_FORTRAN_SUPPORT
+libscorep_adapter_mpi_mgmt_la_LINK = $(LINK)
+endif
 
 libscorep_adapter_mpi_mgmt_la_LDFLAGS = \
     @MPILIB_LDFLAGS@ \
@@ -179,34 +185,15 @@ libscorep_adapter_mpi_mgmt_la_LDFLAGS = \
 # event library for the MPI adapter
 
 lib_LTLIBRARIES += libscorep_adapter_mpi_event.la
+
 libscorep_adapter_mpi_event_la_SOURCES =
+
 libscorep_adapter_mpi_event_la_LIBADD = \
-    $(LIB_DIR_SCOREP)libscorep_alloc_metric.la
-
-if HAVE_MPI_USEMPI_SUPPORT
-
-libscorep_adapter_mpi_event_la_LINK = $(F77LINK)
-libscorep_adapter_mpi_event_la_LIBADD += \
-    libscorep_adapter_mpi_c_event.la \
-    libscorep_adapter_mpi_event_fortran_sub1.la \
-    libscorep_adapter_mpi_event_fortran_sub2.la \
-    libscorep_adapter_mpi_event_fortran_sub3.la \
-    libscorep_adapter_mpi_event_fortran_sub4.la \
-    libscorep_adapter_mpi_event_fortran_f08_abort.la
-
-else !HAVE_MPI_USEMPI_SUPPORT
-
-libscorep_adapter_mpi_event_la_LINK = $(LINK)
-libscorep_adapter_mpi_event_la_LIBADD += \
+    $(LIB_DIR_SCOREP)libscorep_alloc_metric.la \
     libscorep_adapter_mpi_c_event.la
 
-endif !HAVE_MPI_USEMPI_SUPPORT
-
-libscorep_adapter_mpi_event_la_LDFLAGS = \
-    @MPILIB_LDFLAGS@ \
-    $(library_api_version_ldflags)
-
 noinst_LTLIBRARIES += libscorep_adapter_mpi_c_event.la
+
 libscorep_adapter_mpi_c_event_la_SOURCES = \
     $(SRC_ROOT)src/adapters/mpi/c/wrappers/SCOREP_Mpi_C_Cg.c \
     $(SRC_ROOT)src/adapters/mpi/c/wrappers/SCOREP_Mpi_C_Coll.c \
@@ -239,6 +226,13 @@ libscorep_adapter_mpi_c_event_la_CPPFLAGS = \
 ##libscorep_adapter_mpi_c_event_la_CPPFLAGS += -DSCOREP_MPI_NO_HOOKS
 
 if HAVE_MPI_USEMPI_SUPPORT
+
+libscorep_adapter_mpi_event_la_LIBADD += \
+    libscorep_adapter_mpi_event_fortran_sub1.la \
+    libscorep_adapter_mpi_event_fortran_sub2.la \
+    libscorep_adapter_mpi_event_fortran_sub3.la \
+    libscorep_adapter_mpi_event_fortran_sub4.la \
+    libscorep_adapter_mpi_event_fortran_f08_abort.la
 
 noinst_LTLIBRARIES += \
     libscorep_adapter_mpi_event_fortran_sub1.la \
@@ -300,6 +294,17 @@ libscorep_adapter_mpi_event_fortran_f08_abort_la_SOURCES = \
     $(SRC_ROOT)src/adapters/mpi/f/SCOREP_Mpi_F_Env.f
 
 endif HAVE_MPI_USEMPI_SUPPORT
+
+if HAVE_MPI_FORTRAN_SUPPORT
+libscorep_adapter_mpi_event_la_LINK = $(F77LINK)
+else !HAVE_MPI_FORTRAN_SUPPORT
+libscorep_adapter_mpi_event_la_LINK = $(LINK)
+endif
+
+libscorep_adapter_mpi_event_la_LDFLAGS = \
+    @MPILIB_LDFLAGS@ \
+    $(library_api_version_ldflags)
+
 
 endif HAVE_MPI_SUPPORT
 
