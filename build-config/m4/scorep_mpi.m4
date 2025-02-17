@@ -227,20 +227,21 @@ AC_DEFINE([OMPI_OMIT_MPI1_COMPAT_DECLS],     [0], [Possibly expose deprecated MP
 if test "x${scorep_mpi_c_supported}" = "xyes"; then
   scorep_mpi_supported="yes"
   if test "x${scorep_mpi_f77_supported}" = "xyes" && test "x${scorep_mpi_f90_supported}" = "xyes"; then
-    scorep_mpi_fortran_supported="yes"
+    scorep_mpi_usempi_supported="yes"
   else
-    scorep_mpi_fortran_supported="no"
+    scorep_mpi_usempi_supported="no"
   fi
 else
   scorep_mpi_supported="no"
-  scorep_mpi_fortran_supported="no"
+  scorep_mpi_usempi_supported="no"
 fi
 
 if test "x${scorep_mpi_supported}" = "xno"; then
   AC_MSG_WARN([No suitable MPI compilers found. SCOREP MPI and hybrid libraries will not be build.])
 fi
 AM_CONDITIONAL([HAVE_MPI_SUPPORT], [test "x${scorep_mpi_supported}" = "xyes"])
-AM_CONDITIONAL([HAVE_MPI_FORTRAN_SUPPORT], [test "x${scorep_mpi_fortran_supported}" = "xyes"])
+AM_CONDITIONAL([HAVE_MPI_USEMPI_SUPPORT], [test "x${scorep_mpi_usempi_supported}" = "xyes"])
+AM_CONDITIONAL([HAVE_MPI_FORTRAN_SUPPORT], [test "x${scorep_mpi_usempi_supported}" = "xyes"])
 
 if test "x${scorep_mpi_supported}" = "xyes"; then
 
