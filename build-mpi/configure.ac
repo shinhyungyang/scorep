@@ -252,6 +252,29 @@ AS_CASE([${ac_scorep_platform}],
                libtool > libtool.fix && mv libtool.fix libtool])
          ])
 
+# Libtool determines some variables at configure time by parsing verbose
+# compiler output. For FC, these variables are not needed and sometimes contain
+# garbage (e.g. postdeps contains '-l -l' with GNU, or '-L -L' with Cray).
+# Therefore, we set the contents of these variables to the empty string.
+# See https://lists.gnu.org/archive/html/libtool/2025-02/msg00003.html and
+# https://lists.gnu.org/archive/html/bug-libtool/2025-02/msg00000.html.
+#
+# Configurations for different tags are included in the libtool script itself
+# in sections delimited with special comments.
+# Find the section for the FC tag, and replace the RHS of the assignment with ""
+# for some variables.
+AC_CONFIG_COMMANDS([libtool-fix-fc-postdeps], [[sed -e '/^# ### BEGIN LIBTOOL TAG CONFIG: FC$/bfc_section
+{ p; d }
+:fc_section
+n
+s/^predep_objects=.*/predep_objects=""/
+s/^postdep_objects=.*/postdep_objects=""/
+s/^predeps=.*/predeps=""/
+s/^postdeps=.*/postdeps=""/
+s/^compiler_lib_search_path=.*/compiler_lib_search_path=""/
+/^# ### END LIBTOOL TAG CONFIG: FC$/ { p; d }
+bfc_section' libtool > libtool.fix && mv libtool.fix libtool]])
+
 dnl Linux
 SCOREP_CHECK_SYSCALL([SYS_gettid],
                      [],
