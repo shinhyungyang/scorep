@@ -35,33 +35,33 @@
 !! @ingroup    MPI_Wrapper
 !<
 
-      SUBROUTINE scorep_fortran_get_mpi_status_size (status_size)
-      USE mpi
-      INTEGER status_size
-      status_size = MPI_STATUS_SIZE
-      END
+subroutine scorep_fortran_get_mpi_status_size(status_size)
+    use mpi
+    integer status_size
+    status_size = MPI_STATUS_SIZE
+end
 
-      SUBROUTINE scorep_fortran_get_mpi_bottom()
-      USE mpi
-      CALL scorep_mpi_fortran_init_bottom(MPI_BOTTOM)
-      END
+subroutine scorep_fortran_get_mpi_bottom()
+    use mpi
+    call scorep_mpi_fortran_init_bottom(MPI_BOTTOM)
+end
 
-      SUBROUTINE scorep_fortran_get_mpi_in_place()
-      USE mpi
-      CALL scorep_mpi_fortran_init_in_place(MPI_IN_PLACE)
-      END
+subroutine scorep_fortran_get_mpi_in_place()
+    use mpi
+    call scorep_mpi_fortran_init_in_place(MPI_IN_PLACE)
+end
 
-      SUBROUTINE scorep_fortran_get_mpi_status_ignore()
-      USE mpi
-      CALL scorep_mpi_fortran_init_status_ignore(MPI_STATUS_IGNORE)
-      END
+subroutine scorep_fortran_get_mpi_status_ignore()
+    use mpi
+    call scorep_mpi_fortran_init_status_ignore(MPI_STATUS_IGNORE)
+end
 
-      SUBROUTINE scorep_fortran_get_mpi_statuses_ignore()
-      USE mpi
-      CALL scorep_mpi_fortran_init_statuses_ignore(MPI_STATUSES_IGNORE)
-      END
+subroutine scorep_fortran_get_mpi_statuses_ignore()
+    use mpi
+    call scorep_mpi_fortran_init_statuses_ignore(MPI_STATUSES_IGNORE)
+end
 
-      SUBROUTINE scorep_fortran_get_mpi_unweighted()
-      USE mpi
-      CALL scorep_mpi_fortran_init_unweighted(MPI_UNWEIGHTED)
-      END
+subroutine scorep_fortran_get_mpi_unweighted()
+    use mpi
+    call scorep_mpi_fortran_init_unweighted(MPI_UNWEIGHTED)
+end

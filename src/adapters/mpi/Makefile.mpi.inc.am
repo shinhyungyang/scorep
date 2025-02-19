@@ -95,21 +95,6 @@ libscorep_adapter_mpi_mgmt_la_LIBADD += \
     libscorep_adapter_mpi_fortran_conv.la \
     $(libscorep_adapter_mpi_fortran_conv_la_needs_LIBS)
 
-if SCOREP_COMPILER_FC_CRAY
-if SCOREP_COMPILER_CC_CLANG
-if HAVE_BUILD_STATIC_LT_LIBRARIES
-# cc/CC are Clang, ftn is Cray
-# FLIBS needed for static linking only, it provides 'mpi_' symbol references
-# in scorep_mpi_f_init.f.
-# With FLIBS, a shared build fails during installcheck on daint, as the
-# binary doesn't find libgfortran (part of FLIBS), because it was not
-# rpathed by the compiler. The same shared build on lumi succeeds as the
-# single RPATH provided by the compiler happens to host libgfortran.
-libscorep_adapter_mpi_mgmt_la_LIBADD += $(FLIBS)
-endif HAVE_BUILD_STATIC_LT_LIBRARIES
-endif SCOREP_COMPILER_CC_CLANG
-endif SCOREP_COMPILER_FC_CRAY
-
 noinst_LTLIBRARIES += \
     libscorep_adapter_mpi_mgmt_fortran_sub1.la \
     libscorep_adapter_mpi_mgmt_fortran_sub2.la \
@@ -155,7 +140,7 @@ libscorep_adapter_mpi_mgmt_fortran_sub4_la_CPPFLAGS = \
 
 noinst_LTLIBRARIES += libscorep_adapter_mpi_fortran_conv.la
 libscorep_adapter_mpi_fortran_conv_la_SOURCES = \
-    $(SRC_ROOT)src/adapters/mpi/f/scorep_mpi_f_init.f
+    $(SRC_ROOT)src/adapters/mpi/f/scorep_mpi_f_init.f90
 
 if SCOREP_COMPILER_FC_PGI
 # due to the external declaration of MPI_WTIME, MPI_WTICK , PMPI_WTICK, and
@@ -173,7 +158,10 @@ libscorep_adapter_mpi_mgmt_la_SOURCES += \
 endif !HAVE_MPI_USEMPI_SUPPORT
 
 if HAVE_MPI_FORTRAN_SUPPORT
-libscorep_adapter_mpi_mgmt_la_LINK = $(F77LINK)
+libscorep_adapter_mpi_mgmt_la_LINK = $(FCLINK)
+if HAVE_BUILD_STATIC_LT_LIBRARIES
+libscorep_adapter_mpi_mgmt_la_LIBADD += $(FCLIBS)
+endif HAVE_BUILD_STATIC_LT_LIBRARIES
 else !HAVE_MPI_FORTRAN_SUPPORT
 libscorep_adapter_mpi_mgmt_la_LINK = $(LINK)
 endif
@@ -291,12 +279,15 @@ libscorep_adapter_mpi_event_fortran_sub4_la_CPPFLAGS = \
     -DFSUB=SCOREP_FORTRAN_SUB4
 
 libscorep_adapter_mpi_event_fortran_f08_abort_la_SOURCES = \
-    $(SRC_ROOT)src/adapters/mpi/f/SCOREP_Mpi_F_Env.f
+    $(SRC_ROOT)src/adapters/mpi/f/SCOREP_Mpi_F_Env.f90
 
 endif HAVE_MPI_USEMPI_SUPPORT
 
 if HAVE_MPI_FORTRAN_SUPPORT
-libscorep_adapter_mpi_event_la_LINK = $(F77LINK)
+libscorep_adapter_mpi_event_la_LINK = $(FCLINK)
+if HAVE_BUILD_STATIC_LT_LIBRARIES
+libscorep_adapter_mpi_event_la_LIBADD += $(FCLIBS)
+endif HAVE_BUILD_STATIC_LT_LIBRARIES
 else !HAVE_MPI_FORTRAN_SUPPORT
 libscorep_adapter_mpi_event_la_LINK = $(LINK)
 endif
