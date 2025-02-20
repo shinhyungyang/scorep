@@ -455,12 +455,6 @@ SCOREP_Libwrap_Create( SCOREP_LibwrapHandle**          outHandle,
     /* Initialize the new library wrapper handle */
     handle->attributes = attributes;
 
-    if ( attributes->init )
-    {
-        attributes->init( handle );
-        SCOREP_Libwrap_Enable( handle );
-    }
-
     /* Enqueue new library wrapper handle */
     handle->next    = libwrap_handles;
     libwrap_handles = handle;
@@ -632,6 +626,7 @@ const SCOREP_LibwrapAPI scorep_libwrap_plugin_api =
 {
     .create               = SCOREP_Libwrap_Create,
     .register_wrapper     = libwrap_plugin_api_register_wrapper,
+    .enable               = SCOREP_Libwrap_Enable,
     .get_original         = SCOREP_Libwrap_GetOriginal,
     .enter_measurement    = libwrap_plugin_api_enter_measurement,
     .exit_measurement     = libwrap_plugin_api_exit_measurement,

@@ -45,22 +45,21 @@ SCOREP_LIBWRAP_DECLARE_ORIGINAL_HANDLE( foo );
 static SCOREP_RegionHandle
 SCOREP_LIBWRAP_REGION_HANDLE( foo );
 
-static void
-library_wrapper_init( SCOREP_LibwrapHandle* lw )
-{
-    SCOREP_LIBWRAP_FUNC_REGISTER( lw, foo, "foo()", "example.h", 1 );
-}
-
 /* Library wrapper object */
 static SCOREP_LibwrapHandle* lw = SCOREP_LIBWRAP_NULL;
+
+static void
+libwrap_register_all( void )
+{
+    SCOREP_LIBWRAP_REGISTER_WRAPPER( lw, foo, "foo()", "example.h", 1 );
+}
 
 /* Library wrapper attributes */
 static const SCOREP_LibwrapAttributes lw_attr =
 {
     SCOREP_LIBWRAP_VERSION,
     "foo",
-    "Foo",
-    library_wrapper_init,
+    "Foo"
 };
 
 /*
@@ -72,8 +71,6 @@ SCOREP_LIBWRAP_WRAPPER( foo )( void )
     SCOREP_LIBWRAP_ENTER_MEASUREMENT();
     printf( "Wrapped function 'foo'\n" );
 
-    SCOREP_LIBWRAP_INIT( lw, lw_attr );
-
     SCOREP_LIBWRAP_FUNC_ENTER( foo );
 
     SCOREP_LIBWRAP_ENTER_WRAPPED_REGION();
@@ -83,4 +80,14 @@ SCOREP_LIBWRAP_WRAPPER( foo )( void )
     SCOREP_LIBWRAP_FUNC_EXIT( foo );
 
     SCOREP_LIBWRAP_EXIT_MEASUREMENT();
+}
+
+void
+libwrap_init( void )
+{
+    SCOREP_LIBWRAP_INIT( lw, lw_attr );
+
+    libwrap_register_all();
+
+    SCOREP_LIBWRAP_ENABLE( lw );
 }
