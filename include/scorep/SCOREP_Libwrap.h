@@ -53,11 +53,6 @@ struct SCOREP_LibwrapAttributes
     /** @brief The display/pretty name of the library wrapper. Could also
      *         include the target library's version. */
     const char* display_name;
-
-    /** @brief Called by Score-P when creating the library wrapper handle via
-     *         SCOREP_Libwrap_Create()/SCOREP_LibwrapAPI::create().
-     *         Register all symbols in it. */
-    void ( * init )( SCOREP_LibwrapHandle* libwrapHandle );
 };
 
 #ifdef __cplusplus

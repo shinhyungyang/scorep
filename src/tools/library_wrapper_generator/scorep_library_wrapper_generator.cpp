@@ -169,7 +169,15 @@ public:
                 << "\n";
         }
 
-        out << "/* wrapper declarations */\n"
+        out << "static SCOREP_LibwrapHandle*          libwrap_" << generator.m_config.wrapper_name << "_handle;\n"
+            << "static const SCOREP_LibwrapAttributes libwrap_" << generator.m_config.wrapper_name << "_attributes =\n"
+            << "{\n"
+            << "    SCOREP_LIBWRAP_VERSION,\n"
+            << "    " << make_string_literal( generator.m_config.wrapper_name ) << ",\n"
+            << "    " << make_string_literal( generator.m_config.display_name ) << "\n"
+            << "};\n"
+            << "\n"
+            << "/* wrapper declarations */\n"
             << "\n"
             << DEFINE_LIBWRAP_PROCESS_FUNC
             << "    SCOREP_LIBWRAP_DECLARE_ORIGINAL_TYPE( rettype, func, args ); \\\n"
@@ -187,20 +195,24 @@ public:
             << "        SCOREP_RegionHandle           region_handle; \\\n"
             << "    } SCOREP_LIBWRAP_REGION_DESCRIPTOR( func );\n"
             << "\n"
+            << "/* wrapper registration */\n"
+            << "\n"
             << "#define SCOREP_LIBWRAP_PROCESS_FUNC_WITH_NAMESPACE\n"
             << "#include \"" << remove_path( generator.m_config.function_list_file_name ) << "\"\n"
             << "\n"
             << DEFINE_LIBWRAP_PROCESS_FUNC
-            << "    static void libwrap_" << generator.m_config.wrapper_name << "_init__ ## func( SCOREP_LibwrapHandle* handle ) \\\n"
+            << "    static void \\\n"
+            << "    libwrap_" << generator.m_config.wrapper_name << "_register__ ## func( void ) \\\n"
             << "    { \\\n";
 
         if ( !generator.m_config.create_internal_wrapper_code_file )
         {
-            out << "        SCOREP_LIBWRAP_FUNC_REGISTER( handle, func, prettyname, file, line ); \\\n";
+            out << "        SCOREP_LIBWRAP_REGISTER_WRAPPER( libwrap_" << generator.m_config.wrapper_name << "_handle, \\\n"
+                << "                                         func, prettyname, file, line ); \\\n";
         }
         else
         {
-            out << "        SCOREP_Libwrap_RegisterWrapper( handle, \\\n"
+            out << "        SCOREP_Libwrap_RegisterWrapper( libwrap_" << generator.m_config.wrapper_name << "_handle, \\\n"
                 << "                                        prettyname, \\\n"
                 << "                                        #func, \\\n"
                 << "                                        " << make_string_literal( generator.m_config.display_name ) << ", \\\n"
@@ -217,26 +229,16 @@ public:
             << "#define SCOREP_LIBWRAP_PROCESS_FUNC_WITH_NAMESPACE\n"
             << "#include \"" << remove_path( generator.m_config.function_list_file_name ) << "\"\n"
             << "\n"
-            << "/* region init functions */\n"
-            << "\n"
             << "static void\n"
-            << "libwrap_" << generator.m_config.wrapper_name << "_init( SCOREP_LibwrapHandle* handle )\n"
+            << "libwrap_" << generator.m_config.wrapper_name << "_register_all( void )\n"
             << "{\n"
             << DEFINE_LIBWRAP_PROCESS_FUNC
-            << "    ns libwrap_" << generator.m_config.wrapper_name << "_init__ ## func( handle );\n"
+            << "    ns libwrap_" << generator.m_config.wrapper_name << "_register__ ## func();\n"
             << "\n"
             << "#include \"" << remove_path( generator.m_config.function_list_file_name ) << "\"\n"
             << "}\n"
-            << "\n" << endl;
-
-        out << "static SCOREP_LibwrapHandle*          libwrap_" << generator.m_config.wrapper_name << "_handle;\n"
-            << "static const SCOREP_LibwrapAttributes libwrap_" << generator.m_config.wrapper_name << "_attributes =\n"
-            << "{\n"
-            << "    SCOREP_LIBWRAP_VERSION,\n"
-            << "    " << make_string_literal( generator.m_config.wrapper_name ) << ",\n"
-            << "    " << make_string_literal( generator.m_config.display_name ) << ",\n"
-            << "    libwrap_" << generator.m_config.wrapper_name << "_init,\n"
-            << "};\n"
+            << "\n"
+            << "/* wrapper initialization */\n"
             << "\n";
 
         if ( !generator.m_config.create_internal_wrapper_code_file )
@@ -253,6 +255,10 @@ public:
                 << "\n"
                 << "    SCOREP_LIBWRAP_INIT( libwrap_" << generator.m_config.wrapper_name << "_handle,\n"
                 << "                         libwrap_" << generator.m_config.wrapper_name << "_attributes );\n"
+                << "\n"
+                << "    libwrap_" << generator.m_config.wrapper_name << "_register_all();\n"
+                << "\n"
+                << "    SCOREP_LIBWRAP_ENABLE( libwrap_" << generator.m_config.wrapper_name << "_handle );\n"
                 << "}\n"
                 << "\n";
         }
@@ -263,6 +269,10 @@ public:
                 << "{\n"
                 << "    SCOREP_Libwrap_Create( &libwrap_" << generator.m_config.wrapper_name << "_handle,\n"
                 << "                           &libwrap_" << generator.m_config.wrapper_name << "_attributes );\n"
+                << "\n"
+                << "    libwrap_" << generator.m_config.wrapper_name << "_register_all();\n"
+                << "\n"
+                << "    SCOREP_Libwrap_Enable( libwrap_" << generator.m_config.wrapper_name << "_handle );\n"
                 << "}\n"
                 << "\n";
         }

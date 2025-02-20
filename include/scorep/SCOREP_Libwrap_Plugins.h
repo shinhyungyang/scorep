@@ -65,6 +65,15 @@ struct SCOREP_LibwrapAPI
                             SCOREP_Libwrap_OriginalHandle* originalHandleOut,
                             SCOREP_RegionHandle*           regionHandleOut );
 
+    /**
+     * Call this function after all wrappers were registered. This enables the
+     * these wrappers all at once.
+     *
+     * @param handle Score-P library wrapper object
+     */
+    void
+    ( * enable )( SCOREP_LibwrapHandle* handle );
+
     void*
     ( * get_original )( SCOREP_Libwrap_OriginalHandle );
 
@@ -140,7 +149,15 @@ struct SCOREP_LibwrapAPI
  *          return;
  *      }
  *      libwrap_plugin_api = libwrapAPI;
- *      ...
+ *
+ *      // Create handle
+ *      SCOREP_LIBWRAP_INIT( handle, attributes );
+ *
+ *      // Register all symbols to wrap
+ *      SCOREP_LIBWRAP_REGISTER_WRAPPER( handle, … );
+ *
+ *      // Enable wrappers all at once
+ *      SCOREP_LIBWRAP_ENTER_MEASUREMENT( handle );
  *  }
  *  @endcode
  */
@@ -215,7 +232,7 @@ struct SCOREP_LibwrapAPI
     while ( 0 )
 
 /**
- * @def SCOREP_LIBWRAP_FUNC_REGISTER
+ * @def SCOREP_LIBWRAP_REGISTER_WRAPPER
  * Register wrapper for requested function.
  *
  * @param handle            Library wrapper handle
@@ -224,12 +241,21 @@ struct SCOREP_LibwrapAPI
  * @param file              Source code location (file as `const char*`)
  * @param line              Source code location (line as `int`)
  */
-#define SCOREP_LIBWRAP_FUNC_REGISTER( handle, func, prettyname, file, line )            \
+#define SCOREP_LIBWRAP_REGISTER_WRAPPER( handle, func, prettyname, file, line )         \
     SCOREP_LIBWRAP_API( register_wrapper )( handle,                                     \
                                             prettyname, #func, file, line,              \
                                             ( void* )SCOREP_LIBWRAP_WRAPPER( func ),    \
                                             &SCOREP_LIBWRAP_ORIGINAL_HANDLE( func ),    \
                                             &SCOREP_LIBWRAP_REGION_HANDLE( func ) )     \
+
+/**
+ * @def SCOREP_LIBWRAP_ENABLE
+ * Enable all previously registered wrappers.
+ *
+ * @param handle Library wrapper handle
+ */
+#define SCOREP_LIBWRAP_ENABLE( handle ) \
+    SCOREP_LIBWRAP_API( enable )( handle )
 
 /**
  * @def SCOREP_LIBWRAP_ORIGINAL
