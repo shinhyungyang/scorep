@@ -43,7 +43,9 @@
 SCOREP_Instrumenter_OpenCLAdapter::SCOREP_Instrumenter_OpenCLAdapter( void )
     : SCOREP_Instrumenter_Adapter( SCOREP_INSTRUMENTER_ADAPTER_OPENCL, "opencl" )
 {
-#if !HAVE_BACKEND( OPENCL_SUPPORT )
+#if HAVE_BACKEND( OPENCL_SUPPORT )
+    m_usage = enabled;
+#else
     unsupported();
 #endif
 }
@@ -98,12 +100,6 @@ SCOREP_Instrumenter_OpenCLAdapter::checkCommand( const std::string& current,
     }
 
     return skip_next;
-}
-
-bool
-SCOREP_Instrumenter_OpenCLAdapter::isInterpositionLibrary( const std::string& libraryName )
-{
-    return is_opencl_library( libraryName );
 }
 
 bool

@@ -16,38 +16,36 @@
 
 if HAVE_LIBWRAP_SUPPORT
 
-check_PROGRAMS += scorep_libwrap_macros_static_test
-##check_PROGRAMS += scorep_libwrap_macros_static_test \
-##                  scorep_libwrap_macros_shared_test
-
+check_PROGRAMS += scorep_libwrap_macros_test
 
 check_LTLIBRARIES += libfoo.la
 libfoo_la_SOURCES = $(SRC_ROOT)test/libwrap/foo.c \
                     $(SRC_ROOT)test/libwrap/foo.h
 
+scorep_libwrap_macros_test_SOURCES = \
+    $(SRC_ROOT)test/libwrap/wrapper.c \
+    $(SRC_ROOT)test/libwrap/scorep_libwrap_macros_test.c
+scorep_libwrap_macros_test_CPPFLAGS = \
+    $(AM_CPPFLAGS) \
+    -I$(INC_ROOT)src/measurement \
+    -I$(INC_DIR_MEASUREMENT) \
+    -I$(PUBLIC_INC_DIR) \
+    $(UTILS_CPPFLAGS) \
+    -I$(INC_DIR_COMMON_HASH) \
+    -I$(INC_DIR_DEFINITIONS) \
+    -I$(INC_DIR_SERVICES)
+scorep_libwrap_macros_test_LDFLAGS = \
+    $(serial_ldflags)
+scorep_libwrap_macros_test_LDADD = \
+    $(serial_libadd) \
+    libfoo.la
 
-common_libwrap_cppflags = $(AM_CPPFLAGS) \
-                          -I$(INC_ROOT)src/measurement/ \
-                          -I$(INC_ROOT)src/measurement/include \
-                          -I$(PUBLIC_INC_DIR) \
-                          $(UTILS_CPPFLAGS) \
-                          -I$(INC_DIR_COMMON_HASH)
+if HAVE_SCOREP_COMPILER_INSTRUMENTATION_NEEDS_ADDR2LINE
 
-common_libwrap_ldflags = $(serial_ldflags) \
-                         -Wl,-wrap,foo
+scorep_libwrap_macros_test_LDADD += libscorep_adapter_compiler_event.la
 
-common_wrapper_sources = $(SRC_ROOT)test/libwrap/wrapper.c
+endif HAVE_SCOREP_COMPILER_INSTRUMENTATION_NEEDS_ADDR2LINE
 
-#
-# Shared Mode Test
-#
-##scorep_libwrap_macros_shared_test_SOURCES =  $(common_wrapper_sources) \
-##                                             $(SRC_ROOT)test/libwrap/scorep_libwrap_macros_test.c
-##scorep_libwrap_macros_shared_test_CPPFLAGS = $(common_libwrap_cppflags) \
-##                                             -DSCOREP_LIBWRAP_SHARED
-##scorep_libwrap_macros_shared_test_LDFLAGS = $(common_libwrap_ldflags) -shared
-##scorep_libwrap_macros_shared_test_LDADD = $(serial_libadd) \
-##                                          libfoo.la
-##TESTS_SERIAL += scorep_libwrap_macros_shared_test
+TESTS_SERIAL += scorep_libwrap_macros_test
 
 endif HAVE_LIBWRAP_SUPPORT

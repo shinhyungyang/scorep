@@ -21,28 +21,23 @@
 
 #include "scorep_opencl_libwrap.h"
 
-#include <scorep/SCOREP_Libwrap.h>
+#include <SCOREP_Libwrap_Internal.h>
 
 #include <stdio.h>
 
 
 #define SCOREP_OPENCL_PROCESS_FUNC( TYPE, return_type, func, func_args ) \
-    SCOREP_RegionHandle scorep_opencl_region__ ## func = SCOREP_INVALID_REGION; \
+    SCOREP_RegionHandle SCOREP_LIBWRAP_REGION_HANDLE( func ) = SCOREP_INVALID_REGION; \
     SCOREP_LIBWRAP_DEFINE_REAL_FUNC( ( return_type ), func, func_args );
 #include "scorep_opencl_function_list.inc.c"
 
 
-static const char*                    wrapped_lib_name = "libOpenCL.so.1";
 static SCOREP_LibwrapHandle*          opencl_libwrap_handle;
 static const SCOREP_LibwrapAttributes opencl_libwrap_attributes =
 {
     SCOREP_LIBWRAP_VERSION,
     "opencl",                      /* name of the library wrapper */
-    "OpenCL",                      /* display name of the library wrapper */
-    SCOREP_LIBWRAP_MODE_SHARED,    /* library wrapper mode */
-    NULL,
-    1,                             /* number of wrapped libraries */
-    &wrapped_lib_name              /* name of wrapped library */
+    "OpenCL"
 };
 
 
@@ -55,17 +50,16 @@ scorep_opencl_libwrap_init( void )
     SCOREP_Libwrap_Create( &opencl_libwrap_handle,
                            &opencl_libwrap_attributes );
 
-    SCOREP_SourceFileHandle source_file = SCOREP_Definitions_NewSourceFile( "OpenCL" );
-
 #define SCOREP_OPENCL_PROCESS_FUNC( TYPE, return_type, func, func_args ) \
-    scorep_opencl_region__ ## func = SCOREP_Definitions_NewRegion( #return_type " " #func #func_args, \
-                                                                   #func, \
-                                                                   source_file, \
-                                                                   SCOREP_INVALID_LINE_NO, \
-                                                                   SCOREP_INVALID_LINE_NO, \
-                                                                   SCOREP_PARADIGM_OPENCL, \
-                                                                   SCOREP_REGION_ ## TYPE ); \
-    SCOREP_Libwrap_SharedPtrInit( opencl_libwrap_handle, #func, \
-                                  ( void** )( &SCOREP_LIBWRAP_FUNC_REAL_NAME( func ) ) );
+    SCOREP_Libwrap_EnableWrapper( opencl_libwrap_handle, \
+                                  #return_type " " #func #func_args, \
+                                  #func, \
+                                  "OpenCL", \
+                                  SCOREP_INVALID_LINE_NO, \
+                                  SCOREP_PARADIGM_OPENCL, \
+                                  SCOREP_REGION_ ## TYPE, \
+                                  ( void* )SCOREP_LIBWRAP_FUNC_NAME( func ), \
+                                  ( void** )&SCOREP_LIBWRAP_FUNC_REAL_NAME( func ), \
+                                  &SCOREP_LIBWRAP_REGION_HANDLE( func ) );
 #include "scorep_opencl_function_list.inc.c"
 }

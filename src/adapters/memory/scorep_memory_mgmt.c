@@ -32,7 +32,7 @@
 #include <SCOREP_Paradigms.h>
 #include <SCOREP_Definitions.h>
 #include <SCOREP_AllocMetric.h>
-#include <scorep/SCOREP_Libwrap.h>
+#include <SCOREP_Libwrap_Internal.h>
 
 #define SCOREP_DEBUG_MODULE_NAME MEMORY
 #include <UTILS_Debug.h>
@@ -57,21 +57,12 @@ static void enable_memory_wrappers( void );
 
 static size_t memory_subsystem_id;
 
-static const char* wrapped_lib_name[] =
-{
-    "libc.so",
-    "memkind.so"
-};
 static SCOREP_LibwrapHandle*          memory_libwrap_handle;
 static const SCOREP_LibwrapAttributes memory_libwrap_attributes =
 {
     SCOREP_LIBWRAP_VERSION,
-    "memory",                                                     /* name of the library wrapper */
-    "Memory Tracking",
-    SCOREP_LIBWRAP_MODE,                                          /* libwrap mode */
-    NULL,
-    sizeof( wrapped_lib_name ) / sizeof( wrapped_lib_name[ 0 ] ), /* number of wrapped libraries */
-    wrapped_lib_name                                              /* name of wrapped library */
+    "memory", /* name of the library wrapper */
+    "Memory Tracking"
 };
 
 SCOREP_AllocMetric* scorep_memory_metric = NULL;
@@ -92,13 +83,10 @@ memory_subsystem_init( void )
 {
     UTILS_DEBUG_ENTRY();
 
-    if ( scorep_memory_recording || SCOREP_IsUnwindingEnabled() )
-    {
-        enable_memory_wrappers();
-    }
-
     if ( scorep_memory_recording )
     {
+        enable_memory_wrappers();
+
         SCOREP_AllocMetric_New( "Host Memory", &scorep_memory_metric );
         scorep_memory_attributes_init();
     }
@@ -153,9 +141,16 @@ enable_memory_wrappers( void )
     SCOREP_MEMORY_REGIONS
 
 #define SCOREP_MEMORY_WRAPPER( RET, NAME, ARGS ) \
-    SCOREP_Libwrap_SharedPtrInit( memory_libwrap_handle, \
+    SCOREP_Libwrap_EnableWrapper( memory_libwrap_handle, \
+                                  NULL, \
                                   #NAME, \
-                                  ( void** )( &SCOREP_LIBWRAP_FUNC_REAL_NAME( NAME ) ) );
+                                  NULL, \
+                                  SCOREP_INVALID_LINE_NO, \
+                                  SCOREP_PARADIGM_MEMORY, \
+                                  SCOREP_REGION_UNKNOWN, \
+                                  ( void* )SCOREP_LIBWRAP_FUNC_NAME( NAME ), \
+                                  ( void** )&SCOREP_LIBWRAP_FUNC_REAL_NAME( NAME ), \
+                                  NULL );
 #include "scorep_memory_wrappers.inc.c"
 }
 

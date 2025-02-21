@@ -7,6 +7,7 @@ include ../src/measurement/substrates/Makefile.confvars.inc.am
 include ../src/measurement/filtering/Makefile.confvars.inc.am
 include ../src/measurement/thread/fork_join/Makefile.confvars.inc.am
 include ../src/measurement/thread/create_wait/Makefile.confvars.inc.am
+include ../src/services/libwrap/Makefile.confvars.inc.am
 include ../src/services/metric/Makefile.confvars.inc.am
 include ../src/services/timer/Makefile.confvars.inc.am
 include ../src/services/sampling/Makefile.confvars.inc.am

@@ -25,14 +25,15 @@
 
 #include "scorep_posix_io.h"
 
-#include <scorep/SCOREP_Libwrap.h>
+#include <SCOREP_Libwrap_Internal.h>
+#include <SCOREP_IoManagement.h>
 
 #include <stdio.h>
 
 
 #define SCOREP_POSIX_IO_PROCESS_FUNC( PARADIGM, TYPE, return_type, func, func_args ) \
+    SCOREP_RegionHandle SCOREP_LIBWRAP_REGION_HANDLE( func ) = SCOREP_INVALID_REGION; \
     return_type SCOREP_LIBWRAP_FUNC_NAME( func )func_args; \
-    SCOREP_RegionHandle SCOREP_LIBWRAP_REGION_HANDLE( func ); \
     SCOREP_LIBWRAP_DEFINE_REAL_FUNC( ( return_type ), func, func_args );
 
 #include "scorep_posix_io_function_list.inc.c"
@@ -56,9 +57,20 @@ scorep_posix_io_libwrap_init( void )
     SCOREP_Libwrap_Create( &posix_io_libwrap_handle,
                            &posix_io_libwrap_attributes );
 
+    const char* paradigm_name;
+
 #define SCOREP_POSIX_IO_PROCESS_FUNC( PARADIGM, TYPE, return_type, func, func_args ) \
-    SCOREP_Libwrap_SharedPtrInit( posix_io_libwrap_handle, #func, \
-                                  ( void** )( &SCOREP_LIBWRAP_FUNC_REAL_NAME( func ) ) );
+    paradigm_name = SCOREP_IoMgmt_GetParadigmName( SCOREP_IO_PARADIGM_ ## PARADIGM ); \
+    SCOREP_Libwrap_EnableWrapper( posix_io_libwrap_handle, \
+                                  #return_type " " #func #func_args, \
+                                  #func, \
+                                  paradigm_name, \
+                                  SCOREP_INVALID_LINE_NO, \
+                                  SCOREP_PARADIGM_IO, \
+                                  SCOREP_REGION_ ## TYPE, \
+                                  ( void* )SCOREP_LIBWRAP_FUNC_NAME( func ), \
+                                  ( void** )&SCOREP_LIBWRAP_FUNC_REAL_NAME( func ), \
+                                  &SCOREP_LIBWRAP_REGION_HANDLE( func ) );
 
 #include "scorep_posix_io_function_list.inc.c"
 }

@@ -23,11 +23,6 @@ Options
   - `--ldflags "<flags>"`  Linker flags for the to-be-wrapped library
   - `--libs "<libraries>"` To-be-wrapped libraries and their dependencies,
                            e.g., "-lm -lgmp".
-  - `--static-only-target-library`
-                           Add this flag if the to-be-wrapped library does not
-                           provide a shared library. This implies switching off
-                           runtime wrapping as well as not having a shared
-                           wrapper library for linktime wrapping.
   - `--update`             Do not exit if the working directory is already
                            initialized. Overwrites `Makefile` and creates any
                            file that is not already present.
@@ -38,7 +33,8 @@ Overview
 ========
 
 User library wrapping enables users to install library wrappers for any
-C or C++ library they want.
+C/C++ library your application is using without recompiling the library or
+application itself.
 
 In contrast to wrappers integrated into Score-P, e.g., Pthreads, MPI, and
 OpenCL, user library wrappers do not extract semantic information from the
@@ -47,20 +43,19 @@ information.
 
 Without this mechanism, in order to intercept calls to a library, users
 need to either build this library with Score-P or add manual instrumentation
-to the application using the library.
+to the application using the target library.
 Another advantage of user library wrapping is you don't need access to the
-source code of the to-be-wrapped library. Headers and library files suffice.
+source code of the target library. Headers and library files suffice.
 
 Requirements:
 --------------
 
-To enable this feature, Score-P needs to be built with `libclang` from the LLVM compiler
-infrastructure.
+To enable this feature, Score-P needs to be built with `libclang` from the LLVM
+compiler infrastructure.
 More details can be found in Score-P's `INSTALL` file under "User Library Wrapping".
 
 You can find out whether user library wrapping is enabled in the configure
 summary or via `scorep-info config-summary` in Section "Score-P (libwrap)".
-
 
 Workflow for wrapping a library
 ===============================
@@ -93,8 +88,6 @@ Optional arguments:
     the target library.
   - `--libs` contains the target library and libraries it depends on as a
     space-separated list of `-l`-flags.
-  - `--static-only-target-library` specifies whether or not the target library
-    is only installed as a static library.
   - `--update` overwrites `Makefile` in order to update the current wrapper,
     instead of exiting due to the working directory already being initialized.
 
@@ -105,15 +98,6 @@ Example:
         --ldflags="-L/opt/mylib/lib -L/opt/somelib/lib" \
         --libs="-lmylib -lsomelib -lz -lm" \
         $(pwd)/mylibwrapper
-
-This step tries to find shared library files matching the supplied
-`--libs`-flags. During application runtime, these will be used for calling
-`dlopen` and opening the target library and depending libraries.
-If `scorep-libwrap-init` cannot find them, it will provide a warning. You can
-add these shared libraries manually to `Makefile` via the `LW_LIBLIST` variable.
-If you do not intend to use runtime wrapping, and only use linktime wrapping,
-you can ignore this warning. It is only needed for runtime wrapping via
-`dlopen`.
 
 On completion, `scorep-libwrap-init` prints a short-form of how to build and use
 the wrapper library to the terminal.
@@ -164,10 +148,6 @@ There are a number of variables at the top of `Makefile` that can be adjusted:
   - `LDFLAGS` contains the linker flags (same as the `--ldflags`-argument)
   - `LIBS` contains the target library and libraries on which the target
     library depends (same as the `--libs`-argument)
-  - `LW_LIBLIST` shared libraries found according to the LIBS variable.
-    This is internally used for runtime wrapping. This list of files will be
-    used to call `dlopen` at runtime in order to open the target library and
-    corresponding dependencies. File names can have paths.
 
 There are more variables that hopefully need no manual adjustment.
 
@@ -214,13 +194,11 @@ This step creates a number of files:
 
   - `main` is main.c linked to the target library. Execute it to make sure
     the executable works.
-  - `libscorep_libwrap_*` are the wrapper libraries. Up to four versions exist,
-    depending on your Score-P configuration.
+  - `scorep_libwrap_*.c` is the source of the wrapper library.
   - `libwrap.i` is the preprocessed version of libwrap.h/.c used for analyzing
     and creating the wrapper code.
-  - `*.wrap` contains linker flags used for linktime wrapping. It lists every
-    function to be wrapped.
-  - `scorep_libwrap_*.c` is the source of the wrapper library.
+  - `*.symbols` contains all wrapped symbols, it is only used for `make check`.
+  - `libscorep_libwrap_*` is the wrapper library.
 
 If you change `libwrap.h`, `main.c`, `Makefile` or `*.filter` repeat this step.
 I.e., execute `make` again. Usually the wrapper creation workflow requires
@@ -272,12 +250,12 @@ Run
 
     $ make installcheck
 
-Links `main.c` in up to four different ways using Score-P and the
-`--libwrap`-flag. There are now a number of files beginning with `main_`.
-Execute them to make sure they are working. Executing these applications
-will create Score-P experiment directories with measurements of main.c
-and the wrapped target library. Inspect the experiments to make sure the
-wrapper works as expected.
+Links `main.c` using the Score-P instrumenter into `main_wrapped`.
+Execute them, with the given set of values for the environment variables
+`SCOREP_LIBWRAP_PATH` and `SCOREP_LIBWRAP_ENABLE`, to make sure they are working.
+Executing these applications will create Score-P experiment directories with
+measurements of main.c and the wrapped target library. Inspect the experiments
+to make sure the wrapper works as expected.
 
 Step 9: Use the wrapper
 -----------------------
@@ -287,32 +265,20 @@ via the `--prefix`-flag, add the appropriate prefix to `SCOREP_LIBWRAP_PATH`.
 
     $ export SCOREP_LIBWRAP_PATH=$SCOREP_LIBWRAP_PATH:<prefix>
 
-You can then use Score-P to link your application in the usual way and
-additionally provide `--libwrap=<wrappername>` to enable library wrapping for
-the target library. Note, library wrapping happens at link time.  Thus, you can
-apply the `--libwrap` flag only to the link command of the application. No need
-to re-compile the whole application, if this was necessary in the first place.
+You can then instruct Score-P to use this wrapper by setting the configuration
+variable `SCOREP_LIBWRAP_ENABLE`. Which is a list of library wrapper names (the
+`--name`-flag) or a full path to the plug-in. The list is delimited by
+`SCOREP_LIBWRAP_ENABLE_SEP`. There is no need to recompile or relink the
+application.
 
-Example with only relinking the application:
+Example of executing the application:
 
-    $ scorep --libwrap=mylib,myotherlib gcc -o main main.o \
-        -L/opt/mylib/lib -L/opt/myotherlib/lib -L/opt/somelib/lib \
-        -lmylib -myotherlib -lsomelib -lz -lm
+    $ export SCOREP_LIBWRAP_ENABLE=mylib,myotherlib
+    $ ./main
 
-Example with both recompiling and linking the application:
-
-    $ scorep --libwrap=mylib,myotherlib --nocompiler gcc -o main \
-        -DSOME_DEFINE -I/opt/mylib/include -I/opt/myotherlib/include
-        -I/opt/somelib/include main.c \
-        -L/opt/mylib/lib -L/opt/myotherlib/lib -L/opt/somelib/lib \
-        -lmylib -myotherlib -lsomelib -lz -lm
-
-You can manually choose between linktime and runtime wrapping by prepending
-`linktime:` or `runtime:` to the wrapper name provided to `--libwrap`.
-
-In order to use multiple wrappers for one application you can use
-`--libwrap=<wrap-mode>:lib1,lib2,...`. In order to mix linktime and runtime
-wrapping, you add two `--libwrap`-arguments, one with each mode.
+The usual filtering via Score-P's `SCOREP_FILTERING_FILE` applies. A function
+that matches the filter is not enabled at all. This provides an overhead-free
+runtime filter.
 
 To find out which user library wrappers are installed call
 
@@ -341,7 +307,7 @@ Workflow in short
     # Repeat make && make check until all errors are solved
     $ make install
     $ make installcheck
-    $ scorep --libwrap=<name> gcc -o myprogram ...
+    $ export SCOREP_LIBWRAP_ENABLE=<name>
     $ ./myprogram
     # Inspect the experiment directory scorep-*
 
@@ -366,10 +332,15 @@ to do in this case.
 Miscellaneous
 =============
 
+If you are lost, run:
+
+    $ make help
+
+This command displays how the wrapper is currently configured:
+
     $ make show-summary
 
-This command displays how the wrapper is currently configured. Use this
-information to, e.g., redo the wrapper, or update the wrapper files via
+Use this information to, e.g., redo the wrapper, or update the wrapper files via
 `--update` if, e.g., there is new Score-P version.
 
 FAQ

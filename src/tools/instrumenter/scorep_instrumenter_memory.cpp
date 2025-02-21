@@ -47,7 +47,9 @@
 SCOREP_Instrumenter_MemoryAdapter::SCOREP_Instrumenter_MemoryAdapter( void )
     : SCOREP_Instrumenter_Adapter( SCOREP_INSTRUMENTER_ADAPTER_MEMORY, "memory" )
 {
-#if !HAVE_BACKEND( MEMORY_SUPPORT )
+#if HAVE_BACKEND( MEMORY_SUPPORT )
+    m_usage = enabled;
+#else
     unsupported();
 #endif
 }
@@ -74,10 +76,4 @@ SCOREP_Instrumenter_MemoryAdapter::getConfigToolFlag( SCOREP_Instrumenter_CmdLin
         return " --" + m_name;
     }
     return " --no" + m_name;
-}
-
-bool
-SCOREP_Instrumenter_MemoryAdapter::isInterpositionLibrary( const std::string& libraryName )
-{
-    return check_lib_name( libraryName, "memkind" );
 }

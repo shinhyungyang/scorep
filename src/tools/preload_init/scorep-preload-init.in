@@ -103,13 +103,18 @@ OMPT_SUPPORT=false
 @HAVE_SCOREP_DEFAULT_OPARI2_TRUE@DEFAULT_OMPT_SUPPORT=false
 @HAVE_SCOREP_DEFAULT_OPARI2_FALSE@DEFAULT_OMPT_SUPPORT=true
 
-SCOREP_CONFIG="${SCOREP_BINDIR}/scorep-config --nouser --nocompiler --noopenacc --noopencl --nocuda --nohip --thread=none"
+PTHREAD_SUPPORT=false
+@HAVE_PTHREAD_SUPPORT_TRUE@PTHREAD_SUPPORT=true
 
-SCOREP_LIBWRAP_PATH="${SCOREP_LIBWRAP_PATH:+${SCOREP_LIBWRAP_PATH}:}@PREFIX@"
+SCOREP_CONFIG="${SCOREP_BINDIR}/scorep-config --nouser --nocompiler --noopenacc --nocuda"
 
 CLEAN=false
 VALUE_ONLY=false
 MPP=detect
+THREAD=none
+@HAVE_PTHREAD_SUPPORT_TRUE@THREAD=pthread
+IO=
+@HAVE_POSIX_IO_SUPPORT_TRUE@IO=posix
 
 # check for arguments
 while test $# -gt 0
@@ -131,58 +136,14 @@ do
     (--mpp=*)
         MPP=${1#--mpp=}
     ;;
-    (--libwrap=*)
-        libwrap=${1#--libwrap=}
-        case ${libwrap} in
-        (runtime:*)
-            libwrap=${libwrap#runtime:}
-        ;;
-        (*) : no wrap-mode ;;
-        esac
-
-        case ${libwrap} in
-        (*/*)
-            test -r "${libwrap}" ||
-                die "libwrap anchor does not exists: '%s'" "${1}"
-            libwrap="$(cd $(dirname "${libwrap}") && pwd)/$(basename "${libwrap}")"
-            SCOREP_CONFIG="${SCOREP_CONFIG} --libwrap=runtime:${libwrap}"
-        ;;
-        (*)
-            save0_IFS=${IFS}
-            IFS=,
-            for libwrap in ${libwrap}
-            do
-                save1_IFS=${IFS}
-                IFS=:
-                for path in ${SCOREP_LIBWRAP_PATH}
-                do
-                    IFS=${save_IFS}
-                    if test -r "${path}/share/scorep/${libwrap}.libwrap"
-                    then
-                        libwrap="${path}/share/scorep/${libwrap}.libwrap"
-                        SCOREP_CONFIG="${SCOREP_CONFIG} --libwrap=runtime:${libwrap}"
-                        break
-                    fi
-                done
-                IFS=${save1_IFS}
-                test -r "${libwrap}" ||
-                    die "could not find library wrapper in path: '%s'" "${libwrap}"
-            done
-            IFS=${save0_IFS}
-        ;;
-        esac
-    ;;
     (--io=*)
-        io=${1#--io=}
-        case ${io} in
-        (runtime:*)
-            : already with runtime wrap mode prefix
-        ;;
-        (*)
-            io="runtime:${io}"
-        ;;
-        esac
-        SCOREP_CONFIG="${SCOREP_CONFIG} --io=${io}"
+        IO=${1#--io=}
+    ;;
+    (--thread)
+        THREAD=pthread
+    ;;
+    (--thread=*)
+        THREAD=${1#--thread=}
     ;;
     (--thread=omp:ompt)
         if ! $OMPT_SUPPORT
@@ -198,7 +159,7 @@ do
         fi
         SCOREP_CONFIG="${SCOREP_CONFIG} ${1}"
     ;;
-    (--compiler|--user|--pomp|--thread=*|--thread|--memory|--memory=*)
+    (--compiler|--user|--pomp)
         warn "option not suitable for uninstrumented applications: '%s'" "${1}"
         SCOREP_CONFIG="${SCOREP_CONFIG} ${1}"
     ;;
@@ -303,6 +264,27 @@ if [ "${MPP}" != none ]; then
 fi
 SCOREP_CC=$(${SCOREP_CONFIG} --${SCOREP_CONFIG_PREFIX}cc)
 SCOREP_LIBTOOL=$(${SCOREP_CONFIG} --${SCOREP_CONFIG_PREFIX}libtool)
+
+case "${THREAD},${OMPT_SUPPORT},${DEFAULT_OMPT_SUPPORT},${PTHREAD_SUPPORT}" in
+(none,*,*,*) : pass ;;
+
+(omp,true,true,*|omp:ompt,true,*,*) : pass ;;
+(omp,false,*,*|omp:ompt,false,*,*)
+    die "OpenMP requested but this Score-P installation does not support it"
+;;
+
+(pthread,*,*,true) : pass ;;
+(pthread,*,*,false)
+    die "Pthread requested but this Score-P installation does not support it"
+;;
+
+(*)
+    die "option unknown or not suitable for uninstrumented applications: '--thread=%s'" "${THREAD}"
+;;
+esac
+SCOREP_CONFIG="${SCOREP_CONFIG}${THREAD:+ --thread=${THREAD}}"
+
+SCOREP_CONFIG="${SCOREP_CONFIG}${IO:+  --io=${IO}}"
 
 if test -e "${RESULTDIR}/${BINARY_TAG}.la"
 then

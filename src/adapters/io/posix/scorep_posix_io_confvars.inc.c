@@ -18,9 +18,21 @@
  */
 
 
+static bool posix_io_enable;
+
+
 /*
  *  Configuration variables for the POSIX I/O adapter.
  */
 static const SCOREP_ConfigVariable scorep_posix_io_confvars[] = {
+    {
+        "posix",
+        SCOREP_CONFIG_TYPE_BOOL,
+        &posix_io_enable,
+        NULL,
+        "false",
+        "POSIX I/O, POSIX async I/O, ISO C I/O",
+        ""
+    },
     SCOREP_CONFIG_TERMINATOR
 };

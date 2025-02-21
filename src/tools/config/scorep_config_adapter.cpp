@@ -80,7 +80,6 @@ SCOREP_Config_Adapter::init( void )
 #else
     all.push_back( new SCOREP_Config_MockupAdapter( "memory" ) );
 #endif
-    all.push_back( new SCOREP_Config_LibwrapAdapter() );
     all.push_back( new SCOREP_Config_IoAdapter() );
 }
 
@@ -590,7 +589,7 @@ SCOREP_Config_OpenaccAdapter::SCOREP_Config_OpenaccAdapter()
  * OpenCL adapter
  * *************************************************************************************/
 SCOREP_Config_OpenclAdapter::SCOREP_Config_OpenclAdapter()
-    : SCOREP_Config_Adapter( "opencl", "scorep_adapter_opencl", false )
+    : SCOREP_Config_Adapter( "opencl", "scorep_adapter_opencl", true )
 {
 }
 
@@ -598,8 +597,9 @@ void
 SCOREP_Config_OpenclAdapter::printHelp( void )
 {
     std::cout << "   --opencl|--noopencl\n"
-              << "              Specifies whether opencl instrumentation is used.\n"
-              << "              On default opencl instrumentation is disabled.\n";
+              << "              Specifies whether OpenCL instrumentation is used.\n"
+              << "              On default OpenCL instrumentation is enabled.\n"
+              << "              Recording must be explicitly enabled.\n";
 }
 
 void
@@ -842,7 +842,7 @@ SCOREP_Config_Opari2Adapter::printOpariCFlags( bool                   build_chec
  * Memory adapter
  * *************************************************************************************/
 SCOREP_Config_MemoryAdapter::SCOREP_Config_MemoryAdapter()
-    : SCOREP_Config_Adapter( "memory", "scorep_adapter_memory", false )
+    : SCOREP_Config_Adapter( "memory", "scorep_adapter_memory", true )
 {
 }
 
@@ -852,7 +852,7 @@ SCOREP_Config_MemoryAdapter::printHelp( void )
     std::cout << "   --" << m_name << "|--no" << m_name << "\n"
               << "              Specifies whether memory usage recording is used.\n"
               << "              On default memory instrumentation is enabled.\n"
-              << "              The following memory interfaces may be recorded:\n"
+              << "              The following memory interfaces may be recorded, if present:\n"
               << "               ISO C:\n"
               << "                malloc,realloc,calloc,free,memalign,posix_memalign,valloc,\n"
               << "                aligned_alloc\n"
@@ -881,79 +881,10 @@ SCOREP_Config_MemoryAdapter::checkArgument( const std::string& arg )
 }
 
 /* **************************************************************************************
- * Libwrap adapter
- * *************************************************************************************/
-SCOREP_Config_LibwrapAdapter::SCOREP_Config_LibwrapAdapter()
-    : SCOREP_Config_Adapter( "libwrap", "", true )
-{
-}
-
-void
-SCOREP_Config_LibwrapAdapter::printHelp( void )
-{
-    std::cout << "   --libwrap=<wrap-mode>:<libwrap-anchor-file>\n"
-              << "              Uses the specified library wrapper.\n";
-}
-
-bool
-SCOREP_Config_LibwrapAdapter::checkArgument( const std::string& arg )
-{
-    if ( arg.substr( 0, 10 ) == "--libwrap=" )
-    {
-        std::string libwrap  = arg.substr( 10 );
-        std::string wrapmode = "runtime";
-        std::string name     = remove_extension( remove_path( libwrap ) );
-
-        if ( m_wrappers.count( name ) != 0 )
-        {
-            std::cerr << "[Score-P] ERROR: Duplicate library wrapper '" << libwrap << "', previous selected wrapper with the same name: '" << m_wrappers[ name ].second << "'" << std::endl;
-            exit( EXIT_FAILURE );
-        }
-
-        m_wrappers.insert( std::make_pair( name, std::make_pair( wrapmode, libwrap ) ) );
-        m_is_enabled = true;
-        return true;
-    }
-    return false;
-}
-
-void
-SCOREP_Config_LibwrapAdapter::addLibs( std::deque<std::string>&           libs,
-                                       SCOREP_Config_LibraryDependencies& deps )
-{
-    for ( std::map<std::string, std::pair<std::string, std::string> >::const_iterator it = m_wrappers.begin(); it != m_wrappers.end(); ++it )
-    {
-        const std::string& name     = it->first;
-        const std::string& wrapmode = it->second.first;
-        const std::string& libwrap  = it->second.second;
-        /* we point to <prefix>/share/scorep/<name>.libwrap */
-        std::string libdir = join_path( extract_path( extract_path( extract_path( libwrap ) ) ), "lib" SCOREP_BACKEND_SUFFIX );
-
-        if ( exists_file( join_path( libdir, "libscorep_libwrap_" + name + "_runtime.la" ) ) )
-        {
-            deps.insert( "libscorep_libwrap_" + name + "_runtime", libdir );
-        }
-        else if ( wrapmode == "runtime" )
-        {
-            std::cerr << "[Score-P] ERROR: Library wrapping mode 'runtime' not supported by this installation." << std::endl;
-            exit( EXIT_FAILURE );
-        }
-
-        libs.push_back( "libscorep_libwrap_" + name + "_" + wrapmode );
-        deps.addDependency( libs.back(), "libscorep_measurement" );
-    }
-}
-
-void
-SCOREP_Config_LibwrapAdapter::appendInitStructName( std::deque<std::string>& init_structs )
-{
-}
-
-/* **************************************************************************************
  * I/O wrapping adapter
  * *************************************************************************************/
 SCOREP_Config_IoAdapter::SCOREP_Config_IoAdapter()
-    : SCOREP_Config_Adapter( "io", "", false )
+    : SCOREP_Config_Adapter( "io", "", true )
 {
 #if HAVE_BACKEND( POSIX_IO_SUPPORT )
     m_supported_ios.emplace( "posix",
@@ -965,9 +896,9 @@ void
 SCOREP_Config_IoAdapter::printHelp( void )
 {
     std::cout << "   --io=<paradigm,...>|--noio\n"
-              << "              Specifies whether I/O recording is used.\n"
-              << "              On default I/O recording is disabled.\n"
-              << "              The following I/O paradigms may be recorded:\n"
+              << "              Specifies whether I/O instrumentation is used.\n"
+              << "              On default I/O instrumentation is enabled.\n"
+              << "              The following I/O paradigms may be recorded, if present:\n"
               << "               none\n";
     for ( const auto& pair : m_supported_ios )
     {

@@ -28,7 +28,9 @@
 
 extern const SCOREP_Subsystem SCOREP_Subsystem_Substrates;
 extern const SCOREP_Subsystem SCOREP_Subsystem_TaskStack;
+#if HAVE( LIBWRAP_SUPPORT )
 extern const SCOREP_Subsystem SCOREP_Subsystem_LibwrapService;
+#endif
 extern const SCOREP_Subsystem SCOREP_Subsystem_MetricService;
 extern const SCOREP_Subsystem SCOREP_Subsystem_Topologies;
 extern const SCOREP_Subsystem SCOREP_Subsystem_PlatformTopology;
@@ -38,7 +40,9 @@ extern const SCOREP_Subsystem SCOREP_Subsystem_IoManagement;
 const SCOREP_Subsystem* scorep_subsystems[] = {
     &SCOREP_Subsystem_Substrates,
     &SCOREP_Subsystem_TaskStack,
+#if HAVE( LIBWRAP_SUPPORT )
     &SCOREP_Subsystem_LibwrapService,
+#endif
     &SCOREP_Subsystem_MetricService,
     &SCOREP_Subsystem_Topologies,
     &SCOREP_Subsystem_PlatformTopology,

@@ -44,9 +44,6 @@ public:
     checkCommand( const std::string& current,
                   const std::string& next ) override;
 
-    bool
-    isInterpositionLibrary( const std::string& libraryName ) override;
-
 private:
     bool
     is_opencl_library( const std::string& libraryName );

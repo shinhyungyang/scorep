@@ -41,9 +41,6 @@ public:
     std::string
     getConfigToolFlag( SCOREP_Instrumenter_CmdLine& cmdLine,
                        const std::string&           inputFile ) override;
-
-    bool
-    isInterpositionLibrary( const std::string& libraryName ) override;
 };
 
 #endif // SCOREP_INSTRUMENTER_MEMORY_HPP

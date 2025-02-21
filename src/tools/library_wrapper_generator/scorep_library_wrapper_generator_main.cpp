@@ -120,16 +120,7 @@ main( int   argc,
         arg      = argv[ i ];
         next_arg = ( i + 1 < argc ? argv[ i + 1 ] : "" );
 
-        if ( arg == "-l" )
-        {
-            vector<string> args = split_string( next_arg, " " );
-            config.library_names.insert(
-                config.library_names.end(),
-                args.begin(),
-                args.end() );
-            i++;
-        }
-        else if ( arg == "-h" )
+        if ( arg == "-h" )
         {
             config.header_file = next_arg;
             i++;
@@ -260,18 +251,6 @@ main( int   argc,
         return EXIT_FAILURE;
     }
 
-    if ( config.library_names.empty() )
-    {
-        // This is not an error. It just means that we do not do runtime linking.
-        // Not specifying the library_names and linking at runtime (dlopen) would be an error.
-        // The decision between runtime and link time wrapping is used before and after calling this tool.
-        // We do not know and care here.
-        //
-        //cerr << "ERROR: no library name given" << endl;
-        //print_help();
-        //return EXIT_FAILURE;
-    }
-
     /* Set default parameter */
     if ( config.language == "" )
     {
@@ -342,12 +321,6 @@ main( int   argc,
              << "== Setup ==" << endl
              << "Input:" << endl
              << "  Header file                " << config.header_file << endl
-             << "  Libraries                  ";
-        for ( vector<string>::const_iterator i = config.library_names.begin(); i != config.library_names.end(); ++i )
-        {
-            cout << *i << ", ";
-        }
-        cout << endl
              << "  Filter file                " << ( config.filter_file_name.length() == 0 ? "none" : config.filter_file_name ) << endl
              << endl
              << "Output:" << endl

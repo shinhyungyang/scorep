@@ -15,6 +15,25 @@ Major features:
   OpenACC. This feature is still considered experimental. For more
   information about runtime limitations, please take a look at the
   OPEN_ISSUES section regarding known issues with OpenMP target.
+- Most instrumentation adapters that intercept library calls
+  now use the GOTCHA library, notable the Pthreads, POSIX I/O,
+  and memory tracking instrumentation, enabling them to intercept
+  calls into shared libraries as well.
+  To fulfill the build requirement for GOTCHA, use the `--with-libgotcha=`
+  configure flag with the argument `download` to download, build, and
+  install the library during make time. Please note that CMake 3+ is
+  required.
+  All adapters, except for the Pthreads adapter, are now enabled by
+  default when instrumenting an application. However, they need to be
+  explicitly enabled at measurement time. To enable the POSIX I/O adapter,
+  use `SCOREP_IO_POSIX=yes`.
+  User library wrappers can now be loaded as plug-ins at runtime using
+  `SCOREP_LIBWRAP_ENABLE=<library...>` instead of being specified at the
+  time of instrumentation with the `--libwrap=<library...>` flag. In
+  conjunction, the `--libwrap=` parameter has been removed from the
+  Score-P instrumenter. Users who have library wrappers from previous
+  Score-P versions will need to rebuild them. Refer to the `--update`
+  option for `scorep-libwrap-init` to learn how to achieve this.
 
 Features and improvements:
 

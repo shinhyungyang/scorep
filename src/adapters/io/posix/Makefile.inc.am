@@ -41,8 +41,7 @@ libscorep_adapter_posix_io_mgmt_la_CPPFLAGS = \
     $(UTILS_CPPFLAGS)                     \
     -I$(INC_DIR_COMMON_HASH)              \
     -I$(INC_DIR_DEFINITIONS)              \
-    -D_GNU_SOURCE \
-    -DSCOREP_LIBWRAP_SHARED
+    -D_GNU_SOURCE
 
 libscorep_adapter_posix_io_mgmt_la_LDFLAGS = \
     $(library_api_version_ldflags)
@@ -66,8 +65,7 @@ libscorep_adapter_posix_io_event_la_CPPFLAGS = \
     -I$(INC_ROOT)src/adapters/io/posix       \
     -I$(INC_DIR_COMMON_HASH)                 \
     -I$(INC_DIR_DEFINITIONS)                 \
-    -D_GNU_SOURCE \
-    -DSCOREP_LIBWRAP_SHARED
+    -D_GNU_SOURCE
 
 endif HAVE_POSIX_IO_SUPPORT
 

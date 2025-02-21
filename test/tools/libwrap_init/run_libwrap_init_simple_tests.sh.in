@@ -18,23 +18,11 @@ rundir=test_libwrap_init_simple
 . "@abs_builddir@/common.sh"
 
 scorep_config=$BINDIR/scorep-config
-if [ "$($scorep_config --libwrap-support=runtime)"  = true ]; then runtime_support=true;  else runtime_support=false;  fi
 
 o_ext=$(eval "$($LIBTOOL --config)"; printf "$objext")
 a_ext=$(eval "$($LIBTOOL --config)"; printf "$libext")
 so_ext_with_dot=$(eval "$($LIBTOOL --config)"; eval shared_ext=\"$shrext_cmds\"; printf "$shared_ext")
 so_ext=${so_ext_with_dot#.}
-
-libtool_shared=$(eval "$($LIBTOOL --config)"; test "$build_libtool_libs" = "yes" && echo true || echo false)
-libtool_static=$(eval "$($LIBTOOL --config)"; test "$build_old_libs" = "yes" && echo true || echo false)
-
-# if our libtool cannot build a shared library we need to skip the tests
-lwi_flags=
-if ! $libtool_shared; then
-    runtime_support=false
-    lwi_flags="--static-only-target-library"
-    #runtime_support=false
-fi
 
 test_init "Score-P $lwi_name simple"
 
@@ -44,16 +32,14 @@ test_expect_success_all "c:     build and install target library"   \
     "mkdir target-lib-c"                                            \
     "cd target-lib-c"                                               \
     "make -f $TARGET_LIB_C_SRC_ROOT/Makefile"                       \
-    "test -f foo.$o_ext || ! $libtool_static"                       \
     "test -f foo.lo"                                                \
     "test -f libfoo.la"                                             \
     "make -f $TARGET_LIB_C_SRC_ROOT/Makefile install"               \
     "test -f lib/libfoo.la"                                         \
-    "test -f lib/libfoo.$a_ext  || ! $libtool_static"               \
-    "test -f lib/libfoo.$so_ext || ! $libtool_shared"
+    "test -f lib/libfoo.$so_ext"
 
 test_expect_success_all "c:     init wrapper" \
-    "$lwi $lwi_flags --name foo --cppflags \"-I$TARGET_LIB_C_SRC_ROOT\" --prefix wrapper-lib-c/ -x c --ldflags \"-L\$(pwd)/target-lib-c/lib\" --libs \"-lfoo\" wrapper-lib-c" \
+    "$lwi --name foo --cppflags \"-I$TARGET_LIB_C_SRC_ROOT\" --prefix wrapper-lib-c/ -x c --ldflags \"-L\$(pwd)/target-lib-c/lib\" --libs \"-lfoo\" wrapper-lib-c" \
     "test -f wrapper-lib-c/libwrap.h"    \
     "test -f wrapper-lib-c/libwrap.c"    \
     "test -f wrapper-lib-c/main.c"       \
@@ -90,9 +76,8 @@ test_expect_success_all "c:     build wrapper" \
     "test -f main"                             \
     "test -f scorep_libwrap_foo.c"             \
     "test -f scorep_libwrap_foo.inc.c"         \
-    "test -f libscorep_libwrap_foo_runtime.la      || ! $runtime_support"                       \
-    "test -f libscorep_libwrap_foo_runtime.lo      || ! $runtime_support"                       \
-    "test -f libscorep_libwrap_foo_runtime.$o_ext  || ! $runtime_support  || ! $libtool_static" \
+    "test -f libscorep_libwrap_foo.la"                 \
+    "test -f libscorep_libwrap_foo.lo"                 \
     "  test_grep -q '\bfn_1_'  foo.symbols"            \
     "  test_grep -q '\bfn_1_'  scorep_libwrap_foo.c"   \
     "  test_grep -q '\bfn_2_'  foo.symbols"            \
@@ -169,20 +154,21 @@ test_expect_success_all "c:     check wrapper" \
 test_expect_success_all "c:     install wrapper" \
     "cd wrapper-lib-c"                           \
     "make install"                               \
-    "test -f lib/libscorep_libwrap_foo_runtime.$a_ext   || ! $runtime_support  || ! $libtool_static" \
-    "test -f lib/libscorep_libwrap_foo_runtime.la       || ! $runtime_support"                       \
-    "test -f lib/libscorep_libwrap_foo_runtime.$so_ext  || ! $runtime_support  || ! $libtool_shared" \
+    "test -f lib/libscorep_libwrap_foo.la"       \
+    "test -f lib/libscorep_libwrap_foo.$so_ext"  \
+    "test ! -f lib/libscorep_libwrap_foo.$a_ext"
 
-test_expect_success_all "c:     installcheck wrapper"              \
-    "cd wrapper-lib-c"                                             \
-    "make installcheck"                                            \
-    "test -f main_runtime_wrapped  || ! $runtime_support || ! $libtool_shared"
+test_expect_success_all "c:     installcheck wrapper" \
+    "cd wrapper-lib-c"                                \
+    "make installcheck"                               \
+    "test -f main_wrapped"
 
 if [ "$run_binaries" = true ]; then
-    test_expect_success_all "c:     run binaries"                                     \
-        "cd wrapper-lib-c"                                                            \
-        "LD_LIBRARY_PATH=../target-lib-c/lib:\$LD_LIBRARY_PATH ./main"                \
-        "if [ "$runtime_support"  = true ]; then LD_LIBRARY_PATH=../target-lib-c/lib:\$LD_LIBRARY_PATH ./main_runtime_wrapped; fi"
+    test_expect_success_all "c:     run binaries"                              \
+        "cd wrapper-lib-c"                                                     \
+        "LD_LIBRARY_PATH=../target-lib-c/lib:\$LD_LIBRARY_PATH ./main"         \
+        "LD_LIBRARY_PATH=../target-lib-c/lib:\$LD_LIBRARY_PATH SCOREP_LIBWRAP_ENABLE=\$PWD/lib/libscorep_libwrap_foo.$so_ext ./main_wrapped" \
+        "LD_LIBRARY_PATH=../target-lib-c/lib:\$LD_LIBRARY_PATH SCOREP_LIBWRAP_PATH=\$PWD SCOREP_LIBWRAP_ENABLE=foo ./main_wrapped"
 fi
 
 # ### multi lib with dependencies ###
@@ -194,7 +180,7 @@ test_expect_success_all "cdeps: build and install target library" \
     "make -f $TARGET_LIB_CDEPS_SRC_ROOT/Makefile install"
 
 test_expect_success_all "cdeps: init wrapper" \
-    "$lwi $lwi_flags --name bar --cppflags \"-I$TARGET_LIB_CDEPS_SRC_ROOT -I$TARGET_LIB_C_SRC_ROOT\" --prefix wrapper-lib-cdeps/ -x c --ldflags \"-L\$(pwd)/target-lib-cdeps/lib -L\$(pwd)/target-lib-c/lib\" --libs \"-lbar -lbar2 -lfoo\" wrapper-lib-cdeps"
+    "$lwi --name bar --cppflags \"-I$TARGET_LIB_CDEPS_SRC_ROOT -I$TARGET_LIB_C_SRC_ROOT\" --prefix wrapper-lib-cdeps/ -x c --ldflags \"-L\$(pwd)/target-lib-cdeps/lib -L\$(pwd)/target-lib-c/lib\" --libs \"-lbar -lbar2 -lfoo\" wrapper-lib-cdeps"
 
 insert_libwrap_h="#include <bar.h>\n"
 endif_line="#endif \/\* LIBWRAP_H \*\/"
@@ -216,17 +202,18 @@ test_expect_success_all "cdeps: build wrapper"    \
     "  test_grep -q 'fn_2'  scorep_libwrap_bar.c" \
     "test \$(cat bar.symbols | wc -l) = 2"
 
-test_expect_success_all "cdeps: check, install and installcheck wrapper" \
-    "cd wrapper-lib-cdeps"                                               \
-    "make check"                                                         \
-    "make install"                                                       \
+test_expect_success_all "cdeps: check, install, and installcheck wrapper" \
+    "cd wrapper-lib-cdeps"                                                \
+    "make check"                                                          \
+    "make install"                                                        \
     "make installcheck"
 
 if [ "$run_binaries" = true ]; then
     test_expect_success_all "cdeps: run binaries" \
         "cd wrapper-lib-cdeps"                    \
         "LD_LIBRARY_PATH=../target-lib-cdeps/lib:../target-lib-c/lib:\$LD_LIBRARY_PATH ./main" \
-        "if [ "$runtime_support"  = true ]; then LD_LIBRARY_PATH=../target-lib-cdeps/lib:../target-lib-c/lib:\$LD_LIBRARY_PATH ./main_runtime_wrapped; fi"
+        "LD_LIBRARY_PATH=../target-lib-cdeps/lib:../target-lib-c/lib:\$LD_LIBRARY_PATH SCOREP_LIBWRAP_ENABLE=\$PWD/lib/libscorep_libwrap_bar.$so_ext: ./main_wrapped" \
+        "LD_LIBRARY_PATH=../target-lib-cdeps/lib:../target-lib-c/lib:\$LD_LIBRARY_PATH SCOREP_LIBWRAP_PATH=\$PWD SCOREP_LIBWRAP_ENABLE=bar ./main_wrapped"
 fi
 
 test_expect_success_all "cdeps: uninstall and clean target library and wrapper" \
@@ -240,9 +227,8 @@ test_expect_success_all "cdeps: uninstall and clean target library and wrapper" 
 test_expect_success_all "c:     uninstall and clean wrapper" \
     "cd wrapper-lib-c"                                       \
     "make uninstall"                                         \
-    "test ! -e lib/libscorep_libwrap_foo_runtime.$a_ext"     \
-    "test ! -e lib/libscorep_libwrap_foo_runtime.la"         \
-    "test ! -e lib/libscorep_libwrap_foo_runtime.$so_ext"    \
+    "test ! -e lib/libscorep_libwrap_foo.la"                 \
+    "test ! -e lib/libscorep_libwrap_foo.$so_ext"            \
     "test ! -e share/scorep/foo.symbols"                     \
     "make clean"                                             \
     "test ! -e foo.symbols"                                  \
@@ -251,9 +237,9 @@ test_expect_success_all "c:     uninstall and clean wrapper" \
     "test ! -e main"                                         \
     "test ! -e scorep_libwrap_foo.c"                         \
     "test ! -e scorep_libwrap_foo.inc.c"                     \
-    "test ! -e libscorep_libwrap_foo_runtime.la"             \
-    "test ! -e libscorep_libwrap_foo_runtime.lo"             \
-    "test ! -e libscorep_libwrap_foo_runtime.$o_ext"
+    "test ! -e libscorep_libwrap_foo.la"                     \
+    "test ! -e libscorep_libwrap_foo.lo"                     \
+    "test ! -e libscorep_libwrap_foo.$o_ext"
 
 test_expect_success_all "c:     uninstall and clean target c library"   \
     "cd target-lib-c"                                                   \
@@ -263,7 +249,6 @@ test_expect_success_all "c:     uninstall and clean target c library"   \
     "test ! -e foo.lo"                                                  \
     "test ! -e libfoo.la"                                               \
     "test ! -e lib/libfoo.la"                                           \
-    "test ! -e lib/libfoo.$a_ext"                                       \
     "test ! -e lib/libfoo.$so_ext"
 
 # ### mpi ###
@@ -276,7 +261,7 @@ if [ "$mpi_support" = true ]; then
         "make -f $TARGET_LIB_MPI_SRC_ROOT/Makefile install"
 
     test_expect_success_all "mpi:   init wrapper" \
-        "$lwi $lwi_flags --name foo --cppflags \"-I$TARGET_LIB_MPI_SRC_ROOT\" --prefix wrapper-lib-mpi/ -x c --backend mpi --ldflags \"-L\$(pwd)/target-lib-mpi/lib\" --libs \"-lfoo\" wrapper-lib-mpi"
+        "$lwi --name foo --cppflags \"-I$TARGET_LIB_MPI_SRC_ROOT\" --prefix wrapper-lib-mpi/ -x c --backend mpi --ldflags \"-L\$(pwd)/target-lib-mpi/lib\" --libs \"-lfoo\" wrapper-lib-mpi"
 
     insert_libwrap_h="#include <foo.h>\n"
     endif_line="#endif \/\* LIBWRAP_H \*\/"
@@ -301,10 +286,11 @@ if [ "$mpi_support" = true ]; then
         "make installcheck"
 
     if [ "$run_binaries" = true ]; then
-        test_expect_success_all "mpi:   run mpi binaries"                                              \
-            "cd wrapper-lib-mpi"                                                                       \
-            "LD_LIBRARY_PATH=../target-lib-mpi/lib:\$LD_LIBRARY_PATH mpirun -np 2 ./main"              \
-            "if [ "$runtime_support"  = true ]; then LD_LIBRARY_PATH=../target-lib-mpi/lib:\$LD_LIBRARY_PATH mpirun -np 2 ./main_runtime_wrapped; fi"
+        test_expect_success_all "mpi:   run mpi binaries"                                 \
+            "cd wrapper-lib-mpi"                                                          \
+            "LD_LIBRARY_PATH=../target-lib-mpi/lib:\$LD_LIBRARY_PATH mpirun -np 2 ./main" \
+            "LD_LIBRARY_PATH=../target-lib-shmem/lib:\$LD_LIBRARY_PATH SCOREP_LIBWRAP_ENABLE=\$PWD/lib/libscorep_libwrap_foo.$so_ext mpirun -np 2 ./main_wrapped" \
+            "LD_LIBRARY_PATH=../target-lib-shmem/lib:\$LD_LIBRARY_PATH SCOREP_LIBWRAP_PATH=\$PWD SCOREP_LIBWRAP_ENABLE=foo mpirun -np 2 ./main_wrapped"
     fi
 
     test_expect_success_all "mpi:   uninstall and clean target library and wrapper" \
@@ -326,7 +312,7 @@ if [ "$shmem_support" = true ]; then
         "make -f $TARGET_LIB_SHMEM_SRC_ROOT/Makefile install"
 
     test_expect_success_all "shmem: init wrapper" \
-        "$lwi $lwi_flags --name foo --cppflags \"-I$TARGET_LIB_SHMEM_SRC_ROOT\" --prefix wrapper-lib-shmem/ -x c --backend shmem --ldflags \"-L\$(pwd)/target-lib-shmem/lib\" --libs \"-lfoo\" wrapper-lib-shmem"
+        "$lwi --name foo --cppflags \"-I$TARGET_LIB_SHMEM_SRC_ROOT\" --prefix wrapper-lib-shmem/ -x c --backend shmem --ldflags \"-L\$(pwd)/target-lib-shmem/lib\" --libs \"-lfoo\" wrapper-lib-shmem"
 
     insert_libwrap_h="#include <foo.h>\n"
     endif_line="#endif \/\* LIBWRAP_H \*\/"
@@ -354,7 +340,8 @@ if [ "$shmem_support" = true ]; then
         test_expect_success_all "shmem: run shmem binaries"                                 \
             "cd wrapper-lib-shmem"                                                          \
             "LD_LIBRARY_PATH=../target-lib-shmem/lib:\$LD_LIBRARY_PATH oshrun -np 2 ./main" \
-            "if [ "$runtime_support"  = true ]; then LD_LIBRARY_PATH=../target-lib-shmem/lib:\$LD_LIBRARY_PATH oshrun -np 2 ./main_runtime_wrapped; fi"
+            "LD_LIBRARY_PATH=../target-lib-shmem/lib:\$LD_LIBRARY_PATH SCOREP_LIBWRAP_ENABLE=\$PWD/lib/libscorep_libwrap_foo.$so_ext oshrun -np 2 ./main_wrapped" \
+            "LD_LIBRARY_PATH=../target-lib-shmem/lib:\$LD_LIBRARY_PATH SCOREP_LIBWRAP_PATH=\$PWD SCOREP_LIBWRAP_ENABLE=foo oshrun -np 2 ./main_wrapped"
     fi
 
     test_expect_success_all "shmem: uninstall and clean shmem-based target and wrapper library" \
@@ -375,7 +362,7 @@ test_expect_success_all "c++:   build and install c++-based target library" \
     "make -f $TARGET_LIB_CXX_SRC_ROOT/Makefile install"
 
 test_expect_success_all "c++:   init wrapper"   \
-    "$lwi $lwi_flags --name foo --cppflags \"-I$TARGET_LIB_CXX_SRC_ROOT\" --prefix wrapper-lib-cc/ -x c++ --ldflags \"-L\$(pwd)/target-lib-cc/lib\" --libs \"-lfoo\" wrapper-lib-cc" \
+    "$lwi --name foo --cppflags \"-I$TARGET_LIB_CXX_SRC_ROOT\" --prefix wrapper-lib-cc/ -x c++ --ldflags \"-L\$(pwd)/target-lib-cc/lib\" --libs \"-lfoo\" wrapper-lib-cc" \
     "test ! -f wrapper-lib-cc/libwrap.c"  \
     "test   -f wrapper-lib-cc/libwrap.cc" \
     "test ! -f wrapper-lib-cc/main.c"     \
@@ -466,7 +453,8 @@ if [ "$run_binaries" = true ]; then
     test_expect_success_all "c++:   run binaries"                       \
         "cd wrapper-lib-cc"                                             \
         "LD_LIBRARY_PATH=../target-lib-cc/lib:\$LD_LIBRARY_PATH ./main" \
-        "if [ "$runtime_support"  = true ]; then LD_LIBRARY_PATH=../target-lib-cc/lib:\$LD_LIBRARY_PATH ./main_runtime_wrapped; fi"
+        "LD_LIBRARY_PATH=../target-lib-cc/lib:\$LD_LIBRARY_PATH SCOREP_LIBWRAP_ENABLE=\$PWD/lib/libscorep_libwrap_foo.$so_ext ./main_wrapped" \
+        "LD_LIBRARY_PATH=../target-lib-cc/lib:\$LD_LIBRARY_PATH SCOREP_LIBWRAP_PATH=\$PWD SCOREP_LIBWRAP_ENABLE=foo ./main_wrapped"
 fi
 
 test_expect_success_all "c++:   uninstall and clean target library and wrapper " \

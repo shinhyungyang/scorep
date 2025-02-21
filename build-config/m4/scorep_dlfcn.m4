@@ -44,16 +44,12 @@ AC_CHECK_HEADERS([dlfcn.h],
                  [],
                  [have_dlfcn_header=no])
 
-# not required
-AC_CHECK_HEADERS([gnu/lib-names.h])
-
 # check for mandatory prerequisites
 have_dlfcn_decls="yes"
 AC_CHECK_DECLS([RTLD_LAZY,RTLD_NOW],
                [],
                [have_dlfcn_decls="no"],
                [[#include <dlfcn.h>]])
-
 
 libs_save="$LIBS"
 
