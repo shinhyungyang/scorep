@@ -1,7 +1,7 @@
 /*
  * This file is part of the Score-P software (http://www.score-p.org)
  *
- * Copyright (c) 2014-2015,
+ * Copyright (c) 2014-2015, 2025,
  * Technische Universitaet Dresden, Germany
  *
  * Copyright (c) 2015,
@@ -73,12 +73,6 @@ opencl_subsystem_init( void )
 {
     UTILS_DEBUG( "Selected options: %llu", scorep_opencl_features );
 
-    SCOREP_Paradigms_RegisterParallelParadigm(
-        SCOREP_PARADIGM_OPENCL,
-        SCOREP_PARADIGM_CLASS_ACCELERATOR,
-        "OpenCL",
-        SCOREP_PARADIGM_FLAG_RMA_ONLY );
-
 #ifdef SCOREP_LIBWRAP_SHARED
     /* need to resolve the function pointers, also when no recording was requested */
     scorep_opencl_register_function_pointers();
@@ -86,6 +80,12 @@ opencl_subsystem_init( void )
 
     if ( scorep_opencl_features > 0 )
     {
+        SCOREP_Paradigms_RegisterParallelParadigm(
+            SCOREP_PARADIGM_OPENCL,
+            SCOREP_PARADIGM_CLASS_ACCELERATOR,
+            "OpenCL",
+            SCOREP_PARADIGM_FLAG_RMA_ONLY );
+
         scorep_opencl_register_regions();
 
         scorep_opencl_set_features();
