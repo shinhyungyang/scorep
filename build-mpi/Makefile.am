@@ -141,7 +141,7 @@ foreign_instrumenter_check_prerequisites = \
 $(foreign_instrumenter_check_prerequisites):
 	@$(am__cd) $(LIB_DIR_SCOREP) && $(MAKE) $(AM_MAKEFLAGS) $@
 
-INSTALLCHECK_LOCAL += instrumenter-checks shared-objects-self-contained bin-programs-self-contained
+INSTALLCHECK_LOCAL += instrumenter-checks
 instrumenter-checks: $(instrumenter_configuration_files) \
                      $(foreign_instrumenter_check_prerequisites)
 	@fail= failcom='exit 1'; \

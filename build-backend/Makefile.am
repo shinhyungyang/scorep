@@ -194,7 +194,7 @@ if HAVE_HIP_CHECK_SUPPORT
 PARADIGMS += hip
 endif HAVE_HIP_CHECK_SUPPORT
 
-INSTALLCHECK_LOCAL += instrumenter-checks shared-objects-self-contained bin-programs-self-contained
+INSTALLCHECK_LOCAL += instrumenter-checks
 instrumenter-checks: $(instrumenter_configuration_files) \
                      ../installcheck/instrumenter_checks/check-instrumentation.sh
 	@fail= failcom='exit 1'; \

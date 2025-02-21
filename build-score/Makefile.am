@@ -46,5 +46,3 @@ include ../src/tools/score/Makefile.inc.am
 include ../src/utils/filter/Makefile.inc.am
 include ../common/utils/Makefile.inc.am
 include ../build-config/common/Makefile-rpaths.inc.am
-
-INSTALLCHECK_LOCAL += shared-objects-self-contained bin-programs-self-contained

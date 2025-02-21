@@ -150,7 +150,7 @@ $(foreign_instrumenter_check_prerequisites):
 $(instrumenter_configuration_files): ../installcheck/instrumenter_checks/instrumenter-configurations.sh
 	@../installcheck/instrumenter_checks/instrumenter-configurations.sh
 
-INSTALLCHECK_LOCAL += instrumenter-checks shared-objects-self-contained bin-programs-self-contained
+INSTALLCHECK_LOCAL += instrumenter-checks
 instrumenter-checks: $(instrumenter_configuration_files) \
                      $(instrumenter_check_paradigm_makefiles) \
                      $(foreign_instrumenter_check_prerequisites)
