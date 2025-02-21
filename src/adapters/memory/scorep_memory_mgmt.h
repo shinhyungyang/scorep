@@ -29,6 +29,13 @@
 #include <stdbool.h>
 
 
+/*
+ * Do not prefix this symbol with 'scorep_', it needs to survive the unwinding
+ * filter.
+ */
+#define SCOREP_LIBWRAP_FUNC_NAME( func ) \
+    __scorep_memory_wrapper__ ## func
+
 #define SCOREP_LIBWRAP_FUNC_REAL_NAME( func ) \
     scorep_memory_funcptr__ ## func
 
@@ -72,6 +79,7 @@ extern SCOREP_RegionHandle scorep_memory_regions[ SCOREP_MEMORY_REGION_SENTINEL 
 
 
 #define SCOREP_MEMORY_WRAPPER( RET, NAME, ARGS ) \
+    SCOREP_LIBWRAP_DECLARE_WRAPPER_FUNC( ( RET ), NAME, ARGS ); \
     SCOREP_LIBWRAP_DECLARE_REAL_FUNC( ( RET ), NAME, ARGS );
 #include "scorep_memory_wrappers.inc.c"
 

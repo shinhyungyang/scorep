@@ -34,8 +34,6 @@ struct generator_configuration
     bool                               overwrite;
     /** Path to header file (e.g., /opt/netcdf/include/netcdf.h) */
     std::string                        header_file;
-    /** Path to library (e.g., /opt/netcdf/lib/libnetcdf.so) */
-    std::vector<std::string>           library_names;
     /** The include statement in the generated code (e.g., "<netcdf.h>") */
     std::string                        include_statement;
     std::string                        filter_file_name;

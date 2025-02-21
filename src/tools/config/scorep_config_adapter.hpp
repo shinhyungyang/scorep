@@ -29,12 +29,11 @@
 #include <deque>
 #include <set>
 #include <vector>
+#include <iostream>
 #include <stdint.h>
 
 #include "SCOREP_Config_LibraryDependencies.hpp"
 #include "scorep_config_types.hpp"
-
-class SCOREP_Config_LibwrapAdapter;
 
 /* **************************************************************************************
  * class SCOREP_Config_Adapter
@@ -491,35 +490,6 @@ public:
 
     bool
     checkArgument( const std::string& arg ) override;
-};
-
-/* **************************************************************************************
- * class SCOREP_Config_LibwrapAdapter
- * *************************************************************************************/
-
-/**
- * This class represents the compiler adapter.
- */
-class SCOREP_Config_LibwrapAdapter : public SCOREP_Config_Adapter
-{
-public:
-    SCOREP_Config_LibwrapAdapter();
-
-    void
-    printHelp( void ) override;
-
-    bool
-    checkArgument( const std::string& arg ) override;
-
-    void
-    addLibs( std::deque<std::string>&           libs,
-             SCOREP_Config_LibraryDependencies& deps ) override;
-
-    void
-    appendInitStructName( std::deque<std::string>& init_structs ) override;
-
-private:
-    std::map<std::string, std::pair<std::string, std::string> > m_wrappers;
 };
 
 /* **************************************************************************************

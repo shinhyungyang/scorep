@@ -688,9 +688,6 @@ various Score-P components.
   - Building and using library wrappers for Intel Xeon Phi co-processors is
     untested.
 
-  - Using a library wrapper for functions which Score-P also calls may only
-    work on systems supporting RTLD_NEXT (at least GNU).
-
 --------------------------------------------------------------------------------
 
 * I/O recording

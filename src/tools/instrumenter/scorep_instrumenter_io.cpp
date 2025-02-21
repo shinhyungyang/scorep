@@ -79,12 +79,6 @@ SCOREP_Instrumenter_Posix::SCOREP_Instrumenter_Posix
 #endif
 }
 
-bool
-SCOREP_Instrumenter_Posix::isInterpositionLibrary( const std::string& libraryName )
-{
-    return check_lib_name( libraryName, "rt" );
-}
-
 /* **************************************************************************************
  * class SCOREP_Instrumenter_Io
  * *************************************************************************************/
@@ -93,7 +87,14 @@ SCOREP_Instrumenter_Io::SCOREP_Instrumenter_Io()
 {
     m_paradigm_list.push_back( new SCOREP_Instrumenter_NoIo( this ) );
     m_paradigm_list.push_back( new SCOREP_Instrumenter_Posix( this ) );
-    m_current_selection.push_back( m_paradigm_list.front() );
+    if ( m_paradigm_list.back()->isSupported() )
+    {
+        m_current_selection.push_back( m_paradigm_list.back() );
+    }
+    if ( m_current_selection.empty() )
+    {
+        m_current_selection.push_back( m_paradigm_list.front() );
+    }
 }
 
 void
@@ -102,7 +103,7 @@ SCOREP_Instrumenter_Io::printHelp( void )
     std::cout << "  --" << m_name << "=<paradigm>(,<paradigm>)*";
     std::cout << "\n";
     std::cout << "                  The default is the first supported mode in the above order.\n";
-    std::cout << "                  Possible paradigms and variants are:\n";
+    std::cout << "                  Possible paradigms are:\n";
 
     SCOREP_Instrumenter_ParadigmList::iterator paradigm;
     for ( paradigm = m_paradigm_list.begin();

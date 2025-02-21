@@ -7,7 +7,7 @@
  * Copyright (c) 2009-2012,
  * Gesellschaft fuer numerische Simulation mbH Braunschweig, Germany
  *
- * Copyright (c) 2009-2013, 2015-2016, 2020, 2022,
+ * Copyright (c) 2009-2013, 2015-2016, 2020, 2022, 2025,
  * Technische Universitaet Dresden, Germany
  *
  * Copyright (c) 2009-2012,
@@ -76,6 +76,7 @@
     UTILS_DEFINE_DEBUG_MODULE( KOKKOS,             31 ), \
     UTILS_DEFINE_DEBUG_MODULE( ADDR2LINE,          32 ), \
     UTILS_DEFINE_DEBUG_MODULE( HIP,                33 ), \
-    UTILS_DEFINE_DEBUG_MODULE( OMPT,               34 )
+    UTILS_DEFINE_DEBUG_MODULE( OMPT,               34 ), \
+    UTILS_DEFINE_DEBUG_MODULE( LIBWRAP,            35 )
 
 #endif /* CONFIG_CUSTOM_H */

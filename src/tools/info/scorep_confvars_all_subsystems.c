@@ -44,6 +44,7 @@
 
 extern const SCOREP_Subsystem SCOREP_Subsystem_Substrates;
 extern const SCOREP_Subsystem SCOREP_Subsystem_TaskStack;
+extern const SCOREP_Subsystem SCOREP_Subsystem_LibwrapService;
 extern const SCOREP_Subsystem SCOREP_Subsystem_MetricService;
 extern const SCOREP_Subsystem SCOREP_Subsystem_UnwindingService;
 extern const SCOREP_Subsystem SCOREP_Subsystem_SamplingService;
@@ -72,6 +73,7 @@ extern const SCOREP_Subsystem SCOREP_Subsystem_PosixIoAdapter;
 const SCOREP_Subsystem* scorep_subsystems[] = {
     &SCOREP_Subsystem_Substrates,
     &SCOREP_Subsystem_TaskStack,
+    &SCOREP_Subsystem_LibwrapService,
     &SCOREP_Subsystem_MetricService,
     &SCOREP_Subsystem_UnwindingService,
     &SCOREP_Subsystem_SamplingService,

@@ -45,13 +45,20 @@
  */
 typedef int64_t scorep_off64_t;
 
+#define SCOREP_LIBWRAP_FUNC_NAME( func ) \
+    __scorep_posix_io_wrapper__ ## func
+
 #define SCOREP_LIBWRAP_FUNC_REAL_NAME( func ) \
     scorep_posix_io_funcptr_ ## func
+
+#define SCOREP_LIBWRAP_REGION_HANDLE( func ) \
+    scorep_posix_io_region_ ## func
 
 #include <scorep/SCOREP_Libwrap_Macros.h>
 
 #define SCOREP_POSIX_IO_PROCESS_FUNC( PARADIGM, TYPE, return_type, func, func_args ) \
-    extern SCOREP_RegionHandle scorep_posix_io_region_ ## func; \
+    extern SCOREP_RegionHandle SCOREP_LIBWRAP_REGION_HANDLE( func ); \
+    SCOREP_LIBWRAP_DECLARE_WRAPPER_FUNC( ( return_type ), func, func_args ); \
     SCOREP_LIBWRAP_DECLARE_REAL_FUNC( ( return_type ), func, func_args );
 
 #include "scorep_posix_io_function_list.inc.c"

@@ -27,7 +27,7 @@ INSTRUMENTERCHECK_BUILDDIR = @abs_top_builddir@/../installcheck/instrumenter_che
 BINDIR                     = $(INSTRUMENTERCHECK_BUILDDIR)/bin
 TOOLS                      = $(TOOLS_BINDIR)/scorep $(TOOLS_BINDIR)/scorep-config $(INSTRUMENTERCHECK_BUILDDIR)/check-instrumentation.sh
 PREP                       = "$(TOOLS_BINDIR)/scorep" $(PREPOPTS)
-PREPOPTS                   = --nomemory
+PREPOPTS                   =
 
 scorep__tty_colors = \
 red=; grn=; blu=; mgn=; std=; \
@@ -60,10 +60,10 @@ TESTS = \
     $(BINDIR)/isoc-io-cc \
     $(BINDIR)/isoc-io-cxx
 
-@PLATFORM_CRAY_FALSE@HAVE_LIBWRAP_SUPPORT_TRUE@TESTS += \
-    $(BINDIR)/posix-io-cc-runtime \
-    $(BINDIR)/isoc-io-cc-runtime \
-    $(BINDIR)/isoc-io-cxx-runtime
+@HAVE_LIBWRAP_SUPPORT_TRUE@TESTS += \
+    $(BINDIR)/posix-io-cc \
+    $(BINDIR)/isoc-io-cc \
+    $(BINDIR)/isoc-io-cxx
 
 all: $(TESTS)
 

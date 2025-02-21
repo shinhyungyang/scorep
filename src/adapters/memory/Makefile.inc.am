@@ -36,7 +36,6 @@ libscorep_adapter_memory_mgmt_la_CPPFLAGS = \
     -I$(INC_DIR_MEASUREMENT)                \
     -I$(INC_DIR_COMMON_HASH)                \
     $(UTILS_CPPFLAGS)                       \
-    -DSCOREP_LIBWRAP_SHARED                 \
     -I$(INC_DIR_DEFINITIONS)                \
     -I$(INC_DIR_SUBSTRATES)                 \
     -I$(INC_DIR_SERVICES)
@@ -69,7 +68,6 @@ libscorep_adapter_memory_event_la_CPPFLAGS =  \
     -I$(PUBLIC_INC_DIR)                       \
     -I$(INC_ROOT)src/measurement/include      \
     $(UTILS_CPPFLAGS)                         \
-    -DSCOREP_LIBWRAP_SHARED                   \
     -I$(INC_DIR_DEFINITIONS)
 
 libscorep_adapter_memory_event_la_LDFLAGS = \

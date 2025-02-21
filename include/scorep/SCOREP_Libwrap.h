@@ -29,146 +29,129 @@ extern "C"
 #endif
 
 /** Version of this library API/ABI */
-#define SCOREP_LIBWRAP_VERSION 1
+#define SCOREP_LIBWRAP_VERSION 2
 
 /** @brief Keeps all necessary information of the library wrapping object. */
 typedef struct SCOREP_LibwrapHandle SCOREP_LibwrapHandle;
-
-/** Determine which mode of library type is used */
-typedef enum SCOREP_LibwrapMode
-{
-    SCOREP_LIBWRAP_MODE_SHARED,  /**< wrapping dynamically linked library */
-} SCOREP_LibwrapMode;
 
 /** Data structure for library wrapper attributes */
 typedef struct SCOREP_LibwrapAttributes SCOREP_LibwrapAttributes;
 struct SCOREP_LibwrapAttributes
 {
-    int                version;
-    const char*        name;
-    const char*        display_name;
-    SCOREP_LibwrapMode mode;
-    void               ( * init )( SCOREP_LibwrapHandle* libwrapHandle );
-    int                number_of_shared_libs;
-    const char**       shared_libs;
+    /** @brief The API/ABI version of this library wrapper, Score-P does
+     *         currently supports SCOREP_LIBWRAP_VERSION */
+    int version;
+
+    /** @brief The short name of this library wrapper. Preferable the name of
+     *         the target library and a valid POSIX file name. */
+    const char* name;
+
+    /** @brief The display/pretty name of the library wrapper. Could also
+     *         include the target library's version. */
+    const char* display_name;
+
+    /** @brief Called by Score-P when creating the library wrapper handle via
+     *         SCOREP_Libwrap_Create()/SCOREP_LibwrapAPI::create().
+     *         Register all symbols in it. */
+    void ( * init )( SCOREP_LibwrapHandle* libwrapHandle );
 };
 
+/** @brief Return codes when enabling a wrapper. */
+typedef enum SCOREP_LibwrapEnableErrorCode
+{
+    SCOREP_LIBWRAP_ENABLED_ERROR_INVALID_ARGUMENTS = -2,
+    SCOREP_LIBWRAP_ENABLED_ERROR_NOT_WRAPPED       = -1,
+    SCOREP_LIBWRAP_ENABLED_SUCCESS                 = 0,
+    SCOREP_LIBWRAP_ENABLED_FILTERED                = 1
+} SCOREP_LibwrapEnableErrorCode;
 
-/* function definitions */
+/** Data structure for the library wrapper plug-in API */
+typedef struct SCOREP_LibwrapAPI SCOREP_LibwrapAPI;
+struct SCOREP_LibwrapAPI
+{
+    /**
+     * Create a library wrapper object based on the attributes structure.
+     *
+     * @param[out] handle       Score-P library wrapper object
+     * @param      attributes   Attributes of the Score-P library wrapper object
+     */
+    void
+    ( * create )( SCOREP_LibwrapHandle**          handle,
+                  const SCOREP_LibwrapAttributes* attributes );
 
-/**
- * This function calls the internal Score-P function to create a region
- * handle and will return a valid region handle for the function.
- *
- * @param handle            Score-P library wrapper object
- * @param region            Score-P region handle
- * @param regionFiltered    Predicate, whether region was filtered
- * @param name              Region name
- * @param symbol            Symbol name (i.e, demangled)
- * @param file              Source file name
- * @param line              Line number in source file
- */
-extern void
-SCOREP_Libwrap_DefineRegion( SCOREP_LibwrapHandle* handle,
-                             SCOREP_RegionHandle*  region,
-                             int*                  regionFiltered,
-                             const char*           name,
-                             const char*           symbol,
-                             const char*           file,
-                             int                   line );
+    /**
+     * Call this function to enable wrapping of one function.
+     *
+     * @param handle             Score-P library wrapper object
+     * @param prettyName         Region display name (i.e., demangled)
+     * @param symbolName         Symbol name (i.e., mangled)
+     * @param file               Source file name
+     * @param line               Line number in source file
+     * @param wrapper            Function address of the wrapper
+     * @param[out] funcPtr       Pointer to the function address of the actual/wrappee
+     * @param[out] regionHandle  Pointer to the region handle
+     *
+     * @return                   @see SCOREP_LibwrapEnableErrorCode
+     */
+    SCOREP_LibwrapEnableErrorCode
+    ( * enable_wrapper )( SCOREP_LibwrapHandle* handle,
+                          const char*           prettyName,
+                          const char*           symbolName,
+                          const char*           file,
+                          int                   line,
+                          void*                 wrapper,
+                          void**                funcPtr,
+                          SCOREP_RegionHandle*  regionHandle );
 
-/**
- * This function opens the shared libraries and fill the handle array of
- * the wrapper object with the associated library handles. In all modes
- * it will build the wrapper object and fill the attributes structure.
- *
- * @param[out] handle       Score-P library wrapper object
- * @param      attributes   Attributes of the Score-P library wrapper object
- */
-extern void
-SCOREP_Libwrap_Create( SCOREP_LibwrapHandle**          handle,
-                       const SCOREP_LibwrapAttributes* attributes );
+    /**
+     * Enter the measurement. First action a wrapper must do.
+     *
+     * @return Returns true if the wrapper is allowed to call any other measurement
+     *         functions (except @a SCOREP_Libwrap_ExitMeasurement).
+     */
+    int
+    ( * enter_measurement )( void );
 
-/**
- * Call this function only if you want to wrap a shared library. It
- * extracts the function pointers out the library handles and returns
- * a function pointer to the actual symbol.
- *
- * @param handle            Score-P library wrapper object
- * @param func              Name of wrapped function
- * @param funcPtr           Pointer to the actual symbol
- */
-extern void
-SCOREP_Libwrap_SharedPtrInit( SCOREP_LibwrapHandle* handle,
-                              const char*           func,
-                              void**                funcPtr );
+    /**
+     * Exit the measurement. Last action (before any return statement) a wrapper must do.
+     */
+    void
+    ( * exit_measurement )( void );
 
-/**
- * Enter the measurement. First action a wrapper must do.
- *
- * @return Returns true if the wrapper is allowed to call any other measurement
- *         functions (except @a SCOREP_Libwrap_ExitMeasurement).
- */
-extern int
-SCOREP_Libwrap_EnterMeasurement( void );
+    /**
+     * Wrapper to write an event for entering wrapped function.
+     *
+     * @param region Handle of entered region
+     */
+    void
+    ( * enter_region )( SCOREP_RegionHandle region );
 
-/**
- * Exit the measurement. Last action (before any return statement) a wrapper must do.
- */
-extern void
-SCOREP_Libwrap_ExitMeasurement( void );
+    /**
+     * Wrapper to write an event for leaving wrapped function.
+     *
+     * @param region Handle of entered region
+     */
+    void
+    ( * exit_region )( SCOREP_RegionHandle region );
 
-/**
- * Wrapper to write an event for entering wrapped function.
- *
- * @param region            Handle of entered region
- */
-extern void
-SCOREP_Libwrap_EnterRegion( SCOREP_RegionHandle region );
+    /**
+     * Marks the transition between wrapper and wrappee. I.e., just before the wrapper
+     * calls the wrappee.
+     *
+     * @return previous state, must be passed on to @a SCOREP_LibwrapAPI::exit_wrapped_region.
+     */
+    int
+    ( * enter_wrapped_region )( void );
 
-/**
- * Wrapper to write an event for leaving wrapped function.
- *
- * @param region            Handle of entered region
- */
-extern void
-SCOREP_Libwrap_ExitRegion( SCOREP_RegionHandle region );
-
-/**
- * Enter the wrapper. Needs to be called if no @a SCOREP_Libwrap_EnterRegion
- * was called (e.g., because of filtering)
- *
- * @param region            Handle of entered region
- */
-extern void
-SCOREP_Libwrap_EnterWrapper( SCOREP_RegionHandle region );
-
-/**
- * Exit the wrapper. Needs to be called if no @a SCOREP_Libwrap_ExitRegion
- * was called (e.g., because of filtering)
- *
- * @param region            Handle of entered region
- */
-extern void
-SCOREP_Libwrap_ExitWrapper( SCOREP_RegionHandle region );
-
-/**
- * Marks the transition between wrapper and wrappee. I.e., just before the wrapper
- * calls the wrappee.
- *
- * @return previous state, must be passed on to @a SCOREP_Libwrap_ExitWrappedRegion.
- */
-extern int
-SCOREP_Libwrap_EnterWrappedRegion( void );
-
-/**
- * Marks the transition between wrapper and wrappee. I.e., just before the wrapper
- * calls the wrappee.
- *
- * @param previous The return value from @a SCOREP_Libwrap_EnterWrappedRegion.
- */
-extern void
-SCOREP_Libwrap_ExitWrappedRegion( int previous );
+    /**
+     * Marks the transition between wrapper and wrappee. I.e., just before the wrapper
+     * calls the wrappee.
+     *
+     * @param previous The return value from @a SCOREP_LibwrapAPI::enter_wrapped_region.
+     */
+    void
+    ( * exit_wrapped_region )( int previous );
+};
 
 #ifdef __cplusplus
 };

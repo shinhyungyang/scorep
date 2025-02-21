@@ -76,7 +76,7 @@ enum
     ACTION_MPILIBTOOL,
     ACTION_SHMEMLIBTOOL,
     ACTION_ADAPTER_INIT,
-    ACTION_LIBWRAP_RUNTIME,
+    ACTION_LIBWRAP,
     ACTION_LDAUDIT,
     ACTION_TARGETS,
     ACTION_CONSTRUCTOR
@@ -140,8 +140,8 @@ enum
     "              Prints the path to the remapper specification file.\n" \
     "   --adapter-init\n" \
     "              Prints the code for adapter initialization.\n" \
-    "   --libwrap-support=runtime\n" \
-    "              Prints true if run-time library wrapping is supported.\n" \
+    "   --libwrap-support\n" \
+    "              Prints true if library wrapping is supported.\n" \
     "   --ldaudit  Prints the linker auditing LD_AUDIT value if supported.\n" \
     "  Options:\n" \
     "   --target   Get flags for specified target, e.g., mic, score.\n" \
@@ -403,9 +403,9 @@ main( int    argc,
         {
             action = ACTION_ADAPTER_INIT;
         }
-        else if ( strcmp( argv[ i ], "--libwrap-support=runtime" ) == 0 )
+        else if ( strcmp( argv[ i ], "--libwrap-support" ) == 0 )
         {
-            action = ACTION_LIBWRAP_RUNTIME;
+            action = ACTION_LIBWRAP;
         }
         else if ( strcmp( argv[ i ], "--ldaudit" ) == 0 )
         {
@@ -759,7 +759,7 @@ main( int    argc,
 #endif
             break;
 
-        case ACTION_LIBWRAP_RUNTIME:
+        case ACTION_LIBWRAP:
 #if HAVE_BACKEND( LIBWRAP_SUPPORT )
             std::cout << "true" << std::endl;
 #else
@@ -898,6 +898,9 @@ print_adapter_init_source( void )
         init_structs.push_front( "SCOREP_Subsystem_UnwindingService" );
 #endif
         init_structs.push_front( "SCOREP_Subsystem_MetricService" );
+#if HAVE_BACKEND( LIBWRAP_SUPPORT )
+        init_structs.push_front( "SCOREP_Subsystem_LibwrapService" );
+#endif
         init_structs.push_front( "SCOREP_Subsystem_TaskStack" );
         init_structs.push_front( "SCOREP_Subsystem_Substrates" );
 

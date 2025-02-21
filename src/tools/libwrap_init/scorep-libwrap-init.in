@@ -86,11 +86,6 @@ fi
 @HAVE_SHMEM_SUPPORT_FALSE@shmem_support=false
 @HAVE_SHMEM_SUPPORT_TRUE@shmem_support=true
 
-if [ "$($scorep_config --libwrap-support=runtime)"  = true ]; then lw_runtime_support=true;  else lw_runtime_support=false;  fi
-
-@BUILD_SHARED_LIBRARIES_TRUE@enable_shared=true
-@BUILD_SHARED_LIBRARIES_FALSE@enable_shared=false
-
 scriptname=${0##*/}
 
 print_help_message()
@@ -205,11 +200,6 @@ do
             else
                 lw_libs="${arg#--libs=}"
             fi
-        ;;
-        --static-only-target-library)
-            lw_init_flags="$lw_init_flags${lw_init_flags:+ }--static-only-target-library"
-            lw_runtime_support=false
-            enable_shared=false
         ;;
         --update)
             lw_update=true
@@ -335,8 +325,6 @@ if [ ! -e $libwrap_c_target ]; then cp $libwrap_c $libwrap_c_target; fi
 if [ ! -e $main_target      ]; then cp $main_c    $main_target     ; fi
 if [ ! -e $readme_target    ]; then cp $readme    $readme_target   ; fi
 
-# ### create lw_liblist from LIBS for use in lwgen ###
-
 # create lib_dirs, the list of directories to search the -l libraries in (Mind that this step is not really necessary as explained below)
 lib_dirs=""
 for flag in $lw_ldflags; do
@@ -386,67 +374,10 @@ lib_so()
     )
 }
 
-# Find the libs in those directories
-#
-# In princicple it is not necessary to locate the libs,
-# since they are supplied to dlopen which doesn't need full paths and uses ld-config etc. to find the libraries
-#
-# At the moment we just use this info to tell the user if we can't find the library, because later on the same will likely happen with dlopen.
-# Note: The full path is not used for dlopen, just the library name is.
-lw_liblist="" # -l "/home/asdf/lib/filename.so /opt/foo/lib/filename2.a ..."
-not_found_libs=""
-for lib in $lw_libs; do
-
-    if [ "${lib#-l}" != $lib ]; then
-        lib_so2=$(lib_so "${lib#-l}")
-    else # it is a real file: libasdf.so libasdf.a with or without path
-        if [ "${lib%$so_ext_with_dot}" != $lib ]; then # ends with .so
-            lib_so2=$lib
-        fi # ignore .a files because we don't need them for dlopen
-    fi
-
-    found=false
-    if [ ${lib_so2#/} != $lib_so2 ]; then # absolute path
-        if [ -e $lib_so2 ]; then
-            lw_liblist="$lw_liblist $lib_so2"
-            found=true
-        fi
-    else                                  # relative path
-        for dir in $lib_dirs; do
-            if [ -e $dir/$lib_so2 ]; then
-                lw_liblist="$lw_liblist $lib_so2"
-                found=true
-                break
-            fi
-        done
-    fi
-
-    if [ "$found" = false ]; then
-        not_found_libs="$not_found_libs $lib_so2"
-    fi
-done
-
-if $lw_runtime_support && [ -n "$not_found_libs" ]; then
-    print_warning "Could not find the following libraries: $not_found_libs." \
-                  "In case some of these are supposed to be wrapped via runtime library wrapping," \
-                  "you need add their paths to LD_LIBRARY_PATH before running your application." \
-                  "Or if a library's filename is incorrect, correct it in the LW_LIBLIST variable" \
-                  "(e.g. libasdf.so) in $makefile." \
-                  "If one of these libraries is only installed as a static library, runtime" \
-                  "library wrapping might not work. Please switch off runtime wrapping," \
-                  "e.g. via reinitializing the working directory by adding" \
-                  "'--update --static-only-target-library' to your 'scorep-libwrap-init'" \
-                  "command line." \
-                  ""
-fi
-
 # verify that the used libtool can build libs we expect
 libtool_shared=$(eval "$($lw_libtool --config)"; test "$build_libtool_libs" = "yes" && echo true || echo false)
-if [ "$enable_shared,$libtool_shared" = "true,false" ]; then error_and_exit "Cannot build shared library wrappers but it was requested."; fi
-
-lw_libtool_ldflags=
-if [ "$enable_shared,$libtool_shared" = "false,true" ]; then
-    lw_libtool_ldflags=-static
+if [ "$libtool_shared" = "false" ]; then
+    error_and_exit "Cannot build shared library wrappers for the $lw_backend backend."
 fi
 
 # create makefile
@@ -463,7 +394,6 @@ fi
     echo "LIBS                    = $lw_libs"
     echo "SCOREP_CC               = $lw_cc"
     echo "LIBTOOL                 = $lw_libtool"
-    echo "LIBTOOL_LDFLAGS         = $lw_libtool_ldflags"
     echo "INSTALL                 = $INSTALL"
     echo
     echo "LW_GEN                  = $scorep_library_wrapper_generator"
@@ -471,25 +401,11 @@ fi
     echo "LW_LANGUAGE             = $lw_language"
     echo "LW_SRCEXT               = $lw_srcext"
     echo "LW_LIBTOOL_TAG          = $lw_libtool_tag"
-    echo "LW_LIBLIST              = $lw_liblist"
     echo
+    echo "SCOREP_PREFIX           = $PREFIX"
     echo "SCOREP_CPPFLAGS         = $($scorep_config --cppflags)"
     echo
     echo "LW_INIT_FLAGS           = $lw_init_flags"
-    echo
-
-    echo "# proxy targets to enable/disable making/installing/uninstalling linktime and runtime wrappers according to what score-p supports"
-    if [ "$lw_runtime_support" = true ]; then
-        echo "ALL_LIBWRAP_RUNTIME          = all-libwrap-runtime"
-        echo "INSTALL_LIBWRAP_RUNTIME      = install-libwrap-runtime"
-        echo "INSTALLCHECK_LIBWRAP_RUNTIME = main_runtime_wrapped"
-        echo "UNINSTALL_LIBWRAP_RUNTIME    = uninstall-libwrap-runtime"
-    else
-        echo "ALL_LIBWRAP_RUNTIME          ="
-        echo "INSTALL_LIBWRAP_RUNTIME      ="
-        echo "INSTALLCHECK_LIBWRAP_RUNTIME ="
-        echo "UNINSTALL_LIBWRAP_RUNTIME    ="
-    fi
     echo
     cat $makefile_template
 ) > $makefile
@@ -548,21 +464,5 @@ if [ "$(cd "$lw_workspace_directory" && pwd)" != "$(pwd)" ]; then
     echo "    $ cd $lw_workspace_directory"
     echo ""
 fi
-echo "Add the #include-statements for your library to libwrap.h."
-echo ""
-echo "Add one or more function calls to your library into main.c."
-echo "It will be used as a linking-test."
-echo ""
-echo "    $ make                 # build wrapper"
-echo "    $ make check           # execute tests"
-echo "    $ make install         # install wrapper"
-echo "    $ make installcheck    # execute more tests"
-echo ""
-echo "To use the wrapper, link your application like this before executing it:"
-echo ""
-if [ "$lw_prefix" != "$PREFIX" ]; then
-    echo "    $ export SCOREP_LIBWRAP_PATH=$lw_prefix${SCOREP_LIBWRAP_PATH:+:\$SCOREP_LIBWRAP_PATH}"
-fi
-echo "    $ scorep --libwrap=$lw_name $lw_cc $lw_cppflags app.$lw_srcext $lw_ldflags $lw_libs -o app" # taken from make installcheck in Makefile.template
-echo ""
-echo "For detailed instructions consult '${readme##*/}'."
+make -s -C "$lw_workspace_directory" help
+echo "Run \`make help\` for these short instructions."

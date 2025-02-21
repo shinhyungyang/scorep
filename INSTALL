@@ -858,10 +858,11 @@ locations are passed in steps 2 and 5.
 User Library Wrapping
 =====================
 
-   To enable the user library wrapping feature, Score-P needs the LLVM compiler
-infrastructure. For one the 'llvm-config' program is needed, and also `libclang`
-and it's developer packages. The clang/clang++ compilers are not strictly
-needed, but will be used when available.
+   To enable the user library wrapping feature, Score-P needs to be built with
+shared libraries (the default) and needs the LLVM compiler infrastructure. For
+one, the 'llvm-config' program is needed, and also `libclang` and it's developer
+packages. The clang/clang++ compilers are not strictly needed, but will be used
+when available.
 
 On Debian and it's derivatives the packages are called:
 
@@ -876,6 +877,12 @@ On Fedora and it's derivatives the packages are called:
 Or the pre-built packages at:
 
      http://llvm.org/releases/download.html
+
+   If a target installation of Score-P was not built with support for the
+library wrapper generator but with support to load library wrappers, it is
+possible to build a temporary Score-P with library wrapper generator support.
+Then generate, build, and install a user library wrapper; and use the result
+with the target Score-P.
 
                      Generic Installation Instructions
                      =================================

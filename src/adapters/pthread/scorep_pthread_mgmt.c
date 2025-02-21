@@ -30,7 +30,7 @@
 #include <SCOREP_Definitions.h>
 #include <SCOREP_Paradigms.h>
 #include <SCOREP_Memory.h>
-#include <scorep/SCOREP_Libwrap.h>
+#include <SCOREP_Libwrap_Internal.h>
 
 #define SCOREP_DEBUG_MODULE_NAME PTHREAD
 #include <UTILS_Debug.h>
@@ -60,20 +60,12 @@ size_t    scorep_pthread_subsystem_id;
 pthread_t scorep_pthread_main_thread;
 
 
-static const char* wrapped_lib_name[] =
-{
-    "pthread.so"
-};
 static SCOREP_LibwrapHandle*          pthread_libwrap_handle;
 static const SCOREP_LibwrapAttributes pthread_libwrap_attributes =
 {
     SCOREP_LIBWRAP_VERSION,
-    "pthread",                                                    /* name of the library wrapper */
-    "POSIX Threads",
-    SCOREP_LIBWRAP_MODE,                                          /* libwrap mode */
-    NULL,
-    sizeof( wrapped_lib_name ) / sizeof( wrapped_lib_name[ 0 ] ), /* number of wrapped libraries */
-    wrapped_lib_name
+    "pthread", /* name of the library wrapper */
+    "POSIX Threads"
 };
 
 static SCOREP_ErrorCode
@@ -116,20 +108,20 @@ enable_pthread_wrapper( void )
     SCOREP_Libwrap_Create( &pthread_libwrap_handle,
                            &pthread_libwrap_attributes );
 
-    SCOREP_SourceFileHandle file = SCOREP_Definitions_NewSourceFile( "PTHREAD" );
-
 #define SCOREP_PTHREAD_REGION( rettype, name, NAME, TYPE, ARGS ) \
-    scorep_pthread_regions[ SCOREP_PTHREAD_ ## NAME ] = \
-        SCOREP_Definitions_NewRegion( #rettype " " #name #ARGS, \
-                                      #name, \
-                                      file, \
-                                      SCOREP_INVALID_LINE_NO, \
-                                      SCOREP_INVALID_LINE_NO, \
-                                      SCOREP_PARADIGM_PTHREAD, \
-                                      SCOREP_REGION_ ## TYPE ); \
-    SCOREP_Libwrap_SharedPtrInit( pthread_libwrap_handle, \
-                                  #name, \
-                                  ( void** )( &SCOREP_LIBWRAP_FUNC_REAL_NAME( name ) ) );
+    if ( 0 != SCOREP_Libwrap_EnableWrapper( pthread_libwrap_handle, \
+                                            #rettype " " #name #ARGS, \
+                                            #name, \
+                                            "PTHREAD", \
+                                            SCOREP_INVALID_LINE_NO, \
+                                            SCOREP_PARADIGM_PTHREAD, \
+                                            SCOREP_REGION_ ## TYPE, \
+                                            ( void* )SCOREP_LIBWRAP_FUNC_NAME( name ), \
+                                            ( void** )&SCOREP_LIBWRAP_FUNC_REAL_NAME( name ), \
+                                            &scorep_pthread_regions[ SCOREP_PTHREAD_ ## NAME ] ) ) \
+    { \
+        UTILS_FATAL( "Could not enable wrapping for function '" #name "'" ); \
+    }
 
     SCOREP_PTHREAD_REGIONS
 

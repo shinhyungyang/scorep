@@ -23,6 +23,13 @@
 
 #include <scorep/SCOREP_PublicTypes.h>
 
+/*
+ * Do not prefix this symbol with 'scorep_', it needs to survive the unwinding
+ * filter.
+ */
+#define SCOREP_LIBWRAP_FUNC_NAME( func ) \
+    __scorep_pthread_wrapper__ ## func
+
 #define SCOREP_LIBWRAP_FUNC_REAL_NAME( func ) \
     scorep_pthread_funcptr__ ## func
 
@@ -66,6 +73,7 @@ typedef enum scorep_pthread_region_types
 extern SCOREP_RegionHandle scorep_pthread_regions[ SCOREP_PTHREAD_REGION_SENTINEL ];
 
 #define SCOREP_PTHREAD_REGION( rettype, name, NAME, TYPE, ARGS ) \
+    SCOREP_LIBWRAP_DECLARE_WRAPPER_FUNC( ( rettype ), name, ARGS ); \
     SCOREP_LIBWRAP_DECLARE_REAL_FUNC( ( rettype ), name, ARGS );
 
 SCOREP_PTHREAD_REGIONS

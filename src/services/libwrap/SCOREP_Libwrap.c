@@ -21,16 +21,9 @@
 
 #include <config.h>
 
-#include <dlfcn.h>
+#include <SCOREP_Libwrap_Internal.h>
 
-#if HAVE( GNU_LIB_NAMES_H )
-# include <gnu/lib-names.h>
-#endif
-
-#include <stdlib.h>
-#include <string.h>
-#include <stdbool.h>
-
+#include <SCOREP_Config.h>
 #include <SCOREP_RuntimeManagement.h>
 #include <SCOREP_InMeasurement.h>
 #include <SCOREP_Definitions.h>
@@ -42,19 +35,39 @@
 
 #include <UTILS_Error.h>
 #include <UTILS_CStr.h>
+#include <UTILS_Atomic.h>
 #include <UTILS_Mutex.h>
+#include <UTILS_IO.h>
 
-#include <SCOREP_Hashtab.h>
+#define SCOREP_DEBUG_MODULE_NAME LIBWRAP
+#include <UTILS_Debug.h>
 
+#include <stdlib.h>
+#include <string.h>
+#include <stdbool.h>
+
+#include <gotcha/gotcha.h>
+
+#if HAVE( LIBWRAP_PLUGIN_SUPPORT )
+#include <dlfcn.h>
+#endif
+
+struct scorep_gotcha_handle
+{
+    struct scorep_gotcha_handle* next;
+    gotcha_wrappee_handle_t      wrappee_handle;
+    gotcha_binding_t             wrap_actions;
+    char                         name[];
+};
 
 /** Data structure for library wrapper handle */
 struct SCOREP_LibwrapHandle
 {
     const SCOREP_LibwrapAttributes* attributes;
     SCOREP_LibwrapHandle*           next;
-    UTILS_Mutex                     region_definition_lock;
-    uint32_t                        number_of_shared_lib_handles;
-    void*                           shared_lib_handles[];
+    UTILS_Mutex                     lock;
+    struct scorep_gotcha_handle*    gotcha_head;
+    struct scorep_gotcha_handle**   gotcha_tail;
 };
 
 /** Library wrapper handles */
@@ -63,58 +76,264 @@ static SCOREP_LibwrapHandle* libwrap_handles;
 /** Lock for definitions within Score-P library wrapping infrastructure */
 static UTILS_Mutex libwrap_object_lock;
 
-/** Our own flag which indicates that the libwrapping is active, this
-    is more or less MEASUREMENT_PHASE( WITHIN ), except that we are already
-    active after SCOREP_Libwrap_Initialize was called by
-    SCOREP_InitMeasurement, which is slightly earlier than entering PHASE( WITHIN ) */
-static bool active;
+static size_t libwrap_subsystem_id;
 
-#if HAVE( GNU_LIB_NAMES_H )
-static SCOREP_Hashtab* lib_names_mapping;
+static char** libwrap_path;
+
+extern const SCOREP_LibwrapAPI scorep_libwrap_plugin_api;
+
+#include "scorep_libwrap_confvars.inc.c"
+
+/* ****************************************************************** */
+/* Management                                                         */
+/* ****************************************************************** */
+
+static SCOREP_ErrorCode
+libwrap_subsystem_register( size_t subsystemId )
+{
+    libwrap_subsystem_id = subsystemId;
+
+    return SCOREP_ConfigRegister( "libwrap",
+                                  scorep_libwrap_confvars );
+}
+
+static void
+libwrap_subsystem_deregister( void )
+{
+    free( libwrap_confvar_path );
+    libwrap_confvar_path = NULL;
+    free( libwrap_confvar_enable );
+    libwrap_confvar_enable = NULL;
+    free( libwrap_confvar_enable_sep );
+    libwrap_confvar_enable_sep = NULL;
+
+    free( libwrap_path );
+    libwrap_path = NULL;
+}
+
+#if HAVE( LIBWRAP_PLUGIN_SUPPORT )
+
+static SCOREP_ErrorCode
+prepare_libwrap_path( void )
+{
+    const char* scorep_prefix = SCOREP_PREFIX;
+    size_t      path_copy_len = strlen( libwrap_confvar_path ) + 1 + strlen( scorep_prefix ) + 1;
+    char*       path_copy     = malloc( path_copy_len );
+    if ( !path_copy )
+    {
+        UTILS_ERROR_POSIX();
+        return SCOREP_ERROR_MEM_ALLOC_FAILED;
+    }
+    snprintf( path_copy, path_copy_len, "%s:%s", libwrap_confvar_path, scorep_prefix );
+
+    char*  entry;
+    size_t num_entries      = 0;
+    char*  value_for_strtok = path_copy;
+    while ( ( entry = strtok( value_for_strtok, ":" ) ) )
+    {
+        /* all but the first call to strtok should be NULL */
+        value_for_strtok = NULL;
+
+        if ( 0 == strlen( entry ) )
+        {
+            continue;
+        }
+
+        if ( entry[ 0 ] != '/' )
+        {
+            UTILS_WARNING( "Entry in SCOREP_LIBWRAP_PATH is not an absolute path: '%s'",
+                           entry );
+            continue;
+        }
+
+        num_entries++;
+    }
+
+    libwrap_path = calloc( num_entries + 1, sizeof( *libwrap_path ) );
+    if ( !libwrap_path )
+    {
+        UTILS_ERROR_POSIX();
+        free( path_copy );
+        return SCOREP_ERROR_MEM_ALLOC_FAILED;
+    }
+
+    /* reset value and start second pass */
+    snprintf( path_copy, path_copy_len, "%s:%s", libwrap_confvar_path, scorep_prefix );
+    num_entries      = 0;
+    value_for_strtok = path_copy;
+    while ( ( entry = strtok( value_for_strtok, ":" ) ) )
+    {
+        /* all but the first call to strtok should be NULL */
+        value_for_strtok = NULL;
+
+        if ( 0 == strlen( entry ) )
+        {
+            continue;
+        }
+
+        if ( entry[ 0 ] != '/' )
+        {
+            continue;
+        }
+
+        UTILS_IO_SimplifyPath( entry );
+        libwrap_path[ num_entries++ ] = entry;
+    }
+
+    return SCOREP_SUCCESS;
+}
+
+static SCOREP_ErrorCode
+load_plugin( const char* path )
+{
+    UTILS_DEBUG_ENTRY( "%s", path );
+
+    void* dl_handle = dlopen( path, RTLD_NOW );
+
+    /* If it is not valid */
+    char* dl_lib_error = dlerror();
+    if ( dl_lib_error != NULL )
+    {
+        UTILS_WARNING( "Could not open library wrapper plugin '%s'. Error message was: %s",
+                       path, dl_lib_error );
+        return SCOREP_ERROR_INVALID_ARGUMENT;
+    }
+
+    /* Union to avoid casting and compiler warnings */
+    union
+    {
+        void* void_ptr;
+        void  ( * init )( const SCOREP_LibwrapAPI*,
+                          size_t );
+    } init_function;
+
+    init_function.void_ptr = dlsym( dl_handle, "scorep_libwrap_plugin" );
+    dl_lib_error           = dlerror();
+    if ( dl_lib_error != NULL )
+    {
+        UTILS_WARNING( "Could not find symbol 'scorep_libwrap_plugin' of library wrapper plugin %s. Error message was: %s",
+                       path, dl_lib_error );
+        dlclose( dl_handle );
+        return SCOREP_ERROR_INVALID_ARGUMENT;
+    }
+
+    init_function.init( &scorep_libwrap_plugin_api, sizeof( scorep_libwrap_plugin_api ) );
+
+    return SCOREP_SUCCESS;
+}
 #endif
 
-/* ****************************************************************** */
-/* Implementations                                                    */
-/* ****************************************************************** */
-
-void
-SCOREP_Libwrap_DefineRegion( SCOREP_LibwrapHandle* handle,
-                             SCOREP_RegionHandle*  region,
-                             int*                  regionFiltered,
-                             const char*           func,
-                             const char*           symbol,
-                             const char*           file,
-                             int                   line )
+static SCOREP_ErrorCode
+libwrap_subsystem_initialize( void )
 {
-    if ( !active )
+    UTILS_DEBUG_ENTRY();
+
+    SCOREP_ErrorCode ret = SCOREP_SUCCESS;
+
+#if HAVE( LIBWRAP_PLUGIN_SUPPORT )
+    ret = prepare_libwrap_path();
+    if ( ret != SCOREP_SUCCESS )
     {
-        return;
+        return ret;
     }
 
-    UTILS_MutexLock( &handle->region_definition_lock );
-
-    if ( *region != SCOREP_INVALID_REGION )
+    char* enable_copy = UTILS_CStr_dup( libwrap_confvar_enable );
+    if ( !enable_copy )
     {
-        UTILS_MutexUnlock( &handle->region_definition_lock );
-        return;
+        UTILS_ERROR_POSIX();
+        free( libwrap_path );
+        return SCOREP_ERROR_MEM_ALLOC_FAILED;
     }
 
-    *region = SCOREP_Definitions_NewRegion( func,
-                                            symbol,
-                                            SCOREP_Definitions_NewSourceFile( file ),
-                                            line,
-                                            SCOREP_INVALID_LINE_NO,
-                                            SCOREP_PARADIGM_LIBWRAP,
-                                            SCOREP_REGION_WRAPPER );
-    SCOREP_RegionHandle_SetGroup( *region, handle->attributes->display_name );
-
-    if ( regionFiltered )
+    char* entry;
+    char* value_for_strtok = enable_copy;
+    while ( ( entry = strtok( value_for_strtok, libwrap_confvar_enable_sep ) ) )
     {
-        *regionFiltered = !!SCOREP_Filtering_Match( file, func, symbol );
-    }
+        /* all but the first call to strtok should be NULL */
+        value_for_strtok = NULL;
 
-    UTILS_MutexUnlock( &handle->region_definition_lock );
+        if ( 0 == strlen( entry ) )
+        {
+            continue;
+        }
+
+        if ( UTILS_IO_HasPath( entry ) )
+        {
+            const char* full_path = UTILS_IO_JoinPath( 2,
+                                                       SCOREP_GetWorkingDirectory(),
+                                                       entry );
+            ret = load_plugin( full_path );
+        }
+        else
+        {
+            char plugin_name[ 128 ];
+            snprintf( plugin_name, 128, "libscorep_libwrap_%s.so", entry );
+
+            char** path = libwrap_path;
+            while ( *path )
+            {
+                char* full_path = UTILS_IO_JoinPath( 3, *path, "lib" SCOREP_BACKEND_SUFFIX, plugin_name );
+                ret = load_plugin( full_path );
+                free( full_path );
+                if ( ret == SCOREP_SUCCESS )
+                {
+                    break;
+                }
+                path++;
+            }
+        }
+    }
+#endif
+
+    return ret;
 }
+
+/**
+ * This function will free the allocated memory and delete the wrapper
+ * handle.
+ *
+ * @param handle            Library wrapper handle
+ */
+static void
+delete_libwrap_handle( SCOREP_LibwrapHandle* handle )
+{
+    UTILS_ASSERT( handle );
+
+    while ( handle->gotcha_head )
+    {
+        struct scorep_gotcha_handle* gotcha_handle = handle->gotcha_head;
+        handle->gotcha_head = gotcha_handle->next;
+        free( gotcha_handle );
+    }
+    handle->gotcha_tail = &handle->gotcha_head;
+}
+
+
+static void
+libwrap_subsystem_finalize( void )
+{
+    while ( libwrap_handles != NULL )
+    {
+        SCOREP_LibwrapHandle* temp = libwrap_handles;
+        libwrap_handles = temp->next;
+
+        delete_libwrap_handle( temp );
+        free( temp );
+    }
+}
+
+const SCOREP_Subsystem SCOREP_Subsystem_LibwrapService =
+{
+    .subsystem_name       = "Libwrap",
+    .subsystem_register   = libwrap_subsystem_register,
+    .subsystem_deregister = libwrap_subsystem_deregister,
+    .subsystem_init       = libwrap_subsystem_initialize,
+    .subsystem_finalize   = libwrap_subsystem_finalize
+};
+
+/* ****************************************************************** */
+/* Internal API                                                       */
+/* ****************************************************************** */
 
 void
 SCOREP_Libwrap_Create( SCOREP_LibwrapHandle**          outHandle,
@@ -126,15 +345,9 @@ SCOREP_Libwrap_Create( SCOREP_LibwrapHandle**          outHandle,
         return;
     }
 
-    if ( SCOREP_IS_MEASUREMENT_PHASE( PRE ) )
-    {
-        SCOREP_InitMeasurement();
-    }
-    if ( !active )
-    {
-        return;
-    }
+    UTILS_DEBUG_ENTRY( "%s", attributes->name );
 
+    /* ABI break with version 2, cannot process version <= 1 */
     if ( attributes->version != SCOREP_LIBWRAP_VERSION )
     {
         UTILS_FATAL( "Incompatible API/ABI version for library wrapper '%s' (expected: %d, actual: %d)",
@@ -143,9 +356,16 @@ SCOREP_Libwrap_Create( SCOREP_LibwrapHandle**          outHandle,
                      attributes->version );
     }
 
+    if ( NULL != UTILS_Atomic_LoadN_void_ptr( outHandle,
+                                              UTILS_ATOMIC_SEQUENTIAL_CONSISTENT ) )
+    {
+        return;
+    }
+
     UTILS_MutexLock( &libwrap_object_lock );
 
-    if ( *outHandle != NULL )
+    if ( NULL != UTILS_Atomic_LoadN_void_ptr( outHandle,
+                                              UTILS_ATOMIC_SEQUENTIAL_CONSISTENT ) )
     {
         UTILS_MutexUnlock( &libwrap_object_lock );
         return;
@@ -153,67 +373,17 @@ SCOREP_Libwrap_Create( SCOREP_LibwrapHandle**          outHandle,
 
     /*
      * Get new library wrapper handle. Do not yet assign it to outHandle,
-     * only after it is finished. This prevents a race if multiple thredas try
-     * to create the wrapper. Other threads may call SCOREP_Libwrap_Create
+     * only after it is finished. This prevents a race if multiple threads try
+     * to create the wrapper. Other threads may call libwrap_plugin_api_create
      * only if the handle is still NULL.
      */
-    SCOREP_LibwrapHandle* handle = calloc( 1, sizeof( SCOREP_LibwrapHandle ) + attributes->number_of_shared_libs * sizeof( void* ) );
+    SCOREP_LibwrapHandle* handle = calloc( 1, sizeof( *handle ) );
     UTILS_ASSERT( handle );
 
     /* Initialize the new library wrapper handle */
-    handle->attributes = attributes;
-
-    /* Initialize number_of_shared_lib_handles */
-    handle->number_of_shared_lib_handles = 0;
-
-    if ( handle->attributes->mode == SCOREP_LIBWRAP_MODE_SHARED )
-    {
-        /* clear any recent errors */
-        ( void )dlerror();
-        if ( handle->attributes->number_of_shared_libs == 0 )
-        {
-            UTILS_FATAL( "Empty library list. Runtime wrapping not supported for library wrapper '%s'", attributes->name );
-        }
-
-        for ( int i = 0; i < handle->attributes->number_of_shared_libs; i++ )
-        {
-            const char* lib_name = attributes->shared_libs[ i ];
-#if HAVE( GNU_LIB_NAMES_H )
-            /* if this is a lib in lib_names, than it should be found without a path too */
-            if ( strrchr( lib_name, '/' ) )
-            {
-                lib_name = strrchr( lib_name, '/' ) + 1;
-            }
-            SCOREP_Hashtab_Entry* result = SCOREP_Hashtab_Find( lib_names_mapping, lib_name, NULL );
-            if ( result )
-            {
-                lib_name = result->value.ptr;
-            }
-            else
-            {
-                /* not found, use original lib name again */
-                lib_name = attributes->shared_libs[ i ];
-            }
-#endif
-
-            handle->shared_lib_handles[ handle->number_of_shared_lib_handles ] =
-                dlopen( lib_name, RTLD_LAZY | RTLD_LOCAL );
-            if ( handle->shared_lib_handles[ handle->number_of_shared_lib_handles ] == NULL )
-            {
-                char* error = dlerror();
-                if ( !error )
-                {
-                    error = "success";
-                }
-                UTILS_ERROR( SCOREP_ERROR_DLOPEN_FAILED,
-                             "unable to open library %s: %s",
-                             handle->attributes->shared_libs[ i ], error );
-                continue;
-            }
-
-            handle->number_of_shared_lib_handles++;
-        }
-    }
+    handle->attributes  = attributes;
+    handle->gotcha_head = NULL;
+    handle->gotcha_tail = &handle->gotcha_head;
 
     if ( attributes->init )
     {
@@ -224,218 +394,154 @@ SCOREP_Libwrap_Create( SCOREP_LibwrapHandle**          outHandle,
     handle->next    = libwrap_handles;
     libwrap_handles = handle;
 
-    /* Wrapper was successfuly created, make the result visible to others. */
-    *outHandle = handle;
+    /* Wrapper was successfully created, make the result visible to others. */
+    UTILS_Atomic_StoreN_void_ptr( outHandle, handle, UTILS_ATOMIC_SEQUENTIAL_CONSISTENT );
 
     UTILS_MutexUnlock( &libwrap_object_lock );
 
-    return;
+    UTILS_DEBUG_EXIT();
 }
 
-void
-SCOREP_Libwrap_SharedPtrInit( SCOREP_LibwrapHandle* handle,
-                              const char*           func,
-                              void**                funcPtr )
+SCOREP_LibwrapEnableErrorCode
+SCOREP_Libwrap_EnableWrapper( SCOREP_LibwrapHandle* handle,
+                              const char*           prettyName,
+                              const char*           symbolName,
+                              const char*           file,
+                              int                   line,
+                              SCOREP_ParadigmType   paradigm,
+                              SCOREP_RegionType     regionType,
+                              void*                 wrapper,
+                              void**                funcPtrOut,
+                              SCOREP_RegionHandle*  region )
 {
-    if ( !active )
+    UTILS_ASSERT( handle && symbolName && wrapper && funcPtrOut );
+
+    /* shoule only be called once */
+    if ( NULL != UTILS_Atomic_LoadN_void_ptr( funcPtrOut,
+                                              UTILS_ATOMIC_SEQUENTIAL_CONSISTENT ) )
     {
-        return;
+        return SCOREP_LIBWRAP_ENABLED_SUCCESS;
     }
 
-    if ( handle->attributes->mode != SCOREP_LIBWRAP_MODE_SHARED )
+    UTILS_MutexLock( &handle->lock );
+
+    if ( NULL != UTILS_Atomic_LoadN_void_ptr( funcPtrOut,
+                                              UTILS_ATOMIC_SEQUENTIAL_CONSISTENT ) )
     {
-        return;
+        UTILS_MutexUnlock( &handle->lock );
+        return SCOREP_LIBWRAP_ENABLED_SUCCESS;
     }
 
-    if ( *funcPtr )
+    UTILS_DEBUG_ENTRY( "%s, %s, %s:%d", handle->attributes->name, symbolName, file, line );
+
+    size_t                       funcname_length = strlen( symbolName ) + 1;
+    struct scorep_gotcha_handle* gotcha_handle   =
+        calloc( 1, sizeof( *gotcha_handle ) + funcname_length );
+    memcpy( gotcha_handle->name, symbolName, funcname_length );
+    gotcha_handle->next = NULL;
+
+    gotcha_binding_t* wrap_actions = &gotcha_handle->wrap_actions;
+    wrap_actions->name            = gotcha_handle->name;
+    wrap_actions->wrapper_pointer = wrapper;
+    wrap_actions->function_handle = &gotcha_handle->wrappee_handle;
+    enum gotcha_error_t ret = gotcha_wrap( wrap_actions, 1, "Score-P" );
+    if ( GOTCHA_INTERNAL == ret )
     {
-        return;
+        /* some internal error, wrapping not done and wrap_actions not referenced */
+        free( gotcha_handle );
+        UTILS_MutexUnlock( &handle->lock );
+        UTILS_DEBUG_EXIT( "gotcha_wrap failed" );
+        return SCOREP_LIBWRAP_ENABLED_ERROR_NOT_WRAPPED;
+    }
+    /* wrap_actions now referenced in GOTCHA internal data structures */
+
+    *handle->gotcha_tail = gotcha_handle;
+    handle->gotcha_tail  = &gotcha_handle->next;
+
+    if ( region )
+    {
+        *region = SCOREP_Definitions_NewRegion( prettyName,
+                                                symbolName,
+                                                file ? SCOREP_Definitions_NewSourceFile( file )
+                                                : SCOREP_INVALID_SOURCE_FILE,
+                                                line,
+                                                SCOREP_INVALID_LINE_NO,
+                                                paradigm,
+                                                regionType );
     }
 
-    /* clear any recent errors */
-    ( void )dlerror();
-    for ( uint32_t i = 0; i < handle->number_of_shared_lib_handles; i++ )
+    if ( ret != GOTCHA_FUNCTION_NOT_FOUND )
     {
-        *funcPtr = dlsym( handle->shared_lib_handles[ i ], func );
-        if ( *funcPtr )
-        {
-            break;
-        }
+        UTILS_Atomic_StoreN_void_ptr( funcPtrOut,
+                                      gotcha_get_wrappee( gotcha_handle->wrappee_handle ),
+                                      UTILS_ATOMIC_SEQUENTIAL_CONSISTENT );
     }
-    if ( !( *funcPtr ) )
-    {
-        char* error = dlerror();
-        if ( error == NULL )
-        {
-            error = "success";
-        }
-        UTILS_FATAL( "Could not resolve symbol '%s' for library wrapper '%s': %s",
-                     func, handle->attributes->name, error );
-    }
+
+    UTILS_MutexUnlock( &handle->lock );
+
+    UTILS_DEBUG_EXIT();
+
+    return SCOREP_LIBWRAP_ENABLED_SUCCESS;
 }
 
-static void
-delete_libwrap_handle( SCOREP_LibwrapHandle* handle )
-{
-    UTILS_ASSERT( handle );
+/* ****************************************************************** */
+/* Plug-in API                                                        */
+/* ****************************************************************** */
 
-    if ( handle->attributes->mode != SCOREP_LIBWRAP_MODE_SHARED )
+static SCOREP_LibwrapEnableErrorCode
+libwrap_plugin_api_enable_wrapper( SCOREP_LibwrapHandle* handle,
+                                   const char*           prettyName,
+                                   const char*           symbolName,
+                                   const char*           file,
+                                   int                   line,
+                                   void*                 wrapper,
+                                   void**                funcPtrOut,
+                                   SCOREP_RegionHandle*  region )
+{
+    if ( !handle || !symbolName || !wrapper || !funcPtrOut || !region )
     {
-        /* Clear dlerror */
-        ( void )dlerror();
-
-        for ( uint32_t i = 0; i < handle->number_of_shared_lib_handles; i++ )
-        {
-            if ( dlclose( handle->shared_lib_handles[ i ] ) != 0 )
-            {
-                UTILS_ERROR( SCOREP_ERROR_DLCLOSE_FAILED, "dlclose( %s ), failed: %s",
-                             handle->attributes->shared_libs[ i ], dlerror() );
-            }
-        }
-    }
-}
-
-
-static SCOREP_ErrorCode
-libwrap_subsystem_initialize( void )
-{
-#if HAVE( GNU_LIB_NAMES_H )
-    lib_names_mapping = SCOREP_Hashtab_CreateSize( 16,
-                                                   SCOREP_Hashtab_HashString,
-                                                   SCOREP_Hashtab_CompareStrings );
-
-#define add_so_mapping( so ) \
-    do \
-    { \
-        if ( strstr( so, ".so." ) ) \
-        { \
-            char* from = UTILS_CStr_dup( so ); \
-            *( strstr( from, ".so." ) + 3 ) = '\0'; \
-            char* so_copy = UTILS_CStr_dup( so ); \
-            SCOREP_Hashtab_InsertPtr( lib_names_mapping, from, so_copy, NULL ); \
-        } \
-    } while ( 0 )
-#ifdef LD_SO
-    add_so_mapping( LD_SO );
-#endif
-#ifdef LIBANL_SO
-    add_so_mapping( LIBANL_SO );
-#endif
-#ifdef LIBBROKENLOCALE_SO
-    add_so_mapping( LIBBROKENLOCALE_SO );
-#endif
-#ifdef LIBCIDN_SO
-    add_so_mapping( LIBCIDN_SO );
-#endif
-#ifdef LIBCRYPT_SO
-    add_so_mapping( LIBCRYPT_SO );
-#endif
-#ifdef LIBC_SO
-    add_so_mapping( LIBC_SO );
-#endif
-#ifdef LIBDL_SO
-    add_so_mapping( LIBDL_SO );
-#endif
-#ifdef LIBGCC_S_SO
-    add_so_mapping( LIBGCC_S_SO );
-#endif
-#ifdef LIBM_SO
-    add_so_mapping( LIBM_SO );
-#endif
-#ifdef LIBNSL_SO
-    add_so_mapping( LIBNSL_SO );
-#endif
-#ifdef LIBNSS_COMPAT_SO
-    add_so_mapping( LIBNSS_COMPAT_SO );
-#endif
-#ifdef LIBNSS_DB_SO
-    add_so_mapping( LIBNSS_DB_SO );
-#endif
-#ifdef LIBNSS_DNS_SO
-    add_so_mapping( LIBNSS_DNS_SO );
-#endif
-#ifdef LIBNSS_FILES_SO
-    add_so_mapping( LIBNSS_FILES_SO );
-#endif
-#ifdef LIBNSS_HESIOD_SO
-    add_so_mapping( LIBNSS_HESIOD_SO );
-#endif
-#ifdef LIBNSS_LDAP_SO
-    add_so_mapping( LIBNSS_LDAP_SO );
-#endif
-#ifdef LIBNSS_NISPLUS_SO
-    add_so_mapping( LIBNSS_NISPLUS_SO );
-#endif
-#ifdef LIBNSS_NIS_SO
-    add_so_mapping( LIBNSS_NIS_SO );
-#endif
-#ifdef LIBNSS_TEST1_SO
-    add_so_mapping( LIBNSS_TEST1_SO );
-#endif
-#ifdef LIBPTHREAD_SO
-    add_so_mapping( LIBPTHREAD_SO );
-#endif
-#ifdef LIBRESOLV_SO
-    add_so_mapping( LIBRESOLV_SO );
-#endif
-#ifdef LIBRT_SO
-    add_so_mapping( LIBRT_SO );
-#endif
-#ifdef LIBTHREAD_DB_SO
-    add_so_mapping( LIBTHREAD_DB_SO );
-#endif
-#ifdef LIBUTIL_SO
-    add_so_mapping( LIBUTIL_SO );
-#endif
-
-#undef add_so_mapping
-#endif
-
-    active = true;
-
-    return SCOREP_SUCCESS;
-}
-
-static void
-libwrap_subsystem_finalize( void )
-{
-    SCOREP_LibwrapHandle* temp;
-
-    while ( libwrap_handles != NULL )
-    {
-        temp            = libwrap_handles;
-        libwrap_handles = temp->next;
-
-        delete_libwrap_handle( temp );
-        free( temp );
+        return SCOREP_LIBWRAP_ENABLED_ERROR_INVALID_ARGUMENTS;
     }
 
-#if HAVE( GNU_LIB_NAMES_H )
-    SCOREP_Hashtab_FreeAll( lib_names_mapping,
-                            SCOREP_Hashtab_DeleteFree,
-                            SCOREP_Hashtab_DeleteFree );
-#endif
+    if ( SCOREP_Filtering_Match( file, prettyName, symbolName ) )
+    {
+        return SCOREP_LIBWRAP_ENABLED_FILTERED;
+    }
 
-    active = false;
+    SCOREP_LibwrapEnableErrorCode ret = SCOREP_Libwrap_EnableWrapper(
+        handle,
+        prettyName,
+        symbolName,
+        file,
+        line,
+        SCOREP_PARADIGM_LIBWRAP,
+        SCOREP_REGION_WRAPPER,
+        wrapper,
+        funcPtrOut,
+        region );
+    if ( ret == SCOREP_LIBWRAP_ENABLED_SUCCESS )
+    {
+        SCOREP_RegionHandle_SetGroup( *region, handle->attributes->display_name );
+    }
+
+    return ret;
 }
 
-int
-SCOREP_Libwrap_EnterMeasurement( void )
+static int
+libwrap_plugin_api_enter_measurement( void )
 {
-    /* Do not use `active`, as we need to ensure that events really are only
-       triggered inside PHASE( WITHIN ) */
     return SCOREP_IN_MEASUREMENT_TEST_AND_INCREMENT()
            && SCOREP_IS_MEASUREMENT_PHASE( WITHIN );
 }
 
-void
-SCOREP_Libwrap_ExitMeasurement( void )
+static void
+libwrap_plugin_api_exit_measurement( void )
 {
     SCOREP_IN_MEASUREMENT_DECREMENT();
 }
 
-void
-SCOREP_Libwrap_EnterRegion( SCOREP_RegionHandle region )
+static void
+libwrap_plugin_api_enter_region( SCOREP_RegionHandle region )
 {
     /* The increment is needed, to account this function also as part of the wrapper */
 #if HAVE( RETURN_ADDRESS )
@@ -447,39 +553,14 @@ SCOREP_Libwrap_EnterRegion( SCOREP_RegionHandle region )
 #endif
 }
 
-void
-SCOREP_Libwrap_ExitRegion( SCOREP_RegionHandle region )
+static void
+libwrap_plugin_api_exit_region( SCOREP_RegionHandle region )
 {
     SCOREP_ExitRegion( region );
 }
 
-void
-SCOREP_Libwrap_EnterWrapper( SCOREP_RegionHandle region )
-{
-    /* The increment is needed, to account this function also as part of the wrapper */
-#if HAVE( RETURN_ADDRESS )
-    SCOREP_IN_MEASUREMENT_INCREMENT();
-#endif
-    if ( SCOREP_IsUnwindingEnabled() )
-    {
-        SCOREP_EnterWrapper( region );
-    }
-#if HAVE( RETURN_ADDRESS )
-    SCOREP_IN_MEASUREMENT_DECREMENT();
-#endif
-}
-
-void
-SCOREP_Libwrap_ExitWrapper( SCOREP_RegionHandle region )
-{
-    if ( SCOREP_IsUnwindingEnabled() )
-    {
-        SCOREP_ExitWrapper( region );
-    }
-}
-
-int
-SCOREP_Libwrap_EnterWrappedRegion( void )
+static int
+libwrap_plugin_api_enter_wrapped_region( void )
 {
     SCOREP_ENTER_WRAPPED_REGION();
 #if HAVE( THREAD_LOCAL_STORAGE )
@@ -489,8 +570,8 @@ SCOREP_Libwrap_EnterWrappedRegion( void )
 #endif
 }
 
-void
-SCOREP_Libwrap_ExitWrappedRegion( int previous )
+static void
+libwrap_plugin_api_exit_wrapped_region( int previous )
 {
 #if HAVE( THREAD_LOCAL_STORAGE )
     sig_atomic_t scorep_in_measurement_save = previous;
@@ -498,9 +579,14 @@ SCOREP_Libwrap_ExitWrappedRegion( int previous )
     SCOREP_EXIT_WRAPPED_REGION();
 }
 
-const SCOREP_Subsystem SCOREP_Subsystem_LibwrapService =
+const SCOREP_LibwrapAPI scorep_libwrap_plugin_api =
 {
-    .subsystem_name     = "Libwrap",
-    .subsystem_init     = libwrap_subsystem_initialize,
-    .subsystem_finalize = libwrap_subsystem_finalize
+    .create               = SCOREP_Libwrap_Create,
+    .enable_wrapper       = libwrap_plugin_api_enable_wrapper,
+    .enter_measurement    = libwrap_plugin_api_enter_measurement,
+    .exit_measurement     = libwrap_plugin_api_exit_measurement,
+    .enter_region         = libwrap_plugin_api_enter_region,
+    .exit_region          = libwrap_plugin_api_exit_region,
+    .enter_wrapped_region = libwrap_plugin_api_enter_wrapped_region,
+    .exit_wrapped_region  = libwrap_plugin_api_exit_wrapped_region
 };

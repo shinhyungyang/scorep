@@ -63,10 +63,13 @@ posix_io_subsystem_register( size_t subsystemId )
 static SCOREP_ErrorCode
 posix_io_subsystem_init( void )
 {
-    scorep_posix_io_libwrap_init();
+    if ( posix_io_enable )
+    {
+        scorep_posix_io_init();
+        scorep_posix_io_isoc_init();
 
-    scorep_posix_io_init();
-    scorep_posix_io_isoc_init();
+        scorep_posix_io_libwrap_init();
+    }
 
     return SCOREP_SUCCESS;
 }
@@ -77,8 +80,11 @@ posix_io_subsystem_init( void )
 static void
 posix_io_subsystem_finalize( void )
 {
-    scorep_posix_io_isoc_fini();
-    scorep_posix_io_fini();
+    if ( posix_io_enable )
+    {
+        scorep_posix_io_isoc_fini();
+        scorep_posix_io_fini();
+    }
 }
 
 /** POSIX I/O adapter with its callbacks */

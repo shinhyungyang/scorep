@@ -7,146 +7,146 @@
  */
 
 #if HAVE( POSIX_IO_SYMBOL_CLOSE )
-SCOREP_POSIX_IO_PROCESS_FUNC( POSIX_IO, FILE_IO_METADATA, int,     close,        ( int ) )
+SCOREP_POSIX_IO_PROCESS_FUNC( POSIX, FILE_IO_METADATA, int,     close,        ( int ) )
 #endif
 #if HAVE( POSIX_IO_SYMBOL_CREAT )
-SCOREP_POSIX_IO_PROCESS_FUNC( POSIX_IO, FILE_IO_METADATA, int,     creat,        ( const char*, mode_t ) )
+SCOREP_POSIX_IO_PROCESS_FUNC( POSIX, FILE_IO_METADATA, int,     creat,        ( const char*, mode_t ) )
 #endif
 #if HAVE( POSIX_IO_SYMBOL_CREAT64 )
-SCOREP_POSIX_IO_PROCESS_FUNC( POSIX_IO, FILE_IO_METADATA, int,     creat64,      ( const char*, mode_t ) )
+SCOREP_POSIX_IO_PROCESS_FUNC( POSIX, FILE_IO_METADATA, int,     creat64,      ( const char*, mode_t ) )
 #endif
 #if HAVE( POSIX_IO_SYMBOL_DUP )
-SCOREP_POSIX_IO_PROCESS_FUNC( POSIX_IO, FILE_IO_METADATA, int,     dup,          ( int ) )
+SCOREP_POSIX_IO_PROCESS_FUNC( POSIX, FILE_IO_METADATA, int,     dup,          ( int ) )
 #endif
 #if HAVE( POSIX_IO_SYMBOL_DUP2 )
-SCOREP_POSIX_IO_PROCESS_FUNC( POSIX_IO, FILE_IO_METADATA, int,     dup2,         ( int, int ) )
+SCOREP_POSIX_IO_PROCESS_FUNC( POSIX, FILE_IO_METADATA, int,     dup2,         ( int, int ) )
 #endif
 #if HAVE( POSIX_IO_SYMBOL_DUP3 )
-SCOREP_POSIX_IO_PROCESS_FUNC( POSIX_IO, FILE_IO_METADATA, int,     dup3,         ( int, int, int ) )
+SCOREP_POSIX_IO_PROCESS_FUNC( POSIX, FILE_IO_METADATA, int,     dup3,         ( int, int, int ) )
 #endif
 #if HAVE( POSIX_IO_SYMBOL_FCNTL )
-SCOREP_POSIX_IO_PROCESS_FUNC( POSIX_IO, FILE_IO_METADATA, int,     fcntl,        ( int, int, ... ) )
+SCOREP_POSIX_IO_PROCESS_FUNC( POSIX, FILE_IO_METADATA, int,     fcntl,        ( int, int, ... ) )
 #endif
 #if HAVE( POSIX_IO_SYMBOL_FDATASYNC )
-SCOREP_POSIX_IO_PROCESS_FUNC( POSIX_IO, FILE_IO,          int,     fdatasync,    ( int ) )
+SCOREP_POSIX_IO_PROCESS_FUNC( POSIX, FILE_IO,          int,     fdatasync,    ( int ) )
 #endif
 #if HAVE( POSIX_IO_SYMBOL_FSYNC )
-SCOREP_POSIX_IO_PROCESS_FUNC( POSIX_IO, FILE_IO,          int,     fsync,        ( int ) )
+SCOREP_POSIX_IO_PROCESS_FUNC( POSIX, FILE_IO,          int,     fsync,        ( int ) )
 #endif
 #if HAVE( POSIX_IO_SYMBOL_LOCKF )
-SCOREP_POSIX_IO_PROCESS_FUNC( POSIX_IO, FILE_IO,          int,     lockf,        ( int, int, off_t ) )
+SCOREP_POSIX_IO_PROCESS_FUNC( POSIX, FILE_IO,          int,     lockf,        ( int, int, off_t ) )
 #endif
 #if HAVE( POSIX_IO_SYMBOL_LSEEK )
-SCOREP_POSIX_IO_PROCESS_FUNC( POSIX_IO, FILE_IO_METADATA, off_t,   lseek,        ( int, off_t, int ) )
+SCOREP_POSIX_IO_PROCESS_FUNC( POSIX, FILE_IO_METADATA, off_t,   lseek,        ( int, off_t, int ) )
 #endif
 #if HAVE( POSIX_IO_SYMBOL_LSEEK64 )
-SCOREP_POSIX_IO_PROCESS_FUNC( POSIX_IO, FILE_IO_METADATA, scorep_off64_t, lseek64, ( int, scorep_off64_t, int ) )
+SCOREP_POSIX_IO_PROCESS_FUNC( POSIX, FILE_IO_METADATA, scorep_off64_t, lseek64, ( int, scorep_off64_t, int ) )
 #endif
 #if HAVE( POSIX_IO_SYMBOL_OPEN )
-SCOREP_POSIX_IO_PROCESS_FUNC( POSIX_IO, FILE_IO_METADATA, int,     open,         ( const char*, int, ... ) )
+SCOREP_POSIX_IO_PROCESS_FUNC( POSIX, FILE_IO_METADATA, int,     open,         ( const char*, int, ... ) )
 #endif
 #if HAVE( POSIX_IO_SYMBOL_OPEN64 )
-SCOREP_POSIX_IO_PROCESS_FUNC( POSIX_IO, FILE_IO_METADATA, int,     open64,       ( const char*, int, ... ) )
+SCOREP_POSIX_IO_PROCESS_FUNC( POSIX, FILE_IO_METADATA, int,     open64,       ( const char*, int, ... ) )
 #endif
 #if HAVE( POSIX_IO_SYMBOL_OPENAT )
-SCOREP_POSIX_IO_PROCESS_FUNC( POSIX_IO, FILE_IO_METADATA, int,     openat,       ( int, const char*, int, ... ) )
+SCOREP_POSIX_IO_PROCESS_FUNC( POSIX, FILE_IO_METADATA, int,     openat,       ( int, const char*, int, ... ) )
 #endif
 #if HAVE( POSIX_IO_SYMBOL_PREAD )
-SCOREP_POSIX_IO_PROCESS_FUNC( POSIX_IO, FILE_IO,          ssize_t, pread,        ( int, void*, size_t, off_t ) )
+SCOREP_POSIX_IO_PROCESS_FUNC( POSIX, FILE_IO,          ssize_t, pread,        ( int, void*, size_t, off_t ) )
 #endif
 #if HAVE( POSIX_IO_SYMBOL_PREAD64 )
-SCOREP_POSIX_IO_PROCESS_FUNC( POSIX_IO, FILE_IO,          ssize_t, pread64,      ( int, void*, size_t, scorep_off64_t ) )
+SCOREP_POSIX_IO_PROCESS_FUNC( POSIX, FILE_IO,          ssize_t, pread64,      ( int, void*, size_t, scorep_off64_t ) )
 #endif
 #if HAVE( POSIX_IO_SYMBOL_PREADV )
-SCOREP_POSIX_IO_PROCESS_FUNC( POSIX_IO, FILE_IO,          ssize_t, preadv,       ( int, const struct iovec*, int, off_t ) )
+SCOREP_POSIX_IO_PROCESS_FUNC( POSIX, FILE_IO,          ssize_t, preadv,       ( int, const struct iovec*, int, off_t ) )
 #endif
 #if HAVE( POSIX_IO_SYMBOL_PREADV2 )
-SCOREP_POSIX_IO_PROCESS_FUNC( POSIX_IO, FILE_IO,          ssize_t, preadv2,      ( int, const struct iovec*, int, off_t, int ) )
+SCOREP_POSIX_IO_PROCESS_FUNC( POSIX, FILE_IO,          ssize_t, preadv2,      ( int, const struct iovec*, int, off_t, int ) )
 #endif
 #if HAVE( POSIX_IO_SYMBOL_PREADV64 )
-SCOREP_POSIX_IO_PROCESS_FUNC( POSIX_IO, FILE_IO,          ssize_t, preadv64,     ( int, const struct iovec*, int, scorep_off64_t ) )
+SCOREP_POSIX_IO_PROCESS_FUNC( POSIX, FILE_IO,          ssize_t, preadv64,     ( int, const struct iovec*, int, scorep_off64_t ) )
 #endif
 #if HAVE( POSIX_IO_SYMBOL_PREADV64V2 )
-SCOREP_POSIX_IO_PROCESS_FUNC( POSIX_IO, FILE_IO,          ssize_t, preadv64v2,   ( int, const struct iovec*, int, scorep_off64_t, int ) )
+SCOREP_POSIX_IO_PROCESS_FUNC( POSIX, FILE_IO,          ssize_t, preadv64v2,   ( int, const struct iovec*, int, scorep_off64_t, int ) )
 #endif
 #if HAVE( POSIX_IO_SYMBOL_PSELECT )
-SCOREP_POSIX_IO_PROCESS_FUNC( POSIX_IO, WRAPPER,          int,     pselect,      ( int, fd_set*, fd_set*, fd_set*, const struct timespec*, const sigset_t* ) )
+SCOREP_POSIX_IO_PROCESS_FUNC( POSIX, WRAPPER,          int,     pselect,      ( int, fd_set*, fd_set*, fd_set*, const struct timespec*, const sigset_t* ) )
 #endif
 #if HAVE( POSIX_IO_SYMBOL_PWRITE )
-SCOREP_POSIX_IO_PROCESS_FUNC( POSIX_IO, FILE_IO,          ssize_t, pwrite,       ( int, const void*, size_t, off_t ) )
+SCOREP_POSIX_IO_PROCESS_FUNC( POSIX, FILE_IO,          ssize_t, pwrite,       ( int, const void*, size_t, off_t ) )
 #endif
 #if HAVE( POSIX_IO_SYMBOL_PWRITE64 )
-SCOREP_POSIX_IO_PROCESS_FUNC( POSIX_IO, FILE_IO,          ssize_t, pwrite64,     ( int, const void*, size_t, scorep_off64_t ) )
+SCOREP_POSIX_IO_PROCESS_FUNC( POSIX, FILE_IO,          ssize_t, pwrite64,     ( int, const void*, size_t, scorep_off64_t ) )
 #endif
 #if HAVE( POSIX_IO_SYMBOL_PWRITEV )
-SCOREP_POSIX_IO_PROCESS_FUNC( POSIX_IO, FILE_IO,          ssize_t, pwritev,      ( int, const struct iovec*, int, off_t ) )
+SCOREP_POSIX_IO_PROCESS_FUNC( POSIX, FILE_IO,          ssize_t, pwritev,      ( int, const struct iovec*, int, off_t ) )
 #endif
 #if HAVE( POSIX_IO_SYMBOL_PWRITEV2 )
-SCOREP_POSIX_IO_PROCESS_FUNC( POSIX_IO, FILE_IO,          ssize_t, pwritev2,     ( int, const struct iovec*, int, off_t, int ) )
+SCOREP_POSIX_IO_PROCESS_FUNC( POSIX, FILE_IO,          ssize_t, pwritev2,     ( int, const struct iovec*, int, off_t, int ) )
 #endif
 #if HAVE( POSIX_IO_SYMBOL_PWRITEV64 )
-SCOREP_POSIX_IO_PROCESS_FUNC( POSIX_IO, FILE_IO,          ssize_t, pwritev64,    ( int, const struct iovec*, int, scorep_off64_t ) )
+SCOREP_POSIX_IO_PROCESS_FUNC( POSIX, FILE_IO,          ssize_t, pwritev64,    ( int, const struct iovec*, int, scorep_off64_t ) )
 #endif
 #if HAVE( POSIX_IO_SYMBOL_PWRITEV64V2 )
-SCOREP_POSIX_IO_PROCESS_FUNC( POSIX_IO, FILE_IO,          ssize_t, pwritev64v2,  ( int, const struct iovec*, int, scorep_off64_t, int ) )
+SCOREP_POSIX_IO_PROCESS_FUNC( POSIX, FILE_IO,          ssize_t, pwritev64v2,  ( int, const struct iovec*, int, scorep_off64_t, int ) )
 #endif
 #if HAVE( POSIX_IO_SYMBOL_READ )
-SCOREP_POSIX_IO_PROCESS_FUNC( POSIX_IO, FILE_IO,          ssize_t, read,         ( int, void*, size_t ) )
+SCOREP_POSIX_IO_PROCESS_FUNC( POSIX, FILE_IO,          ssize_t, read,         ( int, void*, size_t ) )
 #endif
 #if HAVE( POSIX_IO_SYMBOL_READV )
-SCOREP_POSIX_IO_PROCESS_FUNC( POSIX_IO, FILE_IO,          ssize_t, readv,        ( int, const struct iovec*, int ) )
+SCOREP_POSIX_IO_PROCESS_FUNC( POSIX, FILE_IO,          ssize_t, readv,        ( int, const struct iovec*, int ) )
 #endif
 #if HAVE( POSIX_IO_SYMBOL_SELECT )
-SCOREP_POSIX_IO_PROCESS_FUNC( POSIX_IO, WRAPPER,          int,     select,       ( int, fd_set*, fd_set*, fd_set*, struct timeval* ) )
+SCOREP_POSIX_IO_PROCESS_FUNC( POSIX, WRAPPER,          int,     select,       ( int, fd_set*, fd_set*, fd_set*, struct timeval* ) )
 #endif
 #if HAVE( POSIX_IO_SYMBOL_SYNC )
-SCOREP_POSIX_IO_PROCESS_FUNC( POSIX_IO, FILE_IO,          void,    sync,         ( ) )
+SCOREP_POSIX_IO_PROCESS_FUNC( POSIX, FILE_IO,          void,    sync,         ( ) )
 #endif
 #if HAVE( POSIX_IO_SYMBOL_SYNCFS )
-SCOREP_POSIX_IO_PROCESS_FUNC( POSIX_IO, FILE_IO,          int,     syncfs,       ( int ) )
+SCOREP_POSIX_IO_PROCESS_FUNC( POSIX, FILE_IO,          int,     syncfs,       ( int ) )
 #endif
 #if HAVE( POSIX_IO_SYMBOL_UNLINK )
-SCOREP_POSIX_IO_PROCESS_FUNC( POSIX_IO, FILE_IO_METADATA, int,     unlink,       ( const char* ) )
+SCOREP_POSIX_IO_PROCESS_FUNC( POSIX, FILE_IO_METADATA, int,     unlink,       ( const char* ) )
 #endif
 #if HAVE( POSIX_IO_SYMBOL_UNLINKAT )
-SCOREP_POSIX_IO_PROCESS_FUNC( POSIX_IO, FILE_IO_METADATA, int,     unlinkat,     ( int, const char*, int ) )
+SCOREP_POSIX_IO_PROCESS_FUNC( POSIX, FILE_IO_METADATA, int,     unlinkat,     ( int, const char*, int ) )
 #endif
 #if HAVE( POSIX_IO_SYMBOL_WRITE )
-SCOREP_POSIX_IO_PROCESS_FUNC( POSIX_IO, FILE_IO,          ssize_t, write,        ( int, const void*, size_t ) )
+SCOREP_POSIX_IO_PROCESS_FUNC( POSIX, FILE_IO,          ssize_t, write,        ( int, const void*, size_t ) )
 #endif
 #if HAVE( POSIX_IO_SYMBOL_WRITEV )
-SCOREP_POSIX_IO_PROCESS_FUNC( POSIX_IO, FILE_IO,          ssize_t, writev,       ( int, const struct iovec*, int ) )
+SCOREP_POSIX_IO_PROCESS_FUNC( POSIX, FILE_IO,          ssize_t, writev,       ( int, const struct iovec*, int ) )
 #endif
 #if HAVE( POSIX_IO_SYMBOL_CLOSEDIR )
-SCOREP_POSIX_IO_PROCESS_FUNC( POSIX_IO, FILE_IO_METADATA, int, closedir,         ( DIR* ) )
+SCOREP_POSIX_IO_PROCESS_FUNC( POSIX, FILE_IO_METADATA, int, closedir,         ( DIR* ) )
 #endif
 /*
  * POSIX Async I/O routines
  */
 
 #if HAVE( POSIX_IO_SYMBOL_AIO_CANCEL )
-SCOREP_POSIX_IO_PROCESS_FUNC( POSIX_IO, FILE_IO,          int,     aio_cancel,   ( int, struct aiocb* ) )
+SCOREP_POSIX_IO_PROCESS_FUNC( POSIX, FILE_IO,          int,     aio_cancel,   ( int, struct aiocb* ) )
 #endif
 #if HAVE( POSIX_IO_SYMBOL_AIO_ERROR )
-SCOREP_POSIX_IO_PROCESS_FUNC( POSIX_IO, FILE_IO,          int,     aio_error,    ( const struct aiocb* ) )
+SCOREP_POSIX_IO_PROCESS_FUNC( POSIX, FILE_IO,          int,     aio_error,    ( const struct aiocb* ) )
 #endif
 #if HAVE( POSIX_IO_SYMBOL_AIO_FSYNC )
-SCOREP_POSIX_IO_PROCESS_FUNC( POSIX_IO, FILE_IO,          int,     aio_fsync,    ( int, struct aiocb* ) )
+SCOREP_POSIX_IO_PROCESS_FUNC( POSIX, FILE_IO,          int,     aio_fsync,    ( int, struct aiocb* ) )
 #endif
 #if HAVE( POSIX_IO_SYMBOL_AIO_READ )
-SCOREP_POSIX_IO_PROCESS_FUNC( POSIX_IO, FILE_IO,          int,     aio_read,     ( struct aiocb* ) )
+SCOREP_POSIX_IO_PROCESS_FUNC( POSIX, FILE_IO,          int,     aio_read,     ( struct aiocb* ) )
 #endif
 #if HAVE( POSIX_IO_SYMBOL_AIO_RETURN )
-SCOREP_POSIX_IO_PROCESS_FUNC( POSIX_IO, WRAPPER,          ssize_t, aio_return,   ( struct aiocb* ) )
+SCOREP_POSIX_IO_PROCESS_FUNC( POSIX, WRAPPER,          ssize_t, aio_return,   ( struct aiocb* ) )
 #endif
 #if HAVE( POSIX_IO_SYMBOL_AIO_SUSPEND )
-SCOREP_POSIX_IO_PROCESS_FUNC( POSIX_IO, WRAPPER,          int,     aio_suspend,  ( const struct aiocb* const*, int, const struct timespec* ) )
+SCOREP_POSIX_IO_PROCESS_FUNC( POSIX, WRAPPER,          int,     aio_suspend,  ( const struct aiocb* const*, int, const struct timespec* ) )
 #endif
 #if HAVE( POSIX_IO_SYMBOL_AIO_WRITE )
-SCOREP_POSIX_IO_PROCESS_FUNC( POSIX_IO, FILE_IO,          int,     aio_write,    ( struct aiocb* ) )
+SCOREP_POSIX_IO_PROCESS_FUNC( POSIX, FILE_IO,          int,     aio_write,    ( struct aiocb* ) )
 #endif
 #if HAVE( POSIX_IO_SYMBOL_LIO_LISTIO )
-SCOREP_POSIX_IO_PROCESS_FUNC( POSIX_IO, FILE_IO,          int,     lio_listio,   ( int, struct aiocb* const*, int, struct sigevent* ) )
+SCOREP_POSIX_IO_PROCESS_FUNC( POSIX, FILE_IO,          int,     lio_listio,   ( int, struct aiocb* const*, int, struct sigevent* ) )
 #endif
 
 /*

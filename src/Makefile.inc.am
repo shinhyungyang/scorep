@@ -38,7 +38,6 @@ lib_LTLIBRARIES += libscorep_measurement.la
 libscorep_measurement_la_SOURCES =
 libscorep_measurement_la_LIBADD =        \
     libscorep_measurement_core.la        \
-    libscorep_libwrap.la                 \
     libscorep_timer.la                   \
     $(libscorep_timer_la_needs_LIBS)     \
     libscorep_metric.la                  \
@@ -94,6 +93,16 @@ libscorep_measurement_la_LIBADD += \
     libscorep_sampling.la
 
 endif HAVE_SAMPLING_SUPPORT
+
+if HAVE_LIBWRAP_SUPPORT
+
+libscorep_measurement_la_LIBADD += \
+    libscorep_libwrap.la \
+    $(libscorep_libwrap_la_needs_LIBS)
+libscorep_measurement_la_LDFLAGS += \
+    $(libscorep_libwrap_la_needs_LDFLAGS)
+
+endif HAVE_LIBWRAP_SUPPORT
 
 if !HAVE_SCOREP_EXTERNAL_OTF2
 

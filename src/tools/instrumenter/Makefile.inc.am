@@ -68,9 +68,7 @@ scorep_SOURCES = \
     $(SRC_ROOT)src/tools/instrumenter/scorep_instrumenter_utils.cpp        \
     $(SRC_ROOT)src/tools/instrumenter/scorep_instrumenter_utils.hpp        \
     $(SRC_ROOT)src/tools/instrumenter/scorep_instrumenter_memory.cpp       \
-    $(SRC_ROOT)src/tools/instrumenter/scorep_instrumenter_memory.hpp       \
-    $(SRC_ROOT)src/tools/instrumenter/scorep_instrumenter_libwrap.cpp      \
-    $(SRC_ROOT)src/tools/instrumenter/scorep_instrumenter_libwrap.hpp
+    $(SRC_ROOT)src/tools/instrumenter/scorep_instrumenter_memory.hpp
 
 
 scorep_CPPFLAGS = \

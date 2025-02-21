@@ -44,7 +44,6 @@ libscorep_adapter_opencl_mgmt_la_CPPFLAGS = \
     $(UTILS_CPPFLAGS) \
     -I$(INC_DIR_COMMON_HASH) \
     -I$(INC_DIR_DEFINITIONS) \
-    -DSCOREP_LIBWRAP_SHARED \
     @OPENCL_CPPFLAGS@ \
     @SCOREP_TIMER_CPPFLAGS@
 
@@ -73,7 +72,6 @@ libscorep_adapter_opencl_event_la_CPPFLAGS = \
     -I$(INC_ROOT)src/adapters/opencl \
     -I$(INC_DIR_COMMON_HASH) \
     -I$(INC_DIR_DEFINITIONS) \
-    -DSCOREP_LIBWRAP_SHARED \
     @OPENCL_CPPFLAGS@
 
 libscorep_adapter_opencl_event_la_LDFLAGS = \

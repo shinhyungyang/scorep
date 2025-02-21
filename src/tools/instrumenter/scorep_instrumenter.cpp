@@ -65,7 +65,6 @@
 #include "scorep_instrumenter_hip.hpp"
 #include "scorep_instrumenter_memory.hpp"
 #include "scorep_instrumenter_utils.hpp"
-#include "scorep_instrumenter_libwrap.hpp"
 #include "scorep_instrumenter_kokkos.hpp"
 
 #include <scorep_tools_utils.hpp>
@@ -92,7 +91,6 @@ SCOREP_Instrumenter::SCOREP_Instrumenter( SCOREP_Instrumenter_InstallData& insta
     m_hip_adapter        = new SCOREP_Instrumenter_HipAdapter();
     m_memory_adapter     = new SCOREP_Instrumenter_MemoryAdapter();
     m_kokkos_adapter     = new SCOREP_Instrumenter_KokkosAdapter();
-    new SCOREP_Instrumenter_LibwrapAdapter();
 
     /* pre-preprocess adapter order */
     m_preprocess_adapters.push_back( m_preprocess_adapter );
