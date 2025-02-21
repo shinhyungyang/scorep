@@ -6,7 +6,7 @@
 ## Copyright (c) 2023-2025,
 ## Forschungszentrum Juelich GmbH, Germany
 ##
-## Copyright (c) 2024,
+## Copyright (c) 2024-2025,
 ## Technische Universitaet Dresden, Germany
 ##
 ## This software may be modified and distributed under the terms of
@@ -294,18 +294,13 @@ endif !HAVE_BUILD_STATIC_LT_LIBRARIES
 # self-contained, add `shared-objects-self-contained` as prerequisite
 # to `installcheck-local`.
 
-if HAVE_BUILD_STATIC_LT_LIBRARIES
-
-# Nothing to do in the pure-static case.
-shared-objects-self-contained:
-bin-programs-self-contained:
-
-else !HAVE_BUILD_STATIC_LT_LIBRARIES
+if !HAVE_BUILD_STATIC_LT_LIBRARIES
 
 if AFS_BUILD_EQUALS_HOST
 
 lib_lt_so      = $(lib_LTLIBRARIES:.la=.so)
 lib_lt_so_skip = $(SKIP_SELF_CONTAINED_TEST_LAS:.la=.so)
+INSTALLCHECK_LOCAL += shared-objects-self-contained
 shared-objects-self-contained:
 	@$(am__tty_colors); \
 	selfcontained=yes; \
@@ -335,6 +330,7 @@ shared-objects-self-contained:
 
 bin_prog      = $(bin_PROGRAMS)
 bin_prog_skip = $(SKIP_SELF_CONTAINED_TEST_PRGS:=$(EXEEXT))
+INSTALLCHECK_LOCAL += bin-programs-self-contained
 bin-programs-self-contained:
 	@$(am__tty_colors); \
 	selfcontained=yes; \
@@ -362,12 +358,6 @@ bin-programs-self-contained:
 	    exit 1; \
 	fi
 
-else !AFS_BUILD_EQUALS_HOST
-
-# Cannot use ldd if build and host differ.
-shared-objects-self-contained:
-bin-programs-self-contained:
-
-endif !AFS_BUILD_EQUALS_HOST
+endif AFS_BUILD_EQUALS_HOST
 
 endif !HAVE_BUILD_STATIC_LT_LIBRARIES

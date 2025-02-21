@@ -104,5 +104,3 @@ include ../build-includes/front-and-backend.am
 
 check-serial: check-run-serial
 check-omp:    check-run-omp
-
-INSTALLCHECK_LOCAL += shared-objects-self-contained bin-programs-self-contained
