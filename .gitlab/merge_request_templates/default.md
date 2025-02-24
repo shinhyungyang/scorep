@@ -8,7 +8,7 @@
 
 - [ ] ChangeLog
 - [ ] Documentation
-- [ ] Copyright
+- [ ] [Copyright of new files](https://gitlab.jsc.fz-juelich.de/perftools/scorep/-/wikis/copyright-notices)
 - [ ] CITATION.cff
 
 The following commits **must not** appear in history:
