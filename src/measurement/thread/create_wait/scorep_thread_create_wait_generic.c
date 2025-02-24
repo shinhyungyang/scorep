@@ -4,7 +4,7 @@
  * Copyright (c) 2014-2016, 2018, 2022,
  * Forschungszentrum Juelich GmbH, Germany
  *
- * Copyright (c) 2014-2016, 2019-2020, 2022,
+ * Copyright (c) 2014-2016, 2019-2020, 2022, 2025,
  * Technische Universitaet Dresden, Germany
  *
  * Copyright (c) 2015,
@@ -211,6 +211,14 @@ create_wait_subsystem_pre_unify( void )
         "PTHREAD",
         n_locations,
         location_ids );
+    /* Just a safety and consistency condition with other users of
+     * scorep_unify_helper_define_comm_locations(). There should always be the
+     * main thread. */
+    if ( n_locations == 0 )
+    {
+        free( location_ids );
+        return SCOREP_SUCCESS;
+    }
 
     /* Assign this process's pthread locations the global position in the
      * SCOREP_GROUP_PTHREAD_LOCATIONS group */
@@ -225,6 +233,7 @@ create_wait_subsystem_pre_unify( void )
         "SCOREP_GROUP_PTHREAD",
         n_locations,
         location_ids );
+    free( location_ids );
 
     /* Define the final communicator over this group */
     SCOREP_LOCAL_HANDLE_DEREF( thread_team,

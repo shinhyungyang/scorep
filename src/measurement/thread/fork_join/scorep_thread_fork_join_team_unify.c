@@ -7,7 +7,7 @@
  * Copyright (c) 2009-2013,
  * Gesellschaft fuer numerische Simulation mbH Braunschweig, Germany
  *
- * Copyright (c) 2009-2013, 2015-2016, 2019, 2022,
+ * Copyright (c) 2009-2013, 2015-2016, 2019, 2022, 2025,
  * Technische Universitaet Dresden, Germany
  *
  * Copyright (c) 2009-2013,
@@ -111,6 +111,7 @@ define_fork_join_locations( uint32_t* local_to_thread_id )
         group_name,
         number_of_locations,
         my_locations );
+    free( my_locations );
 
     /* shift my thread ids to the global ids by applying my offset */
     for ( uint32_t i = 0; i < scorep_local_definition_manager.location.counter; i++ )

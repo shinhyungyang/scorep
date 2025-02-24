@@ -7,7 +7,7 @@
  * Copyright (c) 2009-2013,
  * Gesellschaft fuer numerische Simulation mbH Braunschweig, Germany
  *
- * Copyright (c) 2009-2014, 2016, 2020, 2022,
+ * Copyright (c) 2009-2014, 2016, 2020, 2022, 2025,
  * Technische Universitaet Dresden, Germany
  *
  * Copyright (c) 2009-2013,
@@ -912,4 +912,41 @@ cupti_device_get_create( CUdevice cudaDevice )
     }
 
     return cupti_device_create( cudaDevice );
+}
+
+/* Caller must hold the CUPTI lock */
+void
+scorep_cupti_activate_rma( bool                  isDevice2Device,
+                           scorep_cupti_context* context,
+                           scorep_cupti_stream*  stream )
+{
+    /* remember this CUDA context is doing CUDA communication */
+    if ( !isDevice2Device &&
+         context->location_id == SCOREP_CUPTI_NO_ID )
+    {
+        context->location_id = scorep_cupti_location_counter++;
+    }
+
+    /* remember this CUDA stream is doing CUDA communication */
+    if ( SCOREP_CUPTI_NO_ID == stream->location_id )
+    {
+        stream->location_id = scorep_cupti_location_counter++;
+    }
+
+    if ( scorep_cuda_interim_communicator_handle == SCOREP_INVALID_INTERIM_COMMUNICATOR )
+    {
+        /* create interim communicator once for a process */
+        scorep_cuda_interim_communicator_handle =
+            SCOREP_Definitions_NewInterimCommunicator(
+                SCOREP_INVALID_INTERIM_COMMUNICATOR,
+                SCOREP_PARADIGM_CUDA,
+                0,
+                NULL );
+
+        scorep_cuda_window_handle =
+            SCOREP_Definitions_NewRmaWindow(
+                "CUDA_WINDOW",
+                scorep_cuda_interim_communicator_handle,
+                SCOREP_RMA_WINDOW_FLAG_NONE );
+    }
 }

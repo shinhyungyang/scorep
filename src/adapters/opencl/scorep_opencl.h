@@ -1,7 +1,7 @@
 /*
  * This file is part of the Score-P software (http://www.score-p.org)
  *
- * Copyright (c) 2014-2017, 2022,
+ * Copyright (c) 2014-2017, 2022, 2025,
  * Technische Universitaet Dresden, Germany
  *
  * Copyright (c) 2022,
@@ -130,10 +130,10 @@ typedef struct scorep_opencl_queue
 } scorep_opencl_queue;
 
 
-/** number of already existing global location */
-extern size_t scorep_opencl_global_location_number;
-/** array of global location ids */
-extern uint64_t* scorep_opencl_global_location_ids;
+/** count of all my local location */
+extern size_t scorep_opencl_my_location_count;
+/** array of location ids for unification */
+extern uint64_t* scorep_opencl_my_location_ids;
 
 // handles for OpenCL communication unification
 /** Interim communicator */

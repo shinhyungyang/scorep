@@ -1,7 +1,7 @@
 /*
  * This file is part of the Score-P software (http://www.score-p.org)
  *
- * Copyright (c) 2020, 2022-2023,
+ * Copyright (c) 2020, 2022-2023, 2025,
  * Technische Universitaet Dresden, Germany
  *
  * This software may be modified and distributed under the terms of
@@ -68,8 +68,8 @@ static SCOREP_Location* kokkos_device_location;
 
 static uint32_t kokkos_location_rank = 0;
 
-static SCOREP_InterimCommunicatorHandle kokkos_interim_communicator_handle =
-    SCOREP_INVALID_INTERIM_COMMUNICATOR;
+static SCOREP_InterimCommunicatorHandle kokkos_interim_communicator_handle;
+static SCOREP_RmaWindowHandle           kokkos_rma_window;
 
 static void
 init_host_location( SCOREP_Location* location )
@@ -131,21 +131,32 @@ scorep_kokkos_get_device_location( void )
 }
 
 SCOREP_RmaWindowHandle
-scorep_kokkos_define_rma_win( void )
+scorep_kokkos_get_rma_win( void )
 {
-    kokkos_interim_communicator_handle =
-        SCOREP_Definitions_NewInterimCommunicator(
-            SCOREP_INVALID_INTERIM_COMMUNICATOR,
-            SCOREP_PARADIGM_KOKKOS,
-            0, NULL );
-    return SCOREP_Definitions_NewRmaWindow( "KOKKOS_WINDOW",
-                                            kokkos_interim_communicator_handle,
-                                            SCOREP_RMA_WINDOW_FLAG_NONE );
+    if ( kokkos_interim_communicator_handle == SCOREP_INVALID_INTERIM_COMMUNICATOR )
+    {
+        kokkos_interim_communicator_handle =
+            SCOREP_Definitions_NewInterimCommunicator(
+                SCOREP_INVALID_INTERIM_COMMUNICATOR,
+                SCOREP_PARADIGM_KOKKOS,
+                0, NULL );
+
+        kokkos_rma_window = SCOREP_Definitions_NewRmaWindow( "KOKKOS_WINDOW",
+                                                             kokkos_interim_communicator_handle,
+                                                             SCOREP_RMA_WINDOW_FLAG_NONE );
+    }
+
+    return kokkos_rma_window;
 }
 
 static size_t
 create_comm_group( uint64_t** globalLocationIds )
 {
+    if ( kokkos_interim_communicator_handle == SCOREP_INVALID_INTERIM_COMMUNICATOR )
+    {
+        return 0;
+    }
+
     /* At least the current CPU location */
     size_t count = 1;
 
@@ -231,24 +242,31 @@ kokkos_subsystem_init_location( SCOREP_Location* location,
 static SCOREP_ErrorCode
 kokkos_subsystem_pre_unify( void )
 {
-    uint64_t* global_location_ids;
-    size_t    global_location_number = create_comm_group( &global_location_ids );
+    uint64_t* my_location_ids;
+    size_t    my_location_count = create_comm_group( &my_location_ids );
 
-    size_t   i      = 0;
     uint32_t offset = scorep_unify_helper_define_comm_locations(
         SCOREP_GROUP_KOKKOS_LOCATIONS, "KOKKOS",
-        global_location_number, global_location_ids );
-    UTILS_DEBUG( "Unifying %d location", global_location_number );
-
-    /* add the offset */
-    for ( i = 0; i < global_location_number; i++ )
+        my_location_count, my_location_ids );
+    if ( my_location_count == 0 )
     {
-        global_location_ids[ i ] = i + offset;
+        free( my_location_ids );
+        return SCOREP_SUCCESS;
+    }
+
+    UTILS_DEBUG( "Unifying %d location", my_location_count );
+
+    /* Create subgroup for our locations as indices into the globally collated
+     * Kokkos locations */
+    for ( size_t i = 0; i < my_location_count; i++ )
+    {
+        my_location_ids[ i ] = i + offset;
     }
 
     SCOREP_GroupHandle group_handle = SCOREP_Definitions_NewGroup(
         SCOREP_GROUP_KOKKOS_GROUP, "KOKKOS_GROUP",
-        global_location_number, global_location_ids );
+        my_location_count, my_location_ids );
+    free( my_location_ids );
 
     if ( kokkos_interim_communicator_handle !=
          SCOREP_INVALID_INTERIM_COMMUNICATOR )

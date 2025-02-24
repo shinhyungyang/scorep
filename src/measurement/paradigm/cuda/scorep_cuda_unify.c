@@ -7,7 +7,7 @@
  * Copyright (c) 2009-2013,
  * Gesellschaft fuer numerische Simulation mbH Braunschweig, Germany
  *
- * Copyright (c) 2009-2013, 2016, 2022,
+ * Copyright (c) 2009-2013, 2016, 2022, 2025,
  * Technische Universitaet Dresden, Germany
  *
  * Copyright (c) 2009-2013,
@@ -54,23 +54,27 @@
 void
 scorep_cuda_define_cuda_locations( void )
 {
-    size_t   i      = 0;
     uint32_t offset = scorep_unify_helper_define_comm_locations(
         SCOREP_GROUP_CUDA_LOCATIONS,
-        "CUDA", scorep_cuda_global_location_number,
-        scorep_cuda_global_location_ids );
-
-    /* add the offset */
-    for ( i = 0; i < scorep_cuda_global_location_number; i++ )
+        "CUDA", scorep_cuda_my_location_count,
+        scorep_cuda_my_location_ids );
+    if ( scorep_cuda_my_location_count == 0 )
     {
-        scorep_cuda_global_location_ids[ i ] = i + offset;
+        return;
+    }
+
+    /* Create subgroup for our locations as indices into the globally collated
+     * CUDA locations */
+    for ( size_t i = 0; i < scorep_cuda_my_location_count; i++ )
+    {
+        scorep_cuda_my_location_ids[ i ] = i + offset;
     }
 
     SCOREP_GroupHandle group_handle = SCOREP_Definitions_NewGroup(
         SCOREP_GROUP_CUDA_GROUP,
         "CUDA_GROUP",
-        scorep_cuda_global_location_number,
-        scorep_cuda_global_location_ids );
+        scorep_cuda_my_location_count,
+        scorep_cuda_my_location_ids );
 
     SCOREP_LOCAL_HANDLE_DEREF( scorep_cuda_interim_communicator_handle,
                                InterimCommunicator )->unified =
