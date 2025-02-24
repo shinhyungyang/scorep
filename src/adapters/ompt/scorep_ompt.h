@@ -4,6 +4,9 @@
  * Copyright (c) 2022-2023,
  * Forschungszentrum Juelich GmbH, Germany
  *
+ * Copyright (c) 2025,
+ * Technische Universitaet Dresden, Germany
+ *
  * This software may be modified and distributed under the terms of
  * a BSD-style license. See the COPYING file in the package base
  * directory for details.
@@ -37,8 +40,8 @@
 struct SCOREP_Location;
 
 
-extern uint32_t                         scorep_ompt_global_location_count;
-extern uint64_t*                        scorep_ompt_global_location_ids;
+extern uint32_t                         scorep_ompt_my_location_count;
+extern uint64_t*                        scorep_ompt_my_location_ids;
 extern SCOREP_RmaWindowHandle           scorep_ompt_rma_window_handle;
 extern SCOREP_InterimCommunicatorHandle scorep_ompt_interim_communicator_handle;
 

@@ -7,7 +7,7 @@
  * Copyright (c) 2009-2013,
  * Gesellschaft fuer numerische Simulation mbH Braunschweig, Germany
  *
- * Copyright (c) 2009-2014, 2016, 2020, 2022,
+ * Copyright (c) 2009-2014, 2016, 2020, 2022, 2025,
  * Technische Universitaet Dresden, Germany
  *
  * Copyright (c) 2009-2013,
@@ -404,5 +404,10 @@ scorep_cupti_kernel_hash_put( const char*         name,
 
 void*
 scorep_cupti_kernel_hash_get( const char* name );
+
+void
+scorep_cupti_activate_rma( bool                  isDevice2Device,
+                           scorep_cupti_context* context,
+                           scorep_cupti_stream*  stream );
 
 #endif /* SCOREP_CUPTI_H */

@@ -1,7 +1,7 @@
 /*
  * This file is part of the Score-P software (http://www.score-p.org)
  *
- * Copyright (c) 2020, 2022,
+ * Copyright (c) 2020, 2022, 2025,
  * Technische Universitaet Dresden, Germany
  *
  * This software may be modified and distributed under the terms of
@@ -45,7 +45,7 @@ extern uint64_t scorep_kokkos_features;
 extern size_t scorep_kokkos_subsystem_id;
 
 SCOREP_RmaWindowHandle
-scorep_kokkos_define_rma_win( void );
+scorep_kokkos_get_rma_win( void );
 
 typedef struct scorep_kokkos_cpu_location_data
 {

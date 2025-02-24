@@ -1,7 +1,7 @@
 /*
  * This file is part of the Score-P software (http://www.score-p.org)
  *
- * Copyright (c) 2022,
+ * Copyright (c) 2022, 2025,
  * Technische Universitaet Dresden, Germany
  *
  * This software may be modified and distributed under the terms of
@@ -33,31 +33,32 @@
 void
 scorep_hip_unify_pre( void )
 {
-    UTILS_BUG_ON( scorep_hip_global_location_count != 0 && scorep_hip_global_location_ids == NULL,
+    UTILS_BUG_ON( scorep_hip_my_location_count != 0 && scorep_hip_my_location_ids == NULL,
                   "Invalid parameters for HIP unification." );
 
     /* This is a collective, all processes need to participate */
     uint32_t offset = scorep_unify_helper_define_comm_locations(
         SCOREP_GROUP_HIP_LOCATIONS,
-        "HIP", scorep_hip_global_location_count,
-        scorep_hip_global_location_ids );
+        "HIP", scorep_hip_my_location_count,
+        scorep_hip_my_location_ids );
 
-    if ( scorep_hip_global_location_count == 0 )
+    if ( scorep_hip_my_location_count == 0 )
     {
         return;
     }
 
-    /* add the offset */
-    for ( size_t i = 0; i < scorep_hip_global_location_count; i++ )
+    /* Create subgroup for our locations as indices into the globally collated
+     * HIP locations */
+    for ( size_t i = 0; i < scorep_hip_my_location_count; i++ )
     {
-        scorep_hip_global_location_ids[ i ] = i + offset;
+        scorep_hip_my_location_ids[ i ] = i + offset;
     }
 
     SCOREP_GroupHandle group_handle = SCOREP_Definitions_NewGroup(
         SCOREP_GROUP_HIP_GROUP,
         "HIP_GROUP",
-        scorep_hip_global_location_count,
-        scorep_hip_global_location_ids );
+        scorep_hip_my_location_count,
+        scorep_hip_my_location_ids );
 
     SCOREP_LOCAL_HANDLE_DEREF( scorep_hip_interim_communicator_handle,
                                InterimCommunicator )->unified =
