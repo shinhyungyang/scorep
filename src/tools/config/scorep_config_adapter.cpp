@@ -4,7 +4,7 @@
  * Copyright (c) 2013-2014, 2017, 2019-2025,
  * Forschungszentrum Juelich GmbH, Germany
  *
- * Copyright (c) 2014-2020, 2022,
+ * Copyright (c) 2014-2020, 2022, 2025,
  * Technische Universitaet Dresden, Germany
  *
  * Copyright (c) 2014,
@@ -28,7 +28,6 @@
 #include <scorep_config_tool_llvm_plugin.h>
 #include "scorep_config_adapter.hpp"
 #include "scorep_config_thread.hpp"
-#include "scorep_config_utils.hpp"
 
 #include <scorep_tools_utils.hpp>
 
@@ -81,7 +80,6 @@ SCOREP_Config_Adapter::init( void )
 #else
     all.push_back( new SCOREP_Config_MockupAdapter( "memory" ) );
 #endif
-    all.push_back( new SCOREP_Config_LibwrapAdapter() );
     all.push_back( new SCOREP_Config_IoAdapter() );
 }
 
@@ -374,7 +372,7 @@ SCOREP_Config_CompilerAdapter::addCFlags( std::string&           cflags,
 #elif HAVE_BACKEND( SCOREP_COMPILER_INSTRUMENTATION_CC_LLVM_PLUGIN )
             llvm_plugin_instrumentation_available = true;
             llvm_compiler_backend_flag_arg        = SCOREP_LLVM_PLUGIN_COMPILER_BACKEND_FLAG_CC;
-#endif /* HAVE_BACKEND(SCOREP_COMPILER_INSTRUMENTATION_CC_[...]) */
+#endif  /* HAVE_BACKEND(SCOREP_COMPILER_INSTRUMENTATION_CC_[...]) */
             break;
         case SCOREP_CONFIG_LANGUAGE_CXX:
             cflags += SCOREP_COMPILER_INSTRUMENTATION_CXXFLAGS;
@@ -385,7 +383,7 @@ SCOREP_Config_CompilerAdapter::addCFlags( std::string&           cflags,
 #elif HAVE_BACKEND( SCOREP_COMPILER_INSTRUMENTATION_CXX_LLVM_PLUGIN )
             llvm_plugin_instrumentation_available = true;
             llvm_compiler_backend_flag_arg        = SCOREP_LLVM_PLUGIN_COMPILER_BACKEND_FLAG_CXX;
-#endif /* HAVE_BACKEND(SCOREP_COMPILER_INSTRUMENTATION_CXX_[...]) */
+#endif  /* HAVE_BACKEND(SCOREP_COMPILER_INSTRUMENTATION_CXX_[...]) */
             break;
         case SCOREP_CONFIG_LANGUAGE_FORTRAN:
             cflags += SCOREP_COMPILER_INSTRUMENTATION_FCFLAGS;
@@ -396,7 +394,7 @@ SCOREP_Config_CompilerAdapter::addCFlags( std::string&           cflags,
 #elif HAVE_BACKEND( SCOREP_COMPILER_INSTRUMENTATION_FC_LLVM_PLUGIN )
             llvm_plugin_instrumentation_available = true;
             llvm_compiler_backend_flag_arg        = SCOREP_LLVM_PLUGIN_COMPILER_BACKEND_FLAG_FC;
-#endif /* HAVE_BACKEND(SCOREP_COMPILER_INSTRUMENTATION_FC_[...]) */
+#endif  /* HAVE_BACKEND(SCOREP_COMPILER_INSTRUMENTATION_FC_[...]) */
             break;
         default:
             break;
@@ -591,88 +589,17 @@ SCOREP_Config_OpenaccAdapter::SCOREP_Config_OpenaccAdapter()
  * OpenCL adapter
  * *************************************************************************************/
 SCOREP_Config_OpenclAdapter::SCOREP_Config_OpenclAdapter()
-    : SCOREP_Config_Adapter( "opencl", "scorep_adapter_opencl", false )
-    , m_wrapmode( SCOREP_LIBWRAP_DEFAULT_MODE )
+    : SCOREP_Config_Adapter( "opencl", "scorep_adapter_opencl", true )
 {
 }
 
 void
 SCOREP_Config_OpenclAdapter::printHelp( void )
 {
-    std::cout << "   --opencl[:<wrapping mode>]|--noopencl\n"
-              << "              Specifies whether opencl instrumentation is used.\n"
-              << "              On default opencl instrumentation is enabled.\n"
-              << "              Available values for <wrap-mode> are:\n"
-#if HAVE_BACKEND( LIBWRAP_LINKTIME_SUPPORT )
-        << "               linktime (default)\n"
-#if HAVE_BACKEND( LIBWRAP_RUNTIME_SUPPORT )
-        << "               runtime\n"
-#endif
-#elif HAVE_BACKEND( LIBWRAP_RUNTIME_SUPPORT )
-        << "               runtime (default)\n"
-#endif
-    ;
-}
-
-bool
-SCOREP_Config_OpenclAdapter::checkArgument( const std::string& arg )
-{
-    if ( arg == "--opencl" )
-    {
-        m_is_enabled = true;
-        return true;
-    }
-
-    if ( arg.substr( 0, 9 ) == ( "--opencl:" ) )
-    {
-        m_is_enabled = true;
-        m_wrapmode   = arg.substr( 9 );
-
-#if HAVE_BACKEND( LIBWRAP_LINKTIME_SUPPORT )
-        if ( m_wrapmode == "linktime" )
-        {
-            return true;
-        }
-#endif
-#if HAVE_BACKEND( LIBWRAP_RUNTIME_SUPPORT )
-        if ( m_wrapmode == "runtime" )
-        {
-            return true;
-        }
-#endif
-
-        std::cerr << "[Score-P] ERROR: Invalid or unsupported wrapping mode for OpenCL: " << m_wrapmode << std::endl;
-        exit( EXIT_FAILURE );
-
-        return true;
-    }
-
-    if ( arg == "--noopencl" )
-    {
-        m_is_enabled = false;
-        return true;
-    }
-    return false;
-}
-
-void
-SCOREP_Config_OpenclAdapter::addLibs( std::deque<std::string>&           libs,
-                                      SCOREP_Config_LibraryDependencies& deps )
-{
-    libs.push_back( "lib" + m_library + "_event_" + m_wrapmode );
-    deps.addDependency( libs.back(), "libscorep_measurement" );
-    deps.addDependency( "libscorep_measurement", "lib" + m_library + "_mgmt_" + m_wrapmode );
-}
-
-void
-SCOREP_Config_OpenclAdapter::addLdFlags( std::string& ldflags,
-                                         bool         buildCheck,
-                                         bool         nvcc )
-{
-    if ( m_wrapmode == "linktime" )
-    {
-        ldflags += get_ld_wrap_flag( "opencl", buildCheck, nvcc );
-    }
+    std::cout << "   --opencl|--noopencl\n"
+              << "              Specifies whether OpenCL instrumentation is used.\n"
+              << "              On default OpenCL instrumentation is enabled.\n"
+              << "              Recording must be explicitly enabled.\n";
 }
 
 void
@@ -915,29 +842,25 @@ SCOREP_Config_Opari2Adapter::printOpariCFlags( bool                   build_chec
  * Memory adapter
  * *************************************************************************************/
 SCOREP_Config_MemoryAdapter::SCOREP_Config_MemoryAdapter()
-    : SCOREP_Config_Adapter( "memory", "scorep_adapter_memory", false )
+    : SCOREP_Config_Adapter( "memory", "scorep_adapter_memory", true )
 {
 }
 
 void
 SCOREP_Config_MemoryAdapter::printHelp( void )
 {
-    std::cout << "   --" << m_name << "=<api list>|--no" << m_name << "\n"
+    std::cout << "   --" << m_name << "|--no" << m_name << "\n"
               << "              Specifies whether memory usage recording is used.\n"
-              << "              On default memory usage recording is " \
-              << ( m_is_enabled ? "enabled" : "disabled" ) << ".\n"
-              << "              The following memory interfaces may be recorded:\n"
-              << "               libc:\n"
-              << "                malloc,realloc,calloc,free,memalign,posix_memalign,valloc\n"
-              << "               libc11:\n"
+              << "              On default memory instrumentation is enabled.\n"
+              << "              The following memory interfaces may be recorded, if present:\n"
+              << "               ISO C:\n"
+              << "                malloc,realloc,calloc,free,memalign,posix_memalign,valloc,\n"
               << "                aligned_alloc\n"
-              << "               c++L32|c++L64:\n"
-              << "                new,new[],delete,delete[] (IA-64 C++ ABI)\n"
-              << "               pgCCL32|pgCCL64:\n"
-              << "                new,new[],delete,delete[] (old PGI/EDG C++ ABI)\n"
-              << "               hbwmalloc:\n"
+              << "               ISO C++:\n"
+              << "                new,new[],delete,delete[]\n"
+              << "               Intel KNL MCDRAM API:\n"
               << "                hbw_malloc,hbw_realloc,hbw_calloc,hbw_free,hbw_posix_memalign,\n"
-              << "                hbw_posix_memalign_psize (Intel KNL MCDRAM API)\n";
+              << "                hbw_posix_memalign_psize\n";
 }
 
 bool
@@ -949,14 +872,6 @@ SCOREP_Config_MemoryAdapter::checkArgument( const std::string& arg )
         return true;
     }
 
-    if ( arg.substr( 0, 9 ) == ( "--" + m_name + "=" ) )
-    {
-        m_is_enabled = true;
-        std::deque<std::string> categories = string_to_deque( arg.substr( 9 ), "," );
-        m_categories.insert( categories.begin(), categories.end() );
-        return true;
-    }
-
     if ( arg == "--no" + m_name )
     {
         m_is_enabled = false;
@@ -965,320 +880,29 @@ SCOREP_Config_MemoryAdapter::checkArgument( const std::string& arg )
     return false;
 }
 
-void
-SCOREP_Config_MemoryAdapter::addLibs( std::deque<std::string>&           libs,
-                                      SCOREP_Config_LibraryDependencies& deps )
-{
-    size_t n_libs = libs.size();
-    if ( m_categories.count( "libc" ) )
-    {
-        libs.push_back( "lib" + m_library + "_event_libc" );
-    }
-
-    if ( m_categories.count( "libc11" ) )
-    {
-        libs.push_back( "lib" + m_library + "_event_libc11" );
-    }
-
-    if ( m_categories.count( "c++L32" ) || m_categories.count( "c++L64" ) )
-    {
-        libs.push_back( "lib" + m_library + "_event_cxx" );
-    }
-
-    if ( m_categories.count( "c++L32" ) )
-    {
-        libs.push_back( "lib" + m_library + "_event_cxx_L32" );
-    }
-
-    if ( m_categories.count( "c++L64" ) )
-    {
-        libs.push_back( "lib" + m_library + "_event_cxx_L64" );
-    }
-
-    if ( m_categories.count( "c++14L32" ) )
-    {
-        libs.push_back( "lib" + m_library + "_event_cxx14_L32" );
-    }
-
-    if ( m_categories.count( "c++14L64" ) )
-    {
-        libs.push_back( "lib" + m_library + "_event_cxx14_L64" );
-    }
-
-    if ( m_categories.count( "pgCCL32" ) || m_categories.count( "pgCCL64" ) )
-    {
-        libs.push_back( "lib" + m_library + "_event_pgCC" );
-    }
-
-    if ( m_categories.count( "pgCCL32" ) )
-    {
-        libs.push_back( "lib" + m_library + "_event_pgCC_L32" );
-    }
-
-    if ( m_categories.count( "pgCCL64" ) )
-    {
-        libs.push_back( "lib" + m_library + "_event_pgCC_L64" );
-    }
-
-    if ( m_categories.count( "hbwmalloc" ) )
-    {
-        libs.push_back( "lib" + m_library + "_event_hbwmalloc" );
-    }
-
-    if ( libs.size() > n_libs )
-    {
-        deps.addDependency( libs.back(), "libscorep_measurement" );
-        deps.addDependency( "libscorep_measurement", "lib" + m_library + "_mgmt" );
-    }
-}
-
-void
-SCOREP_Config_MemoryAdapter::addLdFlags( std::string& ldflags,
-                                         bool         build_check,
-                                         bool         nvcc )
-{
-    if ( m_categories.count( "libc" ) )
-    {
-        ldflags += " -Wl,"
-                   "--undefined,__wrap_malloc,"
-                   "-wrap,malloc,"
-                   "-wrap,realloc,"
-                   "-wrap,calloc,"
-                   "-wrap,free,"
-                   "-wrap,memalign,"
-                   "-wrap,posix_memalign,"
-                   "-wrap,valloc";
-    }
-
-    if ( m_categories.count( "libc11" ) )
-    {
-        ldflags += " -Wl,"
-                   "--undefined,__wrap_aligned_alloc,"
-                   "-wrap,aligned_alloc";
-    }
-
-    if ( m_categories.count( "c++L32" ) || m_categories.count( "c++L64" ) )
-    {
-        ldflags += " -Wl,"
-                   "--undefined,__wrap__ZdlPv,"
-                   "-wrap,_ZdlPv,"
-                   "-wrap,_ZdaPv";
-    }
-
-    if ( m_categories.count( "c++L32" ) )
-    {
-        ldflags += " -Wl,"
-                   "--undefined,__wrap__Znwj,"
-                   "-wrap,_Znwj,"
-                   "-wrap,_Znaj";
-    }
-
-    if ( m_categories.count( "c++L64" ) )
-    {
-        ldflags += " -Wl,"
-                   "--undefined,__wrap__Znwm,"
-                   "-wrap,_Znwm,"
-                   "-wrap,_Znam";
-    }
-
-    if ( m_categories.count( "c++14L32" ) )
-    {
-        ldflags += " -Wl,"
-                   "--undefined,__wrap__ZdlPvj,"
-                   "-wrap,_ZdlPvj,"
-                   "-wrap,_ZdaPvj";
-    }
-
-    if ( m_categories.count( "c++14L64" ) )
-    {
-        ldflags += " -Wl,"
-                   "--undefined,__wrap__ZdlPvm,"
-                   "-wrap,_ZdlPvm,"
-                   "-wrap,_ZdaPvm";
-    }
-
-    if ( m_categories.count( "pgCCL32" ) || m_categories.count( "pgCCL64" ) )
-    {
-        ldflags += " -Wl,"
-                   "--undefined,__wrap___dl__FPv,"
-                   "-wrap,__dl__FPv,"
-                   "-wrap,__dla__FPv";
-    }
-
-    if ( m_categories.count( "pgCCL32" ) )
-    {
-        ldflags += " -Wl,"
-                   "--undefined,__wrap___nw__FUi,"
-                   "-wrap,__nw__FUi,"
-                   "-wrap,__nwa__FUi";
-    }
-
-    if ( m_categories.count( "pgCCL64" ) )
-    {
-        ldflags += " -Wl,"
-                   "--undefined,__wrap___nw__FUl,"
-                   "-wrap,__nw__FUl,"
-                   "-wrap,__nwa__FUl";
-    }
-
-    if ( m_categories.count( "hbwmalloc" ) )
-    {
-        ldflags += " -Wl,"
-                   "--undefined,__wrap_hbw_malloc,"
-                   "-wrap,hbw_malloc,"
-                   "-wrap,hbw_realloc,"
-                   "-wrap,hbw_calloc,"
-                   "-wrap,hbw_free,"
-                   "-wrap,hbw_posix_memalign,"
-                   "-wrap,hbw_posix_memalign_psize";
-    }
-}
-
-/* **************************************************************************************
- * Libwrap adapter
- * *************************************************************************************/
-SCOREP_Config_LibwrapAdapter::SCOREP_Config_LibwrapAdapter()
-    : SCOREP_Config_Adapter( "libwrap", "", true )
-{
-}
-
-void
-SCOREP_Config_LibwrapAdapter::printHelp( void )
-{
-    std::cout << "   --libwrap=<wrap-mode>:<libwrap-anchor-file>\n"
-              << "              Uses the specified library wrapper.\n";
-}
-
-bool
-SCOREP_Config_LibwrapAdapter::checkArgument( const std::string& arg )
-{
-    if ( arg.substr( 0, 10 ) == "--libwrap=" )
-    {
-        std::string libwrap = arg.substr( 10 );
-
-        std::string wrapmode;
-        if ( libwrap.compare( 0, 9, "linktime:" ) == 0 )
-        {
-            wrapmode = "linktime";
-            libwrap.erase( 0, 9 );
-        }
-        else if ( libwrap.compare( 0, 8, "runtime:" ) == 0 )
-        {
-            wrapmode = "runtime";
-            libwrap.erase( 0, 8 );
-        }
-        else
-        {
-            std::cerr << "[Score-P] ERROR: Missing libwrap mode in: '" << arg << "'" << std::endl;
-            exit( EXIT_FAILURE );
-        }
-
-        std::string name = remove_extension( remove_path( libwrap ) );
-
-        if ( m_wrappers.count( name ) != 0 )
-        {
-            std::cerr << "[Score-P] ERROR: Duplicate library wrapper '" << libwrap << "', previous selected wrapper with the same name: '" << m_wrappers[ name ].second << "'" << std::endl;
-            exit( EXIT_FAILURE );
-        }
-
-        m_wrappers.insert( std::make_pair( name, std::make_pair( wrapmode, libwrap ) ) );
-        m_is_enabled = true;
-        return true;
-    }
-    return false;
-}
-
-void
-SCOREP_Config_LibwrapAdapter::addLibs( std::deque<std::string>&           libs,
-                                       SCOREP_Config_LibraryDependencies& deps )
-{
-    for ( std::map<std::string, std::pair<std::string, std::string> >::const_iterator it = m_wrappers.begin(); it != m_wrappers.end(); ++it )
-    {
-        const std::string& name     = it->first;
-        const std::string& wrapmode = it->second.first;
-        const std::string& libwrap  = it->second.second;
-        /* we point to <prefix>/share/scorep/<name>.libwrap */
-        std::string libdir = join_path( extract_path( extract_path( extract_path( libwrap ) ) ), "lib" SCOREP_BACKEND_SUFFIX );
-
-#if HAVE_BACKEND( LIBWRAP_LINKTIME_SUPPORT )
-        if ( exists_file( join_path( libdir, "libscorep_libwrap_" + name + "_linktime.la" ) ) )
-        {
-            deps.insert( "libscorep_libwrap_" + name + "_linktime", libdir );
-        }
-        else
-#endif
-        if ( wrapmode == "linktime" )
-        {
-            std::cerr << "[Score-P] ERROR: Library wrapping mode 'linktime' not supported by this installation." << std::endl;
-            exit( EXIT_FAILURE );
-        }
-
-#if HAVE_BACKEND( LIBWRAP_RUNTIME_SUPPORT )
-        if ( exists_file( join_path( libdir, "libscorep_libwrap_" + name + "_runtime.la" ) ) )
-        {
-            deps.insert( "libscorep_libwrap_" + name + "_runtime", libdir );
-        }
-        else
-#endif
-        if ( wrapmode == "runtime" )
-        {
-            std::cerr << "[Score-P] ERROR: Library wrapping mode 'runtime' not supported by this installation." << std::endl;
-            exit( EXIT_FAILURE );
-        }
-
-        libs.push_back( "libscorep_libwrap_" + name + "_" + wrapmode );
-        deps.addDependency( libs.back(), "libscorep_measurement" );
-    }
-}
-
-void
-SCOREP_Config_LibwrapAdapter::addLdFlags( std::string& ldflags,
-                                          bool /* buildCheck */,
-                                          bool         nvcc )
-{
-    for ( std::map<std::string, std::pair<std::string, std::string> >::const_iterator it = m_wrappers.begin(); it != m_wrappers.end(); ++it )
-    {
-        const std::string& name     = it->first;
-        const std::string& wrapmode = it->second.first;
-        const std::string& libwrap  = it->second.second;
-
-        if ( wrapmode == "linktime" )
-        {
-            /* libwrap points to the .libwrap file */
-            ldflags += get_ld_wrap_flag( remove_extension( libwrap ), nvcc );
-        }
-    }
-}
-
-void
-SCOREP_Config_LibwrapAdapter::appendInitStructName( std::deque<std::string>& init_structs )
-{
-}
-
 /* **************************************************************************************
  * I/O wrapping adapter
  * *************************************************************************************/
 SCOREP_Config_IoAdapter::SCOREP_Config_IoAdapter()
-    : SCOREP_Config_Adapter( "io", "", false )
+    : SCOREP_Config_Adapter( "io", "", true )
 {
 #if HAVE_BACKEND( POSIX_IO_SUPPORT )
-    m_supported_ios.insert( SCOREP_Config_SupportedIosV(
-                                "posix",
-                                SCOREP_Config_SupportedIo( "Posix", "posix_io", "posix_io" ) ) );
+    m_supported_ios.emplace( "posix",
+                             SCOREP_Config_SupportedIo( "Posix", "posix_io" ) );
 #endif
 }
 
 void
 SCOREP_Config_IoAdapter::printHelp( void )
 {
-    std::cout << "   --io=[<wrap-mode>:]<paradigm,...>|--noio\n"
-              << "              Specifies whether I/O recording is used.\n"
-              << "              On default I/O recording is disabled.\n"
-              << "              The following I/O paradigms may be recorded:\n"
+    std::cout << "   --io=<paradigm,...>|--noio\n"
+              << "              Specifies whether I/O instrumentation is used.\n"
+              << "              On default I/O instrumentation is enabled.\n"
+              << "              The following I/O paradigms may be recorded, if present:\n"
               << "               none\n";
-    for ( SCOREP_Config_SupportedIosCIT it = m_supported_ios.begin(); it != m_supported_ios.end(); ++it )
+    for ( const auto& pair : m_supported_ios )
     {
-        std::cout << "               " << it->first << "\n";
+        std::cout << "               " << pair.first << "\n";
     }
 }
 
@@ -1287,36 +911,20 @@ SCOREP_Config_IoAdapter::checkArgument( const std::string& arg )
 {
     if ( arg.substr( 0, 5 ) == ( "--io=" ) )
     {
-        std::string io = arg.substr( 5 );
-
-        std::string wrapmode = "linktime";
-        if ( io.compare( 0, 9, "linktime:" ) == 0 )
+        for ( const auto& ioParadigm : string_to_deque( arg.substr( 5 ), "," ) )
         {
-            wrapmode = "linktime";
-            io.erase( 0, 9 );
-        }
-        else if ( io.compare( 0, 8, "runtime:" ) == 0 )
-        {
-            wrapmode = "runtime";
-            io.erase( 0, 8 );
-        }
-
-        std::deque<std::string> ios = string_to_deque( io, "," );
-
-        for ( std::deque<std::string>::const_iterator it = ios.begin(); it != ios.end(); ++it )
-        {
-            if ( *it == "none" )
+            if ( ioParadigm == "none" )
             {
                 m_selected_ios.clear();
                 continue;
             }
 
-            if ( !m_supported_ios.count( *it ) )
+            if ( !m_supported_ios.count( ioParadigm ) )
             {
-                std::cerr << "ERROR: I/O paradigm " << *it << " not supported by this Score-P installation." << std::endl;
+                std::cerr << "ERROR: I/O paradigm " << ioParadigm << " not supported by this Score-P installation." << std::endl;
                 exit( EXIT_FAILURE );
             }
-            m_selected_ios[ *it ] = wrapmode;
+            m_selected_ios.insert( ioParadigm );
         }
 
         m_is_enabled = m_selected_ios.size() != 0;
@@ -1340,16 +948,12 @@ SCOREP_Config_IoAdapter::addLibs( std::deque<std::string>&           libs,
         return;
     }
 
-    for ( SCOREP_Config_SupportedIosCIT it = m_supported_ios.begin(); it != m_supported_ios.end(); ++it )
+    for ( const auto& ioParadigm : m_selected_ios )
     {
-        if ( !m_selected_ios.count( it->first ) )
-        {
-            continue;
-        }
-
-        libs.push_back( "libscorep_adapter_" + it->second.m_lib_name + "_event_" + m_selected_ios[ it->first ] );
+        const auto& io = m_supported_ios[ ioParadigm ];
+        libs.push_back( "libscorep_adapter_" + io.m_lib_name + "_event" );
         deps.addDependency( libs.back(), "libscorep_measurement" );
-        deps.addDependency( "libscorep_measurement", "libscorep_adapter_" + it->second.m_lib_name + "_mgmt_" + m_selected_ios[ it->first ] );
+        deps.addDependency( "libscorep_measurement", "libscorep_adapter_" + io.m_lib_name + "_mgmt" );
     }
 }
 
@@ -1361,19 +965,6 @@ SCOREP_Config_IoAdapter::addLdFlags( std::string& ldflags,
     if ( !m_is_enabled )
     {
         return;
-    }
-
-    for ( SCOREP_Config_SupportedIosCIT it = m_supported_ios.begin(); it != m_supported_ios.end(); ++it )
-    {
-        if ( m_selected_ios.count( it->first ) && m_selected_ios[ it->first ] == "linktime" )
-        {
-            for ( std::vector<std::string>::const_iterator iter = it->second.m_wrap_names.begin();
-                  iter != it->second.m_wrap_names.end();
-                  ++iter )
-            {
-                ldflags += get_ld_wrap_flag( *iter, buildCheck, nvcc );
-            }
-        }
     }
 }
 
@@ -1387,11 +978,9 @@ SCOREP_Config_IoAdapter::appendInitStructName( std::deque<std::string>& initStru
 
     initStructs.push_back( "SCOREP_Subsystem_IoManagement" );
 
-    for ( SCOREP_Config_SupportedIosCIT it = m_supported_ios.begin(); it != m_supported_ios.end(); ++it )
+    for ( const auto& ioParadigm : m_selected_ios )
     {
-        if ( m_selected_ios.count( it->first ) )
-        {
-            initStructs.push_back( "SCOREP_Subsystem_" + it->second.m_subsystem_name + "IoAdapter" );
-        }
+        const auto& io = m_supported_ios[ ioParadigm ];
+        initStructs.push_back( "SCOREP_Subsystem_" + io.m_subsystem_name + "IoAdapter" );
     }
 }

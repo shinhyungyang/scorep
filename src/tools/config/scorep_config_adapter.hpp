@@ -4,7 +4,7 @@
  * Copyright (c) 2013-2014, 2019-2020, 2023-2025,
  * Forschungszentrum Juelich GmbH, Germany
  *
- * Copyright (c) 2014-2017, 2020, 2022,
+ * Copyright (c) 2014-2017, 2020, 2022, 2025,
  * Technische Universitaet Dresden, Germany
  *
  * Copyright (c) 2014,
@@ -29,12 +29,11 @@
 #include <deque>
 #include <set>
 #include <vector>
+#include <iostream>
 #include <stdint.h>
 
 #include "SCOREP_Config_LibraryDependencies.hpp"
 #include "scorep_config_types.hpp"
-
-class SCOREP_Config_LibwrapAdapter;
 
 /* **************************************************************************************
  * class SCOREP_Config_Adapter
@@ -402,21 +401,8 @@ public:
     SCOREP_Config_OpenclAdapter();
     void
     printHelp( void ) override;
-    bool
-    checkArgument( const std::string& arg ) override;
-    void
-    addLibs( std::deque<std::string>&           libs,
-             SCOREP_Config_LibraryDependencies& deps ) override;
-    void
-    addLdFlags( std::string& ldflags,
-                bool         build_check,
-                bool         nvcc ) override;
-
     void
     appendInitStructName( std::deque<std::string>& init_structs ) override;
-
-private:
-    std::string m_wrapmode;
 };
 
 /* **************************************************************************************
@@ -504,52 +490,6 @@ public:
 
     bool
     checkArgument( const std::string& arg ) override;
-
-    void
-    addLibs( std::deque<std::string>&           libs,
-             SCOREP_Config_LibraryDependencies& deps ) override;
-
-    void
-    addLdFlags( std::string& ldflags,
-                bool         build_check,
-                bool         nvcc ) override;
-
-private:
-    std::set<std::string> m_categories;
-};
-
-/* **************************************************************************************
- * class SCOREP_Config_LibwrapAdapter
- * *************************************************************************************/
-
-/**
- * This class represents the compiler adapter.
- */
-class SCOREP_Config_LibwrapAdapter : public SCOREP_Config_Adapter
-{
-public:
-    SCOREP_Config_LibwrapAdapter();
-
-    void
-    printHelp( void ) override;
-
-    bool
-    checkArgument( const std::string& arg ) override;
-
-    void
-    addLdFlags( std::string& ldflags,
-                bool         build_check,
-                bool         nvcc ) override;
-
-    void
-    addLibs( std::deque<std::string>&           libs,
-             SCOREP_Config_LibraryDependencies& deps ) override;
-
-    void
-    appendInitStructName( std::deque<std::string>& init_structs ) override;
-
-private:
-    std::map<std::string, std::pair<std::string, std::string> > m_wrappers;
 };
 
 /* **************************************************************************************
@@ -586,50 +526,26 @@ private:
     struct SCOREP_Config_SupportedIo
     {
         SCOREP_Config_SupportedIo( const std::string& subsystem,
-                                   const std::string& lib,
-                                   const std::string& wrap )
-            :   m_subsystem_name( subsystem )
-            ,   m_lib_name( lib )
-        {
-            m_wrap_names.push_back( wrap );
-        }
-
-        SCOREP_Config_SupportedIo( const std::string& subsystem,
                                    const std::string& lib )
             :   m_subsystem_name( subsystem )
             ,   m_lib_name( lib )
         {
-            m_wrap_names.push_back( lib );
         }
 
         SCOREP_Config_SupportedIo( const SCOREP_Config_SupportedIo& other )
             :   m_subsystem_name( other.m_subsystem_name )
             ,   m_lib_name( other.m_lib_name )
-            ,   m_wrap_names( other.m_wrap_names )
         {
         }
 
-        SCOREP_Config_SupportedIo()
-        {
-        }
+        SCOREP_Config_SupportedIo() = default;
 
-        void
-        add_wrap_name( const std::string& wrap )
-        {
-            m_wrap_names.push_back( wrap );
-        }
-
-        std::string              m_subsystem_name;
-        std::string              m_lib_name;
-        std::vector<std::string> m_wrap_names;
+        std::string m_subsystem_name;
+        std::string m_lib_name;
     };
 
-    typedef std::map<std::string, SCOREP_Config_SupportedIo> SCOREP_Config_SupportedIosT;
-    typedef SCOREP_Config_SupportedIosT::const_iterator      SCOREP_Config_SupportedIosCIT;
-    typedef SCOREP_Config_SupportedIosT::value_type          SCOREP_Config_SupportedIosV;
-
-    SCOREP_Config_SupportedIosT        m_supported_ios;
-    std::map<std::string, std::string> m_selected_ios;
+    std::map<std::string, SCOREP_Config_SupportedIo> m_supported_ios;
+    std::set<std::string>                            m_selected_ios;
 };
 
 #endif // SCOREP_CONFIG_ADAPTER_HPP

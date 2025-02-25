@@ -1,7 +1,7 @@
 /*
  * This file is part of the Score-P software (http://www.score-p.org)
  *
- * Copyright (c) 2013, 2015, 2017,
+ * Copyright (c) 2013, 2015, 2017, 2025,
  * Technische Universitaet Dresden, Germany
  *
  * This software may be modified and distributed under the terms of
@@ -34,8 +34,6 @@ struct generator_configuration
     bool                               overwrite;
     /** Path to header file (e.g., /opt/netcdf/include/netcdf.h) */
     std::string                        header_file;
-    /** Path to library (e.g., /opt/netcdf/lib/libnetcdf.so) */
-    std::vector<std::string>           library_names;
     /** The include statement in the generated code (e.g., "<netcdf.h>") */
     std::string                        include_statement;
     std::string                        filter_file_name;
@@ -45,10 +43,8 @@ struct generator_configuration
     std::string                        function_list_file_name;
     /** Whether to create a file containing the wrapper functions for a Score-P internal adapter */
     bool                               create_internal_wrapper_code_file;
-    /** Name of GNU ld -wrap flags */
-    std::string                        wrap_flags_file_name;
-    /** Name of GNU ld -wrap flags, for nvcc */
-    std::string                        nvcc_wrap_flags_file_name;
+    /** Name of symbols file */
+    std::string                        symbols_file_name;
     /** The language in which the parser should parse the header "c" or "c++" */
     std::string                        language;
     /** The language standard in which the parser should parse the header "c99", "c++11, ..." */
@@ -86,14 +82,12 @@ private:
         OUTPUT_INTERNAL_ADAPTER_CODE,
         OUTPUT_EXTERNAL_ADAPTER_CODE,
         OUTPUT_FUNCTION_LIST,
-        OUTPUT_WRAP_FLAGS,
-        OUTPUT_NVCC_WRAP_FLAGS
+        OUTPUT_SYMBOLS
     };
 
     friend class macro_writer_adapter;
     friend class macro_writer_function_list;
-    friend class macro_writer_wrap_flags;
-    friend class macro_writer_nvcc_wrap_flags;
+    friend class macro_writer_symbols;
 
     std::string                    m_output_file;
     const generator_configuration& m_config;

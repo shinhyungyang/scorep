@@ -7,7 +7,7 @@
  * Copyright (c) 2009-2012,
  * Gesellschaft fuer numerische Simulation mbH Braunschweig, Germany
  *
- * Copyright (c) 2009-2012, 2014-2015, 2020,
+ * Copyright (c) 2009-2012, 2014-2015, 2020, 2025,
  * Technische Universitaet Dresden, Germany
  *
  * Copyright (c) 2009-2012,
@@ -66,7 +66,7 @@ get_file( const char*              file,
     UTILS_MutexLock( &scorep_user_file_table_mutex );
 
     /* In most cases, it is expected that no regions are in included
-       files. If the compiler inserts always the same string adress for file names,
+       files. If the compiler inserts always the same string address for file names,
        one static variable in a source file can remember the last used filename from
        a source file and sting comparisons can be avoided.
 

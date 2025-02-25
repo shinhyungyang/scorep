@@ -7,7 +7,7 @@
  * Copyright (c) 2009-2013,
  * Gesellschaft fuer numerische Simulation mbH Braunschweig, Germany
  *
- * Copyright (c) 2009-2014, 2019,
+ * Copyright (c) 2009-2014, 2019, 2025,
  * Technische Universitaet Dresden, Germany
  *
  * Copyright (c) 2009-2013,
@@ -37,6 +37,8 @@
 
 #include <config.h>
 #include "scorep_runtime_management.h"
+
+#include <SCOREP_RuntimeManagement.h>
 
 #include <SCOREP_Timer_Ticks.h>
 #include <UTILS_Error.h>
@@ -144,25 +146,6 @@ SCOREP_CreateExperimentDir( void )
     }
 
     scorep_experiment_dir_created = true;
-}
-
-
-const char*
-SCOREP_GetWorkingDirectory( void )
-{
-    static char* working_directory;
-    static bool  been_visited = false;
-    if ( !been_visited )
-    {
-        working_directory = UTILS_IO_GetCwd( NULL, 0 );
-        if ( working_directory == NULL )
-        {
-            UTILS_ERROR_POSIX( "Error while getting absolute path name of the current working directory." );
-            _Exit( EXIT_FAILURE );
-        }
-        been_visited = true;
-    }
-    return working_directory;
 }
 
 

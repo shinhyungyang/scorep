@@ -7,7 +7,7 @@
  * Copyright (c) 2009-2013,
  * Gesellschaft fuer numerische Simulation mbH Braunschweig, Germany
  *
- * Copyright (c) 2009-2017, 2024,
+ * Copyright (c) 2009-2017, 2024-2025,
  * Technische Universitaet Dresden, Germany
  *
  * Copyright (c) 2009-2013,
@@ -225,10 +225,10 @@ join_to_string( IteratorType       iterator,
    @param delimiter A string that is inserted between each strings from the list.
  */
 std::string
-scorep_vector_to_string( const std::vector<std::string>& list,
-                         const std::string&              head,
-                         const std::string&              tail,
-                         const std::string&              delimiter );
+vector_to_string( const std::vector<std::string>& list,
+                  const std::string&              head,
+                  const std::string&              tail,
+                  const std::string&              delimiter );
 
 /**
    Inserts a backslash before characters that a shell does not interpret as part of

@@ -7,7 +7,7 @@ dnl
 dnl Copyright (c) 2009-2013,
 dnl Gesellschaft fuer numerische Simulation mbH Braunschweig, Germany
 dnl
-dnl Copyright (c) 2009-2022, 2024,
+dnl Copyright (c) 2009-2022, 2024-2025,
 dnl Technische Universitaet Dresden, Germany
 dnl
 dnl Copyright (c) 2009-2013,
@@ -154,6 +154,7 @@ AC_SCOREP_RUNTIME_MANAGEMENT_TIMINGS
 AC_SCOREP_BACKEND_TEST_RUNS
 AC_SCOREP_FORTRAN_SUPPORT_ALLOCATABLE
 SCOREP_ADDR2LINE_SUMMARY
+SCOREP_LIBRARY_WRAPPING_SUMMARY
 SCOREP_SAMPLING
 SCOREP_METRICS_CHECK
 SCOREP_DLFCN
@@ -225,9 +226,6 @@ AC_SCOREP_COND_HAVE([MPI_SUPPORT],
 AC_SCOREP_COND_HAVE([SHMEM_SUPPORT],
                     [test -f ../build-shmem/Makefile],
                     [Defined if SHMEM support is available.])
-AC_SCOREP_COND_HAVE([SHMEM_PROFILING_INTERFACE],
-                    [test -f ../build-shmem/scorep_have_pshmem_support.txt],
-                    [Defined if SHMEM Profiling Interface support is available.])
 
 AC_SCOREP_PACKAGE_AND_LIBRARY_VERSION
 
@@ -428,12 +426,6 @@ AS_CASE([${ac_scorep_platform}],
               [sed -e 's/for search_ext in \.la /for search_ext in /' \
                libtool > libtool.fix && mv libtool.fix libtool])
          ])
-
-AM_COND_IF([HAVE_OPENCL_SUPPORT],
-    [SCOREP_LD_WRAP_FILE([opencl])])
-
-AM_COND_IF([HAVE_POSIX_IO_SUPPORT],
-    [SCOREP_LD_WRAP_FILE([posix_io])])
 
 dnl Linux
 SCOREP_CHECK_SYSCALL([SYS_gettid],

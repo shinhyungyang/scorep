@@ -2,7 +2,7 @@
 
 ## This file is part of the Score-P software (http://www.score-p.org)
 ##
-## Copyright (c) 2015, 2017, 2019, 2021-2022, 2024,
+## Copyright (c) 2015, 2017, 2019, 2021-2022, 2024-2025,
 ## Technische Universitaet Dresden, Germany
 ##
 ## Copyright (c) 2024,
@@ -80,7 +80,6 @@ compile()
     ${SCOREP} --build-check \
         ${_V_scorep} \
         --nocompiler \
-        --nomemory \
         --user \
         --thread=none \
         ${CC} ${CFLAGS} \

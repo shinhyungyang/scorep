@@ -40,9 +40,7 @@ Common options are:
               omp:ompt
                   OpenMP support using thread tracking via OMPT.
               pthread
-                  Pthread support using thread tracking via library wrapping.
-                  It requires and, thus, automatically enables linktime-wrapping
-                  instrumentation.
+                  Pthread support.
                   It conflicts and, thus, automatically disables OPARI2
                   instrumentation.
   --mpp=<paradigm>[:<variant>]
@@ -53,8 +51,7 @@ Common options are:
                   MPI support using library wrapping
               shmem
                   SHMEM support using library wrapping
-  --io=[<wrap-mode>:]<paradigm>[:<variant>](,[<wrap-mode>:]<paradigm>[:<variant>])*
-                  <wrap-mode> may be 'linktime' or 'runtime'.
+  --io=<paradigm>[:<variant>](,<paradigm>[:<variant>])*
                   The default is the first supported mode in the above order.
                   Possible paradigms and variants are:
               none
@@ -105,17 +102,6 @@ Common options are:
   --noopenacc     Disables OpenACC instrumentation.
   --memory        Enables memory usage instrumentation. It is enabled by default.
   --nomemory      Disables memory usage instrumentation.
-  --libwrap=[<wrap-mode>:](<wrapper-name>...|<path-to-wrapper>)
-                  Enables user library wrapping for specified libraries.
-                  <wrap-mode> may be 'linktime' or 'runtime'.
-                  The default is the first supported mode in the above order.
-                  <wrapper-name>... is a comma-separated list of library wrappers
-                  which will be looked up in the paths of the colon-separated
-                  'SCOREP_LIBWRAP_PATH' environment variable and in the installation
-                  directory of Score-P. <path-to-wrapper> is a full path to the
-                  .libwrap anchor file.
-                  Use 'scorep-info libwrap-summary' for a more detailed listing
-                  of available library wrappers.
   --kokkos        Enables Kokkos instrumentation.
   --nokokkos      Disables Kokkos instrumentation.
   --hip           Enables HIP instrumentation. Enabled by default, if the

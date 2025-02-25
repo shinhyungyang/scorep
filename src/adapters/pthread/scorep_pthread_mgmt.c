@@ -4,7 +4,7 @@
  * Copyright (c) 2014-2016, 2018,
  * Forschungszentrum Juelich GmbH, Germany
  *
- * Copyright (c) 2014-2015, 2017, 2020,
+ * Copyright (c) 2014-2015, 2017, 2020, 2025,
  * Technische Universitaet Dresden, Germany
  *
  * This software may be modified and distributed under the terms of
@@ -30,6 +30,7 @@
 #include <SCOREP_Definitions.h>
 #include <SCOREP_Paradigms.h>
 #include <SCOREP_Memory.h>
+#include <SCOREP_Libwrap_Internal.h>
 
 #define SCOREP_DEBUG_MODULE_NAME PTHREAD
 #include <UTILS_Debug.h>
@@ -38,8 +39,17 @@
 #include <stdbool.h>
 
 
+// function pointers
+
+#define SCOREP_PTHREAD_REGION( rettype, name, NAME, TYPE, ARGS ) \
+    SCOREP_LIBWRAP_DEFINE_ORIGINAL_HANDLE( name );
+
+SCOREP_PTHREAD_REGIONS
+
+#undef SCOREP_PTHREAD_REGION
+
 /* *INDENT-OFF* */
-static void register_pthread_regions( void );
+static void enable_pthread_wrapper( void );
 /* *INDENT-ON* */
 
 
@@ -49,6 +59,14 @@ struct SCOREP_Location;
 size_t    scorep_pthread_subsystem_id;
 pthread_t scorep_pthread_main_thread;
 
+
+static SCOREP_LibwrapHandle*          pthread_libwrap_handle;
+static const SCOREP_LibwrapAttributes pthread_libwrap_attributes =
+{
+    SCOREP_LIBWRAP_VERSION,
+    "pthread", /* name of the library wrapper */
+    "POSIX Threads"
+};
 
 static SCOREP_ErrorCode
 pthread_subsystem_register( size_t subsystemId )
@@ -72,7 +90,8 @@ pthread_subsystem_init( void )
         "Pthread",
         SCOREP_PARADIGM_FLAG_NONE );
 
-    register_pthread_regions();
+    enable_pthread_wrapper();
+
     scorep_pthread_main_thread = pthread_self();
 
     UTILS_DEBUG_EXIT();
@@ -84,23 +103,28 @@ SCOREP_RegionHandle scorep_pthread_regions[ SCOREP_PTHREAD_REGION_SENTINEL ];
 
 
 static void
-register_pthread_regions( void )
+enable_pthread_wrapper( void )
 {
-    SCOREP_SourceFileHandle file = SCOREP_Definitions_NewSourceFile( "PTHREAD" );
+    SCOREP_Libwrap_Create( &pthread_libwrap_handle,
+                           &pthread_libwrap_attributes );
 
 #define SCOREP_PTHREAD_REGION( rettype, name, NAME, TYPE, ARGS ) \
-    scorep_pthread_regions[ SCOREP_PTHREAD_ ## NAME ] = \
-        SCOREP_Definitions_NewRegion( #name, \
-                                      NULL, \
-                                      file, \
-                                      SCOREP_INVALID_LINE_NO, \
-                                      SCOREP_INVALID_LINE_NO, \
-                                      SCOREP_PARADIGM_PTHREAD, \
-                                      SCOREP_REGION_ ## TYPE );
+    SCOREP_Libwrap_RegisterWrapper( pthread_libwrap_handle, \
+                                    #rettype " " #name #ARGS, \
+                                    #name, \
+                                    "PTHREAD", \
+                                    SCOREP_INVALID_LINE_NO, \
+                                    SCOREP_PARADIGM_PTHREAD, \
+                                    SCOREP_REGION_ ## TYPE, \
+                                    ( void* )SCOREP_LIBWRAP_WRAPPER( name ), \
+                                    &SCOREP_LIBWRAP_ORIGINAL_HANDLE( name ), \
+                                    &scorep_pthread_regions[ SCOREP_PTHREAD_ ## NAME ] );
 
     SCOREP_PTHREAD_REGIONS
 
 #undef SCOREP_PTHREAD_REGION
+
+    SCOREP_Libwrap_Enable( pthread_libwrap_handle );
 }
 
 

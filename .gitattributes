@@ -28,16 +28,19 @@
 /src/adapters/compiler/scorep_compiler_mgmt_gcc_plugin.inc.c -hook-config
 /src/adapters/cuda/scorep_cuda_confvars.inc.c -hook-config
 /src/adapters/hip/scorep_hip_confvars.inc.c -hook-config
+/src/adapters/io/posix/scorep_posix_io_confvars.inc.c -hook-config
+/src/adapters/io/posix/scorep_posix_io_function_list.inc.c -hook-config
 /src/adapters/kokkos/scorep_kokkos_confvars.inc.c -hook-config
 /src/adapters/memory/scorep_memory_confvars.inc.c -hook-config
+/src/adapters/memory/scorep_memory_wrappers.inc.c -hook-beautifier -hook-config
 /src/adapters/mpi/scorep_mpi_confvars.inc.c -hook-config
 /src/adapters/ompt/scorep_ompt_debug.inc.c -hook-config
 /src/adapters/ompt/scorep_ompt_events_device.inc.c -hook-config
 /src/adapters/ompt/scorep_ompt_events_host.inc.c -hook-config
 /src/adapters/ompt/scorep_ompt_mutex.inc.c -hook-config
 /src/adapters/ompt/scorep_ompt_regions.inc.c -hook-config
-/src/adapters/opencl/scorep_opencl_function_list.inc -hook-beautifier -hook-config
 /src/adapters/opencl/scorep_opencl_confvars.inc.c -hook-config
+/src/adapters/opencl/scorep_opencl_function_list.inc.c -hook-beautifier -hook-config
 /src/adapters/opencl/scorep_opencl_wrap_version_1_0.inc.c -hook-config
 /src/adapters/opencl/scorep_opencl_wrap_version_1_1.inc.c -hook-config
 /src/adapters/opencl/scorep_opencl_wrap_version_1_2.inc.c -hook-config
@@ -45,6 +48,7 @@
 /src/adapters/opencl/scorep_opencl_wrap_version_2_1.inc.c -hook-config
 /src/adapters/opencl/scorep_opencl_wrap_version_2_2.inc.c -hook-config
 /src/adapters/shmem/scorep_shmem_confvars.inc.c -hook-config
+/src/adapters/shmem/scorep_shmem_function_list.inc.c -hook-config
 /src/adapters/shmem/fortran_common/scorep_fshmem_atomic.inc.c -hook-config
 /src/adapters/shmem/fortran_common/scorep_fshmem_broadcast.inc.c -hook-config
 /src/adapters/shmem/fortran_common/scorep_fshmem_cache.inc.c -hook-config
@@ -58,11 +62,11 @@
 /src/adapters/shmem/fortran_common/scorep_fshmem_remote_ptr.inc.c -hook-config
 /src/adapters/shmem/fortran_common/scorep_fshmem_sym_heap.inc.c -hook-config
 /src/adapters/shmem/fortran_common/scorep_fshmem_sync.inc.c -hook-config
-/src/adapters/shmem/fortran_common/scorep_fshmem_team.inc.c -hook-config
 /src/measurement/filtering/scorep_filtering_confvars.inc.c -hook-config
 /src/measurement/profiling/scorep_profile_confvars.inc.c -hook-config
 /src/measurement/substrates/scorep_substrates_plugins_confvars.inc.c -hook-config
 /src/measurement/tracing/scorep_tracing_confvars.inc.c -hook-config
+/src/services/libwrap/scorep_libwrap_confvars.inc.c -hook-config
 /src/services/metric/scorep_metric_papi_confvars.inc.c -hook-config
 /src/services/metric/scorep_metric_rusage_confvars.inc.c -hook-config
 /src/services/timer/scorep_timer_confvars.inc.c -hook-config
@@ -188,6 +192,11 @@
 # imported form ORNL
 /test/instrumenter_checks/shmem_omp/src/heat/cc/heat.c -hook-beautifier
 /test/instrumenter_checks/shmem/src/heat/cc/heat.c -hook-beautifier
+# Template files for library wrapper
+/src/tools/libwrap_init/libwrap.c -hook-config
+/src/tools/libwrap_init/main.c -hook-config
+/src/tools/libwrap_init/main_mpi.c -hook-config
+/src/tools/libwrap_init/main_shmem.c -hook-config
 # test files
 /test/tools/libwrap_init/target-lib-c/foo.c -hook-beautifier -hook-config
 /test/tools/libwrap_init/target-lib-c/foo.h -hook-beautifier
@@ -201,3 +210,5 @@
 /test/tools/libwrap_init/target-lib-mpi/foo.h -hook-beautifier
 /test/tools/libwrap_init/target-lib-shmem/foo.c -hook-beautifier -hook-config
 /test/tools/libwrap_init/target-lib-shmem/foo.h -hook-beautifier
+# patch
+/build-config/patches/GOTCHA-1.0.7.patch -hook-trailing-ws -hook-trailing-nl

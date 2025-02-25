@@ -1,7 +1,7 @@
 /*
  * This file is part of the Score-P software (http://www.score-p.org)
  *
- * Copyright (c) 2013-2017,
+ * Copyright (c) 2013-2017, 2025,
  * Technische Universitaet Dresden, Germany
  *
  * This software may be modified and distributed under the terms of
@@ -25,42 +25,35 @@
 #include <SCOREP_Events.h>
 
 
-/* *INDENT-OFF* */
+#if SHMEM_HAVE_DECL( SHMEM_PTR ) && defined( SCOREP_SHMEM_PTR_PROTO_ARGS )
+void*
+shmem_ptr SCOREP_SHMEM_PTR_PROTO_ARGS
+{
+    SCOREP_IN_MEASUREMENT_INCREMENT();
 
-#define REMOTE_PTR( FUNCNAME )                                              \
-    void*                                                                   \
-    SCOREP_LIBWRAP_FUNC_NAME( FUNCNAME ) SCOREP_SHMEM_PTR_PROTO_ARGS        \
-    {                                                                       \
-        SCOREP_IN_MEASUREMENT_INCREMENT();                                  \
-                                                                            \
-        void* ret;                                                          \
-                                                                            \
-        const int event_gen_active = SCOREP_SHMEM_IS_EVENT_GEN_ON;          \
-                                                                            \
-        if ( event_gen_active )                                             \
-        {                                                                   \
-            SCOREP_SHMEM_EVENT_GEN_OFF();                                   \
-                                                                            \
-            SCOREP_EnterWrappedRegion( scorep_shmem_region__ ## FUNCNAME ); \
-        }                                                                   \
-                                                                            \
-        SCOREP_ENTER_WRAPPED_REGION();                                      \
-        ret = SCOREP_LIBWRAP_FUNC_CALL( FUNCNAME, ( ptr, pe ) );            \
-        SCOREP_EXIT_WRAPPED_REGION();                                       \
-                                                                            \
-        if ( event_gen_active )                                             \
-        {                                                                   \
-            SCOREP_ExitRegion( scorep_shmem_region__ ## FUNCNAME );         \
-                                                                            \
-            SCOREP_SHMEM_EVENT_GEN_ON();                                    \
-        }                                                                   \
-                                                                            \
-        SCOREP_IN_MEASUREMENT_DECREMENT();                                  \
-        return ret;                                                         \
+    void* ret;
+
+    const int event_gen_active = SCOREP_SHMEM_IS_EVENT_GEN_ON;
+
+    if ( event_gen_active )
+    {
+        SCOREP_SHMEM_EVENT_GEN_OFF();
+
+        SCOREP_EnterWrappedRegion( scorep_shmem_region__shmem_ptr );
     }
 
-/* *INDENT-ON* */
+    SCOREP_ENTER_WRAPPED_REGION();
+    ret = pshmem_ptr( ptr, pe );
+    SCOREP_EXIT_WRAPPED_REGION();
 
-#if SHMEM_HAVE_DECL( SHMEM_PTR ) && defined( SCOREP_SHMEM_PTR_PROTO_ARGS )
-REMOTE_PTR( shmem_ptr )
+    if ( event_gen_active )
+    {
+        SCOREP_ExitRegion( scorep_shmem_region__shmem_ptr );
+
+        SCOREP_SHMEM_EVENT_GEN_ON();
+    }
+
+    SCOREP_IN_MEASUREMENT_DECREMENT();
+    return ret;
+}
 #endif

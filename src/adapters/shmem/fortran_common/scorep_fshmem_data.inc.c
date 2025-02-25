@@ -153,10 +153,10 @@
 
 #define SHMEM_FORTRAN_PUT( F_FUNCNAME, C_FUNCNAME, DATATYPE )       \
     void                                                            \
-    FSUB( shmem_ ## F_FUNCNAME ## _put )( DATATYPE       *target,   \
-                                          const DATATYPE *src,      \
-                                          int            *size,     \
-                                          int            *pe )      \
+    FSUB( shmem_ ## F_FUNCNAME ## _put )( DATATYPE*       target,   \
+                                          const DATATYPE* src,      \
+                                          int*            size,     \
+                                          int*            pe )      \
     {                                                               \
         SCOREP_IN_MEASUREMENT_INCREMENT();                          \
         shmem_ ## C_FUNCNAME ## _put( target,                       \
@@ -192,10 +192,10 @@ SHMEM_FORTRAN_PUT( real,      int,      int )
 
 #define SHMEM_FORTRAN_PUT_SIZE( SIZE, C_FUNCNAME, DATATYPE )    \
     void                                                        \
-    FSUB( shmem_put ## SIZE )( DATATYPE       *target,          \
-                               const DATATYPE *src,             \
-                               int            *size,            \
-                               int            *pe )             \
+    FSUB( shmem_put ## SIZE )( DATATYPE*       target,          \
+                               const DATATYPE* src,             \
+                               int*            size,            \
+                               int*            pe )             \
     {                                                           \
         SCOREP_IN_MEASUREMENT_INCREMENT();                      \
         shmem_## C_FUNCNAME ##_put( target,                     \
@@ -228,10 +228,10 @@ SHMEM_FORTRAN_PUT_SIZE( 128, longdouble, long double )
 
 #define SHMEM_FORTRAN_PUT_MEM                   \
     void                                        \
-    FSUB( shmem_putmem )( void       *target,   \
-                          const void *src,      \
-                          int        *size,     \
-                          int        *pe )      \
+    FSUB( shmem_putmem )( void*       target,   \
+                          const void* src,      \
+                          int*        size,     \
+                          int*        pe )      \
     {                                           \
         SCOREP_IN_MEASUREMENT_INCREMENT();      \
         shmem_putmem( target,                   \
@@ -267,12 +267,12 @@ SHMEM_FORTRAN_PUT_MEM
 
 #define SHMEM_FORTRAN_IPUT( F_FUNCNAME, C_FUNCNAME, DATATYPE )      \
     void                                                            \
-    FSUB( shmem_## F_FUNCNAME ## _iput )( DATATYPE       *target,   \
-                                          const DATATYPE *src,      \
-                                          int            *tst,      \
-                                          int            *sst,      \
-                                          int            *size,     \
-                                          int            *pe)       \
+    FSUB( shmem_## F_FUNCNAME ## _iput )( DATATYPE*       target,   \
+                                          const DATATYPE* src,      \
+                                          int*            tst,      \
+                                          int*            sst,      \
+                                          int*            size,     \
+                                          int*            pe)       \
     {                                                               \
         SCOREP_IN_MEASUREMENT_INCREMENT();                          \
         shmem_ ## C_FUNCNAME ## _iput( target,                      \
@@ -310,12 +310,12 @@ SHMEM_FORTRAN_IPUT( real,      int,      int )
 
 #define SHMEM_FORTRAN_IPUT_SIZE( SIZE, C_FUNCNAME, DATATYPE )   \
     void                                                        \
-    FSUB( shmem_iput ## SIZE )( DATATYPE       *target,         \
-                                const DATATYPE *src,            \
-                                int            *tst,            \
-                                int            *sst,            \
-                                int            *size,           \
-                                int            *pe)             \
+    FSUB( shmem_iput ## SIZE )( DATATYPE*       target,         \
+                                const DATATYPE* src,            \
+                                int*            tst,            \
+                                int*            sst,            \
+                                int*            size,           \
+                                int*            pe)             \
     {                                                           \
         SCOREP_IN_MEASUREMENT_INCREMENT();                      \
         shmem_ ## C_FUNCNAME ## _iput( target,                  \
@@ -350,10 +350,10 @@ SHMEM_FORTRAN_IPUT_SIZE( 128, longdouble, long double )
 
 #define SHMEM_FORTRAN_GET( F_FUNCNAME, C_FUNCNAME, DATATYPE )       \
     void                                                            \
-    FSUB( shmem_ ## F_FUNCNAME ## _get )( DATATYPE       *target,   \
-                                          const DATATYPE *src,      \
-                                          int            *size,     \
-                                          int            *pe)       \
+    FSUB( shmem_ ## F_FUNCNAME ## _get )( DATATYPE*       target,   \
+                                          const DATATYPE* src,      \
+                                          int*            size,     \
+                                          int*            pe)       \
     {                                                               \
         SCOREP_IN_MEASUREMENT_INCREMENT();                          \
         shmem_## C_FUNCNAME ## _get( target,                        \
@@ -389,10 +389,10 @@ SHMEM_FORTRAN_GET( real,      int,      int )
 
 #define SHMEM_FORTRAN_GET_SIZE( SIZE, C_FUNCNAME, DATATYPE )    \
     void                                                        \
-    FSUB( shmem_get ## SIZE )( DATATYPE       *target,          \
-                               const DATATYPE *src,             \
-                               int            *size,            \
-                               int            *pe)              \
+    FSUB( shmem_get ## SIZE )( DATATYPE*       target,          \
+                               const DATATYPE* src,             \
+                               int*            size,            \
+                               int*            pe)              \
     {                                                           \
         SCOREP_IN_MEASUREMENT_INCREMENT();                      \
         shmem_## C_FUNCNAME ## _get( target,                    \
@@ -425,10 +425,10 @@ SHMEM_FORTRAN_GET_SIZE( 128, longdouble, long double )
 
 #define SHMEM_FORTRAN_GET_MEM                   \
     void                                        \
-    FSUB( shmem_getmem )( void       *target,   \
-                          const void *src,      \
-                          int        *size,     \
-                          int        *pe )      \
+    FSUB( shmem_getmem )( void*       target,   \
+                          const void* src,      \
+                          int*        size,     \
+                          int*        pe )      \
     {                                           \
         SCOREP_IN_MEASUREMENT_INCREMENT();      \
         shmem_getmem( target,                   \
@@ -447,10 +447,10 @@ SHMEM_FORTRAN_GET_MEM
 
 // #if SHMEM_HAVE_DECL( SHMEM_LONG_GET ) && !defined( shmem_get )
 // void
-// FSUB( shmem_get )( long       *target,
-//                    const long *source,
-//                    int        *size,
-//                    int        *pe )
+// FSUB( shmem_get )( long*       target,
+//                    const long* source,
+//                    int*        size,
+//                    int*        pe )
 // {
 //     shmem_long_get( target,
 //                     source,
@@ -464,12 +464,12 @@ SHMEM_FORTRAN_GET_MEM
 
 #define SHMEM_FORTRAN_IGET( F_FUNCNAME, C_FUNCNAME, DATATYPE )      \
     void                                                            \
-    FSUB( shmem_ ## F_FUNCNAME ## _iget )( DATATYPE       *target,  \
-                                           const DATATYPE *src,     \
-                                           int            *tst,     \
-                                           int            *sst,     \
-                                           int            *size,    \
-                                           int            *pe )     \
+    FSUB( shmem_ ## F_FUNCNAME ## _iget )( DATATYPE*       target,  \
+                                           const DATATYPE* src,     \
+                                           int*            tst,     \
+                                           int*            sst,     \
+                                           int*            size,    \
+                                           int*            pe )     \
     {                                                               \
         SCOREP_IN_MEASUREMENT_INCREMENT();                          \
         shmem_## C_FUNCNAME ## _iget( target,                       \
@@ -507,12 +507,12 @@ SHMEM_FORTRAN_IGET( real,      int,      int )
 
 #define SHMEM_FORTRAN_IGET_SIZE( SIZE, C_FUNCNAME, DATATYPE )   \
     void                                                        \
-    FSUB( shmem_iget ## SIZE )( DATATYPE       *target,         \
-                                const DATATYPE *src,            \
-                                int            *tst,            \
-                                int            *sst,            \
-                                int            *size,           \
-                                int            *pe )            \
+    FSUB( shmem_iget ## SIZE )( DATATYPE*       target,         \
+                                const DATATYPE* src,            \
+                                int*            tst,            \
+                                int*            sst,            \
+                                int*            size,           \
+                                int*            pe )            \
     {                                                           \
         SCOREP_IN_MEASUREMENT_INCREMENT();                      \
         shmem_## C_FUNCNAME ## _iget( target,                   \

@@ -1,7 +1,7 @@
 /*
  * This file is part of the Score-P software (http://www.score-p.org)
  *
- * Copyright (c) 2013-2017,
+ * Copyright (c) 2013-2017, 2025,
  * Technische Universitaet Dresden, Germany
  *
  * This software may be modified and distributed under the terms of
@@ -33,32 +33,32 @@
 
 /* *INDENT-OFF* */
 
-#define INIT_SHMEM( FUNCNAME )                                              \
-    void                                                                    \
-    SCOREP_LIBWRAP_FUNC_NAME( FUNCNAME ) ( void )                           \
-    {                                                                       \
-        SCOREP_IN_MEASUREMENT_INCREMENT();                                  \
-        if ( SCOREP_IS_MEASUREMENT_PHASE( PRE ) )                           \
-        {                                                                   \
-            /* Initialize the measurement system */                         \
-            SCOREP_InitMeasurement();                                       \
-        }                                                                   \
-        SCOREP_SHMEM_EVENT_GEN_OFF();                                       \
-                                                                            \
-        SCOREP_EnterWrappedRegion( scorep_shmem_region__ ## FUNCNAME );     \
-                                                                            \
-        SCOREP_ENTER_WRAPPED_REGION();                                      \
-        SCOREP_LIBWRAP_FUNC_CALL( FUNCNAME, ( ) );                          \
-        SCOREP_EXIT_WRAPPED_REGION();                                       \
-                                                                            \
-        SCOREP_InitMppMeasurement();                                        \
-                                                                            \
-        SCOREP_ExitRegion( scorep_shmem_region__ ## FUNCNAME );             \
-                                                                            \
-        /* Enable SHMEM event generation */                                 \
-        SCOREP_SHMEM_EVENT_GEN_ON();                                        \
-                                                                            \
-        SCOREP_IN_MEASUREMENT_DECREMENT();                                  \
+#define INIT_SHMEM( FUNCNAME ) \
+    void \
+    FUNCNAME( void ) \
+    { \
+        SCOREP_IN_MEASUREMENT_INCREMENT(); \
+        if ( SCOREP_IS_MEASUREMENT_PHASE( PRE ) ) \
+        { \
+            /* Initialize the measurement system */ \
+            SCOREP_InitMeasurement(); \
+        } \
+        SCOREP_SHMEM_EVENT_GEN_OFF(); \
+ \
+        SCOREP_EnterWrappedRegion( scorep_shmem_region__ ## FUNCNAME ); \
+ \
+        SCOREP_ENTER_WRAPPED_REGION(); \
+        p ## FUNCNAME(); \
+        SCOREP_EXIT_WRAPPED_REGION(); \
+ \
+        SCOREP_InitMppMeasurement(); \
+ \
+        SCOREP_ExitRegion( scorep_shmem_region__ ## FUNCNAME ); \
+ \
+        /* Enable SHMEM event generation */ \
+        SCOREP_SHMEM_EVENT_GEN_ON(); \
+ \
+        SCOREP_IN_MEASUREMENT_DECREMENT(); \
     }
 
 /* *INDENT-ON* */
@@ -70,32 +70,32 @@ INIT_SHMEM( shmem_init )
 
 /* *INDENT-OFF* */
 
-#define INIT_SHMEM_WITH_ARGUMENT( FUNCNAME )                                \
-    void                                                                    \
-    SCOREP_LIBWRAP_FUNC_NAME( FUNCNAME ) ( int npes )                       \
-    {                                                                       \
-        SCOREP_IN_MEASUREMENT_INCREMENT();                                  \
-        if ( SCOREP_IS_MEASUREMENT_PHASE( PRE ) )                           \
-        {                                                                   \
-            /* Initialize the measurement system */                         \
-            SCOREP_InitMeasurement();                                       \
-        }                                                                   \
-        SCOREP_SHMEM_EVENT_GEN_OFF();                                       \
-                                                                            \
-        SCOREP_EnterWrappedRegion( scorep_shmem_region__ ## FUNCNAME );     \
-                                                                            \
-        SCOREP_ENTER_WRAPPED_REGION();                                      \
-        SCOREP_LIBWRAP_FUNC_CALL( FUNCNAME, ( npes ) );                     \
-        SCOREP_EXIT_WRAPPED_REGION();                                       \
-                                                                            \
-        SCOREP_InitMppMeasurement();                                        \
-                                                                            \
-        SCOREP_ExitRegion( scorep_shmem_region__ ## FUNCNAME );             \
-                                                                            \
-        /* Enable SHMEM event generation */                                 \
-        SCOREP_SHMEM_EVENT_GEN_ON();                                        \
-                                                                            \
-        SCOREP_IN_MEASUREMENT_DECREMENT();                                  \
+#define INIT_SHMEM_WITH_ARGUMENT( FUNCNAME ) \
+    void \
+    FUNCNAME( int npes ) \
+    { \
+        SCOREP_IN_MEASUREMENT_INCREMENT(); \
+        if ( SCOREP_IS_MEASUREMENT_PHASE( PRE ) ) \
+        { \
+            /* Initialize the measurement system */ \
+            SCOREP_InitMeasurement(); \
+        } \
+        SCOREP_SHMEM_EVENT_GEN_OFF(); \
+ \
+        SCOREP_EnterWrappedRegion( scorep_shmem_region__ ## FUNCNAME ); \
+ \
+        SCOREP_ENTER_WRAPPED_REGION(); \
+        p ## FUNCNAME( npes ); \
+        SCOREP_EXIT_WRAPPED_REGION(); \
+ \
+        SCOREP_InitMppMeasurement(); \
+ \
+        SCOREP_ExitRegion( scorep_shmem_region__ ## FUNCNAME ); \
+ \
+        /* Enable SHMEM event generation */ \
+        SCOREP_SHMEM_EVENT_GEN_ON(); \
+ \
+        SCOREP_IN_MEASUREMENT_DECREMENT(); \
     }
 
 /* *INDENT-ON* */
@@ -107,63 +107,62 @@ INIT_SHMEM_WITH_ARGUMENT( start_pes )
 
 /* *INDENT-OFF* */
 
-#define INIT_THREAD_SHMEM_ONE_ARG( FUNCNAME )                               \
-    int                                                                     \
-    SCOREP_LIBWRAP_FUNC_NAME( FUNCNAME ) ( int required )                   \
-    {                                                                       \
-        SCOREP_IN_MEASUREMENT_INCREMENT();                                  \
-        if ( SCOREP_IS_MEASUREMENT_PHASE( PRE ) )                           \
-        {                                                                   \
-            /* Initialize the measurement system */                         \
-            SCOREP_InitMeasurement();                                       \
-        }                                                                   \
-        SCOREP_SHMEM_EVENT_GEN_OFF();                                       \
-                                                                            \
-        SCOREP_EnterWrappedRegion( scorep_shmem_region__ ## FUNCNAME );     \
-                                                                            \
-        SCOREP_ENTER_WRAPPED_REGION();                                      \
-        int ret = SCOREP_LIBWRAP_FUNC_CALL( FUNCNAME,                       \
-                                            ( required ) );                 \
-        SCOREP_EXIT_WRAPPED_REGION();                                       \
-                                                                            \
-        SCOREP_InitMppMeasurement();                                        \
-                                                                            \
-        SCOREP_ExitRegion( scorep_shmem_region__ ## FUNCNAME );             \
-                                                                            \
-        /* Enable SHMEM event generation */                                 \
-        SCOREP_SHMEM_EVENT_GEN_ON();                                        \
-                                                                            \
-        SCOREP_IN_MEASUREMENT_DECREMENT();                                  \
-        return ret;                                                         \
+#define INIT_THREAD_SHMEM_ONE_ARG( FUNCNAME ) \
+    int \
+    FUNCNAME( int required ) \
+    { \
+        SCOREP_IN_MEASUREMENT_INCREMENT(); \
+        if ( SCOREP_IS_MEASUREMENT_PHASE( PRE ) ) \
+        { \
+            /* Initialize the measurement system */ \
+            SCOREP_InitMeasurement(); \
+        } \
+        SCOREP_SHMEM_EVENT_GEN_OFF(); \
+ \
+        SCOREP_EnterWrappedRegion( scorep_shmem_region__ ## FUNCNAME ); \
+ \
+        SCOREP_ENTER_WRAPPED_REGION(); \
+        int ret = p ## FUNCNAME( required ); \
+        SCOREP_EXIT_WRAPPED_REGION(); \
+ \
+        SCOREP_InitMppMeasurement(); \
+ \
+        SCOREP_ExitRegion( scorep_shmem_region__ ## FUNCNAME ); \
+ \
+        /* Enable SHMEM event generation */ \
+        SCOREP_SHMEM_EVENT_GEN_ON(); \
+ \
+        SCOREP_IN_MEASUREMENT_DECREMENT(); \
+        return ret; \
     }
 
-#define INIT_THREAD_SHMEM_TWO_ARGS( FUNCNAME )                              \
-    void                                                                    \
-    SCOREP_LIBWRAP_FUNC_NAME( FUNCNAME ) ( int   required,                  \
-                                           int * provided )                 \
-    {                                                                       \
-        SCOREP_IN_MEASUREMENT_INCREMENT();                                  \
-        if ( SCOREP_IS_MEASUREMENT_PHASE( PRE ) )                           \
-        {                                                                   \
-            /* Initialize the measurement system */                         \
-            SCOREP_InitMeasurement();                                       \
-        }                                                                   \
-        SCOREP_SHMEM_EVENT_GEN_OFF();                                       \
-                                                                            \
-        SCOREP_EnterWrappedRegion( scorep_shmem_region__ ## FUNCNAME );     \
-                                                                            \
-        SCOREP_ENTER_WRAPPED_REGION();                                      \
-        SCOREP_LIBWRAP_FUNC_CALL( FUNCNAME, ( required, provided ) );       \
-        SCOREP_EXIT_WRAPPED_REGION();                                       \
-                                                                            \
-        SCOREP_InitMppMeasurement();                                        \
-                                                                            \
-        SCOREP_ExitRegion( scorep_shmem_region__ ## FUNCNAME );             \
-                                                                            \
-        /* Enable SHMEM event generation */                                 \
-        SCOREP_SHMEM_EVENT_GEN_ON();                                        \
-                                                                            \
-        SCOREP_IN_MEASUREMENT_DECREMENT();                                  \
+#define INIT_THREAD_SHMEM_TWO_ARGS( FUNCNAME ) \
+    void \
+    FUNCNAME( int  required, \
+              int* provided ) \
+    { \
+        SCOREP_IN_MEASUREMENT_INCREMENT(); \
+        if ( SCOREP_IS_MEASUREMENT_PHASE( PRE ) ) \
+        { \
+            /* Initialize the measurement system */ \
+            SCOREP_InitMeasurement(); \
+        } \
+        SCOREP_SHMEM_EVENT_GEN_OFF(); \
+ \
+        SCOREP_EnterWrappedRegion( scorep_shmem_region__ ## FUNCNAME ); \
+ \
+        SCOREP_ENTER_WRAPPED_REGION(); \
+        p ## FUNCNAME( required, provided ); \
+        SCOREP_EXIT_WRAPPED_REGION(); \
+ \
+        SCOREP_InitMppMeasurement(); \
+ \
+        SCOREP_ExitRegion( scorep_shmem_region__ ## FUNCNAME ); \
+ \
+        /* Enable SHMEM event generation */ \
+        SCOREP_SHMEM_EVENT_GEN_ON(); \
+ \
+        SCOREP_IN_MEASUREMENT_DECREMENT(); \
     }
 
 /* *INDENT-ON* */
@@ -176,71 +175,71 @@ INIT_THREAD_SHMEM_TWO_ARGS( shmem_init_thread )
 
 /* *INDENT-OFF* */
 
-#define FINALIZE_SHMEM( FUNCNAME )                                      \
-    void                                                                \
-    SCOREP_LIBWRAP_FUNC_NAME( FUNCNAME )( void )                        \
-    {                                                                   \
-        SCOREP_IN_MEASUREMENT_INCREMENT();                              \
-        UTILS_DEBUG_ENTRY();                                            \
-                                                                        \
-        const int event_gen_active = SCOREP_SHMEM_IS_EVENT_GEN_ON;      \
-                                                                        \
-        if ( event_gen_active )                                         \
-        {                                                               \
-            SCOREP_SHMEM_EVENT_GEN_OFF();                               \
-            SCOREP_EnterWrappedRegion(                                  \
-                scorep_shmem_region__ ## FUNCNAME );                    \
-        }                                                               \
-                                                                        \
-        SCOREP_ENTER_WRAPPED_REGION();                                  \
-        SCOREP_LIBWRAP_FUNC_CALL( shmem_barrier_all, ( ) );             \
-        SCOREP_EXIT_WRAPPED_REGION();                                   \
-                                                                        \
-        SCOREP_RegisterExitHandler();                                   \
-                                                                        \
-        if ( event_gen_active )                                         \
-        {                                                               \
-            /* Exit shmem_finalize region */                            \
-            SCOREP_ExitRegion( scorep_shmem_region__ ## FUNCNAME );     \
-                                                                        \
-            SCOREP_SHMEM_EVENT_GEN_ON();                                \
-        }                                                               \
-                                                                        \
-        SCOREP_IN_MEASUREMENT_DECREMENT();                              \
+#define FINALIZE_SHMEM( FUNCNAME ) \
+    void \
+    FUNCNAME( void ) \
+    { \
+        SCOREP_IN_MEASUREMENT_INCREMENT(); \
+        UTILS_DEBUG_ENTRY(); \
+ \
+        const int event_gen_active = SCOREP_SHMEM_IS_EVENT_GEN_ON; \
+ \
+        if ( event_gen_active ) \
+        { \
+            SCOREP_SHMEM_EVENT_GEN_OFF(); \
+            SCOREP_EnterWrappedRegion( \
+                scorep_shmem_region__ ## FUNCNAME ); \
+        } \
+ \
+        SCOREP_ENTER_WRAPPED_REGION(); \
+        shmem_barrier_all(); \
+        SCOREP_EXIT_WRAPPED_REGION(); \
+ \
+        SCOREP_RegisterExitHandler(); \
+ \
+        if ( event_gen_active ) \
+        { \
+            /* Exit shmem_finalize region */ \
+            SCOREP_ExitRegion( scorep_shmem_region__ ## FUNCNAME ); \
+ \
+            SCOREP_SHMEM_EVENT_GEN_ON(); \
+        } \
+ \
+        SCOREP_IN_MEASUREMENT_DECREMENT(); \
     }
 
-#define FINALIZE_SHMEM_WITH_RETURN_CODE( FUNCNAME, RETVAL )             \
-    int                                                                 \
-    SCOREP_LIBWRAP_FUNC_NAME( FUNCNAME )( void )                        \
-    {                                                                   \
-        SCOREP_IN_MEASUREMENT_INCREMENT();                              \
-        UTILS_DEBUG_ENTRY();                                            \
-                                                                        \
-        const int event_gen_active = SCOREP_SHMEM_IS_EVENT_GEN_ON;      \
-                                                                        \
-        if ( event_gen_active )                                         \
-        {                                                               \
-            SCOREP_SHMEM_EVENT_GEN_OFF();                               \
-            SCOREP_EnterWrappedRegion(                                  \
-                scorep_shmem_region__ ## FUNCNAME );                    \
-        }                                                               \
-                                                                        \
-        SCOREP_ENTER_WRAPPED_REGION();                                  \
-        SCOREP_LIBWRAP_FUNC_CALL( shmem_barrier_all, ( ) );             \
-        SCOREP_EXIT_WRAPPED_REGION();                                   \
-                                                                        \
-        SCOREP_RegisterExitHandler();                                   \
-                                                                        \
-        if ( event_gen_active )                                         \
-        {                                                               \
-            /* Exit shmem_finalize region */                            \
-            SCOREP_ExitRegion( scorep_shmem_region__ ## FUNCNAME );     \
-                                                                        \
-            SCOREP_SHMEM_EVENT_GEN_ON();                                \
-        }                                                               \
-                                                                        \
-        SCOREP_IN_MEASUREMENT_DECREMENT();                              \
-        return RETVAL;                                                  \
+#define FINALIZE_SHMEM_WITH_RETURN_CODE( FUNCNAME, RETVAL ) \
+    int \
+    FUNCNAME( void ) \
+    { \
+        SCOREP_IN_MEASUREMENT_INCREMENT(); \
+        UTILS_DEBUG_ENTRY(); \
+ \
+        const int event_gen_active = SCOREP_SHMEM_IS_EVENT_GEN_ON; \
+ \
+        if ( event_gen_active ) \
+        { \
+            SCOREP_SHMEM_EVENT_GEN_OFF(); \
+            SCOREP_EnterWrappedRegion( \
+                scorep_shmem_region__ ## FUNCNAME ); \
+        } \
+ \
+        SCOREP_ENTER_WRAPPED_REGION(); \
+        pshmem_barrier_all(); \
+        SCOREP_EXIT_WRAPPED_REGION(); \
+ \
+        SCOREP_RegisterExitHandler(); \
+ \
+        if ( event_gen_active ) \
+        { \
+            /* Exit shmem_finalize region */ \
+            SCOREP_ExitRegion( scorep_shmem_region__ ## FUNCNAME ); \
+ \
+            SCOREP_SHMEM_EVENT_GEN_ON(); \
+        } \
+ \
+        SCOREP_IN_MEASUREMENT_DECREMENT(); \
+        return RETVAL; \
     }
 
 /* *INDENT-ON* */

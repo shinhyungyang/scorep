@@ -15,7 +15,7 @@
 
 #define SHMEM_FORTRAN_EVENT( FUNCNAME )    \
     void                                   \
-    FSUB( FUNCNAME ) ( long * event )      \
+    FSUB( FUNCNAME )( long* event )        \
     {                                      \
         SCOREP_IN_MEASUREMENT_INCREMENT(); \
         FUNCNAME( event );                 \
@@ -39,7 +39,7 @@ SHMEM_FORTRAN_EVENT( shmem_wait_event )
 
 #define SHMEM_FORTRAN_EVENT_WITH_RET_VAL( FUNCNAME )    \
     int                                                 \
-    FSUB( FUNCNAME ) ( long * event )                   \
+    FSUB( FUNCNAME )( long* event )                     \
     {                                                   \
         SCOREP_IN_MEASUREMENT_INCREMENT();              \
                                                         \

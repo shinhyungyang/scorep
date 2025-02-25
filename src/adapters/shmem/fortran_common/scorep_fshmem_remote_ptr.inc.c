@@ -6,8 +6,8 @@
 
 #define SHMEM_FORTRAN_REMOTE_PTR( FUNCNAME )    \
     void*                                       \
-    FSUB( shmem_ ## FUNCNAME ) ( void *target,  \
-                                 int  *pe )     \
+    FSUB( shmem_ ## FUNCNAME )( void* target,   \
+                                int*  pe )      \
     {                                           \
         SCOREP_IN_MEASUREMENT_INCREMENT();      \
                                                 \

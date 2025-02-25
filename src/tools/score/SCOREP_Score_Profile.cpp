@@ -7,7 +7,7 @@
  * Copyright (c) 2009-2013,
  * Gesellschaft fuer numerische Simulation mbH Braunschweig, Germany
  *
- * Copyright (c) 2009-2013, 2015-2017, 2019,
+ * Copyright (c) 2009-2013, 2015-2017, 2019, 2025,
  * Technische Universitaet Dresden, Germany
  *
  * Copyright (c) 2009-2013,
@@ -482,6 +482,9 @@ SCOREP_Score_Profile::get_definition_type( uint64_t region )
     {
         return SCOREP_SCORE_TYPE_IO;
     }
+
+    // Legacy detection, before the availablity of the paradigm.
+    // No need to adapt, when changing region meta data in the adapters.
     if ( paradigm == "unknown" )
     {
         string name = getRegionName( region );

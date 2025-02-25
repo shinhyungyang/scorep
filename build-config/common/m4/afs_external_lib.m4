@@ -6,7 +6,7 @@
 ## Copyright (c) 2021-2022, 2024,
 ## Forschungszentrum Juelich GmbH, Germany
 ##
-## Copyright (c) 2022, 2024,
+## Copyright (c) 2022, 2024-2025,
 ## Technische Universitaet Dresden, Germany
 ##
 ## This software may be modified and distributed under the terms of
@@ -359,6 +359,11 @@ AS_IF([test "x${AFS_LIB_DOWNLOAD_CMD}" = xno],
          [AC_MSG_WARN([Neither wget nor curl found.])
           AFS_LIB_DOWNLOAD_CMD="echo \"Neither wget nor curl found. Cannot download package. See \$(THIS_FILE).\" && exit 1 && "])])
 AC_SUBST([AFS_LIB_DOWNLOAD_CMD])
+AC_CHECK_PROG([AFS_LIB_PATCH_CMD], [patch], [$(which patch)], [no])
+AS_IF([test "x${AFS_LIB_PATCH_CMD}" = xno],
+      [AC_MSG_WARN([No patch found.])
+       AFS_LIB_PATCH_CMD="echo \"No patch found. Cannot patch package. See \$(THIS_FILE).\" && exit 1 && "])
+AC_SUBST([AFS_LIB_PATCH_CMD])
 # source meta-data for downloadable packages
 downloads=$afs_srcdir/build-config/downloads
 AS_IF([test -r $downloads],

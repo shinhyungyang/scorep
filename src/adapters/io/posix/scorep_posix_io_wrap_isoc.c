@@ -1,7 +1,7 @@
 /*
  * This file is part of the Score-P software (http://www.score-p.org)
  *
- * Copyright (c) 2016-2020, 2023,
+ * Copyright (c) 2016-2020, 2023, 2025,
  * Technische Universitaet Dresden, Germany
  *
  * Copyright (c) 2022,
@@ -35,29 +35,10 @@
 #include <SCOREP_InMeasurement.h>
 #include <SCOREP_RuntimeManagement.h>
 #include <SCOREP_IoManagement.h>
+#include <SCOREP_Libwrap_Internal.h>
 
 #define SCOREP_DEBUG_MODULE_NAME IO
 #include <UTILS_Debug.h>
-
-#include "scorep_posix_io_regions.h"
-#include "scorep_posix_io_function_pointers.h"
-
-/* *INDENT-OFF* */
-#ifdef SCOREP_LIBWRAP_SHARED
-#define INITIALIZE_FUNCTION_POINTER( func )                                \
-    do                                                                     \
-    {                                                                      \
-        if ( !SCOREP_LIBWRAP_FUNC_REAL_NAME( func ) )                      \
-        {                                                                  \
-            scorep_posix_io_early_init_function_pointers();                \
-            UTILS_BUG_ON( SCOREP_LIBWRAP_FUNC_REAL_NAME( func ) == NULL,   \
-                          "Cannot obtain address of symbol: " #func "." ); \
-        }                                                                  \
-    } while ( 0 )
-#else
-#define INITIALIZE_FUNCTION_POINTER( func ) do { } while ( 0 )
-#endif
-/* *INDENT-ON* */
 
 /*
  * Annex K of the C11 standard specifies bounds-checking interfaces.
@@ -192,9 +173,8 @@ get_scorep_io_access_mode_from_string( const char* mode )
  * Function wrappers
  * ******************************************************************/
 
-#if HAVE( POSIX_IO_SYMBOL_FCLOSE )
 int
-SCOREP_LIBWRAP_FUNC_NAME( fclose )( FILE* fp )
+SCOREP_LIBWRAP_WRAPPER( fclose )( FILE* fp )
 {
     /*
      * fclose manpage:
@@ -206,8 +186,7 @@ SCOREP_LIBWRAP_FUNC_NAME( fclose )( FILE* fp )
      * the underlying file descriptor.
      */
     bool trigger = SCOREP_IN_MEASUREMENT_TEST_AND_INCREMENT();
-    INITIALIZE_FUNCTION_POINTER( fclose );
-    int ret;
+    int  ret;
 
     if ( trigger && SCOREP_IS_MEASUREMENT_PHASE( WITHIN ) )
     {
@@ -223,8 +202,7 @@ SCOREP_LIBWRAP_FUNC_NAME( fclose )( FILE* fp )
         SCOREP_IoMgmt_PushHandle( handle );
 
         SCOREP_ENTER_WRAPPED_REGION();
-        ret = SCOREP_LIBWRAP_FUNC_CALL( fclose,
-                                        ( fp ) );
+        ret = SCOREP_LIBWRAP_ORIGINAL( fclose )( fp );
         SCOREP_EXIT_WRAPPED_REGION();
 
         SCOREP_IoMgmt_PopHandle( handle );
@@ -264,20 +242,16 @@ SCOREP_LIBWRAP_FUNC_NAME( fclose )( FILE* fp )
     }
     else
     {
-        ret = SCOREP_LIBWRAP_FUNC_CALL( fclose,
-                                        ( fp ) );
+        ret = SCOREP_LIBWRAP_ORIGINAL( fclose )( fp );
     }
     SCOREP_IN_MEASUREMENT_DECREMENT();
     return ret;
 }
-#endif
 
-#if HAVE( POSIX_IO_SYMBOL_FDOPEN )
 FILE*
-SCOREP_LIBWRAP_FUNC_NAME( fdopen )( int fd, const char* mode )
+SCOREP_LIBWRAP_WRAPPER( fdopen )( int fd, const char* mode )
 {
-    bool trigger = SCOREP_IN_MEASUREMENT_TEST_AND_INCREMENT();
-    INITIALIZE_FUNCTION_POINTER( fdopen );
+    bool  trigger = SCOREP_IN_MEASUREMENT_TEST_AND_INCREMENT();
     FILE* ret;
 
     if ( trigger && SCOREP_IS_MEASUREMENT_PHASE( WITHIN ) )
@@ -291,8 +265,7 @@ SCOREP_LIBWRAP_FUNC_NAME( fdopen )( int fd, const char* mode )
                                            "" );
 
         SCOREP_ENTER_WRAPPED_REGION();
-        ret = SCOREP_LIBWRAP_FUNC_CALL( fdopen,
-                                        ( fd, mode ) );
+        ret = SCOREP_LIBWRAP_ORIGINAL( fdopen )( fd, mode );
         SCOREP_EXIT_WRAPPED_REGION();
 
         if ( ret != NULL && fd_handle != SCOREP_INVALID_IO_HANDLE )
@@ -318,21 +291,17 @@ SCOREP_LIBWRAP_FUNC_NAME( fdopen )( int fd, const char* mode )
     }
     else
     {
-        ret = SCOREP_LIBWRAP_FUNC_CALL( fdopen,
-                                        ( fd, mode ) );
+        ret = SCOREP_LIBWRAP_ORIGINAL( fdopen )( fd, mode );
     }
     SCOREP_IN_MEASUREMENT_DECREMENT();
     return ret;
 }
-#endif
 
-#if HAVE( POSIX_IO_SYMBOL_FFLUSH )
 int
-SCOREP_LIBWRAP_FUNC_NAME( fflush )( FILE* stream )
+SCOREP_LIBWRAP_WRAPPER( fflush )( FILE* stream )
 {
     bool trigger = SCOREP_IN_MEASUREMENT_TEST_AND_INCREMENT();
-    INITIALIZE_FUNCTION_POINTER( fflush );
-    int ret;
+    int  ret;
 
     if ( trigger && SCOREP_IS_MEASUREMENT_PHASE( WITHIN ) )
     {
@@ -360,8 +329,7 @@ SCOREP_LIBWRAP_FUNC_NAME( fflush )( FILE* stream )
         SCOREP_IoMgmt_PushHandle( io_handle );
 
         SCOREP_ENTER_WRAPPED_REGION();
-        ret = SCOREP_LIBWRAP_FUNC_CALL( fflush,
-                                        ( stream ) );
+        ret = SCOREP_LIBWRAP_ORIGINAL( fflush )( stream );
         SCOREP_EXIT_WRAPPED_REGION();
 
         if ( io_handle != SCOREP_INVALID_IO_HANDLE )
@@ -378,21 +346,17 @@ SCOREP_LIBWRAP_FUNC_NAME( fflush )( FILE* stream )
     }
     else
     {
-        ret = SCOREP_LIBWRAP_FUNC_CALL( fflush,
-                                        ( stream ) );
+        ret = SCOREP_LIBWRAP_ORIGINAL( fflush )( stream );
     }
     SCOREP_IN_MEASUREMENT_DECREMENT();
     return ret;
 }
-#endif
 
-#if HAVE( POSIX_IO_SYMBOL_FGETC )
 int
-SCOREP_LIBWRAP_FUNC_NAME( fgetc )( FILE* stream )
+SCOREP_LIBWRAP_WRAPPER( fgetc )( FILE* stream )
 {
     bool trigger = SCOREP_IN_MEASUREMENT_TEST_AND_INCREMENT();
-    INITIALIZE_FUNCTION_POINTER( fgetc );
-    int ret;
+    int  ret;
 
     if ( trigger && SCOREP_IS_MEASUREMENT_PHASE( WITHIN ) )
     {
@@ -410,8 +374,7 @@ SCOREP_LIBWRAP_FUNC_NAME( fgetc )( FILE* stream )
         }
 
         SCOREP_ENTER_WRAPPED_REGION();
-        ret = SCOREP_LIBWRAP_FUNC_CALL( fgetc,
-                                        ( stream ) );
+        ret = SCOREP_LIBWRAP_ORIGINAL( fgetc )( stream );
         SCOREP_EXIT_WRAPPED_REGION();
 
         if ( handle != SCOREP_INVALID_IO_HANDLE )
@@ -428,49 +391,40 @@ SCOREP_LIBWRAP_FUNC_NAME( fgetc )( FILE* stream )
     }
     else
     {
-        ret = SCOREP_LIBWRAP_FUNC_CALL( fgetc,
-                                        ( stream ) );
+        ret = SCOREP_LIBWRAP_ORIGINAL( fgetc )( stream );
     }
     SCOREP_IN_MEASUREMENT_DECREMENT();
     return ret;
 }
-#endif
 
-#if HAVE( POSIX_IO_SYMBOL_FGETPOS )
 int
-SCOREP_LIBWRAP_FUNC_NAME( fgetpos )( FILE* stream, fpos_t* pos )
+SCOREP_LIBWRAP_WRAPPER( fgetpos )( FILE* stream, fpos_t* pos )
 {
     bool trigger = SCOREP_IN_MEASUREMENT_TEST_AND_INCREMENT();
-    INITIALIZE_FUNCTION_POINTER( fgetpos );
-    int ret;
+    int  ret;
 
     if ( trigger && SCOREP_IS_MEASUREMENT_PHASE( WITHIN ) )
     {
         SCOREP_EnterWrappedRegion( scorep_posix_io_region_fgetpos );
         SCOREP_IoHandleHandle handle = SCOREP_IoMgmt_GetAndPushHandle( SCOREP_IO_PARADIGM_ISOC, &stream );
         SCOREP_ENTER_WRAPPED_REGION();
-        ret = SCOREP_LIBWRAP_FUNC_CALL( fgetpos,
-                                        ( stream, pos ) );
+        ret = SCOREP_LIBWRAP_ORIGINAL( fgetpos )( stream, pos );
         SCOREP_EXIT_WRAPPED_REGION();
         SCOREP_IoMgmt_PopHandle( handle );
         SCOREP_ExitRegion( scorep_posix_io_region_fgetpos );
     }
     else
     {
-        ret = SCOREP_LIBWRAP_FUNC_CALL( fgetpos,
-                                        ( stream, pos ) );
+        ret = SCOREP_LIBWRAP_ORIGINAL( fgetpos )( stream, pos );
     }
     SCOREP_IN_MEASUREMENT_DECREMENT();
     return ret;
 }
-#endif
 
-#if HAVE( POSIX_IO_SYMBOL_FGETS )
 char*
-SCOREP_LIBWRAP_FUNC_NAME( fgets )( char* s, int size, FILE* stream )
+SCOREP_LIBWRAP_WRAPPER( fgets )( char* s, int size, FILE* stream )
 {
-    bool trigger = SCOREP_IN_MEASUREMENT_TEST_AND_INCREMENT();
-    INITIALIZE_FUNCTION_POINTER( fgets );
+    bool  trigger = SCOREP_IN_MEASUREMENT_TEST_AND_INCREMENT();
     char* ret;
 
     if ( trigger && SCOREP_IS_MEASUREMENT_PHASE( WITHIN ) )
@@ -489,8 +443,7 @@ SCOREP_LIBWRAP_FUNC_NAME( fgets )( char* s, int size, FILE* stream )
         }
 
         SCOREP_ENTER_WRAPPED_REGION();
-        ret = SCOREP_LIBWRAP_FUNC_CALL( fgets,
-                                        ( s, size, stream ) );
+        ret = SCOREP_LIBWRAP_ORIGINAL( fgets )( s, size, stream );
         SCOREP_EXIT_WRAPPED_REGION();
 
         if ( handle != SCOREP_INVALID_IO_HANDLE )
@@ -507,20 +460,16 @@ SCOREP_LIBWRAP_FUNC_NAME( fgets )( char* s, int size, FILE* stream )
     }
     else
     {
-        ret = SCOREP_LIBWRAP_FUNC_CALL( fgets,
-                                        ( s, size, stream ) );
+        ret = SCOREP_LIBWRAP_ORIGINAL( fgets )( s, size, stream );
     }
     SCOREP_IN_MEASUREMENT_DECREMENT();
     return ret;
 }
-#endif
 
-#if HAVE( POSIX_IO_SYMBOL_FLOCKFILE )
 void
-SCOREP_LIBWRAP_FUNC_NAME( flockfile )( FILE* filehandle )
+SCOREP_LIBWRAP_WRAPPER( flockfile )( FILE* filehandle )
 {
     bool trigger = SCOREP_IN_MEASUREMENT_TEST_AND_INCREMENT();
-    INITIALIZE_FUNCTION_POINTER( flockfile );
 
     if ( trigger && SCOREP_IS_MEASUREMENT_PHASE( WITHIN ) )
     {
@@ -529,8 +478,7 @@ SCOREP_LIBWRAP_FUNC_NAME( flockfile )( FILE* filehandle )
         SCOREP_IoHandleHandle handle = SCOREP_IoMgmt_GetAndPushHandle( SCOREP_IO_PARADIGM_ISOC, &filehandle );
 
         SCOREP_ENTER_WRAPPED_REGION();
-        SCOREP_LIBWRAP_FUNC_CALL( flockfile,
-                                  ( filehandle ) );
+        SCOREP_LIBWRAP_ORIGINAL( flockfile )( filehandle );
         SCOREP_EXIT_WRAPPED_REGION();
 
         if ( handle != SCOREP_INVALID_IO_HANDLE )
@@ -544,12 +492,10 @@ SCOREP_LIBWRAP_FUNC_NAME( flockfile )( FILE* filehandle )
     }
     else
     {
-        SCOREP_LIBWRAP_FUNC_CALL( flockfile,
-                                  ( filehandle ) );
+        SCOREP_LIBWRAP_ORIGINAL( flockfile )( filehandle );
     }
     SCOREP_IN_MEASUREMENT_DECREMENT();
 }
-#endif
 
 static inline void
 create_posix_handle( int fd, const char* path, SCOREP_IoAccessMode access_mode )
@@ -572,12 +518,10 @@ create_posix_handle( int fd, const char* path, SCOREP_IoAccessMode access_mode )
     }
 }
 
-#if HAVE( POSIX_IO_SYMBOL_FOPEN )
 FILE*
-SCOREP_LIBWRAP_FUNC_NAME( fopen )( const char* path, const char* mode )
+SCOREP_LIBWRAP_WRAPPER( fopen )( const char* path, const char* mode )
 {
-    bool trigger = SCOREP_IN_MEASUREMENT_TEST_AND_INCREMENT();
-    INITIALIZE_FUNCTION_POINTER( fopen );
+    bool  trigger = SCOREP_IN_MEASUREMENT_TEST_AND_INCREMENT();
     FILE* ret;
 
     if ( trigger && SCOREP_IS_MEASUREMENT_PHASE( WITHIN ) )
@@ -590,8 +534,7 @@ SCOREP_LIBWRAP_FUNC_NAME( fopen )( const char* path, const char* mode )
                                            "" );
 
         SCOREP_ENTER_WRAPPED_REGION();
-        ret = SCOREP_LIBWRAP_FUNC_CALL( fopen,
-                                        ( path, mode ) );
+        ret = SCOREP_LIBWRAP_ORIGINAL( fopen )( path, mode );
         SCOREP_EXIT_WRAPPED_REGION();
 
         /*
@@ -661,20 +604,16 @@ SCOREP_LIBWRAP_FUNC_NAME( fopen )( const char* path, const char* mode )
     }
     else
     {
-        ret = SCOREP_LIBWRAP_FUNC_CALL( fopen,
-                                        ( path, mode ) );
+        ret = SCOREP_LIBWRAP_ORIGINAL( fopen )( path, mode );
     }
     SCOREP_IN_MEASUREMENT_DECREMENT();
     return ret;
 }
-#endif
 
-#if HAVE( POSIX_IO_SYMBOL_FOPEN64 )
 FILE*
-SCOREP_LIBWRAP_FUNC_NAME( fopen64 )( const char* path, const char* mode )
+SCOREP_LIBWRAP_WRAPPER( fopen64 )( const char* path, const char* mode )
 {
-    bool trigger = SCOREP_IN_MEASUREMENT_TEST_AND_INCREMENT();
-    INITIALIZE_FUNCTION_POINTER( fopen64 );
+    bool  trigger = SCOREP_IN_MEASUREMENT_TEST_AND_INCREMENT();
     FILE* ret;
 
     if ( trigger && SCOREP_IS_MEASUREMENT_PHASE( WITHIN ) )
@@ -687,8 +626,7 @@ SCOREP_LIBWRAP_FUNC_NAME( fopen64 )( const char* path, const char* mode )
                                            "" );
 
         SCOREP_ENTER_WRAPPED_REGION();
-        ret = SCOREP_LIBWRAP_FUNC_CALL( fopen64,
-                                        ( path, mode ) );
+        ret = SCOREP_LIBWRAP_ORIGINAL( fopen64 )( path, mode );
         SCOREP_EXIT_WRAPPED_REGION();
 
         if ( ret != NULL )
@@ -730,21 +668,17 @@ SCOREP_LIBWRAP_FUNC_NAME( fopen64 )( const char* path, const char* mode )
     }
     else
     {
-        ret = SCOREP_LIBWRAP_FUNC_CALL( fopen64,
-                                        ( path, mode ) );
+        ret = SCOREP_LIBWRAP_ORIGINAL( fopen64 )( path, mode );
     }
     SCOREP_IN_MEASUREMENT_DECREMENT();
     return ret;
 }
-#endif
 
-#if HAVE( POSIX_IO_SYMBOL_FPUTC )
 int
-SCOREP_LIBWRAP_FUNC_NAME( fputc )( int c, FILE* stream )
+SCOREP_LIBWRAP_WRAPPER( fputc )( int c, FILE* stream )
 {
     bool trigger = SCOREP_IN_MEASUREMENT_TEST_AND_INCREMENT();
-    INITIALIZE_FUNCTION_POINTER( fputc );
-    int ret;
+    int  ret;
 
     if ( trigger && SCOREP_IS_MEASUREMENT_PHASE( WITHIN ) )
     {
@@ -762,8 +696,7 @@ SCOREP_LIBWRAP_FUNC_NAME( fputc )( int c, FILE* stream )
         }
 
         SCOREP_ENTER_WRAPPED_REGION();
-        ret = SCOREP_LIBWRAP_FUNC_CALL( fputc,
-                                        ( c, stream ) );
+        ret = SCOREP_LIBWRAP_ORIGINAL( fputc )( c, stream );
         SCOREP_EXIT_WRAPPED_REGION();
 
         if ( handle != SCOREP_INVALID_IO_HANDLE )
@@ -780,21 +713,17 @@ SCOREP_LIBWRAP_FUNC_NAME( fputc )( int c, FILE* stream )
     }
     else
     {
-        ret = SCOREP_LIBWRAP_FUNC_CALL( fputc,
-                                        ( c, stream ) );
+        ret = SCOREP_LIBWRAP_ORIGINAL( fputc )( c, stream );
     }
     SCOREP_IN_MEASUREMENT_DECREMENT();
     return ret;
 }
-#endif
 
-#if HAVE( POSIX_IO_SYMBOL_FPRINTF ) && HAVE( POSIX_IO_SYMBOL_VFPRINTF )
 int
-SCOREP_LIBWRAP_FUNC_NAME( fprintf )( FILE* stream, const char* format, ... )
+SCOREP_LIBWRAP_WRAPPER( fprintf )( FILE* stream, const char* format, ... )
 {
     bool trigger = SCOREP_IN_MEASUREMENT_TEST_AND_INCREMENT();
-    INITIALIZE_FUNCTION_POINTER( vfprintf );
-    int ret;
+    int  ret;
 
     if ( trigger && SCOREP_IS_MEASUREMENT_PHASE( WITHIN ) )
     {
@@ -814,8 +743,7 @@ SCOREP_LIBWRAP_FUNC_NAME( fprintf )( FILE* stream, const char* format, ... )
         va_list args;
         va_start( args, format );
         SCOREP_ENTER_WRAPPED_REGION();
-        ret = SCOREP_LIBWRAP_FUNC_CALL( vfprintf,
-                                        ( stream, format, args ) );
+        ret = vfprintf( stream, format, args );
         SCOREP_EXIT_WRAPPED_REGION();
         va_end( args );
 
@@ -835,21 +763,17 @@ SCOREP_LIBWRAP_FUNC_NAME( fprintf )( FILE* stream, const char* format, ... )
     {
         va_list args;
         va_start( args, format );
-        ret = SCOREP_LIBWRAP_FUNC_CALL( vfprintf,
-                                        ( stream, format, args ) );
+        ret = vfprintf( stream, format, args );
         va_end( args );
     }
     SCOREP_IN_MEASUREMENT_DECREMENT();
     return ret;
 }
-#endif
 
-#if HAVE( POSIX_IO_SYMBOL_FPUTS )
 int
-SCOREP_LIBWRAP_FUNC_NAME( fputs )( const char* s, FILE* stream )
+SCOREP_LIBWRAP_WRAPPER( fputs )( const char* s, FILE* stream )
 {
     bool trigger = SCOREP_IN_MEASUREMENT_TEST_AND_INCREMENT();
-    INITIALIZE_FUNCTION_POINTER( fputs );
     /* fputs() writes the string s to stream, WITHOUT its terminating null byte ('\0'). */
 
     int ret;
@@ -871,8 +795,7 @@ SCOREP_LIBWRAP_FUNC_NAME( fputs )( const char* s, FILE* stream )
         }
 
         SCOREP_ENTER_WRAPPED_REGION();
-        ret = SCOREP_LIBWRAP_FUNC_CALL( fputs,
-                                        ( s, stream ) );
+        ret = SCOREP_LIBWRAP_ORIGINAL( fputs )( s, stream );
         SCOREP_EXIT_WRAPPED_REGION();
 
         if ( handle != SCOREP_INVALID_IO_HANDLE )
@@ -889,20 +812,16 @@ SCOREP_LIBWRAP_FUNC_NAME( fputs )( const char* s, FILE* stream )
     }
     else
     {
-        ret = SCOREP_LIBWRAP_FUNC_CALL( fputs,
-                                        ( s, stream ) );
+        ret = SCOREP_LIBWRAP_ORIGINAL( fputs )( s, stream );
     }
     SCOREP_IN_MEASUREMENT_DECREMENT();
     return ret;
 }
-#endif
 
-#if HAVE( POSIX_IO_SYMBOL_FREAD )
 size_t
-SCOREP_LIBWRAP_FUNC_NAME( fread )( void* ptr, size_t size, size_t nmemb, FILE* stream )
+SCOREP_LIBWRAP_WRAPPER( fread )( void* ptr, size_t size, size_t nmemb, FILE* stream )
 {
-    bool trigger = SCOREP_IN_MEASUREMENT_TEST_AND_INCREMENT();
-    INITIALIZE_FUNCTION_POINTER( fread );
+    bool   trigger = SCOREP_IN_MEASUREMENT_TEST_AND_INCREMENT();
     size_t ret;
 
     if ( trigger && SCOREP_IS_MEASUREMENT_PHASE( WITHIN ) )
@@ -921,8 +840,7 @@ SCOREP_LIBWRAP_FUNC_NAME( fread )( void* ptr, size_t size, size_t nmemb, FILE* s
         }
 
         SCOREP_ENTER_WRAPPED_REGION();
-        ret = SCOREP_LIBWRAP_FUNC_CALL( fread,
-                                        ( ptr, size, nmemb, stream ) );
+        ret = SCOREP_LIBWRAP_ORIGINAL( fread )( ptr, size, nmemb, stream );
         SCOREP_EXIT_WRAPPED_REGION();
 
         if ( handle != SCOREP_INVALID_IO_HANDLE )
@@ -939,20 +857,16 @@ SCOREP_LIBWRAP_FUNC_NAME( fread )( void* ptr, size_t size, size_t nmemb, FILE* s
     }
     else
     {
-        ret = SCOREP_LIBWRAP_FUNC_CALL( fread,
-                                        ( ptr, size, nmemb, stream ) );
+        ret = SCOREP_LIBWRAP_ORIGINAL( fread )( ptr, size, nmemb, stream );
     }
     SCOREP_IN_MEASUREMENT_DECREMENT();
     return ret;
 }
-#endif
 
-#if HAVE( POSIX_IO_SYMBOL_FREOPEN )
 FILE*
-SCOREP_LIBWRAP_FUNC_NAME( freopen )( const char* path, const char* mode, FILE* stream )
+SCOREP_LIBWRAP_WRAPPER( freopen )( const char* path, const char* mode, FILE* stream )
 {
-    bool trigger = SCOREP_IN_MEASUREMENT_TEST_AND_INCREMENT();
-    INITIALIZE_FUNCTION_POINTER( freopen );
+    bool  trigger = SCOREP_IN_MEASUREMENT_TEST_AND_INCREMENT();
     FILE* ret;
 
     if ( trigger && SCOREP_IS_MEASUREMENT_PHASE( WITHIN ) )
@@ -972,8 +886,7 @@ SCOREP_LIBWRAP_FUNC_NAME( freopen )( const char* path, const char* mode, FILE* s
                                               old_handle );
 
         SCOREP_ENTER_WRAPPED_REGION();
-        ret = SCOREP_LIBWRAP_FUNC_CALL( freopen,
-                                        ( path, mode, stream ) );
+        ret = SCOREP_LIBWRAP_ORIGINAL( freopen )( path, mode, stream );
         SCOREP_EXIT_WRAPPED_REGION();
 
         if ( ret != NULL )
@@ -1016,22 +929,18 @@ SCOREP_LIBWRAP_FUNC_NAME( freopen )( const char* path, const char* mode, FILE* s
     }
     else
     {
-        ret = SCOREP_LIBWRAP_FUNC_CALL( freopen,
-                                        ( path, mode, stream ) );
+        ret = SCOREP_LIBWRAP_ORIGINAL( freopen )( path, mode, stream );
     }
     SCOREP_IN_MEASUREMENT_DECREMENT();
     return ret;
 }
 
-#endif
 
-#if HAVE( POSIX_IO_SYMBOL_FSCANF ) && HAVE( POSIX_IO_SYMBOL_VFSCANF )
 int
-SCOREP_LIBWRAP_FUNC_NAME( fscanf )( FILE* stream, const char* format, ... )
+SCOREP_LIBWRAP_WRAPPER( fscanf )( FILE* stream, const char* format, ... )
 {
     bool trigger = SCOREP_IN_MEASUREMENT_TEST_AND_INCREMENT();
-    INITIALIZE_FUNCTION_POINTER( vfscanf );
-    int ret;
+    int  ret;
 
     if ( trigger && SCOREP_IS_MEASUREMENT_PHASE( WITHIN ) )
     {
@@ -1053,8 +962,7 @@ SCOREP_LIBWRAP_FUNC_NAME( fscanf )( FILE* stream, const char* format, ... )
 
         va_list args;
         va_start( args, format );
-        ret = SCOREP_LIBWRAP_FUNC_CALL( vfscanf,
-                                        ( stream, format, args ) );
+        ret = vfscanf( stream, format, args );
         va_end( args );
 
         SCOREP_EXIT_WRAPPED_REGION();
@@ -1075,23 +983,18 @@ SCOREP_LIBWRAP_FUNC_NAME( fscanf )( FILE* stream, const char* format, ... )
     {
         va_list args;
         va_start( args, format );
-        ret = SCOREP_LIBWRAP_FUNC_CALL( vfscanf,
-                                        ( stream, format, args ) );
+        ret = vfscanf( stream, format, args );
         va_end( args );
     }
     SCOREP_IN_MEASUREMENT_DECREMENT();
     return ret;
 }
-#endif
 
-#if HAVE( POSIX_IO_SYMBOL_FSEEK )
 int
-SCOREP_LIBWRAP_FUNC_NAME( fseek )( FILE* stream, long offset, int whence )
+SCOREP_LIBWRAP_WRAPPER( fseek )( FILE* stream, long offset, int whence )
 {
     bool trigger = SCOREP_IN_MEASUREMENT_TEST_AND_INCREMENT();
-    INITIALIZE_FUNCTION_POINTER( fseek );
-    INITIALIZE_FUNCTION_POINTER( ftell );
-    int ret;
+    int  ret;
 
     if ( trigger && SCOREP_IS_MEASUREMENT_PHASE( WITHIN ) )
     {
@@ -1100,11 +1003,10 @@ SCOREP_LIBWRAP_FUNC_NAME( fseek )( FILE* stream, long offset, int whence )
         SCOREP_IoHandleHandle handle = SCOREP_IoMgmt_GetAndPushHandle( SCOREP_IO_PARADIGM_ISOC, &stream );
 
         SCOREP_ENTER_WRAPPED_REGION();
-        ret = SCOREP_LIBWRAP_FUNC_CALL( fseek,
-                                        ( stream, offset, whence ) );
+        ret = SCOREP_LIBWRAP_ORIGINAL( fseek )( stream, offset, whence );
         SCOREP_EXIT_WRAPPED_REGION();
 
-        long fp_offset = SCOREP_LIBWRAP_FUNC_CALL( ftell, ( stream ) );
+        long fp_offset = SCOREP_LIBWRAP_ORIGINAL( ftell )( stream );
 
         if ( handle != SCOREP_INVALID_IO_HANDLE )
         {
@@ -1120,22 +1022,17 @@ SCOREP_LIBWRAP_FUNC_NAME( fseek )( FILE* stream, long offset, int whence )
     }
     else
     {
-        ret = SCOREP_LIBWRAP_FUNC_CALL( fseek,
-                                        ( stream, offset, whence ) );
+        ret = SCOREP_LIBWRAP_ORIGINAL( fseek )( stream, offset, whence );
     }
     SCOREP_IN_MEASUREMENT_DECREMENT();
     return ret;
 }
-#endif
 
-#if HAVE( POSIX_IO_SYMBOL_FSEEKO )
 int
-SCOREP_LIBWRAP_FUNC_NAME( fseeko )( FILE* stream, off_t offset, int whence )
+SCOREP_LIBWRAP_WRAPPER( fseeko )( FILE* stream, off_t offset, int whence )
 {
     bool trigger = SCOREP_IN_MEASUREMENT_TEST_AND_INCREMENT();
-    INITIALIZE_FUNCTION_POINTER( fseeko );
-    INITIALIZE_FUNCTION_POINTER( ftello );
-    int ret;
+    int  ret;
 
     if ( trigger && SCOREP_IS_MEASUREMENT_PHASE( WITHIN ) )
     {
@@ -1144,8 +1041,7 @@ SCOREP_LIBWRAP_FUNC_NAME( fseeko )( FILE* stream, off_t offset, int whence )
         SCOREP_IoHandleHandle handle = SCOREP_IoMgmt_GetAndPushHandle( SCOREP_IO_PARADIGM_ISOC, &stream );
 
         SCOREP_ENTER_WRAPPED_REGION();
-        ret = SCOREP_LIBWRAP_FUNC_CALL( fseeko,
-                                        ( stream, offset, whence ) );
+        ret = SCOREP_LIBWRAP_ORIGINAL( fseeko )( stream, offset, whence );
         SCOREP_EXIT_WRAPPED_REGION();
 
         if ( handle != SCOREP_INVALID_IO_HANDLE )
@@ -1153,7 +1049,7 @@ SCOREP_LIBWRAP_FUNC_NAME( fseeko )( FILE* stream, off_t offset, int whence )
             SCOREP_IoSeek( handle,
                            ( int64_t )offset,
                            scorep_posix_io_get_scorep_io_seek_option( whence ),
-                           ( uint64_t )( SCOREP_LIBWRAP_FUNC_CALL( ftello, ( stream ) ) ) );
+                           ( uint64_t )( SCOREP_LIBWRAP_ORIGINAL( ftello )( stream ) ) );
         }
 
         SCOREP_IoMgmt_PopHandle( handle );
@@ -1162,22 +1058,17 @@ SCOREP_LIBWRAP_FUNC_NAME( fseeko )( FILE* stream, off_t offset, int whence )
     }
     else
     {
-        ret = SCOREP_LIBWRAP_FUNC_CALL( fseeko,
-                                        ( stream, offset, whence ) );
+        ret = SCOREP_LIBWRAP_ORIGINAL( fseeko )( stream, offset, whence );
     }
     SCOREP_IN_MEASUREMENT_DECREMENT();
     return ret;
 }
-#endif
 
-#if HAVE( POSIX_IO_SYMBOL_FSEEKO64 )
 int
-SCOREP_LIBWRAP_FUNC_NAME( fseeko64 )( FILE* stream, scorep_off64_t offset, int whence )
+SCOREP_LIBWRAP_WRAPPER( fseeko64 )( FILE* stream, scorep_off64_t offset, int whence )
 {
     bool trigger = SCOREP_IN_MEASUREMENT_TEST_AND_INCREMENT();
-    INITIALIZE_FUNCTION_POINTER( fseeko64 );
-    INITIALIZE_FUNCTION_POINTER( ftello );
-    int ret;
+    int  ret;
 
     if ( trigger && SCOREP_IS_MEASUREMENT_PHASE( WITHIN ) )
     {
@@ -1186,8 +1077,7 @@ SCOREP_LIBWRAP_FUNC_NAME( fseeko64 )( FILE* stream, scorep_off64_t offset, int w
         SCOREP_IoHandleHandle handle = SCOREP_IoMgmt_GetAndPushHandle( SCOREP_IO_PARADIGM_ISOC, &stream );
 
         SCOREP_ENTER_WRAPPED_REGION();
-        ret = SCOREP_LIBWRAP_FUNC_CALL( fseeko64,
-                                        ( stream, offset, whence ) );
+        ret = SCOREP_LIBWRAP_ORIGINAL( fseeko64 )( stream, offset, whence );
         SCOREP_EXIT_WRAPPED_REGION();
 
         if ( handle != SCOREP_INVALID_IO_HANDLE )
@@ -1195,7 +1085,7 @@ SCOREP_LIBWRAP_FUNC_NAME( fseeko64 )( FILE* stream, scorep_off64_t offset, int w
             SCOREP_IoSeek( handle,
                            ( int64_t )offset,
                            scorep_posix_io_get_scorep_io_seek_option( whence ),
-                           ( uint64_t )( SCOREP_LIBWRAP_FUNC_CALL( ftello, ( stream ) ) ) );
+                           ( uint64_t )( SCOREP_LIBWRAP_ORIGINAL( ftello )( stream ) ) );
         }
 
         SCOREP_IoMgmt_PopHandle( handle );
@@ -1204,22 +1094,18 @@ SCOREP_LIBWRAP_FUNC_NAME( fseeko64 )( FILE* stream, scorep_off64_t offset, int w
     }
     else
     {
-        ret = SCOREP_LIBWRAP_FUNC_CALL( fseeko64,
-                                        ( stream, offset, whence ) );
+        ret = SCOREP_LIBWRAP_ORIGINAL( fseeko64 )( stream, offset, whence );
     }
     SCOREP_IN_MEASUREMENT_DECREMENT();
     return ret;
 }
-#endif
 
-#if HAVE( POSIX_IO_SYMBOL_FSETPOS )
+#if 0
 int
-SCOREP_LIBWRAP_FUNC_NAME( fsetpos )( FILE* stream, const fpos_t* pos )
+SCOREP_LIBWRAP_WRAPPER( fsetpos )( FILE* stream, const fpos_t* pos )
 {
     bool trigger = SCOREP_IN_MEASUREMENT_TEST_AND_INCREMENT();
-    INITIALIZE_FUNCTION_POINTER( fsetpos );
-    INITIALIZE_FUNCTION_POINTER( ftell );
-    int ret;
+    int  ret;
 
     if ( trigger && SCOREP_IS_MEASUREMENT_PHASE( WITHIN ) )
     {
@@ -1228,11 +1114,10 @@ SCOREP_LIBWRAP_FUNC_NAME( fsetpos )( FILE* stream, const fpos_t* pos )
         SCOREP_IoHandleHandle handle = SCOREP_IoMgmt_GetAndPushHandle( SCOREP_IO_PARADIGM_ISOC, &stream );
 
         SCOREP_ENTER_WRAPPED_REGION();
-        ret = SCOREP_LIBWRAP_FUNC_CALL( fsetpos,
-                                        ( stream, pos ) );
+        ret = SCOREP_LIBWRAP_ORIGINAL( fsetpos )( stream, pos );
         SCOREP_EXIT_WRAPPED_REGION();
 
-        long fp_offset = SCOREP_LIBWRAP_FUNC_CALL( ftell, ( stream ) );
+        long fp_offset = SCOREP_LIBWRAP_ORIGINAL( ftell )( stream );
         if ( handle != SCOREP_INVALID_IO_HANDLE )
         {
             SCOREP_IoSeek( handle,
@@ -1247,20 +1132,17 @@ SCOREP_LIBWRAP_FUNC_NAME( fsetpos )( FILE* stream, const fpos_t* pos )
     }
     else
     {
-        ret = SCOREP_LIBWRAP_FUNC_CALL( fsetpos,
-                                        ( stream, pos ) );
+        ret = SCOREP_LIBWRAP_ORIGINAL( fsetpos )( stream, pos );
     }
     SCOREP_IN_MEASUREMENT_DECREMENT();
     return ret;
 }
 #endif
 
-#if HAVE( POSIX_IO_SYMBOL_FTELL )
 long
-SCOREP_LIBWRAP_FUNC_NAME( ftell )( FILE* stream )
+SCOREP_LIBWRAP_WRAPPER( ftell )( FILE* stream )
 {
     bool trigger = SCOREP_IN_MEASUREMENT_TEST_AND_INCREMENT();
-    INITIALIZE_FUNCTION_POINTER( ftell );
     long ret;
 
     if ( trigger && SCOREP_IS_MEASUREMENT_PHASE( WITHIN ) )
@@ -1270,8 +1152,7 @@ SCOREP_LIBWRAP_FUNC_NAME( ftell )( FILE* stream )
         SCOREP_IoHandleHandle handle = SCOREP_IoMgmt_GetAndPushHandle( SCOREP_IO_PARADIGM_ISOC, &stream );
 
         SCOREP_ENTER_WRAPPED_REGION();
-        ret = SCOREP_LIBWRAP_FUNC_CALL( ftell,
-                                        ( stream ) );
+        ret = SCOREP_LIBWRAP_ORIGINAL( ftell )( stream );
         SCOREP_EXIT_WRAPPED_REGION();
 
         SCOREP_IoMgmt_PopHandle( handle );
@@ -1280,20 +1161,16 @@ SCOREP_LIBWRAP_FUNC_NAME( ftell )( FILE* stream )
     }
     else
     {
-        ret = SCOREP_LIBWRAP_FUNC_CALL( ftell,
-                                        ( stream ) );
+        ret = SCOREP_LIBWRAP_ORIGINAL( ftell )( stream );
     }
     SCOREP_IN_MEASUREMENT_DECREMENT();
     return ret;
 }
-#endif
 
-#if HAVE( POSIX_IO_SYMBOL_FTELLO )
 off_t
-SCOREP_LIBWRAP_FUNC_NAME( ftello )( FILE* stream )
+SCOREP_LIBWRAP_WRAPPER( ftello )( FILE* stream )
 {
-    bool trigger = SCOREP_IN_MEASUREMENT_TEST_AND_INCREMENT();
-    INITIALIZE_FUNCTION_POINTER( ftello );
+    bool  trigger = SCOREP_IN_MEASUREMENT_TEST_AND_INCREMENT();
     off_t ret;
 
     if ( trigger && SCOREP_IS_MEASUREMENT_PHASE( WITHIN ) )
@@ -1303,8 +1180,7 @@ SCOREP_LIBWRAP_FUNC_NAME( ftello )( FILE* stream )
         SCOREP_IoHandleHandle handle = SCOREP_IoMgmt_GetAndPushHandle( SCOREP_IO_PARADIGM_ISOC, &stream );
 
         SCOREP_ENTER_WRAPPED_REGION();
-        ret = SCOREP_LIBWRAP_FUNC_CALL( ftello,
-                                        ( stream ) );
+        ret = SCOREP_LIBWRAP_ORIGINAL( ftello )( stream );
         SCOREP_EXIT_WRAPPED_REGION();
 
         SCOREP_IoMgmt_PopHandle( handle );
@@ -1313,21 +1189,17 @@ SCOREP_LIBWRAP_FUNC_NAME( ftello )( FILE* stream )
     }
     else
     {
-        ret = SCOREP_LIBWRAP_FUNC_CALL( ftello,
-                                        ( stream ) );
+        ret = SCOREP_LIBWRAP_ORIGINAL( ftello )( stream );
     }
     SCOREP_IN_MEASUREMENT_DECREMENT();
     return ret;
 }
-#endif
 
-#if HAVE( POSIX_IO_SYMBOL_FTRYLOCKFILE )
 int
-SCOREP_LIBWRAP_FUNC_NAME( ftrylockfile )( FILE* filehandle )
+SCOREP_LIBWRAP_WRAPPER( ftrylockfile )( FILE* filehandle )
 {
     bool trigger = SCOREP_IN_MEASUREMENT_TEST_AND_INCREMENT();
-    INITIALIZE_FUNCTION_POINTER( ftrylockfile );
-    int ret;
+    int  ret;
 
     if ( trigger && SCOREP_IS_MEASUREMENT_PHASE( WITHIN ) )
     {
@@ -1336,8 +1208,7 @@ SCOREP_LIBWRAP_FUNC_NAME( ftrylockfile )( FILE* filehandle )
         SCOREP_IoHandleHandle handle = SCOREP_IoMgmt_GetAndPushHandle( SCOREP_IO_PARADIGM_ISOC, &filehandle );
 
         SCOREP_ENTER_WRAPPED_REGION();
-        ret = SCOREP_LIBWRAP_FUNC_CALL( ftrylockfile,
-                                        ( filehandle ) );
+        ret = SCOREP_LIBWRAP_ORIGINAL( ftrylockfile )( filehandle );
         SCOREP_EXIT_WRAPPED_REGION();
 
         if ( handle != SCOREP_INVALID_IO_HANDLE )
@@ -1358,20 +1229,16 @@ SCOREP_LIBWRAP_FUNC_NAME( ftrylockfile )( FILE* filehandle )
     }
     else
     {
-        ret = SCOREP_LIBWRAP_FUNC_CALL( ftrylockfile,
-                                        ( filehandle ) );
+        ret = SCOREP_LIBWRAP_ORIGINAL( ftrylockfile )( filehandle );
     }
     SCOREP_IN_MEASUREMENT_DECREMENT();
     return ret;
 }
-#endif
 
-#if HAVE( POSIX_IO_SYMBOL_FUNLOCKFILE )
 void
-SCOREP_LIBWRAP_FUNC_NAME( funlockfile )( FILE* filehandle )
+SCOREP_LIBWRAP_WRAPPER( funlockfile )( FILE* filehandle )
 {
     bool trigger = SCOREP_IN_MEASUREMENT_TEST_AND_INCREMENT();
-    INITIALIZE_FUNCTION_POINTER( funlockfile );
 
     if ( trigger && SCOREP_IS_MEASUREMENT_PHASE( WITHIN ) )
     {
@@ -1384,8 +1251,7 @@ SCOREP_LIBWRAP_FUNC_NAME( funlockfile )( FILE* filehandle )
         }
 
         SCOREP_ENTER_WRAPPED_REGION();
-        SCOREP_LIBWRAP_FUNC_CALL( funlockfile,
-                                  ( filehandle ) );
+        SCOREP_LIBWRAP_ORIGINAL( funlockfile )( filehandle );
         SCOREP_EXIT_WRAPPED_REGION();
 
         SCOREP_IoMgmt_PopHandle( handle );
@@ -1394,19 +1260,15 @@ SCOREP_LIBWRAP_FUNC_NAME( funlockfile )( FILE* filehandle )
     }
     else
     {
-        SCOREP_LIBWRAP_FUNC_CALL( funlockfile,
-                                  ( filehandle ) );
+        SCOREP_LIBWRAP_ORIGINAL( funlockfile )( filehandle );
     }
     SCOREP_IN_MEASUREMENT_DECREMENT();
 }
-#endif
 
-#if HAVE( POSIX_IO_SYMBOL_FWRITE )
 size_t
-SCOREP_LIBWRAP_FUNC_NAME( fwrite )( const void* ptr, size_t size, size_t nmemb, FILE* stream )
+SCOREP_LIBWRAP_WRAPPER( fwrite )( const void* ptr, size_t size, size_t nmemb, FILE* stream )
 {
-    bool trigger = SCOREP_IN_MEASUREMENT_TEST_AND_INCREMENT();
-    INITIALIZE_FUNCTION_POINTER( fwrite );
+    bool   trigger = SCOREP_IN_MEASUREMENT_TEST_AND_INCREMENT();
     size_t ret;
 
     if ( trigger && SCOREP_IS_MEASUREMENT_PHASE( WITHIN ) )
@@ -1425,8 +1287,7 @@ SCOREP_LIBWRAP_FUNC_NAME( fwrite )( const void* ptr, size_t size, size_t nmemb, 
         }
 
         SCOREP_ENTER_WRAPPED_REGION();
-        ret = SCOREP_LIBWRAP_FUNC_CALL( fwrite,
-                                        ( ptr, size, nmemb, stream ) );
+        ret = SCOREP_LIBWRAP_ORIGINAL( fwrite )( ptr, size, nmemb, stream );
         SCOREP_EXIT_WRAPPED_REGION();
 
         if ( handle != SCOREP_INVALID_IO_HANDLE )
@@ -1443,22 +1304,18 @@ SCOREP_LIBWRAP_FUNC_NAME( fwrite )( const void* ptr, size_t size, size_t nmemb, 
     }
     else
     {
-        ret = SCOREP_LIBWRAP_FUNC_CALL( fwrite,
-                                        ( ptr, size, nmemb, stream ) );
+        ret = SCOREP_LIBWRAP_ORIGINAL( fwrite )( ptr, size, nmemb, stream );
     }
     SCOREP_IN_MEASUREMENT_DECREMENT();
     return ret;
 }
-#endif
 
 /* getc() might be implemented as a macro */
-#if HAVE( POSIX_IO_SYMBOL_GETC )  && !defined getc
 int
-SCOREP_LIBWRAP_FUNC_NAME( getc )( FILE* stream )
+SCOREP_LIBWRAP_WRAPPER( getc )( FILE* stream )
 {
     bool trigger = SCOREP_IN_MEASUREMENT_TEST_AND_INCREMENT();
-    INITIALIZE_FUNCTION_POINTER( getc );
-    int ret;
+    int  ret;
 
     if ( trigger && SCOREP_IS_MEASUREMENT_PHASE( WITHIN ) )
     {
@@ -1476,8 +1333,7 @@ SCOREP_LIBWRAP_FUNC_NAME( getc )( FILE* stream )
         }
 
         SCOREP_ENTER_WRAPPED_REGION();
-        ret = SCOREP_LIBWRAP_FUNC_CALL( getc,
-                                        ( stream ) );
+        ret = SCOREP_LIBWRAP_ORIGINAL( getc )( stream );
         SCOREP_EXIT_WRAPPED_REGION();
 
         if ( handle != SCOREP_INVALID_IO_HANDLE )
@@ -1494,21 +1350,17 @@ SCOREP_LIBWRAP_FUNC_NAME( getc )( FILE* stream )
     }
     else
     {
-        ret = SCOREP_LIBWRAP_FUNC_CALL( getc,
-                                        ( stream ) );
+        ret = SCOREP_LIBWRAP_ORIGINAL( getc )( stream );
     }
     SCOREP_IN_MEASUREMENT_DECREMENT();
     return ret;
 }
-#endif
 
-#if HAVE( POSIX_IO_SYMBOL_GETCHAR )
 int
-SCOREP_LIBWRAP_FUNC_NAME( getchar )( void )
+SCOREP_LIBWRAP_WRAPPER( getchar )( void )
 {
     bool trigger = SCOREP_IN_MEASUREMENT_TEST_AND_INCREMENT();
-    INITIALIZE_FUNCTION_POINTER( getchar );
-    int ret;
+    int  ret;
 
     if ( trigger && SCOREP_IS_MEASUREMENT_PHASE( WITHIN ) )
     {
@@ -1526,8 +1378,7 @@ SCOREP_LIBWRAP_FUNC_NAME( getchar )( void )
         }
 
         SCOREP_ENTER_WRAPPED_REGION();
-        ret = SCOREP_LIBWRAP_FUNC_CALL( getchar,
-                                        ( ) );
+        ret = SCOREP_LIBWRAP_ORIGINAL( getchar )();
         SCOREP_EXIT_WRAPPED_REGION();
 
         if ( handle != SCOREP_INVALID_IO_HANDLE )
@@ -1544,20 +1395,16 @@ SCOREP_LIBWRAP_FUNC_NAME( getchar )( void )
     }
     else
     {
-        ret = SCOREP_LIBWRAP_FUNC_CALL( getchar,
-                                        ( ) );
+        ret = SCOREP_LIBWRAP_ORIGINAL( getchar )();
     }
     SCOREP_IN_MEASUREMENT_DECREMENT();
     return ret;
 }
-#endif
 
-#if HAVE( POSIX_IO_SYMBOL_GETS )
 char*
-SCOREP_LIBWRAP_FUNC_NAME( gets )( char* s )
+SCOREP_LIBWRAP_WRAPPER( gets )( char* s )
 {
-    bool trigger = SCOREP_IN_MEASUREMENT_TEST_AND_INCREMENT();
-    INITIALIZE_FUNCTION_POINTER( gets );
+    bool  trigger = SCOREP_IN_MEASUREMENT_TEST_AND_INCREMENT();
     char* ret;
 
     if ( trigger && SCOREP_IS_MEASUREMENT_PHASE( WITHIN ) )
@@ -1576,8 +1423,7 @@ SCOREP_LIBWRAP_FUNC_NAME( gets )( char* s )
         }
 
         SCOREP_ENTER_WRAPPED_REGION();
-        ret = SCOREP_LIBWRAP_FUNC_CALL( gets,
-                                        ( s ) );
+        ret = SCOREP_LIBWRAP_ORIGINAL( gets )( s );
         SCOREP_EXIT_WRAPPED_REGION();
 
         if ( handle != SCOREP_INVALID_IO_HANDLE )
@@ -1594,21 +1440,17 @@ SCOREP_LIBWRAP_FUNC_NAME( gets )( char* s )
     }
     else
     {
-        ret = SCOREP_LIBWRAP_FUNC_CALL( gets,
-                                        ( s ) );
+        ret = SCOREP_LIBWRAP_ORIGINAL( gets )( s );
     }
     SCOREP_IN_MEASUREMENT_DECREMENT();
     return ret;
 }
-#endif
 
-#if HAVE( POSIX_IO_SYMBOL_PRINTF ) && HAVE( POSIX_IO_SYMBOL_VPRINTF )
 int
-SCOREP_LIBWRAP_FUNC_NAME( printf )( const char* format, ... )
+SCOREP_LIBWRAP_WRAPPER( printf )( const char* format, ... )
 {
     bool trigger = SCOREP_IN_MEASUREMENT_TEST_AND_INCREMENT();
-    INITIALIZE_FUNCTION_POINTER( vprintf );
-    int ret;
+    int  ret;
 
     if ( trigger && SCOREP_IS_MEASUREMENT_PHASE( WITHIN ) )
     {
@@ -1628,8 +1470,7 @@ SCOREP_LIBWRAP_FUNC_NAME( printf )( const char* format, ... )
         va_list args;
         va_start( args, format );
         SCOREP_ENTER_WRAPPED_REGION();
-        ret = SCOREP_LIBWRAP_FUNC_CALL( vprintf,
-                                        ( format, args ) );
+        ret = vprintf( format, args );
         SCOREP_EXIT_WRAPPED_REGION();
         va_end( args );
 
@@ -1649,22 +1490,18 @@ SCOREP_LIBWRAP_FUNC_NAME( printf )( const char* format, ... )
     {
         va_list args;
         va_start( args, format );
-        ret = SCOREP_LIBWRAP_FUNC_CALL( vprintf,
-                                        ( format, args ) );
+        ret = vprintf( format, args );
         va_end( args );
     }
     SCOREP_IN_MEASUREMENT_DECREMENT();
     return ret;
 }
-#endif
 
-#if HAVE( POSIX_IO_SYMBOL_PUTCHAR )
 int
-SCOREP_LIBWRAP_FUNC_NAME( putchar )( int c )
+SCOREP_LIBWRAP_WRAPPER( putchar )( int c )
 {
     bool trigger = SCOREP_IN_MEASUREMENT_TEST_AND_INCREMENT();
-    INITIALIZE_FUNCTION_POINTER( putchar );
-    int ret;
+    int  ret;
 
     if ( trigger && SCOREP_IS_MEASUREMENT_PHASE( WITHIN ) )
     {
@@ -1682,8 +1519,7 @@ SCOREP_LIBWRAP_FUNC_NAME( putchar )( int c )
         }
 
         SCOREP_ENTER_WRAPPED_REGION();
-        ret = SCOREP_LIBWRAP_FUNC_CALL( putchar,
-                                        ( c ) );
+        ret = SCOREP_LIBWRAP_ORIGINAL( putchar )( c );
         SCOREP_EXIT_WRAPPED_REGION();
 
         if ( handle != SCOREP_INVALID_IO_HANDLE )
@@ -1700,23 +1536,17 @@ SCOREP_LIBWRAP_FUNC_NAME( putchar )( int c )
     }
     else
     {
-        ret = SCOREP_LIBWRAP_FUNC_CALL( putchar,
-                                        ( c ) );
+        ret = SCOREP_LIBWRAP_ORIGINAL( putchar )( c );
     }
     SCOREP_IN_MEASUREMENT_DECREMENT();
     return ret;
 }
-#endif
 
-#if HAVE( POSIX_IO_SYMBOL_PUTS )
 int
-SCOREP_LIBWRAP_FUNC_NAME( puts )( const char* s )
+SCOREP_LIBWRAP_WRAPPER( puts )( const char* s )
 {
     bool trigger = SCOREP_IN_MEASUREMENT_TEST_AND_INCREMENT();
-    INITIALIZE_FUNCTION_POINTER( puts );
-    /* puts() writes the string s and a trailing newline to stdout. */
-
-    int ret;
+    int  ret;
 
     if ( trigger && SCOREP_IS_MEASUREMENT_PHASE( WITHIN ) )
     {
@@ -1735,8 +1565,7 @@ SCOREP_LIBWRAP_FUNC_NAME( puts )( const char* s )
         }
 
         SCOREP_ENTER_WRAPPED_REGION();
-        ret = SCOREP_LIBWRAP_FUNC_CALL( puts,
-                                        ( s ) );
+        ret = SCOREP_LIBWRAP_ORIGINAL( puts )( s );
         SCOREP_EXIT_WRAPPED_REGION();
 
         if ( handle != SCOREP_INVALID_IO_HANDLE )
@@ -1753,21 +1582,17 @@ SCOREP_LIBWRAP_FUNC_NAME( puts )( const char* s )
     }
     else
     {
-        ret = SCOREP_LIBWRAP_FUNC_CALL( puts,
-                                        ( s ) );
+        ret = SCOREP_LIBWRAP_ORIGINAL( puts )( s );
     }
     SCOREP_IN_MEASUREMENT_DECREMENT();
     return ret;
 }
-#endif
 
-#if HAVE( POSIX_IO_SYMBOL_REMOVE )
 int
-SCOREP_LIBWRAP_FUNC_NAME( remove )( const char* pathname )
+SCOREP_LIBWRAP_WRAPPER( remove )( const char* pathname )
 {
     bool trigger = SCOREP_IN_MEASUREMENT_TEST_AND_INCREMENT();
-    INITIALIZE_FUNCTION_POINTER( remove );
-    int ret;
+    int  ret;
 
     if ( trigger && SCOREP_IS_MEASUREMENT_PHASE( WITHIN ) )
     {
@@ -1776,7 +1601,7 @@ SCOREP_LIBWRAP_FUNC_NAME( remove )( const char* pathname )
         SCOREP_IoFileHandle file_handle = SCOREP_IoMgmt_GetIoFileHandle( pathname );
 
         SCOREP_ENTER_WRAPPED_REGION();
-        ret = SCOREP_LIBWRAP_FUNC_CALL( remove, ( pathname ) );
+        ret = SCOREP_LIBWRAP_ORIGINAL( remove )( pathname );
         SCOREP_EXIT_WRAPPED_REGION();
 
         if ( file_handle != SCOREP_INVALID_IO_FILE )
@@ -1789,19 +1614,16 @@ SCOREP_LIBWRAP_FUNC_NAME( remove )( const char* pathname )
     }
     else
     {
-        ret = SCOREP_LIBWRAP_FUNC_CALL( remove, ( pathname ) );
+        ret = SCOREP_LIBWRAP_ORIGINAL( remove )( pathname );
     }
     SCOREP_IN_MEASUREMENT_DECREMENT();
     return ret;
 }
-#endif
 
-#if HAVE( POSIX_IO_SYMBOL_REWIND )
 void
-SCOREP_LIBWRAP_FUNC_NAME( rewind )( FILE* stream )
+SCOREP_LIBWRAP_WRAPPER( rewind )( FILE* stream )
 {
     bool trigger = SCOREP_IN_MEASUREMENT_TEST_AND_INCREMENT();
-    INITIALIZE_FUNCTION_POINTER( rewind );
 
     if ( trigger && SCOREP_IS_MEASUREMENT_PHASE( WITHIN ) )
     {
@@ -1810,8 +1632,7 @@ SCOREP_LIBWRAP_FUNC_NAME( rewind )( FILE* stream )
         SCOREP_IoHandleHandle handle = SCOREP_IoMgmt_GetAndPushHandle( SCOREP_IO_PARADIGM_ISOC, &stream );
 
         SCOREP_ENTER_WRAPPED_REGION();
-        SCOREP_LIBWRAP_FUNC_CALL( rewind,
-                                  ( stream ) );
+        SCOREP_LIBWRAP_ORIGINAL( rewind )( stream );
         SCOREP_EXIT_WRAPPED_REGION();
 
         if ( handle != SCOREP_INVALID_IO_HANDLE )
@@ -1828,20 +1649,16 @@ SCOREP_LIBWRAP_FUNC_NAME( rewind )( FILE* stream )
     }
     else
     {
-        SCOREP_LIBWRAP_FUNC_CALL( rewind,
-                                  ( stream ) );
+        SCOREP_LIBWRAP_ORIGINAL( rewind )( stream );
     }
     SCOREP_IN_MEASUREMENT_DECREMENT();
 }
-#endif
 
-#if HAVE( POSIX_IO_SYMBOL_SCANF ) && HAVE( POSIX_IO_SYMBOL_VSCANF )
 int
-SCOREP_LIBWRAP_FUNC_NAME( scanf )( const char* format, ... )
+SCOREP_LIBWRAP_WRAPPER( scanf )( const char* format, ... )
 {
     bool trigger = SCOREP_IN_MEASUREMENT_TEST_AND_INCREMENT();
-    INITIALIZE_FUNCTION_POINTER( vscanf );
-    int ret;
+    int  ret;
 
     if ( trigger && SCOREP_IS_MEASUREMENT_PHASE( WITHIN ) )
     {
@@ -1863,8 +1680,7 @@ SCOREP_LIBWRAP_FUNC_NAME( scanf )( const char* format, ... )
 
         va_list args;
         va_start( args, format );
-        ret = SCOREP_LIBWRAP_FUNC_CALL( vscanf,
-                                        ( format, args ) );
+        ret = vscanf( format, args );
         va_end( args );
 
         SCOREP_EXIT_WRAPPED_REGION();
@@ -1885,22 +1701,18 @@ SCOREP_LIBWRAP_FUNC_NAME( scanf )( const char* format, ... )
     {
         va_list args;
         va_start( args, format );
-        ret = SCOREP_LIBWRAP_FUNC_CALL( vscanf,
-                                        ( format, args ) );
+        ret = vscanf( format, args );
         va_end( args );
     }
     SCOREP_IN_MEASUREMENT_DECREMENT();
     return ret;
 }
-#endif
 
-#if HAVE( POSIX_IO_SYMBOL_UNGETC )
 int
-SCOREP_LIBWRAP_FUNC_NAME( ungetc )( int c, FILE* stream )
+SCOREP_LIBWRAP_WRAPPER( ungetc )( int c, FILE* stream )
 {
     bool trigger = SCOREP_IN_MEASUREMENT_TEST_AND_INCREMENT();
-    INITIALIZE_FUNCTION_POINTER( ungetc );
-    int ret;
+    int  ret;
 
     if ( trigger && SCOREP_IS_MEASUREMENT_PHASE( WITHIN ) )
     {
@@ -1909,8 +1721,7 @@ SCOREP_LIBWRAP_FUNC_NAME( ungetc )( int c, FILE* stream )
         SCOREP_IoHandleHandle handle = SCOREP_IoMgmt_GetAndPushHandle( SCOREP_IO_PARADIGM_ISOC, &stream );
 
         SCOREP_ENTER_WRAPPED_REGION();
-        ret = SCOREP_LIBWRAP_FUNC_CALL( ungetc,
-                                        ( c, stream ) );
+        ret = SCOREP_LIBWRAP_ORIGINAL( ungetc )( c, stream );
         SCOREP_EXIT_WRAPPED_REGION();
 
         SCOREP_IoMgmt_PopHandle( handle );
@@ -1919,21 +1730,17 @@ SCOREP_LIBWRAP_FUNC_NAME( ungetc )( int c, FILE* stream )
     }
     else
     {
-        ret = SCOREP_LIBWRAP_FUNC_CALL( ungetc,
-                                        ( c, stream ) );
+        ret = SCOREP_LIBWRAP_ORIGINAL( ungetc )( c, stream );
     }
     SCOREP_IN_MEASUREMENT_DECREMENT();
     return ret;
 }
-#endif
 
-#if HAVE( POSIX_IO_SYMBOL_VFPRINTF )
 int
-SCOREP_LIBWRAP_FUNC_NAME( vfprintf )( FILE* stream, const char* format, va_list ap )
+SCOREP_LIBWRAP_WRAPPER( vfprintf )( FILE* stream, const char* format, va_list ap )
 {
     bool trigger = SCOREP_IN_MEASUREMENT_TEST_AND_INCREMENT();
-    INITIALIZE_FUNCTION_POINTER( vfprintf );
-    int ret;
+    int  ret;
 
     if ( trigger && SCOREP_IS_MEASUREMENT_PHASE( WITHIN ) )
     {
@@ -1952,8 +1759,7 @@ SCOREP_LIBWRAP_FUNC_NAME( vfprintf )( FILE* stream, const char* format, va_list 
         }
 
         SCOREP_ENTER_WRAPPED_REGION();
-        ret = SCOREP_LIBWRAP_FUNC_CALL( vfprintf,
-                                        ( stream, format, ap ) );
+        ret = SCOREP_LIBWRAP_ORIGINAL( vfprintf )( stream, format, ap );
         SCOREP_EXIT_WRAPPED_REGION();
 
         if ( handle != SCOREP_INVALID_IO_HANDLE )
@@ -1970,21 +1776,17 @@ SCOREP_LIBWRAP_FUNC_NAME( vfprintf )( FILE* stream, const char* format, va_list 
     }
     else
     {
-        ret = SCOREP_LIBWRAP_FUNC_CALL( vfprintf,
-                                        ( stream, format, ap ) );
+        ret = SCOREP_LIBWRAP_ORIGINAL( vfprintf )( stream, format, ap );
     }
     SCOREP_IN_MEASUREMENT_DECREMENT();
     return ret;
 }
-#endif
 
-#if HAVE( POSIX_IO_SYMBOL_VFSCANF )
 int
-SCOREP_LIBWRAP_FUNC_NAME( vfscanf )( FILE* stream, const char* format, va_list ap )
+SCOREP_LIBWRAP_WRAPPER( vfscanf )( FILE* stream, const char* format, va_list ap )
 {
     bool trigger = SCOREP_IN_MEASUREMENT_TEST_AND_INCREMENT();
-    INITIALIZE_FUNCTION_POINTER( vfscanf );
-    int ret;
+    int  ret;
 
     if ( trigger && SCOREP_IS_MEASUREMENT_PHASE( WITHIN ) )
     {
@@ -2003,8 +1805,7 @@ SCOREP_LIBWRAP_FUNC_NAME( vfscanf )( FILE* stream, const char* format, va_list a
         }
 
         SCOREP_ENTER_WRAPPED_REGION();
-        ret = SCOREP_LIBWRAP_FUNC_CALL( vfscanf,
-                                        ( stream, format, ap ) );
+        ret = SCOREP_LIBWRAP_ORIGINAL( vfscanf )( stream, format, ap );
         SCOREP_EXIT_WRAPPED_REGION();
 
         if ( handle != SCOREP_INVALID_IO_HANDLE )
@@ -2021,21 +1822,17 @@ SCOREP_LIBWRAP_FUNC_NAME( vfscanf )( FILE* stream, const char* format, va_list a
     }
     else
     {
-        ret = SCOREP_LIBWRAP_FUNC_CALL( vfscanf,
-                                        ( stream, format, ap ) );
+        ret = SCOREP_LIBWRAP_ORIGINAL( vfscanf )( stream, format, ap );
     }
     SCOREP_IN_MEASUREMENT_DECREMENT();
     return ret;
 }
-#endif
 
-#if HAVE( POSIX_IO_SYMBOL_VSCANF )
 int
-SCOREP_LIBWRAP_FUNC_NAME( vscanf )( const char* format, va_list ap )
+SCOREP_LIBWRAP_WRAPPER( vscanf )( const char* format, va_list ap )
 {
     bool trigger = SCOREP_IN_MEASUREMENT_TEST_AND_INCREMENT();
-    INITIALIZE_FUNCTION_POINTER( vscanf );
-    int ret;
+    int  ret;
 
     if ( trigger && SCOREP_IS_MEASUREMENT_PHASE( WITHIN ) )
     {
@@ -2054,8 +1851,7 @@ SCOREP_LIBWRAP_FUNC_NAME( vscanf )( const char* format, va_list ap )
         }
 
         SCOREP_ENTER_WRAPPED_REGION();
-        ret = SCOREP_LIBWRAP_FUNC_CALL( vscanf,
-                                        ( format, ap ) );
+        ret = SCOREP_LIBWRAP_ORIGINAL( vscanf )( format, ap );
         SCOREP_EXIT_WRAPPED_REGION();
 
         if ( handle != SCOREP_INVALID_IO_HANDLE )
@@ -2072,21 +1868,17 @@ SCOREP_LIBWRAP_FUNC_NAME( vscanf )( const char* format, va_list ap )
     }
     else
     {
-        ret = SCOREP_LIBWRAP_FUNC_CALL( vscanf,
-                                        ( format, ap ) );
+        ret = SCOREP_LIBWRAP_ORIGINAL( vscanf )( format, ap );
     }
     SCOREP_IN_MEASUREMENT_DECREMENT();
     return ret;
 }
-#endif
 
-#if HAVE( POSIX_IO_SYMBOL_VPRINTF )
 int
-SCOREP_LIBWRAP_FUNC_NAME( vprintf )( const char* format, va_list ap )
+SCOREP_LIBWRAP_WRAPPER( vprintf )( const char* format, va_list ap )
 {
     bool trigger = SCOREP_IN_MEASUREMENT_TEST_AND_INCREMENT();
-    INITIALIZE_FUNCTION_POINTER( vprintf );
-    int ret;
+    int  ret;
 
     if ( trigger && SCOREP_IS_MEASUREMENT_PHASE( WITHIN ) )
     {
@@ -2104,8 +1896,7 @@ SCOREP_LIBWRAP_FUNC_NAME( vprintf )( const char* format, va_list ap )
         }
 
         SCOREP_ENTER_WRAPPED_REGION();
-        ret = SCOREP_LIBWRAP_FUNC_CALL( vprintf,
-                                        ( format, ap ) );
+        ret = SCOREP_LIBWRAP_ORIGINAL( vprintf )( format, ap );
         SCOREP_EXIT_WRAPPED_REGION();
 
         if ( handle != SCOREP_INVALID_IO_HANDLE )
@@ -2122,10 +1913,8 @@ SCOREP_LIBWRAP_FUNC_NAME( vprintf )( const char* format, va_list ap )
     }
     else
     {
-        ret = SCOREP_LIBWRAP_FUNC_CALL( vprintf,
-                                        ( format, ap ) );
+        ret = SCOREP_LIBWRAP_ORIGINAL( vprintf )( format, ap );
     }
     SCOREP_IN_MEASUREMENT_DECREMENT();
     return ret;
 }
-#endif

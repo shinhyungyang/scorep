@@ -1,7 +1,7 @@
 /*
  * This file is part of the Score-P software (http://www.score-p.org)
  *
- * Copyright (c) 2013-2017,
+ * Copyright (c) 2013-2017, 2025,
  * Technische Universitaet Dresden, Germany
  *
  * This software may be modified and distributed under the terms of
@@ -27,35 +27,35 @@
 
 /* *INDENT-OFF* */
 
-#define QUERY_PE( FUNCNAME )                                                \
-    int                                                                     \
-    SCOREP_LIBWRAP_FUNC_NAME( FUNCNAME ) ( void )                           \
-    {                                                                       \
-        SCOREP_IN_MEASUREMENT_INCREMENT();                                  \
-        int ret;                                                            \
-                                                                            \
-        const int event_gen_active = SCOREP_SHMEM_IS_EVENT_GEN_ON;          \
-                                                                            \
-        if ( event_gen_active )                                             \
-        {                                                                   \
-            SCOREP_SHMEM_EVENT_GEN_OFF();                                   \
-                                                                            \
+#define QUERY_PE( FUNCNAME ) \
+    int \
+    FUNCNAME( void ) \
+    { \
+        SCOREP_IN_MEASUREMENT_INCREMENT(); \
+        int ret; \
+ \
+        const int event_gen_active = SCOREP_SHMEM_IS_EVENT_GEN_ON; \
+ \
+        if ( event_gen_active ) \
+        { \
+            SCOREP_SHMEM_EVENT_GEN_OFF(); \
+ \
             SCOREP_EnterWrappedRegion( scorep_shmem_region__ ## FUNCNAME ); \
-        }                                                                   \
-                                                                            \
-        SCOREP_ENTER_WRAPPED_REGION();                                      \
-        ret = SCOREP_LIBWRAP_FUNC_CALL( FUNCNAME, ( ) );                    \
-        SCOREP_EXIT_WRAPPED_REGION();                                       \
-                                                                            \
-        if ( event_gen_active )                                             \
-        {                                                                   \
-            SCOREP_ExitRegion( scorep_shmem_region__ ## FUNCNAME );         \
-                                                                            \
-            SCOREP_SHMEM_EVENT_GEN_ON();                                    \
-        }                                                                   \
-                                                                            \
-        SCOREP_IN_MEASUREMENT_DECREMENT();                                  \
-        return ret;                                                         \
+        } \
+ \
+        SCOREP_ENTER_WRAPPED_REGION(); \
+        ret = p ## FUNCNAME(); \
+        SCOREP_EXIT_WRAPPED_REGION(); \
+ \
+        if ( event_gen_active ) \
+        { \
+            SCOREP_ExitRegion( scorep_shmem_region__ ## FUNCNAME ); \
+ \
+            SCOREP_SHMEM_EVENT_GEN_ON(); \
+        } \
+ \
+        SCOREP_IN_MEASUREMENT_DECREMENT(); \
+        return ret; \
     }
 
 /* *INDENT-ON* */
@@ -85,82 +85,68 @@ QUERY_PE( shmem_n_pes )
 #endif
 
 
-/* *INDENT-OFF* */
+#if SHMEM_HAVE_DECL( SHMEM_PE_ACCESSIBLE )
+int
+shmem_pe_accessible( int pe )
+{
+    SCOREP_IN_MEASUREMENT_INCREMENT();
 
-#define QUERY_PE_ACCESSIBLE( FUNCNAME )                                     \
-    int                                                                     \
-    SCOREP_LIBWRAP_FUNC_NAME( FUNCNAME ) ( int pe )                         \
-    {                                                                       \
-        SCOREP_IN_MEASUREMENT_INCREMENT();                                  \
-                                                                            \
-        int ret;                                                            \
-                                                                            \
-        const int event_gen_active = SCOREP_SHMEM_IS_EVENT_GEN_ON;          \
-                                                                            \
-        if ( event_gen_active )                                             \
-        {                                                                   \
-            SCOREP_SHMEM_EVENT_GEN_OFF();                                   \
-                                                                            \
-            SCOREP_EnterWrappedRegion( scorep_shmem_region__ ## FUNCNAME ); \
-        }                                                                   \
-                                                                            \
-        SCOREP_ENTER_WRAPPED_REGION();                                      \
-        ret = SCOREP_LIBWRAP_FUNC_CALL( FUNCNAME, ( pe ) );                 \
-        SCOREP_EXIT_WRAPPED_REGION();                                       \
-                                                                            \
-        if ( event_gen_active )                                             \
-        {                                                                   \
-            SCOREP_ExitRegion( scorep_shmem_region__ ## FUNCNAME );         \
-                                                                            \
-            SCOREP_SHMEM_EVENT_GEN_ON();                                    \
-        }                                                                   \
-                                                                            \
-        SCOREP_IN_MEASUREMENT_DECREMENT();                                  \
-        return ret;                                                         \
+    int ret;
+
+    const int event_gen_active = SCOREP_SHMEM_IS_EVENT_GEN_ON;
+
+    if ( event_gen_active )
+    {
+        SCOREP_SHMEM_EVENT_GEN_OFF();
+
+        SCOREP_EnterWrappedRegion( scorep_shmem_region__shmem_pe_accessible );
     }
 
-/* *INDENT-ON* */
+    SCOREP_ENTER_WRAPPED_REGION();
+    ret = pshmem_pe_accessible( pe );
+    SCOREP_EXIT_WRAPPED_REGION();
 
-#if SHMEM_HAVE_DECL( SHMEM_PE_ACCESSIBLE )
-QUERY_PE_ACCESSIBLE( shmem_pe_accessible )
+    if ( event_gen_active )
+    {
+        SCOREP_ExitRegion( scorep_shmem_region__shmem_pe_accessible );
+
+        SCOREP_SHMEM_EVENT_GEN_ON();
+    }
+
+    SCOREP_IN_MEASUREMENT_DECREMENT();
+    return ret;
+}
 #endif
 
 
-/* *INDENT-OFF* */
+#if SHMEM_HAVE_DECL( SHMEM_ADDR_ACCESSIBLE ) && defined( SCOREP_SHMEM_ADDR_ACCESSIBLE_PROTO_ARGS )
+int
+shmem_addr_accessible SCOREP_SHMEM_ADDR_ACCESSIBLE_PROTO_ARGS
+{
+    SCOREP_IN_MEASUREMENT_INCREMENT();
+    int ret;
 
-#define QUERY_ADDR_ACCESSIBLE( FUNCNAME )                                           \
-    int                                                                             \
-    SCOREP_LIBWRAP_FUNC_NAME( FUNCNAME ) SCOREP_SHMEM_ADDR_ACCESSIBLE_PROTO_ARGS    \
-    {                                                                               \
-        SCOREP_IN_MEASUREMENT_INCREMENT();                                          \
-        int ret;                                                                    \
-                                                                                    \
-        const int event_gen_active = SCOREP_SHMEM_IS_EVENT_GEN_ON;                  \
-                                                                                    \
-        if ( event_gen_active )                                                     \
-        {                                                                           \
-            SCOREP_SHMEM_EVENT_GEN_OFF();                                           \
-                                                                                    \
-            SCOREP_EnterWrappedRegion( scorep_shmem_region__ ## FUNCNAME );         \
-        }                                                                           \
-                                                                                    \
-        SCOREP_ENTER_WRAPPED_REGION();                                              \
-        ret = SCOREP_LIBWRAP_FUNC_CALL( FUNCNAME, ( addr, pe ) );                   \
-        SCOREP_EXIT_WRAPPED_REGION();                                               \
-                                                                                    \
-        if ( event_gen_active )                                                     \
-        {                                                                           \
-            SCOREP_ExitRegion( scorep_shmem_region__ ## FUNCNAME );                 \
-                                                                                    \
-            SCOREP_SHMEM_EVENT_GEN_ON();                                            \
-        }                                                                           \
-                                                                                    \
-        SCOREP_IN_MEASUREMENT_DECREMENT();                                          \
-        return ret;                                                                 \
+    const int event_gen_active = SCOREP_SHMEM_IS_EVENT_GEN_ON;
+
+    if ( event_gen_active )
+    {
+        SCOREP_SHMEM_EVENT_GEN_OFF();
+
+        SCOREP_EnterWrappedRegion( scorep_shmem_region__shmem_addr_accessible );
     }
 
-/* *INDENT-ON* */
+    SCOREP_ENTER_WRAPPED_REGION();
+    ret = pshmem_addr_accessible( addr, pe );
+    SCOREP_EXIT_WRAPPED_REGION();
 
-#if SHMEM_HAVE_DECL( SHMEM_ADDR_ACCESSIBLE ) && defined( SCOREP_SHMEM_ADDR_ACCESSIBLE_PROTO_ARGS )
-QUERY_ADDR_ACCESSIBLE( shmem_addr_accessible )
+    if ( event_gen_active )
+    {
+        SCOREP_ExitRegion( scorep_shmem_region__shmem_addr_accessible );
+
+        SCOREP_SHMEM_EVENT_GEN_ON();
+    }
+
+    SCOREP_IN_MEASUREMENT_DECREMENT();
+    return ret;
+}
 #endif

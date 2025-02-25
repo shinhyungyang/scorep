@@ -7,7 +7,7 @@
  * Copyright (c) 2009-2013,
  * Gesellschaft fuer numerische Simulation mbH Braunschweig, Germany
  *
- * Copyright (c) 2009-2015, 2022,
+ * Copyright (c) 2009-2015, 2022, 2025,
  * Technische Universitaet Dresden, Germany
  *
  * Copyright (c) 2009-2013,
@@ -256,6 +256,13 @@ extern bool scorep_is_unwinding_enabled;
  */
 const char*
 SCOREP_GetExecutableName( bool* executableNameIsFile );
+
+/**
+ * Returns the directory the application was started in. May abort if
+ * directory cannot be obtained.
+ */
+const char*
+SCOREP_GetWorkingDirectory( void );
 
 /**
  * Returns the process-local region handle that represents the application.

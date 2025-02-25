@@ -4,7 +4,7 @@
  * Copyright (c) 2013-2014, 2016, 2020, 2022, 2024,
  * Forschungszentrum Juelich GmbH, Germany
  *
- * Copyright (c) 2014, 2017,
+ * Copyright (c) 2014, 2017, 2025,
  * Technische Universitaet Dresden, Germany
  *
  * Copyright (c) 2014,
@@ -23,34 +23,36 @@
  */
 
 #include <config.h>
+
 #include <scorep_config_tool_backend.h>
 #include <scorep_config_tool_mpi.h>
 #include "scorep_config_thread.hpp"
 #include "scorep_config_adapter.hpp"
+
 #include <iostream>
 
 /* **************************************************************************************
  * class SCOREP_Config_ThreadSystem
  * *************************************************************************************/
 
-std::deque<SCOREP_Config_ThreadSystem*> SCOREP_Config_ThreadSystem::m_all;
+std::deque<SCOREP_Config_ThreadSystem*> SCOREP_Config_ThreadSystem::all;
 
 SCOREP_Config_ThreadSystem* SCOREP_Config_ThreadSystem::current = NULL;
 
 void
 SCOREP_Config_ThreadSystem::init( void )
 {
-    m_all.push_back( new SCOREP_Config_MockupThreadSystem() );
+    all.push_back( new SCOREP_Config_MockupThreadSystem() );
 #if HAVE( BACKEND_SCOREP_OMPT_SUPPORT )
-    m_all.push_back( new SCOREP_Config_OmptThreadSystem() );
+    all.push_back( new SCOREP_Config_OmptThreadSystem() );
 #endif // BACKEND_SCOREP_OMPT_SUPPORT
 #if SCOREP_BACKEND_HAVE_OMP_TPD || SCOREP_BACKEND_HAVE_OMP_ANCESTRY
-    m_all.push_back( new SCOREP_Config_Opari2ThreadSystem() );
+    all.push_back( new SCOREP_Config_Opari2ThreadSystem() );
 #endif
 #if SCOREP_BACKEND_HAVE_PTHREAD_SUPPORT
-    m_all.push_back( new SCOREP_Config_PthreadThreadSystem() );
+    all.push_back( new SCOREP_Config_PthreadThreadSystem() );
 #endif
-    current = m_all.front();
+    current = all.front();
 }
 
 void
@@ -58,7 +60,7 @@ SCOREP_Config_ThreadSystem::fini( void )
 {
     current = NULL;
     std::deque<SCOREP_Config_ThreadSystem*>::iterator i;
-    for ( i = m_all.begin(); i != m_all.end(); i++ )
+    for ( i = all.begin(); i != all.end(); i++ )
     {
         delete ( *i );
     }
@@ -70,7 +72,7 @@ SCOREP_Config_ThreadSystem::printAll( void )
     std::cout << "   --thread=<threading system>\n"
               << "              Available threading systems are:\n";
     std::deque<SCOREP_Config_ThreadSystem*>::iterator i;
-    for ( i = m_all.begin(); i != m_all.end(); i++ )
+    for ( i = all.begin(); i != all.end(); i++ )
     {
         ( *i )->printHelp();
     }
@@ -94,7 +96,7 @@ SCOREP_Config_ThreadSystem::checkAll( const std::string& arg )
         system  = arg.substr( 0, pos );
         variant = arg.substr( pos + 1 );
 
-        for ( i = m_all.begin(); i != m_all.end(); i++ )
+        for ( i = all.begin(); i != all.end(); i++ )
         {
             if ( ( system == ( *i )->m_name ) &&
                  ( variant == ( *i )->m_variant ) )
@@ -107,7 +109,7 @@ SCOREP_Config_ThreadSystem::checkAll( const std::string& arg )
     }
 
     /* If only the system is provided, choose the first matching system */
-    for ( i = m_all.begin(); i != m_all.end(); i++ )
+    for ( i = all.begin(); i != all.end(); i++ )
     {
         if ( system == ( *i )->m_name )
         {
@@ -255,7 +257,7 @@ SCOREP_Config_Opari2ThreadSystem::addLibs( std::deque<std::string>&           li
     libs.push_back( "libscorep_adapter_opari2_openmp_event" );
     deps.addDependency( libs.back(), "libscorep_measurement" );
     deps.addDependency( "libscorep_measurement", "libscorep_adapter_opari2_openmp_mgmt" );
-    deps.addDependency( "libscorep_measurement", "libscorep_thread_fork_join_omp" );
+    SCOREP_Config_ThreadSystem::addLibs( libs, deps );
 }
 
 void
@@ -315,32 +317,8 @@ SCOREP_Config_PthreadThreadSystem::addLibs( std::deque<std::string>&           l
     libs.push_back( "libscorep_adapter_pthread_event" );
     deps.addDependency( libs.back(), "libscorep_measurement" );
     deps.addDependency( "libscorep_measurement", "libscorep_adapter_pthread_mgmt" );
+    SCOREP_Config_ThreadSystem::addLibs( libs, deps );
     deps.addDependency( "libscorep_thread_create_wait_pthread", "libscorep_adapter_pthread_mgmt" );
-    deps.addDependency( "libscorep_measurement", "libscorep_thread_create_wait_pthread" );
-}
-
-void
-SCOREP_Config_PthreadThreadSystem::addLdFlags( std::string& ldflags,
-                                               bool         nvcc )
-{
-    ldflags += " -Wl,"
-               "--undefined,__wrap_pthread_create,"
-               "-wrap,pthread_create,"
-               "-wrap,pthread_join,"
-               "-wrap,pthread_exit,"
-               "-wrap,pthread_cancel,"
-               "-wrap,pthread_detach,"
-               "-wrap,pthread_mutex_init,"
-               "-wrap,pthread_mutex_destroy,"
-               "-wrap,pthread_mutex_lock,"
-               "-wrap,pthread_mutex_unlock,"
-               "-wrap,pthread_mutex_trylock,"
-               "-wrap,pthread_cond_init,"
-               "-wrap,pthread_cond_signal,"
-               "-wrap,pthread_cond_broadcast,"
-               "-wrap,pthread_cond_wait,"
-               "-wrap,pthread_cond_timedwait,"
-               "-wrap,pthread_cond_destroy";
 }
 
 void

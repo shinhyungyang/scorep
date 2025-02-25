@@ -1,7 +1,7 @@
 /*
  * This file is part of the Score-P software (http://www.score-p.org)
  *
- * Copyright (c) 2013-2015, 2017,
+ * Copyright (c) 2013-2015, 2017, 2025,
  * Technische Universitaet Dresden, Germany
  *
  * This software may be modified and distributed under the terms of
@@ -27,33 +27,33 @@
 
 /* *INDENT-OFF* */
 
-#define DATA_CACHE_ROUTINE( FUNCNAME )                                      \
-    void                                                                    \
-    SCOREP_LIBWRAP_FUNC_NAME( FUNCNAME ) ( void )                           \
-    {                                                                       \
-        SCOREP_IN_MEASUREMENT_INCREMENT();                                  \
-                                                                            \
-        const int event_gen_active = SCOREP_SHMEM_IS_EVENT_GEN_ON;          \
-                                                                            \
-        if ( event_gen_active )                                             \
-        {                                                                   \
-            SCOREP_SHMEM_EVENT_GEN_OFF();                                   \
-                                                                            \
+#define DATA_CACHE_ROUTINE( FUNCNAME ) \
+    void \
+    FUNCNAME( void ) \
+    { \
+        SCOREP_IN_MEASUREMENT_INCREMENT(); \
+ \
+        const int event_gen_active = SCOREP_SHMEM_IS_EVENT_GEN_ON; \
+ \
+        if ( event_gen_active ) \
+        { \
+            SCOREP_SHMEM_EVENT_GEN_OFF(); \
+ \
             SCOREP_EnterWrappedRegion( scorep_shmem_region__ ## FUNCNAME ); \
-        }                                                                   \
-                                                                            \
-        SCOREP_ENTER_WRAPPED_REGION();                                      \
-        SCOREP_LIBWRAP_FUNC_CALL( FUNCNAME, ( ) );                          \
-        SCOREP_EXIT_WRAPPED_REGION();                                       \
-                                                                            \
-        if ( event_gen_active )                                             \
-        {                                                                   \
-            SCOREP_ExitRegion( scorep_shmem_region__ ## FUNCNAME );         \
-                                                                            \
-            SCOREP_SHMEM_EVENT_GEN_ON();                                    \
-        }                                                                   \
-                                                                            \
-        SCOREP_IN_MEASUREMENT_DECREMENT();                                  \
+        } \
+ \
+        SCOREP_ENTER_WRAPPED_REGION(); \
+        p ## FUNCNAME(); \
+        SCOREP_EXIT_WRAPPED_REGION(); \
+ \
+        if ( event_gen_active ) \
+        { \
+            SCOREP_ExitRegion( scorep_shmem_region__ ## FUNCNAME ); \
+ \
+            SCOREP_SHMEM_EVENT_GEN_ON(); \
+        } \
+ \
+        SCOREP_IN_MEASUREMENT_DECREMENT(); \
     }
 
 /* *INDENT-ON* */
@@ -73,33 +73,33 @@ DATA_CACHE_ROUTINE( shmem_udcflush )
 
 /* *INDENT-OFF* */
 
-#define DATA_CACHE_ROUTINE_WITH_ARGUMENT( FUNCNAME )                        \
-    void                                                                    \
-    SCOREP_LIBWRAP_FUNC_NAME( FUNCNAME ) ( void * target )                  \
-    {                                                                       \
-        SCOREP_IN_MEASUREMENT_INCREMENT();                                  \
-                                                                            \
-        const int event_gen_active = SCOREP_SHMEM_IS_EVENT_GEN_ON;          \
-                                                                            \
-        if ( event_gen_active )                                             \
-        {                                                                   \
-            SCOREP_SHMEM_EVENT_GEN_OFF();                                   \
-                                                                            \
+#define DATA_CACHE_ROUTINE_WITH_ARGUMENT( FUNCNAME ) \
+    void \
+    FUNCNAME( void* target ) \
+    { \
+        SCOREP_IN_MEASUREMENT_INCREMENT(); \
+ \
+        const int event_gen_active = SCOREP_SHMEM_IS_EVENT_GEN_ON; \
+ \
+        if ( event_gen_active ) \
+        { \
+            SCOREP_SHMEM_EVENT_GEN_OFF(); \
+ \
             SCOREP_EnterWrappedRegion( scorep_shmem_region__ ## FUNCNAME ); \
-        }                                                                   \
-                                                                            \
-        SCOREP_ENTER_WRAPPED_REGION();                                      \
-        SCOREP_LIBWRAP_FUNC_CALL( FUNCNAME, ( target ) );                   \
-        SCOREP_EXIT_WRAPPED_REGION();                                       \
-                                                                            \
-        if ( event_gen_active )                                             \
-        {                                                                   \
-            SCOREP_ExitRegion( scorep_shmem_region__ ## FUNCNAME );         \
-                                                                            \
-            SCOREP_SHMEM_EVENT_GEN_ON();                                    \
-        }                                                                   \
-                                                                            \
-        SCOREP_IN_MEASUREMENT_DECREMENT();                                  \
+        } \
+ \
+        SCOREP_ENTER_WRAPPED_REGION(); \
+        p ## FUNCNAME( target ); \
+        SCOREP_EXIT_WRAPPED_REGION(); \
+ \
+        if ( event_gen_active ) \
+        { \
+            SCOREP_ExitRegion( scorep_shmem_region__ ## FUNCNAME ); \
+ \
+            SCOREP_SHMEM_EVENT_GEN_ON(); \
+        } \
+ \
+        SCOREP_IN_MEASUREMENT_DECREMENT(); \
     }
 
 /* *INDENT-ON* */
