@@ -78,6 +78,7 @@ _afs_lib_CPPFLAGS="-I$[]_afs_lib_PREFIX/include"
 dnl
 AFS_AM_CONDITIONAL(HAVE_[]_afs_lib_MAKEFILE, [test 0 -eq 0], [false])dnl
 dnl binutils_* are sourced from build-config/downloads
+scorep_libbfd_success=yes
 libbfd_summary="yes, from downloaded $binutils_url"
 have_cplus_demangle=yes
 dnl
@@ -106,7 +107,8 @@ AC_CHECK_HEADER([bfd.h],
     [LTLDFLAGS=$_afs_lib_LDFLAGS
      LTLIBS=$_afs_lib_LIBS
      AFS_LTLINK_LA_IFELSE([_LIBBFD_MAIN], [_LIBBFD_LA],
-         [libbfd_summary="yes${_afs_lib_LDFLAGS:+, using $_afs_lib_LDFLAGS}${_afs_lib_CPPFLAGS:+ and $_afs_lib_CPPFLAGS}"
+         [scorep_libbfd_success=yes
+          libbfd_summary="yes${_afs_lib_LDFLAGS:+, using $_afs_lib_LDFLAGS}${_afs_lib_CPPFLAGS:+ and $_afs_lib_CPPFLAGS}"
           CPPFLAGS="$CPPFLAGS -DCHECK_DEMANGLE"
           AFS_LTLINK_LA_IFELSE([_LIBBFD_MAIN], [_LIBBFD_LA],
               [libbfd_summary="${libbfd_summary}, has cplus_demangle"

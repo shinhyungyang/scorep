@@ -158,7 +158,7 @@ AS_CASE(["/${with_libnvidia_ml_lib}/"],
         [AC_MSG_RESULT([no])])
 
 AC_SCOREP_COND_HAVE([NVTX_SUPPORT],
-                    [test "x${scorep_have_nvtx}" != "xno"],
+                    [test "x${scorep_libnvToolsExt_success}" != "xno"],
                     [Defined if NVTX is available.])
 
 AC_SCOREP_COND_HAVE([NVTX_V3],
@@ -190,7 +190,7 @@ AM_CONDITIONAL([HAVE_CUDA_TESTS_HAVE_GOLD], [false])
 
 dnl Add some entries to summary, if CUDA adapter is available
 AS_IF([test "x${scorep_have_cuda_libs}" = "xyes"],
-     [AFS_SUMMARY([NVTX found], [${scorep_have_nvtx}${scorep_have_nvtx_summary:+, $scorep_have_nvtx_summary}])
+     [AFS_SUMMARY([NVTX found], [${scorep_libnvToolsExt_success}${scorep_have_nvtx_summary:+, $scorep_have_nvtx_summary}])
       AFS_SUMMARY([nvcc works], [${scorep_nvcc_msg}])
       AFS_SUMMARY([CUDA version], [${scorep_cuda_version}])])
 
@@ -448,7 +448,6 @@ AFS_EXTERNAL_LIB([nvToolsExt], [_NVTX_LIB_CHECK], [""])
 # ------------------------------
 #
 m4_define([_NVTX_LIB_CHECK], [
-scorep_have_nvtx="no"
 scorep_have_nvtx_v3="no"
 
 AS_IF([test "x${_afs_lib_prevent_check}" = xyes],
@@ -467,19 +466,19 @@ AS_IF([test "x${_afs_lib_prevent_check}" = xyes],
               LTLDFLAGS="$_afs_lib_LDFLAGS $extra_ldflags"
               LTLIBS=$_afs_lib_LIBS
               AFS_LTLINK_LA_IFELSE([_LIBNVTOOLSEXT_MAIN], [_LIBNVTOOLSEXT3_LA],
-                  [scorep_have_nvtx="yes (v3)"
+                  [scorep_libnvToolsExt_success="yes (v3)"
                    scorep_have_nvtx_v3="yes"
                    scorep_have_nvtx_summary="${_afs_lib_LDFLAGS:+using $_afs_lib_LDFLAGS}${_afs_lib_CPPFLAGS:+ and $_afs_lib_CPPFLAGS}"
                    break],
                   [scorep_have_nvtx_summary="cannot build test against $_afs_lib_LIBS"])
           done],
          [scorep_have_nvtx_summary="missing nvtx3/nvToolsExt.h"])
-     AS_IF([test "x${scorep_have_nvtx}" = "xno"],
+     AS_IF([test "x${scorep_libnvToolsExt_success}" = "xno"],
          [AC_CHECK_HEADER([nvToolsExt.h],
               [LTLDFLAGS=$_afs_lib_LDFLAGS
                LTLIBS=$_afs_lib_LIBS
                AFS_LTLINK_LA_IFELSE([_LIBNVTOOLSEXT_MAIN], [_LIBNVTOOLSEXT_LA],
-                   [scorep_have_nvtx="yes (v1/v2)"
+                   [scorep_libnvToolsExt_success="yes (v1/v2)"
                     scorep_have_nvtx_summary="${_afs_lib_LDFLAGS:+using $_afs_lib_LDFLAGS}${_afs_lib_CPPFLAGS:+ and $_afs_lib_CPPFLAGS}"],
                    [scorep_have_nvtx_summary="cannot build test against $_afs_lib_LIBS"])],
               [scorep_have_nvtx_summary="missing nvToolsExt.h"])])
