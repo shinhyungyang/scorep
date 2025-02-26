@@ -20,7 +20,7 @@ AC_LANG_PUSH([C])
 AFS_EXTERNAL_LIB([lustreapi], [_LIBLUSTREAPI_CHECK], [lustre/lustreapi.h])dnl
 AC_LANG_POP([C])
 
-scorep_lustreapi_support=${have_liblustreapi}
+scorep_lustreapi_support=${scorep_liblustreapi_success}
 AS_IF([test x"${scorep_lustreapi_support}" = x"yes"],
       [save_CPPFLAGS=$CPPFLAGS
        CPPFLAGS="$CPPFLAGS ${with_liblustreapi_cppflags}"
@@ -38,7 +38,6 @@ AFS_SUMMARY_POP([Lustre stripe info support], [${scorep_lustreapi_support}${scor
 ])
 
 AC_DEFUN([_LIBLUSTREAPI_CHECK], [
-have_liblustreapi="no"
 AS_IF([test "x${_afs_lib_prevent_check}" = xyes],
     [AS_IF([test "x${_afs_lib_prevent_check_reason}" = xdisabled],
         [scorep_liblustreapi_summary_reason=", explicitly disabled"],
@@ -50,7 +49,7 @@ AS_IF([test "x${_afs_lib_prevent_check}" = xyes],
          [LTLDFLAGS=$_afs_lib_LDFLAGS
           LTLIBS=$_afs_lib_LIBS
           AFS_LTLINK_LA_IFELSE([_LIBLUSTREAPI_MAIN], [_LIBLUSTREAPI_LA],
-              [have_liblustreapi="yes"
+              [scorep_liblustreapi_success="yes"
                scorep_liblustreapi_summary_reason="${_afs_lib_LDFLAGS:+, using $_afs_lib_LDFLAGS}${_afs_lib_CPPFLAGS:+ and $_afs_lib_CPPFLAGS}"],
               [scorep_liblustreapi_summary_reason=", cannot link against $_afs_lib_LIBS"])
          ],

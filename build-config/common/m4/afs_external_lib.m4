@@ -58,7 +58,10 @@
 #
 # Both, CHECK-MACRO and DOWNLOAD-MACRO should honor
 # _afs_lib_prevent_check=(yes|no) and, if 'yes'
-# _afs_lib_prevent_check_reason=(disabled|crosscompile).
+# _afs_lib_prevent_check_reason=(disabled|crosscompile) and need to set
+# _afs_lib_success to a non-"no" value on success. _afs_lib_success survives
+# this macro and can also be used as a predicate for success. Its name is
+# compiled into AFS_PACKAGE_name_libLIBRARY-NAME_success.
 #
 # Both, CHECK-MACRO and DOWNLOAD-MACRO are supposed to prepare a summary
 # output that could be used in the calling macro.
@@ -79,6 +82,7 @@ m4_pushdef([_afs_lib_withval], [with_]m4_translit(_afs_lib_name, [-+.], [___]))d
 m4_pushdef([_afs_lib_withval_lib], [with_]m4_translit(_afs_lib_name, [-+.], [___])_lib)dnl
 m4_ifnblank([$3], [m4_pushdef([_afs_lib_withval_include], [with_]m4_translit(_afs_lib_name, [-+.], [___])_include)])dnl
 dnl
+m4_pushdef([_afs_lib_success], AFS_PACKAGE_name[]_[]m4_translit(_afs_lib_name, [-+.], [___])[]_success)dnl
 m4_pushdef([_afs_lib_LDFLAGS], AFS_PACKAGE_NAME[]_[]_afs_lib_NAME[]_LDFLAGS)dnl
 m4_ifnblank([$3], [m4_pushdef([_afs_lib_CPPFLAGS], AFS_PACKAGE_NAME[]_[]_afs_lib_NAME[]_CPPFLAGS)])dnl
 m4_pushdef([_afs_lib_LIBS], AFS_PACKAGE_NAME[]_[]_afs_lib_NAME[]_LIBS)dnl
@@ -249,6 +253,7 @@ AS_IF([test "${_afs_lib_withval_include:+set}" != set],
     [AC_MSG_ERROR([internal: _afs_lib_withval_include not set])])])
 dnl
 dnl Execute either CHECK-MACRO or DOWNLOAD-MACRO
+_afs_lib_success=no
 _afs_lib_LIBS="-l[]_afs_lib ${_afs_lib_NAME[]_EXTRA_LIBS}"
 m4_ifnblank([$4], [
 dnl CF: Cannot get AS_IF to work here
@@ -257,7 +262,8 @@ if test "x${_afs_lib_download}" = xyes; then :
     dnl DOWNLOAD-MACRO needs to set the AC_SUBST variables
     dnl _afs_lib_LDFLAGS, [_afs_lib_CPPFLAGS,] _afs_lib_MAKEFILE, and
     dnl _afs_lib_PREFIX. afs_lib_LIBS is already set. DOWNLOAD-MACRO
-    dnl is supposed to prepare summary output.
+    dnl is supposed to prepare summary output. On success it needs to set
+    dnl _afs_lib_success to a non-"no" value.
     dnl
     #--- Delegated download for lib$1: begin
     $4
@@ -280,7 +286,8 @@ else])
     dnl supposed to honor _afs_lib_prevent_check. No need to use
     dnl _afs_lib_withval*. CHECK-MACRO is supposed to prepare summary
     dnl output. For summary potentially make use of
-    dnl _afs_lib_prevent_check_reason.
+    dnl _afs_lib_prevent_check_reason. On success it needs to set
+    dnl _afs_lib_success to a non-"no" value.
     dnl
     m4_ifnblank([$3], [_afs_lib_cppflags_save="${CPPFLAGS}"])
     _afs_lib_ldflags_save="${LDFLAGS}"
@@ -293,6 +300,14 @@ else])
     LIBS="${_afs_lib_libs_save}"
 m4_ifnblank([$4], [fi])
 dnl
+dnl Unset AC_SUBST variables in case of unsuccess
+AS_IF([test x"${_afs_lib_success}" = x"no"],
+    [AS_UNSET([_afs_lib_LIBS])
+     AS_UNSET([_afs_lib_LDFLAGS])
+     m4_ifnblank([$3], [AS_UNSET([_afs_lib_CPPFLAGS])])
+     m4_ifnblank([$4], [AS_UNSET([_afs_lib_MAKEFILE])])
+     m4_ifnblank([$4], [AS_UNSET([_afs_lib_PREFIX])])])
+dnl
 AS_UNSET([_afs_lib_prevent_check])
 AS_UNSET([_afs_lib_prevent_check_reason])
 dnl
@@ -303,6 +318,7 @@ m4_popdef([_afs_lib_withval])dnl
 m4_popdef([_afs_lib_withval_lib])dnl
 m4_ifnblank([$3], [m4_popdef([_afs_lib_withval_include])])dnl
 dnl
+m4_popdef([_afs_lib_success])dnl
 m4_popdef([_afs_lib_LDFLAGS])dnl
 m4_ifnblank([$3], [m4_popdef([_afs_lib_CPPFLAGS])])dnl
 m4_popdef([_afs_lib_LIBS])dnl

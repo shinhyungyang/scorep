@@ -91,7 +91,7 @@ AS_IF([test "x${scorep_have_papi_support}" = "xyes" ||
       [have_interrupt_generators=yes],
       [have_interrupt_generators=no])
 
-scorep_unwinding_support=${have_libunwind}
+scorep_unwinding_support=${scorep_libunwind_success}
 scorep_unwinding_summary_reason=${scorep_libunwind_summary_reason}
 
 AS_IF([test "x${afs_have_thread_local_storage}" != "xyes"],
@@ -180,7 +180,7 @@ _afs_lib_CPPFLAGS="-I$[]_afs_lib_PREFIX/include -D_GNU_SOURCE"
 dnl
 AFS_AM_CONDITIONAL(HAVE_[]_afs_lib_MAKEFILE, [true], [false])dnl
 dnl libunwind_* are sourced from build-config/downloads
-have_libunwind="yes"
+scorep_libunwind_success="yes"
 scorep_libunwind_summary_reason=", from downloaded $libunwind_url"
 dnl check will fail, used version provides unw_init_local2
 ac_cv_have_decl_unw_init_local2=yes
@@ -195,7 +195,6 @@ AC_CONFIG_FILES([Makefile.libunwind:../build-backend/Makefile.libunwind.in])
 dnl ----------------------------------------------------------------------------
 
 AC_DEFUN([_LIBUNWIND_CHECK], [
-have_libunwind="no"
 AS_IF([test "x${_afs_lib_prevent_check}" = xyes],
     [AS_IF([test "x${_afs_lib_prevent_check_reason}" = xdisabled],
         [scorep_libunwind_summary_reason=", explicitly disabled"],
@@ -207,7 +206,7 @@ AS_IF([test "x${_afs_lib_prevent_check}" = xyes],
          [LTLDFLAGS=$_afs_lib_LDFLAGS
           LTLIBS=$_afs_lib_LIBS
           AFS_LTLINK_LA_IFELSE([_LIBUNWIND_MAIN], [_LIBUNWIND_LA],
-              [have_libunwind="yes"
+              [scorep_libunwind_success="yes"
                scorep_libunwind_summary_reason="${_afs_lib_LDFLAGS:+, using $_afs_lib_LDFLAGS}${_afs_lib_CPPFLAGS:+ and $_afs_lib_CPPFLAGS}"],
               [scorep_libunwind_summary_reason=", cannot link against $_afs_lib_LIBS"])
          ],

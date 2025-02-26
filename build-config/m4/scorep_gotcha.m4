@@ -21,15 +21,13 @@ AC_ARG_VAR([CMAKE], [CMake to use for building external dependencies])
 AS_IF([test "x${ac_cv_env_CMAKE_set}" != "xset"],
     [AC_PATH_PROG([CMAKE], [cmake], [:])])
 
-scorep_gotcha_support="yes"
 scorep_gotcha_summary_reason=
 
 AC_LANG_PUSH([C])
 AFS_EXTERNAL_LIB([gotcha], [_LIBGOTCHA_CHECK], [gotcha/gotcha.h], [_LIBGOTCHA_DOWNLOAD])dnl
 AC_LANG_POP([C])
 
-AS_IF([test "x${have_libgotcha}" != "xyes"],
-    [scorep_gotcha_support="no"])
+scorep_gotcha_support=${scorep_libgotcha_success}
 
 ])dnl SCOREP_CHECK_LIBGOTCHA
 
@@ -62,7 +60,7 @@ AS_CASE(["${CMAKE},${ac_cv_env_CMAKE_set}"],
         [AC_MSG_ERROR([No CMake found, but required to build libgotcha via '--with-libgotcha=download'])])
 AFS_AM_CONDITIONAL(HAVE_[]_afs_lib_MAKEFILE, [:], [false])dnl
 scorep_gotcha_summary_reason=", from downloaded $libgotcha_url building with ${CMAKE} ${scorep_cmake_version}"
-have_libgotcha="yes"
+scorep_libgotcha_success="yes"
 dnl
 AC_SUBST([libgotcha_package])
 AC_SUBST([libgotcha_url])
@@ -82,14 +80,12 @@ AS_IF([test "x${_afs_lib_prevent_check}" = xyes], [
     [: else],
         [AC_MSG_ERROR([internal: Unknown _afs_lib_prevent_check_reason="${_afs_lib_prevent_check_reason}".])])])
 
-have_libgotcha="no"
-
 CPPFLAGS=$_afs_lib_CPPFLAGS
 AC_CHECK_HEADER([gotcha/gotcha.h],
     [LTLDFLAGS=$_afs_lib_LDFLAGS
      LTLIBS=$_afs_lib_LIBS
      AFS_LTLINK_LA_IFELSE([_LIBGOTCHA_MAIN], [_LIBGOTCHA_LA],
-        [have_libgotcha="yes"
+        [scorep_libgotcha_success="yes"
          scorep_gotcha_summary_reason="${_afs_lib_LDFLAGS:+, using $_afs_lib_LDFLAGS}${_afs_lib_CPPFLAGS:+ and $_afs_lib_CPPFLAGS}"],
         [scorep_gotcha_summary_reason=", cannot link against $_afs_lib_LIBS, try --with-libgotcha=download"])],
     [scorep_gotcha_summary_reason=", missing gotcha/gotcha.h header, try --with-libgotcha=download"])
