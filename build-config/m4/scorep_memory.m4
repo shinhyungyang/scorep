@@ -3,7 +3,7 @@ dnl -*- mode: autoconf -*-
 dnl
 dnl This file is part of the Score-P software (http://www.score-p.org)
 dnl
-dnl Copyright (c) 2016-2017, 2023,
+dnl Copyright (c) 2016-2017, 2023, 2025,
 dnl Technische Universitaet Dresden, Germany
 dnl
 dnl Copyright (c) 2022,
@@ -23,18 +23,18 @@ dnl file build-config/m4/scorep_memory.m4
 # --------------
 AC_DEFUN([SCOREP_MEMORY_SUPPORT], [
 AC_REQUIRE([AFS_CHECK_THREAD_LOCAL_STORAGE])dnl
-AC_REQUIRE([SCOREP_LIBRARY_WRAPPING])dnl
+AC_REQUIRE([SCOREP_CHECK_LIBRARY_WRAPPING])dnl
 
 AFS_SUMMARY_PUSH
 
 scorep_memory_support="yes"
 scorep_memory_summary_reason=
 
-# check linktime wrapping support
-AM_COND_IF([HAVE_LIBWRAP_LINKTIME_SUPPORT],
-           [],
-           [scorep_memory_support="no"
-            AS_VAR_APPEND([scorep_memory_summary_reason], [", missing linktime library wrapping support"])])
+# check library wrapping support
+AM_COND_IF([HAVE_LIBWRAP_SUPPORT],
+    [],
+    [scorep_memory_support="no"
+     AS_VAR_APPEND([scorep_memory_summary_reason], [", missing library wrapping support"])])
 
 # check result of TLS
 AS_IF([test "x${scorep_memory_support}" = "xyes"],

@@ -4,7 +4,7 @@
  * Copyright (c) 2013, 2015, 2023-2024,
  * Forschungszentrum Juelich GmbH, Germany
  *
- * Copyright (c) 2013-2014, 2016-2017, 2019,
+ * Copyright (c) 2013-2014, 2016-2017, 2019, 2025,
  * Technische Universitaet Dresden, Germany
  *
  * Copyright (c) 2014,
@@ -26,7 +26,6 @@
 #include <scorep_config_tool_backend.h>
 #include <scorep_config_tool_mpi.h>
 #include "scorep_config_mpp.hpp"
-#include "scorep_config_utils.hpp"
 #include <iostream>
 
 /* **************************************************************************************
@@ -195,16 +194,6 @@ SCOREP_Config_ShmemMppSystem::addLibs( std::deque<std::string>&           libs,
     deps.addDependency( libs.back(), "libscorep_measurement" );
     deps.addDependency( "libscorep_measurement", "libscorep_adapter_shmem_mgmt" );
     deps.addDependency( "libscorep_measurement", "libscorep_mpp_shmem" );
-}
-
-void
-SCOREP_Config_ShmemMppSystem::addLdFlags( std::string& ldflags,
-                                          bool         buildCheck,
-                                          bool         nvcc )
-{
-#if !HAVE_BACKEND( SHMEM_PROFILING_INTERFACE )
-    ldflags += get_ld_wrap_flag( "shmem", buildCheck, nvcc );
-#endif
 }
 
 void

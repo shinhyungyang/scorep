@@ -4,7 +4,7 @@
  * Copyright (c) 2014, 2016,
  * Forschungszentrum Juelich GmbH, Germany
  *
- * Copyright (c) 2014-2015, 2017,
+ * Copyright (c) 2014-2015, 2017, 2025,
  * Technische Universitaet Dresden, Germany
  *
  * This software may be modified and distributed under the terms of
@@ -22,10 +22,27 @@
 
 
 #include <scorep/SCOREP_PublicTypes.h>
+
+/*
+ * Do not prefix this symbol with 'scorep_', it needs to survive the unwinding
+ * filter.
+ */
+#define SCOREP_LIBWRAP_ORIGINAL_TYPE( func ) \
+    scorep_pthread_original_type__ ## func ## _t
+
+#define SCOREP_LIBWRAP_WRAPPER( func ) \
+    __scorep_pthread_wrapper__ ## func
+
+#define SCOREP_LIBWRAP_ORIGINAL_HANDLE( func ) \
+    scorep_pthread_original_handle__ ## func
+
+#include <scorep/SCOREP_Libwrap_Macros.h>
+
+#include <pthread.h>
 #include <stdlib.h>
 #include <stdbool.h>
 
-#define SCOREP_PTHREAD_REGIONS                                         \
+#define SCOREP_PTHREAD_REGIONS \
     SCOREP_PTHREAD_REGION( int,  pthread_create,         CREATE,            THREAD_CREATE, ( pthread_t*, const pthread_attr_t*, void* ( * )( void* ), void* ) ) \
     SCOREP_PTHREAD_REGION( int,  pthread_join,           JOIN,              THREAD_WAIT,   ( pthread_t, void** ) ) \
     SCOREP_PTHREAD_REGION( void, pthread_exit,           EXIT,              WRAPPER,       ( void* ) ) \
@@ -57,6 +74,15 @@ typedef enum scorep_pthread_region_types
 
 
 extern SCOREP_RegionHandle scorep_pthread_regions[ SCOREP_PTHREAD_REGION_SENTINEL ];
+
+#define SCOREP_PTHREAD_REGION( rettype, name, NAME, TYPE, ARGS ) \
+    SCOREP_LIBWRAP_DECLARE_ORIGINAL_TYPE( ( rettype ), name, ARGS ); \
+    SCOREP_LIBWRAP_DECLARE_WRAPPER( name ); \
+    SCOREP_LIBWRAP_DECLARE_ORIGINAL_HANDLE( name );
+
+SCOREP_PTHREAD_REGIONS
+
+#undef SCOREP_PTHREAD_REGION
 
 extern size_t scorep_pthread_subsystem_id;
 

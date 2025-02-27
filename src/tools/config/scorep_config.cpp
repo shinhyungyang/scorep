@@ -7,7 +7,7 @@
  * Copyright (c) 2009-2013,
  * Gesellschaft fuer numerische Simulation mbH Braunschweig, Germany
  *
- * Copyright (c) 2009-2017, 2019, 2021, 2024,
+ * Copyright (c) 2009-2017, 2019, 2021, 2024-2025,
  * Technische Universitaet Dresden, Germany
  *
  * Copyright (c) 2009-2013,
@@ -76,8 +76,7 @@ enum
     ACTION_MPILIBTOOL,
     ACTION_SHMEMLIBTOOL,
     ACTION_ADAPTER_INIT,
-    ACTION_LIBWRAP_LINKTIME,
-    ACTION_LIBWRAP_RUNTIME,
+    ACTION_LIBWRAP,
     ACTION_LDAUDIT,
     ACTION_TARGETS,
     ACTION_CONSTRUCTOR
@@ -141,10 +140,8 @@ enum
     "              Prints the path to the remapper specification file.\n" \
     "   --adapter-init\n" \
     "              Prints the code for adapter initialization.\n" \
-    "   --libwrap-support=linktime\n" \
-    "              Prints true if link-time library wrapping is supported.\n" \
-    "   --libwrap-support=runtime\n" \
-    "              Prints true if run-time library wrapping is supported.\n" \
+    "   --libwrap-support\n" \
+    "              Prints true if library wrapping is supported.\n" \
     "   --ldaudit  Prints the linker auditing LD_AUDIT value if supported.\n" \
     "  Options:\n" \
     "   --target   Get flags for specified target, e.g., mic, score.\n" \
@@ -406,13 +403,9 @@ main( int    argc,
         {
             action = ACTION_ADAPTER_INIT;
         }
-        else if ( strcmp( argv[ i ], "--libwrap-support=linktime" ) == 0 )
+        else if ( strcmp( argv[ i ], "--libwrap-support" ) == 0 )
         {
-            action = ACTION_LIBWRAP_LINKTIME;
-        }
-        else if ( strcmp( argv[ i ], "--libwrap-support=runtime" ) == 0 )
-        {
-            action = ACTION_LIBWRAP_RUNTIME;
+            action = ACTION_LIBWRAP;
         }
         else if ( strcmp( argv[ i ], "--ldaudit" ) == 0 )
         {
@@ -766,16 +759,8 @@ main( int    argc,
 #endif
             break;
 
-        case ACTION_LIBWRAP_LINKTIME:
-#if HAVE_BACKEND( LIBWRAP_LINKTIME_SUPPORT )
-            std::cout << "true" << std::endl;
-#else
-            std::cout << "false" << std::endl;
-#endif
-            break;
-
-        case ACTION_LIBWRAP_RUNTIME:
-#if HAVE_BACKEND( LIBWRAP_RUNTIME_SUPPORT )
+        case ACTION_LIBWRAP:
+#if HAVE_BACKEND( LIBWRAP_SUPPORT )
             std::cout << "true" << std::endl;
 #else
             std::cout << "false" << std::endl;
@@ -913,6 +898,9 @@ print_adapter_init_source( void )
         init_structs.push_front( "SCOREP_Subsystem_UnwindingService" );
 #endif
         init_structs.push_front( "SCOREP_Subsystem_MetricService" );
+#if HAVE_BACKEND( LIBWRAP_SUPPORT )
+        init_structs.push_front( "SCOREP_Subsystem_LibwrapService" );
+#endif
         init_structs.push_front( "SCOREP_Subsystem_TaskStack" );
         init_structs.push_front( "SCOREP_Subsystem_Substrates" );
 

@@ -30,6 +30,9 @@ case "${1-}" in
     git read-tree --index-out=$tmpdir/.git/index $oid
     GIT_INDEX_FILE=$tmpdir/.git/index
     export GIT_INDEX_FILE
+    # restore common/beautifier/beautify.cfg to the commit's one
+    BEAUTIFY_CONFIG="$tmpdir/.beautify.cfg"
+    git show :common/beautifier/beautify.cfg >"$BEAUTIFY_CONFIG"
     # Compare against the parent
     against=$oid^
 esac

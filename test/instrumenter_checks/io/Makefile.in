@@ -5,7 +5,7 @@
 ##
 ## This file is part of the Score-P software (http://www.score-p.org)
 ##
-## Copyright (c) 2019,
+## Copyright (c) 2019, 2025,
 ## Technische Universitaet Dresden, Germany
 ##
 ## This software may be modified and distributed under the terms of
@@ -27,7 +27,7 @@ INSTRUMENTERCHECK_BUILDDIR = @abs_top_builddir@/../installcheck/instrumenter_che
 BINDIR                     = $(INSTRUMENTERCHECK_BUILDDIR)/bin
 TOOLS                      = $(TOOLS_BINDIR)/scorep $(TOOLS_BINDIR)/scorep-config $(INSTRUMENTERCHECK_BUILDDIR)/check-instrumentation.sh
 PREP                       = "$(TOOLS_BINDIR)/scorep" $(PREPOPTS)
-PREPOPTS                   = --nomemory
+PREPOPTS                   =
 
 scorep__tty_colors = \
 red=; grn=; blu=; mgn=; std=; \
@@ -60,15 +60,10 @@ TESTS = \
     $(BINDIR)/isoc-io-cc \
     $(BINDIR)/isoc-io-cxx
 
-@HAVE_LIBWRAP_LINKTIME_SUPPORT_TRUE@TESTS += \
-    $(BINDIR)/posix-io-cc-linktime \
-    $(BINDIR)/isoc-io-cc-linktime \
-    $(BINDIR)/isoc-io-cxx-linktime
-
-@PLATFORM_CRAY_FALSE@HAVE_LIBWRAP_RUNTIME_SUPPORT_TRUE@TESTS += \
-    $(BINDIR)/posix-io-cc-runtime \
-    $(BINDIR)/isoc-io-cc-runtime \
-    $(BINDIR)/isoc-io-cxx-runtime
+@HAVE_LIBWRAP_SUPPORT_TRUE@TESTS += \
+    $(BINDIR)/posix-io-cc \
+    $(BINDIR)/isoc-io-cc \
+    $(BINDIR)/isoc-io-cxx
 
 all: $(TESTS)
 
@@ -81,26 +76,6 @@ $(BINDIR)/%: $(SRCDIR)/%.cpp $(TOOLS)
 	@mkdir -p $(BINDIR)
 	$(SCOREP_V_CXX)$(PREP) --io=posix $(SCOREP_V_verbose) $(CXX) $(CXXFLAGS) -o $@ $<
 	@$(INSTRUMENTERCHECK_BUILDDIR)/check-instrumentation.sh serial $@ $(PREPOPTS) --io=posix $(SCOREP_V_verbose)
-
-$(BINDIR)/%-linktime: $(SRCDIR)/%.c $(TOOLS)
-	@mkdir -p $(BINDIR)
-	$(SCOREP_V_CC)$(PREP) --io=linktime:posix $(SCOREP_V_verbose) $(CC) $(CFLAGS) -o $@ $<
-	@$(INSTRUMENTERCHECK_BUILDDIR)/check-instrumentation.sh serial $@ $(PREPOPTS) --io=linktime:posix $(SCOREP_V_verbose)
-
-$(BINDIR)/%-linktime: $(SRCDIR)/%.cpp $(TOOLS)
-	@mkdir -p $(BINDIR)
-	$(SCOREP_V_CXX)$(PREP) --io=linktime:posix $(SCOREP_V_verbose) $(CXX) $(CXXFLAGS) -o $@ $<
-	@$(INSTRUMENTERCHECK_BUILDDIR)/check-instrumentation.sh serial $@ $(PREPOPTS) --io=linktime:posix $(SCOREP_V_verbose)
-
-$(BINDIR)/%-runtime: $(SRCDIR)/%.c $(TOOLS)
-	@mkdir -p $(BINDIR)
-	$(SCOREP_V_CC)$(PREP) --io=runtime:posix $(SCOREP_V_verbose) $(CC) $(CFLAGS) -o $@ $<
-	@$(INSTRUMENTERCHECK_BUILDDIR)/check-instrumentation.sh serial $@ $(PREPOPTS) --io=runtime:posix $(SCOREP_V_verbose)
-
-$(BINDIR)/%-runtime: $(SRCDIR)/%.cpp $(TOOLS)
-	@mkdir -p $(BINDIR)
-	$(SCOREP_V_CXX)$(PREP) --io=runtime:posix $(SCOREP_V_verbose) $(CXX) $(CXXFLAGS) -o $@ $<
-	@$(INSTRUMENTERCHECK_BUILDDIR)/check-instrumentation.sh serial $@ $(PREPOPTS) --io=runtime:posix $(SCOREP_V_verbose)
 
 clean:
 	@rm -f $(TESTS)

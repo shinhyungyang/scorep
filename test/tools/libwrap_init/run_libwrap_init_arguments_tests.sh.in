@@ -3,7 +3,7 @@
 ##
 ## This file is part of the Score-P software (http://www.score-p.org)
 ##
-## Copyright (c) 2017,
+## Copyright (c) 2017, 2025,
 ## Technische Universitaet Dresden, Germany
 ##
 ## This software may be modified and distributed under the terms of
@@ -105,7 +105,6 @@ test_expect_success_all "Makefile and filter is correctly created" \
     "test_grep -q \"INSTALL\s*=\s*.\"                    workspace19/Makefile # is not empty" \
     "test_grep -q \"LW_GEN\s*=\s*.\"                     workspace19/Makefile # is not empty" \
     "test_grep -q \"LW_LANGUAGE\s*=\s*c\"                workspace19/Makefile"                \
-    "test_grep -q \"LW_LIBLIST\s*=\s*\"                  workspace19/Makefile # exists"       \
     "test_grep -q \"SCOREP_CPPFLAGS\s*=\s*\"             workspace19/Makefile # exists"       \
     "test_grep -q \"INCLUDE /usr/include\"         workspace19/$lw_name.filter"               \
     "test_grep -q \"INCLUDE $rundir/dir/include\"  workspace19/$lw_name.filter"
@@ -123,7 +122,6 @@ test_expect_success_all "Makefile and filter is correctly created (with = argume
     "test_grep -q \"INSTALL\s*=\s*.\"                    workspace22/Makefile # is not empty" \
     "test_grep -q \"LW_GEN\s*=\s*.\"                     workspace22/Makefile # is not empty" \
     "test_grep -q \"LW_LANGUAGE\s*=\s*c\"                workspace22/Makefile"                \
-    "test_grep -q \"LW_LIBLIST\s*=\s*\"                  workspace22/Makefile # exists"       \
     "test_grep -q \"SCOREP_CPPFLAGS\s*=\s*\"             workspace22/Makefile # exists"       \
     "test_grep -q \"INCLUDE /usr/include\"         workspace22/$lw_name.filter"               \
     "test_grep -q \"INCLUDE $rundir/dir/include\"  workspace22/$lw_name.filter"

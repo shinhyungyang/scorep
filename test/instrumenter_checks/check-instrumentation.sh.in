@@ -8,7 +8,7 @@
 ## Copyright (c) 2013-2014, 2020, 2022, 2024,
 ## Forschungszentrum Juelich GmbH, Germany
 ##
-## Copyright (c) 2014, 2016, 2019, 2021,
+## Copyright (c) 2014, 2016, 2019, 2021, 2025,
 ## Technische Universitaet Dresden, Germany
 ##
 ## This software may be modified and distributed under the terms of
@@ -121,7 +121,10 @@ unset OPARI2_USER
 unset USER
 unset CUDA
 unset HIP
-unset POSIXIO
+@HAVE_OPENCL_SUPPORT_TRUE@OPENCL=yes
+@HAVE_OPENCL_SUPPORT_FALSE@unset OPENCL
+@HAVE_POSIX_IO_SUPPORT_TRUE@POSIXIO=yes
+@HAVE_POSIX_IO_SUPPORT_FALSE@unset POSIXIO
 unset VERBOSE
 case ${PARADIGM} in
     serial)
@@ -183,6 +186,13 @@ while test $# -ne 0; do
             unset HIP
             ;;
 
+        --opencl)
+            OPENCL=yes
+            ;;
+        --noopencl)
+            unset OPENCL
+            ;;
+
         --mpp=*)
             MPP=${1#--mpp=}
             if ! valid_mpp ${MPP}; then
@@ -236,8 +246,12 @@ while test $# -ne 0; do
             unset MEMORY
             ;;
 
-        --io=posix|--io=linktime:posix|--io=runtime:posix)
+        --io=posix)
             POSIXIO=yes
+            ;;
+
+        --io=none)
+            unset POSIXIO
             ;;
 
         --verbose)
@@ -270,7 +284,7 @@ fi
 
 # --- Determine which kind of instrumentation is expected ---
 unset INST_EXPECTED
-if test -n "${COMP}${MPP}${THREAD}${OPARI2_USER}${USER}${MEMORY}${CUDA}${HIP}${POSIXIO}"; then
+if test -n "${COMP}${MPP}${THREAD}${OPARI2_USER}${USER}${MEMORY}${CUDA}${HIP}${OPENCL}${POSIXIO}"; then
     INST_EXPECTED="${INST_EXPECTED}${INST_EXPECTED:+ }init"
 fi
 if test -n "${COMP}"; then
@@ -296,6 +310,9 @@ if test -n "${CUDA}"; then
 fi
 if test -n "${HIP}"; then
     INST_EXPECTED="${INST_EXPECTED}${INST_EXPECTED:+ }hip"
+fi
+if test -n "${OPENCL}"; then
+    INST_EXPECTED="${INST_EXPECTED}${INST_EXPECTED:+ }opencl"
 fi
 if test -n "${POSIXIO}"; then
     INST_EXPECTED="${INST_EXPECTED}${INST_EXPECTED:+ }posixio"
@@ -423,6 +440,13 @@ STATIC=`${NM}  ${EXE} 2>/dev/null | ${GREP} SCOREP_Subsystem_HipAdapter`
 SHARED=`${LDD} ${EXE} 2>/dev/null | ${GREP} libscorep_adapter_hip_mgmt.`
 if test -n "${STATIC}${SHARED}"; then
     INST_FOUND="${INST_FOUND}${INST_FOUND:+ }hip"
+fi
+
+# OpenCL instrumentation?     (custom check)
+STATIC=`${NM}  ${EXE} 2>/dev/null | ${GREP} scorep_opencl_features`
+SHARED=`${LDD} ${EXE} 2>/dev/null | ${GREP} 'libscorep_adapter_opencl_mgmt\.'`
+if test -n "${STATIC}${SHARED}"; then
+    INST_FOUND="${INST_FOUND}${INST_FOUND:+ }opencl"
 fi
 
 # I/O instrumentation?     (custom check)

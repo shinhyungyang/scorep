@@ -7,7 +7,7 @@
  * Copyright (c) 2009-2012,
  * Gesellschaft fuer numerische Simulation mbH Braunschweig, Germany
  *
- * Copyright (c) 2009-2016, 2019-2020, 2022,
+ * Copyright (c) 2009-2016, 2019-2020, 2022, 2025,
  * Technische Universitaet Dresden, Germany
  *
  * Copyright (c) 2009-2012,
@@ -44,6 +44,7 @@
 
 extern const SCOREP_Subsystem SCOREP_Subsystem_Substrates;
 extern const SCOREP_Subsystem SCOREP_Subsystem_TaskStack;
+extern const SCOREP_Subsystem SCOREP_Subsystem_LibwrapService;
 extern const SCOREP_Subsystem SCOREP_Subsystem_MetricService;
 extern const SCOREP_Subsystem SCOREP_Subsystem_UnwindingService;
 extern const SCOREP_Subsystem SCOREP_Subsystem_SamplingService;
@@ -64,6 +65,7 @@ extern const SCOREP_Subsystem SCOREP_Subsystem_PlatformTopology;
 extern const SCOREP_Subsystem SCOREP_Subsystem_KokkosAdapter;
 extern const SCOREP_Subsystem SCOREP_Subsystem_HipAdapter;
 extern const SCOREP_Subsystem SCOREP_Subsystem_OmptAdapter;
+extern const SCOREP_Subsystem SCOREP_Subsystem_PosixIoAdapter;
 
 /**
  * List of subsystems.
@@ -71,6 +73,7 @@ extern const SCOREP_Subsystem SCOREP_Subsystem_OmptAdapter;
 const SCOREP_Subsystem* scorep_subsystems[] = {
     &SCOREP_Subsystem_Substrates,
     &SCOREP_Subsystem_TaskStack,
+    &SCOREP_Subsystem_LibwrapService,
     &SCOREP_Subsystem_MetricService,
     &SCOREP_Subsystem_UnwindingService,
     &SCOREP_Subsystem_SamplingService,
@@ -90,7 +93,8 @@ const SCOREP_Subsystem* scorep_subsystems[] = {
     &SCOREP_Subsystem_MemoryAdapter,
     &SCOREP_Subsystem_KokkosAdapter,
     &SCOREP_Subsystem_HipAdapter,
-    &SCOREP_Subsystem_OmptAdapter
+    &SCOREP_Subsystem_OmptAdapter,
+    &SCOREP_Subsystem_PosixIoAdapter
 };
 
 const size_t scorep_number_of_subsystems = sizeof( scorep_subsystems ) /

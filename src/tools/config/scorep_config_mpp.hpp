@@ -4,7 +4,7 @@
  * Copyright (c) 2013, 2015,
  * Forschungszentrum Juelich GmbH, Germany
  *
- * Copyright (c) 2014, 2022,
+ * Copyright (c) 2014, 2022, 2025,
  * Technische Universitaet Dresden, Germany
  *
  * Copyright (c) 2014,
@@ -195,10 +195,6 @@ public:
     void
     addLibs( std::deque<std::string>&           libs,
              SCOREP_Config_LibraryDependencies& deps ) override;
-    void
-    addLdFlags( std::string& ldflags,
-                bool         build_check,
-                bool         nvcc ) override;
     void
     getInitStructName( std::deque<std::string>& init_structs ) override;
 };

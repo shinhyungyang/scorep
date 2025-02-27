@@ -4,6 +4,9 @@
  * Copyright (c) 2017-2018,
  * Forschungszentrum Juelich GmbH, Germany
  *
+ * Copyright (c) 2025,
+ * Technische Universitaet Dresden, Germany
+ *
  * This software may be modified and distributed under the terms of
  * a BSD-style license.  See the COPYING file in the package base
  * directory for details.
@@ -25,51 +28,37 @@ SCOREP_MEMORY_WRAP_POSIX_MEMALIGN( hbw_posix_memalign, HBW_POSIX_MEMALIGN )
 
 
 int
-SCOREP_LIBWRAP_FUNC_NAME( hbw_posix_memalign_psize )( void** ptr,
-                                                      size_t alignment,
-                                                      size_t size,
-                                                      int    pagesize )
+SCOREP_LIBWRAP_WRAPPER( hbw_posix_memalign_psize )( void** ptr,
+                                                    size_t alignment,
+                                                    size_t size,
+                                                    int    pagesize )
 {
     bool trigger = SCOREP_IN_MEASUREMENT_TEST_AND_INCREMENT();
     if ( !trigger ||
          !SCOREP_IS_MEASUREMENT_PHASE( WITHIN ) )
     {
         SCOREP_IN_MEASUREMENT_DECREMENT();
-        return SCOREP_LIBWRAP_FUNC_CALL( hbw_posix_memalign_psize, ( ptr, alignment, size, pagesize ) );
+        return SCOREP_LIBWRAP_ORIGINAL( hbw_posix_memalign_psize )( ptr, alignment, size, pagesize );
     }
 
     UTILS_DEBUG_ENTRY( "%zu, %zu, %d", alignment, size, pagesize );
 
-    if ( scorep_memory_recording )
-    {
-        scorep_memory_attributes_add_enter_alloc_size( size );
-        SCOREP_EnterWrappedRegion( scorep_memory_regions[ SCOREP_MEMORY_HBW_POSIX_MEMALIGN_PSIZE ] );
-    }
-    else if ( SCOREP_IsUnwindingEnabled() )
-    {
-        SCOREP_EnterWrapper( scorep_memory_regions[ SCOREP_MEMORY_HBW_POSIX_MEMALIGN_PSIZE ] );
-    }
+    scorep_memory_attributes_add_enter_alloc_size( size );
+    SCOREP_EnterWrappedRegion( scorep_memory_regions[ SCOREP_MEMORY_HBW_POSIX_MEMALIGN_PSIZE ] );
 
     SCOREP_ENTER_WRAPPED_REGION();
-    int result = SCOREP_LIBWRAP_FUNC_CALL( hbw_posix_memalign_psize, ( ptr, alignment, size, pagesize ) );
+    int result = SCOREP_LIBWRAP_ORIGINAL( hbw_posix_memalign_psize )( ptr, alignment, size, pagesize );
     SCOREP_EXIT_WRAPPED_REGION();
 
-    if ( scorep_memory_recording )
+    if ( result == 0 && *ptr )
     {
-        if ( result == 0 && *ptr )
-        {
-            SCOREP_AllocMetric_HandleAlloc( scorep_memory_metric,
-                                            ( uint64_t )*ptr,
-                                            size );
-        }
+        SCOREP_AllocMetric_HandleAlloc( scorep_memory_metric,
+                                        ( uint64_t )*ptr,
+                                        size );
+    }
 
-        scorep_memory_attributes_add_exit_return_address( ( uint64_t )*ptr );
-        SCOREP_ExitRegion( scorep_memory_regions[ SCOREP_MEMORY_HBW_POSIX_MEMALIGN_PSIZE ] );
-    }
-    else if ( SCOREP_IsUnwindingEnabled() )
-    {
-        SCOREP_ExitWrapper( scorep_memory_regions[ SCOREP_MEMORY_HBW_POSIX_MEMALIGN_PSIZE ] );
-    }
+    scorep_memory_attributes_add_exit_return_address( ( uint64_t )*ptr );
+    SCOREP_ExitRegion( scorep_memory_regions[ SCOREP_MEMORY_HBW_POSIX_MEMALIGN_PSIZE ] );
 
     UTILS_DEBUG_EXIT( "%zu, %zu, %d, %p", alignment, size, pagesize, result );
     SCOREP_IN_MEASUREMENT_DECREMENT();

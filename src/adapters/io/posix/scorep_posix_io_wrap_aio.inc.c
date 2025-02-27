@@ -48,13 +48,11 @@ aio_get_transfer_size( const struct aiocb* aiocbp )
 #endif
 }
 
-#if HAVE( POSIX_IO_SYMBOL_AIO_CANCEL )
 int
-SCOREP_LIBWRAP_FUNC_NAME( aio_cancel )( int fd, struct aiocb* aiocbp )
+SCOREP_LIBWRAP_WRAPPER( aio_cancel )( int fd, struct aiocb* aiocbp )
 {
     bool trigger = SCOREP_IN_MEASUREMENT_TEST_AND_INCREMENT();
-    INITIALIZE_FUNCTION_POINTER( aio_cancel );
-    int ret;
+    int  ret;
 
     if ( trigger && SCOREP_IS_MEASUREMENT_PHASE( WITHIN ) )
     {
@@ -64,8 +62,7 @@ SCOREP_LIBWRAP_FUNC_NAME( aio_cancel )( int fd, struct aiocb* aiocbp )
                                                                        &fd );
 
         SCOREP_ENTER_WRAPPED_REGION();
-        ret = SCOREP_LIBWRAP_FUNC_CALL( aio_cancel,
-                                        ( fd, aiocbp ) );
+        ret = SCOREP_LIBWRAP_ORIGINAL( aio_cancel )( fd, aiocbp );
         SCOREP_EXIT_WRAPPED_REGION();
 
         if ( handle != SCOREP_INVALID_IO_HANDLE && ret == AIO_CANCELED )
@@ -88,21 +85,17 @@ SCOREP_LIBWRAP_FUNC_NAME( aio_cancel )( int fd, struct aiocb* aiocbp )
     }
     else
     {
-        ret = SCOREP_LIBWRAP_FUNC_CALL( aio_cancel,
-                                        ( fd, aiocbp ) );
+        ret = SCOREP_LIBWRAP_ORIGINAL( aio_cancel )( fd, aiocbp );
     }
     SCOREP_IN_MEASUREMENT_DECREMENT();
     return ret;
 }
-#endif
 
-#if HAVE( POSIX_IO_SYMBOL_AIO_ERROR )
 int
-SCOREP_LIBWRAP_FUNC_NAME( aio_error )( const struct aiocb* aiocbp )
+SCOREP_LIBWRAP_WRAPPER( aio_error )( const struct aiocb* aiocbp )
 {
     bool trigger = SCOREP_IN_MEASUREMENT_TEST_AND_INCREMENT();
-    INITIALIZE_FUNCTION_POINTER( aio_error );
-    int ret;
+    int  ret;
 
     if ( trigger && SCOREP_IS_MEASUREMENT_PHASE( WITHIN ) )
     {
@@ -112,8 +105,7 @@ SCOREP_LIBWRAP_FUNC_NAME( aio_error )( const struct aiocb* aiocbp )
                                                                        &( aiocbp->aio_fildes ) );
 
         SCOREP_ENTER_WRAPPED_REGION();
-        ret = SCOREP_LIBWRAP_FUNC_CALL( aio_error,
-                                        ( aiocbp ) );
+        ret = SCOREP_LIBWRAP_ORIGINAL( aio_error )( aiocbp );
         SCOREP_EXIT_WRAPPED_REGION();
 
         SCOREP_IoOperationMode io_mode;
@@ -141,21 +133,17 @@ SCOREP_LIBWRAP_FUNC_NAME( aio_error )( const struct aiocb* aiocbp )
     }
     else
     {
-        ret = SCOREP_LIBWRAP_FUNC_CALL( aio_error,
-                                        ( aiocbp ) );
+        ret = SCOREP_LIBWRAP_ORIGINAL( aio_error )( aiocbp );
     }
     SCOREP_IN_MEASUREMENT_DECREMENT();
     return ret;
 }
-#endif
 
-#if HAVE( POSIX_IO_SYMBOL_AIO_FSYNC )
 int
-SCOREP_LIBWRAP_FUNC_NAME( aio_fsync )( int op, struct aiocb* aiocbp )
+SCOREP_LIBWRAP_WRAPPER( aio_fsync )( int op, struct aiocb* aiocbp )
 {
     bool trigger = SCOREP_IN_MEASUREMENT_TEST_AND_INCREMENT();
-    INITIALIZE_FUNCTION_POINTER( aio_fsync );
-    int ret;
+    int  ret;
 
     if ( trigger && SCOREP_IS_MEASUREMENT_PHASE( WITHIN ) )
     {
@@ -170,8 +158,7 @@ SCOREP_LIBWRAP_FUNC_NAME( aio_fsync )( int op, struct aiocb* aiocbp )
         }
 
         SCOREP_ENTER_WRAPPED_REGION();
-        ret = SCOREP_LIBWRAP_FUNC_CALL( aio_fsync,
-                                        ( op, aiocbp ) );
+        ret = SCOREP_LIBWRAP_ORIGINAL( aio_fsync )( op, aiocbp );
         SCOREP_EXIT_WRAPPED_REGION();
 
         SCOREP_IoMgmt_PopHandle( io_handle );
@@ -180,20 +167,16 @@ SCOREP_LIBWRAP_FUNC_NAME( aio_fsync )( int op, struct aiocb* aiocbp )
     }
     else
     {
-        ret = SCOREP_LIBWRAP_FUNC_CALL( aio_fsync,
-                                        ( op, aiocbp ) );
+        ret = SCOREP_LIBWRAP_ORIGINAL( aio_fsync )( op, aiocbp );
     }
     SCOREP_IN_MEASUREMENT_DECREMENT();
     return ret;
 }
-#endif
 
-#if HAVE( POSIX_IO_SYMBOL_AIO_READ )
 int
-SCOREP_LIBWRAP_FUNC_NAME( aio_read )( struct aiocb* aiocbp )
+SCOREP_LIBWRAP_WRAPPER( aio_read )( struct aiocb* aiocbp )
 {
-    bool trigger = SCOREP_IN_MEASUREMENT_TEST_AND_INCREMENT();
-    INITIALIZE_FUNCTION_POINTER( aio_read );
+    bool    trigger = SCOREP_IN_MEASUREMENT_TEST_AND_INCREMENT();
     ssize_t ret;
 
     if ( trigger && SCOREP_IS_MEASUREMENT_PHASE( WITHIN ) )
@@ -214,8 +197,7 @@ SCOREP_LIBWRAP_FUNC_NAME( aio_read )( struct aiocb* aiocbp )
         }
 
         SCOREP_ENTER_WRAPPED_REGION();
-        ret = SCOREP_LIBWRAP_FUNC_CALL( aio_read,
-                                        ( aiocbp ) );
+        ret = SCOREP_LIBWRAP_ORIGINAL( aio_read )( aiocbp );
         SCOREP_EXIT_WRAPPED_REGION();
 
         if ( io_handle != SCOREP_INVALID_IO_HANDLE )
@@ -232,20 +214,16 @@ SCOREP_LIBWRAP_FUNC_NAME( aio_read )( struct aiocb* aiocbp )
     }
     else
     {
-        ret = SCOREP_LIBWRAP_FUNC_CALL( aio_read,
-                                        ( aiocbp ) );
+        ret = SCOREP_LIBWRAP_ORIGINAL( aio_read )( aiocbp );
     }
     SCOREP_IN_MEASUREMENT_DECREMENT();
     return ret;
 }
-#endif
 
-#if HAVE( POSIX_IO_SYMBOL_AIO_RETURN )
 ssize_t
-SCOREP_LIBWRAP_FUNC_NAME( aio_return )( struct aiocb* aiocbp )
+SCOREP_LIBWRAP_WRAPPER( aio_return )( struct aiocb* aiocbp )
 {
-    bool trigger = SCOREP_IN_MEASUREMENT_TEST_AND_INCREMENT();
-    INITIALIZE_FUNCTION_POINTER( aio_return );
+    bool    trigger = SCOREP_IN_MEASUREMENT_TEST_AND_INCREMENT();
     ssize_t ret;
 
     if ( trigger && SCOREP_IS_MEASUREMENT_PHASE( WITHIN ) )
@@ -256,8 +234,7 @@ SCOREP_LIBWRAP_FUNC_NAME( aio_return )( struct aiocb* aiocbp )
                                                                        &( aiocbp->aio_fildes ) );
 
         SCOREP_ENTER_WRAPPED_REGION();
-        ret = SCOREP_LIBWRAP_FUNC_CALL( aio_return,
-                                        ( aiocbp ) );
+        ret = SCOREP_LIBWRAP_ORIGINAL( aio_return )( aiocbp );
         SCOREP_EXIT_WRAPPED_REGION();
 
         SCOREP_IoOperationMode io_mode;
@@ -276,49 +253,40 @@ SCOREP_LIBWRAP_FUNC_NAME( aio_return )( struct aiocb* aiocbp )
     }
     else
     {
-        ret = SCOREP_LIBWRAP_FUNC_CALL( aio_return,
-                                        ( aiocbp ) );
+        ret = SCOREP_LIBWRAP_ORIGINAL( aio_return )( aiocbp );
     }
 
     SCOREP_IN_MEASUREMENT_DECREMENT();
     return ret;
 }
-#endif
 
-#if HAVE( POSIX_IO_SYMBOL_AIO_SUSPEND )
 int
-SCOREP_LIBWRAP_FUNC_NAME( aio_suspend )( const struct aiocb* const aiocb_list[], int nitems, const struct timespec* timeout )
+SCOREP_LIBWRAP_WRAPPER( aio_suspend )( const struct aiocb* const aiocb_list[], int nitems, const struct timespec* timeout )
 {
     bool trigger = SCOREP_IN_MEASUREMENT_TEST_AND_INCREMENT();
-    INITIALIZE_FUNCTION_POINTER( aio_suspend );
-    int ret;
+    int  ret;
 
     if ( trigger && SCOREP_IS_MEASUREMENT_PHASE( WITHIN ) )
     {
         SCOREP_EnterWrappedRegion( scorep_posix_io_region_aio_suspend );
         SCOREP_ENTER_WRAPPED_REGION();
-        ret = SCOREP_LIBWRAP_FUNC_CALL( aio_suspend,
-                                        ( aiocb_list, nitems, timeout ) );
+        ret = SCOREP_LIBWRAP_ORIGINAL( aio_suspend )( aiocb_list, nitems, timeout );
         SCOREP_EXIT_WRAPPED_REGION();
         SCOREP_ExitRegion( scorep_posix_io_region_aio_suspend );
     }
     else
     {
-        ret = SCOREP_LIBWRAP_FUNC_CALL( aio_suspend,
-                                        ( aiocb_list, nitems, timeout ) );
+        ret = SCOREP_LIBWRAP_ORIGINAL( aio_suspend )( aiocb_list, nitems, timeout );
     }
     SCOREP_IN_MEASUREMENT_DECREMENT();
     return ret;
 }
-#endif
 
-#if HAVE( POSIX_IO_SYMBOL_AIO_WRITE )
 int
-SCOREP_LIBWRAP_FUNC_NAME( aio_write )( struct aiocb* aiocbp )
+SCOREP_LIBWRAP_WRAPPER( aio_write )( struct aiocb* aiocbp )
 {
     bool trigger = SCOREP_IN_MEASUREMENT_TEST_AND_INCREMENT();
-    INITIALIZE_FUNCTION_POINTER( aio_write );
-    int ret;
+    int  ret;
 
     if ( trigger && SCOREP_IS_MEASUREMENT_PHASE( WITHIN ) )
     {
@@ -338,8 +306,7 @@ SCOREP_LIBWRAP_FUNC_NAME( aio_write )( struct aiocb* aiocbp )
         }
 
         SCOREP_ENTER_WRAPPED_REGION();
-        ret = SCOREP_LIBWRAP_FUNC_CALL( aio_write,
-                                        ( aiocbp ) );
+        ret = SCOREP_LIBWRAP_ORIGINAL( aio_write )( aiocbp );
         SCOREP_EXIT_WRAPPED_REGION();
 
         if ( io_handle != SCOREP_INVALID_IO_HANDLE )
@@ -356,21 +323,17 @@ SCOREP_LIBWRAP_FUNC_NAME( aio_write )( struct aiocb* aiocbp )
     }
     else
     {
-        ret = SCOREP_LIBWRAP_FUNC_CALL( aio_write,
-                                        ( aiocbp ) );
+        ret = SCOREP_LIBWRAP_ORIGINAL( aio_write )( aiocbp );
     }
     SCOREP_IN_MEASUREMENT_DECREMENT();
     return ret;
 }
-#endif
 
-#if HAVE( POSIX_IO_SYMBOL_LIO_LISTIO )
 int
-SCOREP_LIBWRAP_FUNC_NAME( lio_listio )( int mode, struct aiocb* const aiocb_list[], int nitems, struct sigevent* sevp )
+SCOREP_LIBWRAP_WRAPPER( lio_listio )( int mode, struct aiocb* const aiocb_list[], int nitems, struct sigevent* sevp )
 {
     bool trigger = SCOREP_IN_MEASUREMENT_TEST_AND_INCREMENT();
-    INITIALIZE_FUNCTION_POINTER( lio_listio );
-    int ret;
+    int  ret;
 
     SCOREP_IoOperationFlag io_operation_flags = SCOREP_IO_OPERATION_FLAG_NON_COLLECTIVE;
 
@@ -405,8 +368,7 @@ SCOREP_LIBWRAP_FUNC_NAME( lio_listio )( int mode, struct aiocb* const aiocb_list
         }
 
         SCOREP_ENTER_WRAPPED_REGION();
-        ret = SCOREP_LIBWRAP_FUNC_CALL( lio_listio,
-                                        ( mode, aiocb_list, nitems, sevp ) );
+        ret = SCOREP_LIBWRAP_ORIGINAL( lio_listio )( mode, aiocb_list, nitems, sevp );
         SCOREP_EXIT_WRAPPED_REGION();
 
         for ( int i = 0; i < nitems; ++i )
@@ -422,7 +384,7 @@ SCOREP_LIBWRAP_FUNC_NAME( lio_listio )( int mode, struct aiocb* const aiocb_list
 
             if ( handle != SCOREP_INVALID_IO_HANDLE )
             {
-                int error = SCOREP_LIBWRAP_FUNC_CALL( aio_error, ( aiocbp ) );
+                int error = SCOREP_LIBWRAP_ORIGINAL( aio_error )( aiocbp );
 
                 if ( error == 0 || error == EINPROGRESS )
                 {
@@ -450,10 +412,8 @@ SCOREP_LIBWRAP_FUNC_NAME( lio_listio )( int mode, struct aiocb* const aiocb_list
     }
     else
     {
-        ret = SCOREP_LIBWRAP_FUNC_CALL( lio_listio,
-                                        ( mode, aiocb_list, nitems, sevp ) );
+        ret = SCOREP_LIBWRAP_ORIGINAL( lio_listio )( mode, aiocb_list, nitems, sevp );
     }
     SCOREP_IN_MEASUREMENT_DECREMENT();
     return ret;
 }
-#endif

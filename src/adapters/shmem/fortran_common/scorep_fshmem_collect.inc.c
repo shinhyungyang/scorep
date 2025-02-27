@@ -28,22 +28,22 @@
 
 #define SHMEM_FORTRAN_COLLECT_ROUTINE( F_FUNCNAME, C_FUNCNAME ) \
     void                                                        \
-    FSUB( shmem_ ## F_FUNCNAME )( void       *target,           \
-                                  const void *source,           \
-                                  size_t     *nelems,           \
-                                  int        *PE_start,         \
-                                  int        *logPE_stride,     \
-                                  int        *PE_size,          \
-                                  int        *pSync )           \
+    FSUB( shmem_ ## F_FUNCNAME )( void*       target,           \
+                                  const void* source,           \
+                                  size_t*     nelems,           \
+                                  int*        PE_start,         \
+                                  int*        logPE_stride,     \
+                                  int*        PE_size,          \
+                                  int*        pSync )           \
     {                                                           \
         SCOREP_IN_MEASUREMENT_INCREMENT();                      \
-        shmem_ ## C_FUNCNAME ( target,                          \
-                               source,                          \
-                               *nelems,                         \
-                               *PE_start,                       \
-                               *logPE_stride,                   \
-                               *PE_size,                        \
-                               ( long * ) pSync );              \
+        shmem_ ## C_FUNCNAME( target,                           \
+                              source,                           \
+                              *nelems,                          \
+                              *PE_start,                        \
+                              *logPE_stride,                    \
+                              *PE_size,                         \
+                              ( long* )pSync );                 \
         SCOREP_IN_MEASUREMENT_DECREMENT();                      \
     }
 

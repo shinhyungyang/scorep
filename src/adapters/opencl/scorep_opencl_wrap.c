@@ -1,7 +1,7 @@
 /*
  * This file is part of the Score-P software (http://www.score-p.org)
  *
- * Copyright (c) 2014-2015, 2017,
+ * Copyright (c) 2014-2015, 2017, 2025,
  * Technische Universitaet Dresden, Germany
  *
  * This software may be modified and distributed under the terms of
@@ -25,53 +25,42 @@
 #include <SCOREP_RuntimeManagement.h>
 #include <SCOREP_InMeasurement.h>
 #include <SCOREP_Events.h>
+#include <SCOREP_Libwrap_Internal.h>
 
 #include "scorep_opencl.h"
 #include "scorep_opencl_config.h"
-#include "scorep_opencl_regions.h"
-#ifdef SCOREP_LIBWRAP_SHARED
-#include "scorep_opencl_function_pointers.h"
-#endif
+#include "scorep_opencl_libwrap.h"
 
 #include <stdio.h>
 
 
-/* *INDENT-OFF* */
-#define SCOREP_OPENCL_FUNC_ENTER( func )                                    \
-    bool trigger = SCOREP_IN_MEASUREMENT_TEST_AND_INCREMENT();              \
-                                                                            \
-    if ( SCOREP_IS_MEASUREMENT_PHASE( PRE ) )                               \
-    {                                                                       \
-        SCOREP_InitMeasurement();                                           \
-    }                                                                       \
-                                                                            \
-    if ( trigger                                                            \
-         && SCOREP_IS_MEASUREMENT_PHASE( WITHIN ) )                         \
-    {                                                                       \
-        if ( scorep_opencl_record_api )                                     \
-        {                                                                   \
-            SCOREP_EnterWrappedRegion( scorep_opencl_region__ ## func );    \
-        }                                                                   \
-        else  if ( SCOREP_IsUnwindingEnabled() )                            \
-        {                                                                   \
-            SCOREP_EnterWrapper( scorep_opencl_region__ ## func );          \
-        }                                                                   \
+#define SCOREP_OPENCL_FUNC_ENTER( func ) \
+    bool trigger = SCOREP_IN_MEASUREMENT_TEST_AND_INCREMENT(); \
+    if ( trigger && SCOREP_IS_MEASUREMENT_PHASE( WITHIN ) ) \
+    { \
+        if ( scorep_opencl_record_api ) \
+        { \
+            SCOREP_EnterWrappedRegion( SCOREP_LIBWRAP_REGION_HANDLE( func ) ); \
+        } \
+        else if ( SCOREP_IsUnwindingEnabled() ) \
+        { \
+            SCOREP_EnterWrapper( SCOREP_LIBWRAP_REGION_HANDLE( func ) ); \
+        } \
     }
 /* *INDENT-ON* */
 
-#define SCOREP_OPENCL_FUNC_EXIT( func )                             \
-    if ( trigger                                                    \
-         && SCOREP_IS_MEASUREMENT_PHASE( WITHIN ) )                 \
-    {                                                               \
-        if ( scorep_opencl_record_api )                             \
-        {                                                           \
-            SCOREP_ExitRegion( scorep_opencl_region__ ## func );    \
-        }                                                           \
-        else if ( SCOREP_IsUnwindingEnabled() )                     \
-        {                                                           \
-            SCOREP_ExitWrapper( scorep_opencl_region__ ## func );   \
-        }                                                           \
-    }                                                               \
+#define SCOREP_OPENCL_FUNC_EXIT( func ) \
+    if ( trigger && SCOREP_IS_MEASUREMENT_PHASE( WITHIN ) ) \
+    { \
+        if ( scorep_opencl_record_api ) \
+        { \
+            SCOREP_ExitRegion( SCOREP_LIBWRAP_REGION_HANDLE( func ) ); \
+        } \
+        else if ( SCOREP_IsUnwindingEnabled() ) \
+        { \
+            SCOREP_ExitWrapper( SCOREP_LIBWRAP_REGION_HANDLE( func ) ); \
+        } \
+    } \
     SCOREP_IN_MEASUREMENT_DECREMENT();
 
 #define SCOREP_OPENCL_WRAP_ENTER() SCOREP_ENTER_WRAPPED_REGION()
@@ -112,7 +101,7 @@
         }                                                                      \
                                                                                \
         SCOREP_OPENCL_WRAP_ENTER();                                            \
-        cl_int ret = SCOREP_LIBWRAP_FUNC_CALL( func, args );                   \
+        cl_int ret = SCOREP_LIBWRAP_ORIGINAL( func )args;                      \
         SCOREP_OPENCL_WRAP_EXIT();                                             \
                                                                                \
         if ( trigger                                                           \

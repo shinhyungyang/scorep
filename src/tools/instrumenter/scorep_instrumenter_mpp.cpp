@@ -4,7 +4,7 @@
  * Copyright (c) 2013,
  * Forschungszentrum Juelich GmbH, Germany
  *
- * Copyright (c) 2013-2014, 2017, 2024,
+ * Copyright (c) 2013-2014, 2017, 2024-2025,
  * Technische Universitaet Dresden, Germany
  *
  * This software may be modified and distributed under the terms of
@@ -184,9 +184,6 @@ SCOREP_Instrumenter_Shmem::SCOREP_Instrumenter_Shmem
 ) : SCOREP_Instrumenter_Paradigm( selector, "shmem", "",
                                   "SHMEM support using library wrapping" )
 {
-#if !HAVE_BACKEND( SHMEM_PROFILING_INTERFACE )
-    m_requires.push_back( SCOREP_INSTRUMENTER_ADAPTER_LINKTIME_WRAPPING );
-#endif
 #if !( HAVE_BACKEND( SHMEM_SUPPORT ) )
     unsupported();
 #endif
@@ -237,10 +234,6 @@ SCOREP_Instrumenter_Shmem::checkObjects( SCOREP_Instrumenter& instrumenter )
           current_file++ )
     {
         bool allow_dynamic = true;
-#if !HAVE_BACKEND( SHMEM_PROFILING_INTERFACE )
-        // with only link-time wrapping, we must exclude dynamic libraries
-        allow_dynamic = false;
-#endif
         if ( is_object_file( *current_file )
              || is_library( *current_file, allow_dynamic ) )
         {

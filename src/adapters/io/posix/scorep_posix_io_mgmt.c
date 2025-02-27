@@ -206,7 +206,7 @@ scorep_posix_io_get_scorep_io_flags_from_fd( int                    fd,
 {
     if ( accessMode || creationFlags || statusFlags )
     {
-        int flags = SCOREP_LIBWRAP_FUNC_CALL( fcntl, ( fd, F_GETFL ) );
+        int flags = fcntl( fd, F_GETFL );
         if ( flags == -1 )
         {
             return false;
@@ -214,7 +214,7 @@ scorep_posix_io_get_scorep_io_flags_from_fd( int                    fd,
         scorep_posix_io_get_scorep_io_flags( flags, creationFlags, statusFlags );
 
     #if defined( F_GETFD ) && defined( FD_CLOEXEC )
-        flags = SCOREP_LIBWRAP_FUNC_CALL( fcntl, ( fd, F_GETFD ) );
+        flags = fcntl( fd, F_GETFD );
         if ( flags != -1 && flags & FD_CLOEXEC )
         {
             *statusFlags |= SCOREP_IO_STATUS_FLAG_CLOSE_ON_EXEC;

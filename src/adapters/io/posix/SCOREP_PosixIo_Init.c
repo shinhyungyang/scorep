@@ -1,7 +1,7 @@
 /*
  * This file is part of the Score-P software (http://www.score-p.org)
  *
- * Copyright (c) 2016,
+ * Copyright (c) 2016, 2025,
  * Technische Universitaet Dresden, Germany
  *
  * This software may be modified and distributed under the terms of
@@ -24,14 +24,14 @@
 
 #include "SCOREP_PosixIo_Init.h"
 
+#include <SCOREP_Config.h>
+
 #define SCOREP_DEBUG_MODULE_NAME IO
 #include <UTILS_Debug.h>
 
 #include "scorep_posix_io.h"
-#include "scorep_posix_io_regions.h"
-#ifdef SCOREP_LIBWRAP_SHARED
-#include "scorep_posix_io_function_pointers.h"
-#endif
+
+#include "scorep_posix_io_confvars.inc.c"
 
 static size_t subsystem_id = 0;
 
@@ -51,8 +51,7 @@ posix_io_subsystem_register( size_t subsystemId )
 
     UTILS_DEBUG( "Register environment variables" );
 
-//  return SCOREP_ConfigRegister( "posix", scorep_posix_configs );
-    return SCOREP_SUCCESS;
+    return SCOREP_ConfigRegister( "io", scorep_posix_io_confvars );
 }
 
 /**
@@ -64,13 +63,13 @@ posix_io_subsystem_register( size_t subsystemId )
 static SCOREP_ErrorCode
 posix_io_subsystem_init( void )
 {
-#ifdef SCOREP_LIBWRAP_SHARED
-    scorep_posix_io_register_function_pointers();
-#endif
+    if ( posix_io_enable )
+    {
+        scorep_posix_io_init();
+        scorep_posix_io_isoc_init();
 
-    scorep_posix_io_init();
-    scorep_posix_io_isoc_init();
-    scorep_posix_io_register_regions();
+        scorep_posix_io_libwrap_init();
+    }
 
     return SCOREP_SUCCESS;
 }
@@ -81,8 +80,11 @@ posix_io_subsystem_init( void )
 static void
 posix_io_subsystem_finalize( void )
 {
-    scorep_posix_io_isoc_fini();
-    scorep_posix_io_fini();
+    if ( posix_io_enable )
+    {
+        scorep_posix_io_isoc_fini();
+        scorep_posix_io_fini();
+    }
 }
 
 /** POSIX I/O adapter with its callbacks */

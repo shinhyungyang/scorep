@@ -6,6 +6,7 @@
 packages="
 binutils
 libunwind
+libgotcha
 "
 
 # A set of variable definitions sourced during configure for packages
@@ -26,3 +27,9 @@ libunwind_version=1.8.1
 libunwind_package=libunwind-${libunwind_version}
 libunwind_base_url=https://github.com/libunwind/libunwind/releases/download/v${libunwind_version}
 libunwind_url=${libunwind_base_url}/${libunwind_package}.tar.gz
+
+# Given --with-libgotcha=download, we download this GOTCHA tarball
+libgotcha_version=1.0.7
+libgotcha_package=GOTCHA-${libgotcha_version}
+libgotcha_base_url=https://github.com/LLNL/GOTCHA/archive/refs/tags
+libgotcha_url=${libgotcha_base_url}/${libgotcha_version}.tar.gz

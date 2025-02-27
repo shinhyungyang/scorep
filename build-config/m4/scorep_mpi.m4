@@ -9,7 +9,7 @@
 ## Copyright (c) 2009-2013,
 ##    Gesellschaft fuer numerische Simulation mbH Braunschweig, Germany
 ##
-## Copyright (c) 2009-2014, 2019, 2024,
+## Copyright (c) 2009-2014, 2019, 2024-2025,
 ##    Technische Universitaet Dresden, Germany
 ##
 ## Copyright (c) 2009-2013,
@@ -212,43 +212,43 @@ AC_DEFUN([AC_SCOREP_MPI_COMPLIANCE], [
 
     _SCOREP_MPI_CHECK_COMPLIANCE(
     [int], [return 0],
-    [MPI_Address], [( void* location, MPI_Aint* address )],
-    [CONST],       [( const void* location, MPI_Aint* address )])
+    [MPI_Address], [void*, location, MPI_Aint* address],
+    [CONST],       [const void*, location, MPI_Aint*, address])
 
     _SCOREP_MPI_CHECK_COMPLIANCE(
     [int], [return 0],
-    [MPI_Type_hindexed], [( int count, int* array_of_blocklengths, MPI_Aint* array_of_displacements, MPI_Datatype oldtype, MPI_Datatype* newtype )],
-    [CONST],             [( int count, const int* array_of_blocklengths, const MPI_Aint* array_of_displacements, MPI_Datatype oldtype, MPI_Datatype* newtype )])
+    [MPI_Type_hindexed], [int, count, int*, array_of_blocklengths, MPI_Aint*, array_of_displacements, MPI_Datatype, oldtype, MPI_Datatype*, newtype],
+    [CONST],             [int, count, const int*, array_of_blocklengths, const MPI_Aint*, array_of_displacements, MPI_Datatype, oldtype, MPI_Datatype*, newtype])
 
     _SCOREP_MPI_CHECK_COMPLIANCE(
     [int], [return 0],
-    [MPI_Type_struct], [( int count, int* array_of_blocklengths, MPI_Aint* array_of_displacements, MPI_Datatype* array_of_types, MPI_Datatype* newtype )],
-    [CONST],           [( int count, const int* array_of_blocklengths, const MPI_Aint* array_of_displacements, const MPI_Datatype* array_of_types, MPI_Datatype* newtype )])
+    [MPI_Type_struct], [int, count, int*, array_of_blocklengths, MPI_Aint*, array_of_displacements, MPI_Datatype*, array_of_types, MPI_Datatype*, newtype],
+    [CONST],           [int, count, const int*, array_of_blocklengths, const MPI_Aint*, array_of_displacements, const MPI_Datatype*, array_of_types, MPI_Datatype*, newtype])
 
     _SCOREP_MPI_CHECK_COMPLIANCE(
     [int], [return 0],
-    [MPI_Add_error_string], [(int errorcode, char *string)],
-    [CONST],                [(int errorcode, const char *string)])
+    [MPI_Add_error_string], [int, errorcode, char*, string],
+    [CONST],                [int, errorcode, const char*, string])
 
     _SCOREP_MPI_CHECK_COMPLIANCE(
     [int], [return 0],
-    [MPI_Compare_and_swap], [( void *origin_addr, void *compare_addr, void *result_addr, MPI_Datatype datatype, int target_rank, MPI_Aint target_disp, MPI_Win win )],
-    [CONST],                [( const void *origin_addr, const void *compare_addr, void *result_addr, MPI_Datatype datatype, int target_rank, MPI_Aint target_disp, MPI_Win win )])
+    [MPI_Compare_and_swap], [void*, origin_addr, void*, compare_addr, void*, result_addr, MPI_Datatype, datatype, int, target_rank, MPI_Aint, target_disp, MPI_Win, win],
+    [CONST],                [const void*, origin_addr, const void*, compare_addr, void*, result_addr, MPI_Datatype, datatype, int, target_rank, MPI_Aint, target_disp, MPI_Win, win])
 
     _SCOREP_MPI_CHECK_COMPLIANCE(
     [int], [return 0],
-    [MPI_Fetch_and_op], [( void *origin_addr, void *result_addr, MPI_Datatype datatype, int target_rank, MPI_Aint target_disp, MPI_Op op, MPI_Win win )],
-    [CONST],                [( const void *origin_addr, void *result_addr, MPI_Datatype datatype, int target_rank, MPI_Aint target_disp, MPI_Op op, MPI_Win win )])
+    [MPI_Fetch_and_op], [void*, origin_addr, void*, result_addr, MPI_Datatype, datatype, int, target_rank, MPI_Aint, target_disp, MPI_Op, op, MPI_Win, win],
+    [CONST],            [const void*, origin_addr, void*, result_addr, MPI_Datatype, datatype, int, target_rank, MPI_Aint, target_disp, MPI_Op, op, MPI_Win, win])
 
     _SCOREP_MPI_CHECK_COMPLIANCE(
     [int], [return 0],
-    [MPI_Raccumulate], [( void *origin_addr, int origin_count, MPI_Datatype origin_datatype, int target_rank, MPI_Aint target_disp, int target_count, MPI_Datatype target_datatype, MPI_Op op, MPI_Win win, MPI_Request *request )],
-    [CONST],           [( const void *origin_addr, int origin_count, MPI_Datatype origin_datatype, int target_rank, MPI_Aint target_disp, int target_count, MPI_Datatype target_datatype, MPI_Op op, MPI_Win win, MPI_Request *request )])
+    [MPI_Raccumulate], [void*, origin_addr, int, origin_count, MPI_Datatype, origin_datatype, int, target_rank, MPI_Aint, target_disp, int, target_count, MPI_Datatype, target_datatype, MPI_Op, op, MPI_Win, win, MPI_Request*, request],
+    [CONST],           [const void*, origin_addr, int, origin_count, MPI_Datatype, origin_datatype, int, target_rank, MPI_Aint, target_disp, int, target_count, MPI_Datatype, target_datatype, MPI_Op, op, MPI_Win, win, MPI_Request*, request])
 
     _SCOREP_MPI_CHECK_COMPLIANCE(
     [int], [return 0],
-    [MPI_Win_detach], [( MPI_Win win, void *base )],
-    [CONST],          [( MPI_Win win, const void *base )])
+    [MPI_Win_detach], [MPI_Win, win, void*, base],
+    [CONST],          [MPI_Win, win, const void*, base])
 
     _SCOREP_MPI_CHECK_COMPLIANCE(
     [int], [return 0],

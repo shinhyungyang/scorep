@@ -54,10 +54,8 @@ scorep-config <command> [<options>]
               Prints the path to the remapper specification file.
    --adapter-init
               Prints the code for adapter initialization.
-   --libwrap-support=linktime
-              Prints true if link-time library wrapping is supported.
-   --libwrap-support=runtime
-              Prints true if run-time library wrapping is supported.
+   --libwrap-support
+              Prints true if library wrapping is supported.
   Options:
    --target   Get flags for specified target, e.g., mic.
    --nvcc     Convert flags to be suitable for the nvcc compiler.
@@ -81,38 +79,33 @@ scorep-config <command> [<options>]
    --hip|--nohip
               Specifies whether hip instrumentation is used.
               On default hip instrumentation is enabled.
-   --opencl[:<wrapping mode>]|--noopencl
+   --opencl|--noopencl
               Specifies whether opencl instrumentation is used.
               On default opencl instrumentation is enabled.
-              Available wrapping modes are:
-               linktime (default)
-               runtime
    --kokkos|--nokokkos
               Specifies whether kokkos instrumentation is used.
               On default kokkos instrumentation is enabled.
    --preprocess|--nopreprocess
               Specifies whether preprocess instrumentation is used.
               On default preprocess instrumentation is disabled.
-   --memory=<api list>|--nomemory
+   --memory|--nomemory
               Specifies whether memory usage recording is used.
               On default memory usage recording is disabled.
-              The following memory interfaces may be recorded:
-               libc:
-                malloc,realloc,calloc,free,memalign,posix_memalign,valloc
-               libc11:
+              The following memory interfaces may be recorded, if present:
+               ISO C:
+                malloc,realloc,calloc,free,memalign,posix_memalign,valloc,
                 aligned_alloc
-               c++L32|c++L64:
-                new,new[],delete,delete[] (IA-64 C++ ABI)
-               pgCCL32|pgCCL64:
-                new,new[],delete,delete[] (old PGI/EDG C++ ABI)
-   --io=[<wrap-mode>:]<paradigm,...>|--noio
-              Specifies whether I/O recording is used.
-              On default I/O recording is disabled.
-              The following I/O paradigms may be recorded:
+               ISO C++:
+                new,new[],delete,delete[]
+               Intel KNL MCDRAM API:
+                hbw_malloc,hbw_realloc,hbw_calloc,hbw_free,hbw_posix_memalign,
+                hbw_posix_memalign_psize;
+   --io=<paradigm,...>|--noio
+              Specifies whether I/O instrumentation is used.
+              On default I/O instrumentation is enabled.
+              The following I/O paradigms may be recorded, if present:
                none
                posix
-   --libwrap=<wrap-mode>:<libwrap-anchor-file>
-              Uses the specified library wrapper.
    --thread=<threading system>
               Available threading systems are:
                none (default)

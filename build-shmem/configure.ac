@@ -1,7 +1,7 @@
 dnl
 dnl This file is part of the Score-P software (http://www.score-p.org)
 dnl
-dnl Copyright (c) 2013-2018, 2020, 2022,
+dnl Copyright (c) 2013-2018, 2020, 2022, 2025,
 dnl Technische Universitaet Dresden, Germany
 dnl
 dnl Copyright (c) 2015-2016, 2018-2024,
@@ -204,10 +204,6 @@ AC_CONFIG_FILES([../installcheck/instrumenter_checks/shmem/Makefile:../test/inst
 
 SCOREP_LIBRARY_WRAPPING_GENERATOR(
     [AC_CONFIG_FILES([../test/tools/libwrap_init/shmem.sh])])
-
-AM_COND_IF([HAVE_SHMEM_PROFILING_INTERFACE],
-    [],
-    [SCOREP_LD_WRAP_FILE([shmem])])
 
 # On Cray, libunwind.la's dependecy_libs contain -lc which leads to a
 # "multiple definition of `__lll_unlock_wake_private'" error. The patch

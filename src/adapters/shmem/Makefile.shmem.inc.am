@@ -3,7 +3,7 @@
 ##
 ## This file is part of the Score-P software (http://www.score-p.org)
 ##
-## Copyright (c) 2013-2015, 2017, 2019,
+## Copyright (c) 2013-2015, 2017, 2019, 2025,
 ## Technische Universitaet Dresden, Germany
 ##
 ## Copyright (c) 2014, 2017, 2023-2024,
@@ -17,16 +17,6 @@
 ## file src/adapters/shmem/Makefile.shmem.inc.am
 
 if HAVE_SHMEM_SUPPORT
-
-shmem_libwrap_cppflags =
-shmem_libwrap_ldflags =
-if HAVE_SHMEM_PROFILING_INTERFACE
-shmem_libwrap_cppflags += -DSCOREP_LIBWRAP_WEAK
-else !HAVE_SHMEM_PROFILING_INTERFACE
-shmem_libwrap_cppflags += -DSCOREP_LIBWRAP_STATIC
-shmem_libwrap_ldflags += -Wl,@../share/shmem.wrap
-endif !HAVE_SHMEM_PROFILING_INTERFACE
-
 
 # runtime management library for the SHMEM adapter
 
@@ -47,14 +37,12 @@ libscorep_adapter_shmem_mgmt_la_CPPFLAGS = \
     -I$(INC_ROOT)src/measurement/include   \
     -I$(INC_ROOT)src/measurement           \
     -I$(INC_DIR_COMMON_HASH)               \
-    -I$(INC_DIR_DEFINITIONS)               \
-    $(shmem_libwrap_cppflags)
+    -I$(INC_DIR_DEFINITIONS)
 libscorep_adapter_shmem_mgmt_la_LIBADD = \
     $(LIB_DIR_SCOREP)libutils.la \
     $(backend_libutils_la_needs_LIBS) \
     $(LIB_DIR_SCOREP)libscorep_alloc_metric.la
 libscorep_adapter_shmem_mgmt_la_LDFLAGS = \
-    $(shmem_libwrap_ldflags) \
     $(library_api_version_ldflags)
 
 BACKEND_TARGETS += $(LIB_DIR_SCOREP)libutils.la
@@ -79,7 +67,6 @@ libscorep_adapter_shmem_event_la_LIBADD += \
 endif HAVE_SHMEM_FORTRAN_SUPPORT
 
 libscorep_adapter_shmem_event_la_LDFLAGS = \
-    $(shmem_libwrap_ldflags) \
     $(library_api_version_ldflags)
 
 BACKEND_TARGETS += $(LIB_DIR_SCOREP)libutils.la \
@@ -102,7 +89,6 @@ SCOREP_SHMEM_EVENT_FORTRAN_CPPFLAGS = \
     -I$(INC_ROOT)src/adapters/include          \
     -I$(INC_ROOT)src/measurement/include       \
     -I$(INC_ROOT)src/adapters/shmem            \
-    $(shmem_libwrap_cppflags)                  \
     -I$(INC_DIR_DEFINITIONS)
 
 libscorep_adapter_shmem_event_fortran_sub3_la_SOURCES = \
@@ -135,7 +121,6 @@ libscorep_adapter_shmem_c_event_la_SOURCES = \
     $(SRC_ROOT)src/adapters/shmem/SCOREP_Shmem_RemotePtr.c  \
     $(SRC_ROOT)src/adapters/shmem/SCOREP_Shmem_SymHeap.c    \
     $(SRC_ROOT)src/adapters/shmem/SCOREP_Shmem_Sync.c       \
-    $(SRC_ROOT)src/adapters/shmem/SCOREP_Shmem_Team.c       \
     $(SRC_ROOT)src/adapters/shmem/scorep_shmem_internal.h
 
 libscorep_adapter_shmem_c_event_la_CPPFLAGS = \
@@ -145,14 +130,13 @@ libscorep_adapter_shmem_c_event_la_CPPFLAGS = \
     -I$(INC_ROOT)src/adapters/include         \
     -I$(INC_ROOT)src/measurement/include      \
     -I$(INC_ROOT)src/adapters/shmem           \
-    $(shmem_libwrap_cppflags)                 \
     -I$(INC_DIR_DEFINITIONS)
 
 
 endif HAVE_SHMEM_SUPPORT
 
 EXTRA_DIST += \
-    $(SRC_ROOT)src/adapters/shmem/scorep_shmem_function_list.inc                    \
+    $(SRC_ROOT)src/adapters/shmem/scorep_shmem_function_list.inc.c                  \
     $(SRC_ROOT)src/adapters/shmem/fortran_common/scorep_fshmem_atomic.inc.c         \
     $(SRC_ROOT)src/adapters/shmem/fortran_common/scorep_fshmem_broadcast.inc.c      \
     $(SRC_ROOT)src/adapters/shmem/fortran_common/scorep_fshmem_cache.inc.c          \
@@ -165,5 +149,4 @@ EXTRA_DIST += \
     $(SRC_ROOT)src/adapters/shmem/fortran_common/scorep_fshmem_reduction.inc.c      \
     $(SRC_ROOT)src/adapters/shmem/fortran_common/scorep_fshmem_remote_ptr.inc.c     \
     $(SRC_ROOT)src/adapters/shmem/fortran_common/scorep_fshmem_sym_heap.inc.c       \
-    $(SRC_ROOT)src/adapters/shmem/fortran_common/scorep_fshmem_sync.inc.c           \
-    $(SRC_ROOT)src/adapters/shmem/fortran_common/scorep_fshmem_team.inc.c
+    $(SRC_ROOT)src/adapters/shmem/fortran_common/scorep_fshmem_sync.inc.c

@@ -1,7 +1,7 @@
 /*
  * This file is part of the Score-P software (http://www.score-p.org)
  *
- * Copyright (c) 2016-2019,
+ * Copyright (c) 2016-2019, 2025,
  * Technische Universitaet Dresden, Germany
  *
  * Copyright (c) 2022,
@@ -45,19 +45,33 @@
  */
 typedef int64_t scorep_off64_t;
 
-#ifdef SCOREP_LIBWRAP_SHARED
+#define SCOREP_LIBWRAP_ORIGINAL_TYPE( func ) \
+    scorep_posix_io_original_type__ ## func ## _t
 
-#define SCOREP_LIBWRAP_FUNC_REAL_NAME( func ) \
-    scorep_posix_io_funcptr_ ## func
+#define SCOREP_LIBWRAP_WRAPPER( func ) \
+    __scorep_posix_io_wrapper__ ## func
 
-#endif
+#define SCOREP_LIBWRAP_ORIGINAL_HANDLE( func ) \
+    scorep_posix_io_original_handle__ ## func
+
+#define SCOREP_LIBWRAP_REGION_HANDLE( func ) \
+    scorep_posix_io_region_ ## func
 
 #include <scorep/SCOREP_Libwrap_Macros.h>
 
 #define SCOREP_POSIX_IO_PROCESS_FUNC( PARADIGM, TYPE, return_type, func, func_args ) \
-    SCOREP_LIBWRAP_DECLARE_REAL_FUNC( ( return_type ), func, func_args );
+    extern SCOREP_RegionHandle SCOREP_LIBWRAP_REGION_HANDLE( func ); \
+    SCOREP_LIBWRAP_DECLARE_ORIGINAL_TYPE( ( return_type ), func, func_args ); \
+    SCOREP_LIBWRAP_DECLARE_WRAPPER( func ); \
+    SCOREP_LIBWRAP_DECLARE_ORIGINAL_HANDLE( func );
 
-#include "scorep_posix_io_function_list.inc"
+#include "scorep_posix_io_function_list.inc.c"
+
+/**
+ * Register POSIX I/O functions and initialize data structures
+ */
+void
+scorep_posix_io_libwrap_init( void );
 
 /** Artificial POSIX I/O handle representing all currently active I/O handles */
 extern SCOREP_IoHandleHandle scorep_posix_io_sync_all_handle;

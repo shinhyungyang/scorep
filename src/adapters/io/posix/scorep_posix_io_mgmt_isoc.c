@@ -1,7 +1,7 @@
 /*
  * This file is part of the Score-P software (http://www.score-p.org)
  *
- * Copyright (c) 2016-2019,
+ * Copyright (c) 2016-2019, 2025,
  * Technische Universitaet Dresden, Germany
  *
  * This software may be modified and distributed under the terms of
@@ -31,9 +31,6 @@
 
 #define SCOREP_DEBUG_MODULE_NAME IO
 #include <UTILS_Debug.h>
-
-#include "scorep_posix_io_regions.h"
-#include "scorep_posix_io_function_pointers.h"
 
 SCOREP_IoHandleHandle scorep_posix_io_flush_all_handle = SCOREP_INVALID_IO_HANDLE;
 

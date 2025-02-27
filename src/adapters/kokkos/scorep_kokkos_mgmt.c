@@ -208,11 +208,14 @@ kokkos_subsystem_init( void )
     UTILS_DEBUG( "Kokkos init" );
     UTILS_DEBUG( "Selected options: %" PRIu64, scorep_kokkos_features );
 
-    SCOREP_Paradigms_RegisterParallelParadigm(
-        SCOREP_PARADIGM_KOKKOS,
-        SCOREP_PARADIGM_CLASS_ACCELERATOR,
-        "KOKKOS",
-        SCOREP_PARADIGM_FLAG_RMA_ONLY );
+    if ( scorep_kokkos_features > 0 )
+    {
+        SCOREP_Paradigms_RegisterParallelParadigm(
+            SCOREP_PARADIGM_KOKKOS,
+            SCOREP_PARADIGM_CLASS_ACCELERATOR,
+            "KOKKOS",
+            SCOREP_PARADIGM_FLAG_RMA_ONLY );
+    }
 
     return SCOREP_SUCCESS;
 }

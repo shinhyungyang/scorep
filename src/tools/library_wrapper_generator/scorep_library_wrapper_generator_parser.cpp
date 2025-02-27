@@ -1,7 +1,7 @@
 /*
  * This file is part of the Score-P software (http://www.score-p.org)
  *
- * Copyright (c) 2013, 2015-2017, 2019,
+ * Copyright (c) 2013, 2015-2017, 2019, 2025,
  * Technische Universitaet Dresden, Germany
  *
  * This software may be modified and distributed under the terms of
@@ -525,7 +525,7 @@ SCOREP_Libwrap_Parser::AddFunctionDecl( CXCursor      cursor,
         if ( ppos != string::npos )
         {
             /* after the initial "(*" pattern may follow more "*"
-             * maybe also array rackets "[]" before the closing paranthese
+             * maybe also array brackets "[]" before the closing parenthesis
              * thus skip all "*" */
             arg_type.insert( arg_type.find_first_not_of( "*", ppos + 1 ), param_name );
         }

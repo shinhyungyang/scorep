@@ -7,7 +7,7 @@
  * Copyright (c) 2009-2013,
  * Gesellschaft fuer numerische Simulation mbH Braunschweig, Germany
  *
- * Copyright (c) 2009-2017, 2019-2020, 2022,
+ * Copyright (c) 2009-2017, 2019-2020, 2022, 2025,
  * Technische Universitaet Dresden, Germany
  *
  * Copyright (c) 2009-2013,
@@ -96,7 +96,6 @@
 #include "scorep_paradigms_management.h"
 #include "scorep_properties_management.h"
 #include "scorep_runtime_management_timings.h"
-#include "scorep_libwrap_management.h"
 
 /** @brief Measurement system initialized? */
 static bool initialized = false;
@@ -268,6 +267,25 @@ SCOREP_GetExecutableName( bool* executableNameIsFile )
                   "SCOREP_GetExecutableName requires set_executable_name() to be called earlier." );
     *executableNameIsFile = executable_name_is_file;
     return executable_name;
+}
+
+
+const char*
+SCOREP_GetWorkingDirectory( void )
+{
+    static char* working_directory;
+    static bool  been_visited = false;
+    if ( !been_visited )
+    {
+        working_directory = UTILS_IO_GetCwd( NULL, 0 );
+        if ( working_directory == NULL )
+        {
+            UTILS_ERROR_POSIX( "Error while getting absolute path name of the current working directory." );
+            _Exit( EXIT_FAILURE );
+        }
+        been_visited = true;
+    }
+    return working_directory;
 }
 
 
@@ -581,15 +599,9 @@ SCOREP_InitMeasurementWithArgs( int argc, char* argv[] )
     SCOREP_TIME( SCOREP_Thread_Initialize, ( ) );
 
     /*
-     * @dependsOn Definitions
-     */
-    SCOREP_TIME( SCOREP_Libwrap_Initialize, ( ) );
-
-    /*
      * @dependsOn Filter
      * @dependsOn Thread (PAPI needs current location, but does not
      *            need to be activated yet)
-     * @dependsOn Libwrap
      * @dependsOn measurement_regions
      */
     SCOREP_TIME( scorep_subsystems_initialize, ( ) );
@@ -980,8 +992,6 @@ scorep_finalize( void )
         SCOREP_IN_MEASUREMENT_DECREMENT();
         return;
     }
-
-    SCOREP_TIME( SCOREP_Libwrap_Finalize, ( ) );
 
     SCOREP_TIME( SCOREP_Filtering_Finalize, ( ) );
     SCOREP_TIME( SCOREP_Location_FinalizeDefinitions, ( ) );
