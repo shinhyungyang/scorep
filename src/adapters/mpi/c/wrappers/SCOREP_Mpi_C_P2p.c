@@ -1339,25 +1339,20 @@ MPI_Irecv( void*        buf,
     return_val = PMPI_Irecv( buf, count, datatype, source, tag, comm, request );
     SCOREP_EXIT_WRAPPED_REGION();
 
-    if ( source != MPI_PROC_NULL && return_val == MPI_SUCCESS )
-    {
-        SCOREP_MpiRequestId reqid = scorep_mpi_get_request_id();
-        int                 sz;
-        PMPI_Type_size( datatype, &sz );
-
-        if ( event_gen_active_for_group )
-        {
-            SCOREP_MpiIrecvRequest( reqid );
-        }
-
-        scorep_mpi_request_p2p_create( *request, SCOREP_MPI_REQUEST_TYPE_RECV, SCOREP_MPI_REQUEST_FLAG_NONE,
-                                       tag, 0, ( uint64_t )count * sz, datatype, comm, reqid );
-    }
-
     if ( event_gen_active )
     {
         if ( event_gen_active_for_group )
         {
+            if ( source != MPI_PROC_NULL && return_val == MPI_SUCCESS )
+            {
+                SCOREP_MpiRequestId reqid = scorep_mpi_get_request_id();
+                int                 sz;
+                PMPI_Type_size( datatype, &sz );
+                SCOREP_MpiIrecvRequest( reqid );
+                scorep_mpi_request_p2p_create( *request, SCOREP_MPI_REQUEST_TYPE_RECV, SCOREP_MPI_REQUEST_FLAG_NONE,
+                                               tag, 0, ( uint64_t )count * sz, datatype, comm, reqid );
+            }
+
             SCOREP_ExitRegion( scorep_mpi_regions[ SCOREP_MPI_REGION__MPI_IRECV ] );
         }
         else if ( SCOREP_IsUnwindingEnabled() )
@@ -1629,16 +1624,16 @@ MPI_Bsend_init( SCOREP_MPI_CONST_DECL void* buf, int count, MPI_Datatype datatyp
     return_val = PMPI_Bsend_init( buf, count, datatype, dest, tag, comm, request );
     SCOREP_EXIT_WRAPPED_REGION();
 
-    if ( dest != MPI_PROC_NULL && return_val == MPI_SUCCESS )
-    {
-        scorep_mpi_request_p2p_create( *request, SCOREP_MPI_REQUEST_TYPE_SEND, SCOREP_MPI_REQUEST_FLAG_IS_PERSISTENT,
-                                       tag, dest, ( uint64_t )count * sz, datatype, comm,
-                                       scorep_mpi_get_request_id() );
-    }
     if ( event_gen_active )
     {
         if ( event_gen_active_for_group )
         {
+            if ( dest != MPI_PROC_NULL && return_val == MPI_SUCCESS )
+            {
+                scorep_mpi_request_p2p_create( *request, SCOREP_MPI_REQUEST_TYPE_SEND, SCOREP_MPI_REQUEST_FLAG_IS_PERSISTENT,
+                                               tag, dest, ( uint64_t )count * sz, datatype, comm,
+                                               scorep_mpi_get_request_id() );
+            }
             SCOREP_ExitRegion( scorep_mpi_regions[ SCOREP_MPI_REGION__MPI_BSEND_INIT ] );
         }
         else if ( SCOREP_IsUnwindingEnabled() )
@@ -1703,16 +1698,16 @@ MPI_Rsend_init( SCOREP_MPI_CONST_DECL void* buf, int count, MPI_Datatype datatyp
     return_val = PMPI_Rsend_init( buf, count, datatype, dest, tag, comm, request );
     SCOREP_EXIT_WRAPPED_REGION();
 
-    if ( dest != MPI_PROC_NULL && return_val == MPI_SUCCESS )
-    {
-        scorep_mpi_request_p2p_create( *request, SCOREP_MPI_REQUEST_TYPE_SEND, SCOREP_MPI_REQUEST_FLAG_IS_PERSISTENT,
-                                       tag, dest, ( uint64_t )count * sz, datatype, comm,
-                                       scorep_mpi_get_request_id() );
-    }
     if ( event_gen_active )
     {
         if ( event_gen_active_for_group )
         {
+            if ( dest != MPI_PROC_NULL && return_val == MPI_SUCCESS )
+            {
+                scorep_mpi_request_p2p_create( *request, SCOREP_MPI_REQUEST_TYPE_SEND, SCOREP_MPI_REQUEST_FLAG_IS_PERSISTENT,
+                                               tag, dest, ( uint64_t )count * sz, datatype, comm,
+                                               scorep_mpi_get_request_id() );
+            }
             SCOREP_ExitRegion( scorep_mpi_regions[ SCOREP_MPI_REGION__MPI_RSEND_INIT ] );
         }
         else if ( SCOREP_IsUnwindingEnabled() )
@@ -1777,16 +1772,16 @@ MPI_Send_init( SCOREP_MPI_CONST_DECL void* buf, int count, MPI_Datatype datatype
     return_val = PMPI_Send_init( buf, count, datatype, dest, tag, comm, request );
     SCOREP_EXIT_WRAPPED_REGION();
 
-    if ( dest != MPI_PROC_NULL && return_val == MPI_SUCCESS )
-    {
-        scorep_mpi_request_p2p_create( *request, SCOREP_MPI_REQUEST_TYPE_SEND, SCOREP_MPI_REQUEST_FLAG_IS_PERSISTENT,
-                                       tag, dest, ( uint64_t )count * sz, datatype, comm,
-                                       scorep_mpi_get_request_id() );
-    }
     if ( event_gen_active )
     {
         if ( event_gen_active_for_group )
         {
+            if ( dest != MPI_PROC_NULL && return_val == MPI_SUCCESS )
+            {
+                scorep_mpi_request_p2p_create( *request, SCOREP_MPI_REQUEST_TYPE_SEND, SCOREP_MPI_REQUEST_FLAG_IS_PERSISTENT,
+                                               tag, dest, ( uint64_t )count * sz, datatype, comm,
+                                               scorep_mpi_get_request_id() );
+            }
             SCOREP_ExitRegion( scorep_mpi_regions[ SCOREP_MPI_REGION__MPI_SEND_INIT ] );
         }
         else if ( SCOREP_IsUnwindingEnabled() )
@@ -1851,16 +1846,16 @@ MPI_Ssend_init( SCOREP_MPI_CONST_DECL void* buf, int count, MPI_Datatype datatyp
     return_val = PMPI_Ssend_init( buf, count, datatype, dest, tag, comm, request );
     SCOREP_EXIT_WRAPPED_REGION();
 
-    if ( dest != MPI_PROC_NULL && return_val == MPI_SUCCESS )
-    {
-        scorep_mpi_request_p2p_create( *request, SCOREP_MPI_REQUEST_TYPE_SEND, SCOREP_MPI_REQUEST_FLAG_IS_PERSISTENT,
-                                       tag, dest, ( uint64_t )count * sz, datatype, comm,
-                                       scorep_mpi_get_request_id() );
-    }
     if ( event_gen_active )
     {
         if ( event_gen_active_for_group )
         {
+            if ( dest != MPI_PROC_NULL && return_val == MPI_SUCCESS )
+            {
+                scorep_mpi_request_p2p_create( *request, SCOREP_MPI_REQUEST_TYPE_SEND, SCOREP_MPI_REQUEST_FLAG_IS_PERSISTENT,
+                                               tag, dest, ( uint64_t )count * sz, datatype, comm,
+                                               scorep_mpi_get_request_id() );
+            }
             SCOREP_ExitRegion( scorep_mpi_regions[ SCOREP_MPI_REGION__MPI_SSEND_INIT ] );
         }
         else if ( SCOREP_IsUnwindingEnabled() )
@@ -1927,19 +1922,19 @@ MPI_Recv_init( void*        buf,
     SCOREP_ENTER_WRAPPED_REGION();
     return_val = PMPI_Recv_init( buf, count, datatype, source, tag, comm, request );
     SCOREP_EXIT_WRAPPED_REGION();
-    if ( source != MPI_PROC_NULL && return_val == MPI_SUCCESS )
-    {
-        int sz;
-        PMPI_Type_size( datatype, &sz );
-        scorep_mpi_request_p2p_create( *request, SCOREP_MPI_REQUEST_TYPE_RECV, SCOREP_MPI_REQUEST_FLAG_IS_PERSISTENT,
-                                       tag, source, ( uint64_t )count * sz, datatype, comm,
-                                       scorep_mpi_get_request_id() );
-    }
 
     if ( event_gen_active )
     {
         if ( event_gen_active_for_group )
         {
+            if ( source != MPI_PROC_NULL && return_val == MPI_SUCCESS )
+            {
+                int sz;
+                PMPI_Type_size( datatype, &sz );
+                scorep_mpi_request_p2p_create( *request, SCOREP_MPI_REQUEST_TYPE_RECV, SCOREP_MPI_REQUEST_FLAG_IS_PERSISTENT,
+                                               tag, source, ( uint64_t )count * sz, datatype, comm,
+                                               scorep_mpi_get_request_id() );
+            }
             SCOREP_ExitRegion( scorep_mpi_regions[ SCOREP_MPI_REGION__MPI_RECV_INIT ] );
         }
         else if ( SCOREP_IsUnwindingEnabled() )
