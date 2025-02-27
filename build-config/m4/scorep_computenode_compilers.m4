@@ -93,6 +93,10 @@ m4_define([SCOREP_COMPUTENODE_FC],[
         # was observed in the FLIBS variable when using the NVHPC compiler
         # on aarch64 systems.
         FCLIBS=`echo ${FCLIBS} | sed -e 's/-lsr-complexity-limit=[[0-9]]* //g' -e 's/-lsr-complexity-limit=[[0-9]]*$//g'`
+        # Remove -lompstub from FCLIBS. This library is present for ROCm <= 6.2.0
+        # (based on flang/classic) and causes instrumented C programs to crash.
+        AS_CASE([${ax_cv_fc_compiler_vendor}],
+            [flang*], [FCLIBS=`echo ${FCLIBS} | sed -e 's/-lompstub //g' -e 's/-lompstub$//g'`])
         AC_FC_WRAPPERS
     else
         # Not used yet, but will be when we abandon F77.
