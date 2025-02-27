@@ -918,15 +918,15 @@ MPI_Comm_idup( MPI_Comm comm, MPI_Comm* newcomm, MPI_Request* request )
     SCOREP_ENTER_WRAPPED_REGION();
     return_val = PMPI_Comm_idup( comm, newcomm, request );
     SCOREP_EXIT_WRAPPED_REGION();
-    if ( return_val == MPI_SUCCESS )
-    {
-        scorep_mpi_request_comm_idup_create( *request, comm, newcomm, reqid );
-    }
 
     if ( event_gen_active )
     {
         if ( event_gen_active_for_group )
         {
+            if ( return_val == MPI_SUCCESS )
+            {
+                scorep_mpi_request_comm_idup_create( *request, comm, newcomm, reqid );
+            }
             SCOREP_ExitRegion( scorep_mpi_regions[ SCOREP_MPI_REGION__MPI_COMM_IDUP ] );
         }
         else if ( SCOREP_IsUnwindingEnabled() )
@@ -987,15 +987,15 @@ MPI_Comm_idup_with_info( MPI_Comm comm, MPI_Info info, MPI_Comm* newcomm, MPI_Re
     SCOREP_ENTER_WRAPPED_REGION();
     return_val = PMPI_Comm_idup_with_info( comm, info, newcomm, request );
     SCOREP_EXIT_WRAPPED_REGION();
-    if ( return_val == MPI_SUCCESS )
-    {
-        scorep_mpi_request_comm_idup_create( *request, comm, newcomm, reqid );
-    }
 
     if ( event_gen_active )
     {
         if ( event_gen_active_for_group )
         {
+            if ( return_val == MPI_SUCCESS )
+            {
+                scorep_mpi_request_comm_idup_create( *request, comm, newcomm, reqid );
+            }
             SCOREP_ExitRegion( scorep_mpi_regions[ SCOREP_MPI_REGION__MPI_COMM_IDUP_WITH_INFO ] );
         }
         else if ( SCOREP_IsUnwindingEnabled() )

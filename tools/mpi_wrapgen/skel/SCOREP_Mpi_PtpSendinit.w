@@ -41,14 +41,16 @@ ${proto:c}
   return_val = ${call:pmpi};
   SCOREP_EXIT_WRAPPED_REGION();
 
-  if (dest != MPI_PROC_NULL && return_val == MPI_SUCCESS)
-    scorep_mpi_request_p2p_create(*request, SCOREP_MPI_REQUEST_TYPE_SEND, SCOREP_MPI_REQUEST_FLAG_IS_PERSISTENT,
-                       tag, dest, (uint64_t)count*sz, datatype, comm,
-                       scorep_mpi_get_request_id());
   if (event_gen_active)
     {
       if (event_gen_active_for_group)
         {
+          if (dest != MPI_PROC_NULL && return_val == MPI_SUCCESS)
+          {
+            scorep_mpi_request_p2p_create(*request, SCOREP_MPI_REQUEST_TYPE_SEND, SCOREP_MPI_REQUEST_FLAG_IS_PERSISTENT,
+                              tag, dest, (uint64_t)count*sz, datatype, comm,
+                              scorep_mpi_get_request_id());
+          }
           SCOREP_ExitRegion(scorep_mpi_regions[SCOREP_MPI_REGION__${name|uppercase}]);
         }
       else if ( SCOREP_IsUnwindingEnabled() )
