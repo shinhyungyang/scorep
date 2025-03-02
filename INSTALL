@@ -745,6 +745,18 @@ variables:
               Path to libpmi headers: pmi.h
   LIBPMI_LIB  Path to libpmi libraries.
   LIBRCA_LIB  Path to librca libraries.
+  LIBGOTCHA_INCLUDE
+              Path to libgotcha headers. Superseded by --with-libgotcha
+              variants.
+  LIBGOTCHA_LIB
+              Path to libgotcha libraries. Superseded by --with-libgotcha
+              variants.
+  LIBGOTCHA_EXTRA_CPPFLAGS
+              Extra C preprocessor flags required to use libgotcha.
+  LIBGOTCHA_EXTRA_LIBS
+              Extra libraries required to use libgotcha.
+  LIBGOTCHA_EXTRA_LDFLAGS
+              Extra link flags required to use libgotcha.
   BACKEND_TEST_RUNS_NON_RECURSIVE
               Whether to prevent passing --enable-backend-test-runs to
               sub-packages. Activation values are '1', 'yes', and 'true'.
