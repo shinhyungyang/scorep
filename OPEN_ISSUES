@@ -1,7 +1,7 @@
 
-                           Score-P OPEN ISSUES v9.x
-                           ========================
-                                                           Effective: Dec 2024
+                           Score-P OPEN ISSUES v9.0-rc2
+                           ============================
+                                                           Effective: Mar 2025
 
 This file lists known limitations and unimplemented features of
 various Score-P components.
@@ -10,14 +10,14 @@ various Score-P components.
 
 * Platform support
 
-  - Score-P is intended to run on ppc64, x86_64, or aarch64
-    architectures.
+  - Score-P is intended to run on ppc64, x86_64, aarch64, or
+    riscv architectures.
 
   - Score-P has been tested on the following platforms:
 
-    + HPE/Cray XC and EX systems with PrgEnvs cray, intel, nvidia,
-      gnu, amd, aocc, cray-amd. PrgEnv-cray with Cray PE prior 21.05
-      fails to compiler-instrument functions.
+    + HPE/Cray EX systems with PrgEnvs cray, intel, nvidia, gnu, amd,
+      aocc, cray-amd. PrgEnv-cray with Cray PE prior 21.05 fails to
+      compiler-instrument functions.
 
     + various Linux (Intel, AMD, ARM) clusters with GNU, Intel,
       NVIDIA, and AMD compilers. Note that some compilers are
@@ -29,7 +29,7 @@ various Score-P components.
   - The following platforms have not been tested recently:
     + Intel Xeon Phi (KNL)
     + IBM Blue Gene and IBM Power systems
-    + Cray XT, XE, XK
+    + Cray XC, XT, XE, XK
     However the supplied build system might still work on these
     systems.
 
