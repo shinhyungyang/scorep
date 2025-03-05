@@ -22,8 +22,8 @@ included in the *current standard* can be generated. This includes the
 However, the information is stored in an abstract and language independent form
 and additional knowledge is required to reproduce the bindings. For example, for
 each argument of an MPI procedure a *kind* property (not to be confused with
-the Fortran KIND) is stored. To get the C bindings, a map from *kind* s to C
-types is required.
+the Fortran KIND) is stored. To get the C bindings, a mapping from *kind* to C
+type is required.
 
 The :term:`pympistandard` package provides a python API to this derived
 information. It needs an :term:`apis.json` file as input.

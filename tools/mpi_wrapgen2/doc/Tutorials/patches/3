@@ -1,0 +1,73 @@
+diff --git a/tools/mpi_wrapgen2/templates/f08/SCOREP_Mpi_F08_Misc.F90.tmpl b/tools/mpi_wrapgen2/templates/f08/SCOREP_Mpi_F08_Misc.F90.tmpl
+index c623f82f7..cf5398245 100644
+--- a/tools/mpi_wrapgen2/templates/f08/SCOREP_Mpi_F08_Misc.F90.tmpl
++++ b/tools/mpi_wrapgen2/templates/f08/SCOREP_Mpi_F08_Misc.F90.tmpl
+@@ -26,7 +26,7 @@
+ 'MPI_Info_dup',
+ 'MPI_Info_free',
+ 'MPI_Info_get',
+-'MPI_Info_get_nkeys',
++
+ 'MPI_Info_get_nthkey',
+ 'MPI_Info_get_string',
+ 'MPI_Info_get_valuelen',
+diff --git a/tools/mpi_wrapgen2/wrapgen/data/scorep/scorep.json b/tools/mpi_wrapgen2/wrapgen/data/scorep/scorep.json
+index 696d61d97..301be9c52 100644
+--- a/tools/mpi_wrapgen2/wrapgen/data/scorep/scorep.json
++++ b/tools/mpi_wrapgen2/wrapgen/data/scorep/scorep.json
+@@ -3679,25 +3679,9 @@
+         ],
+         "mpi_version": "2.0",
+         "tasks": [
+-            {
+-                "typename": "TaskDefault"
+-            }
+         ],
+         "template": "GuardComplianceWrapper"
+     },
+-    "mpi_info_get_nkeys": {
+-        "group": "misc",
+-        "guards": [
+-            "extra",
+-            "misc"
+-        ],
+-        "mpi_version": "2.0",
+-        "tasks": [
+-            {
+-                "typename": "TaskDefault"
+-            }
+-        ]
+-    },
+     "mpi_info_get_nthkey": {
+         "group": "misc",
+         "guards": [
+@@ -3706,9 +3690,6 @@
+         ],
+         "mpi_version": "2.0",
+         "tasks": [
+-            {
+-                "typename": "TaskDefault"
+-            }
+         ]
+     },
+     "mpi_info_get_string": {
+@@ -3719,9 +3700,6 @@
+         ],
+         "mpi_version": "4.0",
+         "tasks": [
+-            {
+-                "typename": "TaskDefault"
+-            }
+         ]
+     },
+     "mpi_info_get_valuelen": {
+@@ -3732,9 +3710,6 @@
+         ],
+         "mpi_version": "2.0",
+         "tasks": [
+-            {
+-                "typename": "TaskDefault"
+-            }
+         ],
+         "template": "GuardComplianceWrapper"
+     },
