@@ -11,6 +11,8 @@
 - [ ] [Copyright of new files](https://gitlab.jsc.fz-juelich.de/perftools/scorep/-/wikis/copyright-notices)
 - [ ] CITATION.cff
 - [ ] [Obey libtool oddities](https://gitlab.jsc.fz-juelich.de/perftools/scorep/-/wikis/libtool-oddities)
+- [ ] INSTALL
+- [ ] Tools' --help for doxygen (see rule `doc/doxygen-user/main.dox`)
 
 The following commits **must not** appear in history:
 - [ ] _merge_ commits
