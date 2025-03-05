@@ -22,8 +22,8 @@ and :mod:`wrapgen.data.scorep`.
 The only way to determine what and how things are generated is via the
 combination of
 
-* the list of procedure names
-* a generator callback
+* the list of procedure names, and
+* a generator callback.
 
 In the template engine, the only thing known about a procedure is its name
 (at least concerning the public interface, nothing is really inaccessible in Python).

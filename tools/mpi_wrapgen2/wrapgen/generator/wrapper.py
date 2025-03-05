@@ -25,8 +25,8 @@ class Wrapper(WrapperHooks, abc.ABC):
     Generates the wrapper code for an MPI procedure, using info from
     :class:`ScorepProcedure`.
 
-    This abstract base provides a mechanism to add tasks to modify the output.
-    See :meth:`add_task`.
+    This abstract base class provides a mechanism to add tasks to modify the
+    output. See :meth:`add_task`.
 
     Subclasses for the different bindings define the structure of :meth:`generate`
     and the available hooks:
@@ -59,7 +59,7 @@ class Wrapper(WrapperHooks, abc.ABC):
     @abc.abstractmethod
     def local_variables(self) -> Scope[VariableBase]:
         """
-        Subclasses my override this method to define local variables available in
+        Subclasses may override this method to define local variables available in
         the wrapper code.
 
         :return: Local variables defined in the wrapper
