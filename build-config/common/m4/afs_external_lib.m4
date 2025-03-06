@@ -35,11 +35,14 @@
 # provided <path> to exist and to contain HEADERS and
 # libLIBRARY-NAME.*, respectively.
 #
+# HEADERS can have boolean operations in it. "or" and "and" can be used
+# to express a conditional list of headers required.
+#
 # Values for --with-libLIBRARY-NAME-lib and
 # --with-libLIBRARY-NAME-include can be provided by precious variables
 # LIB<upcase(LIBRARY_NAME)>_(LIB|INCLUDE).
 #
-# If these prerquisites are given, execute CHECK-MACRO. Perform any
+# If these prerequisites are given, execute CHECK-MACRO. Perform any
 # check you like, use (and modify) the AC_SUBST variables
 # _afs_lib_LIBS (=-lLIBRARY-NAME), _afs_lib_CPPFLAGS (if HEADERS
 # given), and _afs_lib_LDFLAGS. The latter two are either unset or
@@ -126,18 +129,13 @@ AC_ARG_WITH(_afs_lib_name,
                for an offline installation.])),
          [$5])])
 m4_ifnblank([$3],
-    [m4_ifset([$3],
-        [AC_ARG_WITH(_afs_lib_name[-include],
-             AS_HELP_STRING([--with-_afs_lib_name-include=<Path to _afs_lib_name headers: $3>], [], [79]))],
-        [AC_ARG_WITH(_afs_lib_name[-include],
-             AS_HELP_STRING([--with-_afs_lib_name-include=<Path to _afs_lib_name headers>], [], [79]))])])dnl
+    [AC_ARG_WITH(_afs_lib_name[-include],
+        AS_HELP_STRING([--with-_afs_lib_name-include=<Path to _afs_lib_name headers: $3>], [], [79]))])dnl
 AC_ARG_WITH(_afs_lib_name[-lib],
      AS_HELP_STRING([--with-_afs_lib_name-lib=<Path to _afs_lib_name libraries>], [], [79]))
 dnl
 m4_ifnblank([$3],
-    [m4_ifset([$3],
-        [AC_ARG_VAR(_afs_lib_NAME[]_INCLUDE, [Path to ]_afs_lib_name[ headers: $3. Superseded by --with-]_afs_lib_name[ variants.])],
-        [AC_ARG_VAR(_afs_lib_NAME[]_INCLUDE, [Path to ]_afs_lib_name[ headers. Superseded by --with-]_afs_lib_name[ variants.])])])dnl
+    [AC_ARG_VAR(_afs_lib_NAME[]_INCLUDE, [Path to ]_afs_lib_name[ headers: $3. Superseded by --with-]_afs_lib_name[ variants.])])dnl
 AC_ARG_VAR(_afs_lib_NAME[]_LIB, [Path to ]_afs_lib_name[ libraries. Superseded by --with-]_afs_lib_name[ variants.])dnl
 m4_ifnblank([$3], [AC_ARG_VAR(_afs_lib_NAME[]_EXTRA_CPPFLAGS, [Extra C preprocessor flags required to use ]_afs_lib_name[.])])dnl
 AC_ARG_VAR(_afs_lib_NAME[]_EXTRA_LIBS, [Extra libraries required to use ]_afs_lib_name[.])dnl
@@ -203,12 +201,8 @@ AS_CASE(["${_afs_lib_withval:+set1}${_afs_lib_withval_lib:+set2}m4_ifnblank([$3]
               dnl header consistency checks, differ from the checks below
               AS_IF([! test -d "$_afs_lib_withval/include"],
                   [AC_MSG_ERROR([Directory $_afs_lib_withval/include (via --with-_afs_lib_name) does not exist. Consider using --with-_afs_lib_name-lib and --with-_afs_lib_name-include.])])
-              for header in $3; do
-                  AS_IF([! test -r "$_afs_lib_withval/include/$header"],
-                      [AC_MSG_WARN([Directory $_afs_lib_withval/include (via --with-_afs_lib_name) does not contain $header. Consider using --with-_afs_lib_name-lib and --with-_afs_lib_name-include.])
-                       header_consistent=no])
-              done
-              AS_IF([test "x${header_consistent}" = xno],
+              _HEADER_EXISTS_CHECK([$3], [$_afs_lib_withval/include], [header_consistent])
+              AS_IF([test ${header_consistent} -eq 0],
                   [AC_MSG_ERROR([Header(s) check failed, see WARNING(s) above.])])
               _afs_lib_withval_include="$_afs_lib_withval/include"])
               dnl lib consistency checks, differ from LIB_CONSISTENCY_CHECKS
@@ -229,12 +223,8 @@ AS_CASE(["${_afs_lib_withval:+set1}${_afs_lib_withval_lib:+set2}m4_ifnblank([$3]
               AFS_CONSISTENT_DIR([_afs_lib_withval_include], [--with-_afs_lib_name-include])
               AS_IF([! test -d "$_afs_lib_withval_include"],
                   [AC_MSG_ERROR([Directory $_afs_lib_withval_include (from --with-_afs_lib_name-include) does not exist.])])
-              for header in $3; do
-                  AS_IF([! test -r "$_afs_lib_withval_include/$header"],
-                      [AC_MSG_WARN([Directory $_afs_lib_withval_include  (from --with-_afs_lib_name-include) does not contain $header.])
-                       header_consistent=no])
-              done
-              AS_IF([test "x${header_consistent}" = xno],
+              _HEADER_EXISTS_CHECK([$3], [$_afs_lib_withval_include], [header_consistent])
+              AS_IF([test ${header_consistent} -eq 0],
                   [AC_MSG_ERROR([Header(s) check failed, see WARNING(s) above.])])
               _LIB_CONSISTENCY_CHECKS])],])
     [""],
@@ -399,3 +389,36 @@ AC_ARG_WITH([package-cache],
          [/*], [AFS_LIB_PACKAGE_CACHE=$withval],
          [AFS_LIB_PACKAGE_CACHE=$(cd "$withval" && pwd)])])
 ])# _AFS_LIB_DOWNLOAD_CMD
+
+# _HEADER_EXISTS_CHECK( HEADERS, DIRECTORY, RESULT-VAR )
+# ------------------------------------------------------
+#
+# Check the existence of HEADERS in DIRECTORY. Honoring boolean operators "and"
+# and "or". Defaults to "and" or last operation in list. Short circuit at failed
+# "and".
+#
+# HEADERS:    List of whitespace separated files, can have boolean ops "or" and
+#             "and" in it
+# DIRECTORY:  User provided dirname, files get appended
+# RESULT-VAR: Variable indicating the success of the tests. Will be set to "1"
+#             or "0"
+m4_define([_HEADER_EXISTS_CHECK], [
+_afs_lib_headers_op=
+$3=
+AS_FOR([_afs_lib_HEADER],
+    [_afs_lib_header],
+    [$1],
+    [AS_CASE([_afs_lib_HEADER],
+        [and], [_afs_lib_headers_op='&&'],
+        [or],  [_afs_lib_headers_op='||'],
+        [AS_IF([test -f $2/_afs_lib_HEADER],
+            [_afs_lib_headers_res=1],
+            [AC_MSG_WARN([Directory $2 does not contain _afs_lib_HEADER.])
+            _afs_lib_headers_res=0])
+        AS_IF([test -z "$_afs_lib_headers_op"],
+            [$3=$_afs_lib_headers_res
+            _afs_lib_headers_op='&&'],
+            [AS_VAR_ARITH([$3], ["$3 $_afs_lib_headers_op _afs_lib_headers_res"])
+             AS_IF([test x"${_afs_lib_headers_op}" = x'&&' && test ${$3} -eq 0],
+                [break])])])])
+])# _HEADER_EXISTS_CHECK
