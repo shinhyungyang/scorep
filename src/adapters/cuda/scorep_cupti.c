@@ -13,7 +13,7 @@
  * Copyright (c) 2009-2013,
  * University of Oregon, Eugene, USA
  *
- * Copyright (c) 2009-2013, 2015, 2019-2022,
+ * Copyright (c) 2009-2013, 2015, 2019-2022, 2025,
  * Forschungszentrum Juelich GmbH, Germany
  *
  * Copyright (c) 2009-2013,
@@ -706,7 +706,10 @@ scorep_cupti_create_cuda_comm_group( uint64_t** globalLocationIds )
         /* get an array element for the context location */
         if ( scorep_cuda_record_memcpy )
         {
-            count++;
+            if ( SCOREP_CUPTI_NO_ID != context->location_id )
+            {
+                count++;
+            }
         }
 
         context = context->next;
