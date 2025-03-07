@@ -174,14 +174,19 @@ scorep_ompt_cb_target_emi( ompt_target_t         kind,
         SCOREP_IN_MEASUREMENT_DECREMENT();
         return;
     }
+    /* Skip event if event is triggered for initial device, i.e. the host. */
+    if ( device_num == scorep_ompt_initial_device_num )
+    {
+        return;
+    }
     SCOREP_OMPT_ENSURE_TARGET_DATA_NON_NULL( "target_emi" );
 
-    /* We only want to record events for devices where tracing is available. */
     scorep_ompt_target_device_t* device = get_device( device_num );
     if ( !device )
     {
-        SCOREP_IN_MEASUREMENT_DECREMENT();
-        return;
+        UTILS_FATAL( "Target event was triggered, but device was not initialized yet. "
+                     "This might be a runtime issue. Look at `scorep-info open-issues` "
+                     "for more information." );
     }
 
     if ( device->device_tracing_available )
