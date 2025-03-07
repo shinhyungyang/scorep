@@ -16,6 +16,7 @@
 
 AC_DEFUN([SCOREP_CHECK_LIBGOTCHA], [
 AC_REQUIRE([AC_PROG_SED])dnl
+AC_REQUIRE([SCOREP_EXPERIMENTAL_PLATFORM])dnl
 
 AC_ARG_VAR([CMAKE], [CMake to use for building external dependencies])
 AS_IF([test "x${ac_cv_env_CMAKE_set}" != "xset"],
@@ -72,8 +73,7 @@ dnl ----------------------------------------------------------------------------
 m4_define([_LIBGOTCHA_CHECK], [
 AS_IF([test "x${_afs_lib_prevent_check}" = xyes], [
     AS_IF([test "x${_afs_lib_prevent_check_reason}" = xdisabled],
-        [AS_CASE([${ac_scorep_platform}],
-            [mac|mingw], [:],
+        [AS_IF([test x${scorep_enable_experimental_platform} = xno],
             [AC_MSG_ERROR([A working _afs_lib_name installation is required, --without-_afs_lib_name is not a valid option. See --with-_afs_lib_name in INSTALL.])])],
     [test "x${_afs_lib_prevent_check_reason}" = xcrosscompile],
         [AC_MSG_ERROR([A working _afs_lib_name installation is required. Either provide a path or use the download option, see --with-_afs_lib_name in INSTALL.])],
