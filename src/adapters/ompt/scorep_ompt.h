@@ -1,7 +1,7 @@
 /*
  * This file is part of the Score-P software (http://www.score-p.org)
  *
- * Copyright (c) 2022-2023,
+ * Copyright (c) 2022-2023, 2025,
  * Forschungszentrum Juelich GmbH, Germany
  *
  * Copyright (c) 2025,
@@ -44,6 +44,7 @@ extern uint32_t                         scorep_ompt_my_location_count;
 extern uint64_t*                        scorep_ompt_my_location_ids;
 extern SCOREP_RmaWindowHandle           scorep_ompt_rma_window_handle;
 extern SCOREP_InterimCommunicatorHandle scorep_ompt_interim_communicator_handle;
+extern int                              scorep_ompt_initial_device_num;
 
 
 typedef struct scorep_ompt_cpu_location_data

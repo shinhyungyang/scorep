@@ -66,6 +66,9 @@ SCOREP_InterimCommunicatorHandle scorep_ompt_interim_communicator_handle = SCORE
 uint32_t                         scorep_ompt_my_location_count           = 0;
 /* Used to collect all my locations for unification, and only valid in this phase. */
 uint64_t* scorep_ompt_my_location_ids = NULL;
+/* Initial device number as provided by the runtime.
+ * Typically -1, or num_devices + 1. */
+int scorep_ompt_initial_device_num = -1;
 
 
 /* Called by the OpenMP runtime. Everything starts from here. */
@@ -96,6 +99,7 @@ initialize_tool( ompt_function_lookup_t lookup,
     SCOREP_IN_MEASUREMENT_INCREMENT();
     UTILS_DEBUG( "[%s] initial_device_num=%d",
                  UTILS_FUNCTION_NAME, initialDeviceNum );
+    scorep_ompt_initial_device_num = initialDeviceNum;
 
     /* Lookup runtime entry points: */
     /* According to the specification (Monitoring Activity on the Host with
