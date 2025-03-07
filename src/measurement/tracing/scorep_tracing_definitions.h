@@ -7,7 +7,7 @@
  * Copyright (c) 2009-2011,
  * Gesellschaft fuer numerische Simulation mbH Braunschweig, Germany
  *
- * Copyright (c) 2009-2011,
+ * Copyright (c) 2009-2011, 2025,
  * Technische Universitaet Dresden, Germany
  *
  * Copyright (c) 2009-2011,
@@ -54,6 +54,12 @@ scorep_tracing_write_global_definitions( OTF2_GlobalDefWriter* global_definition
 
 void
 scorep_tracing_set_properties( OTF2_Archive* scorep_otf2_archive );
+
+/**
+ * Returns the upper bound for all local definitions tracing writes out mappings.
+ */
+uint64_t
+scorep_tracing_get_mapped_definitions_upper_bound( void );
 
 
 #endif /* SCOREP_TRACING_DEFINITIONS_H */
