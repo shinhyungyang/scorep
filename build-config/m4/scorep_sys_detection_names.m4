@@ -92,3 +92,25 @@ AC_DEFUN([AC_SCOREP_PLATFORM_AND_MACHINE_NAMES],
                        ["${afs_scorep_default_machine_name}"],
                        [Default name of the machine Score-P is running on.])
 ])
+
+# SCOREP_EXPERIMENTAL_PLATFORM()
+# ------------------------------
+#
+# Provide configure option --enable-experimental-platform to permit
+# builds on experimental platforms. If not given on experimental
+# platforms, configure will abort. Experimental platforms are defined
+# here.
+#
+AC_DEFUN([SCOREP_EXPERIMENTAL_PLATFORM], [
+AC_ARG_ENABLE([experimental-platform],
+    [AS_HELP_STRING([--enable-experimental-platform],
+         [Enables builds on platforms that are not officially supported (currently macOS and MinGW).])],
+    [scorep_enable_experimental_platform=$enableval],
+    [scorep_enable_experimental_platform=no])
+
+AS_CASE([${ac_scorep_platform},${scorep_enable_experimental_platform}],
+    [*,yes],
+        [AC_MSG_WARN([Attempting an experimental build for platform '${afs_scorep_platform_name}'. Feel free to report bugs or issues to <AC_PACKAGE_BUGREPORT>, but note that this is not a supported platform yet. Namaste.])],
+    [mac,no|mingw,no],
+        [AC_MSG_ERROR([Platform '${afs_scorep_platform_name}' is not officially supported by ]AC_PACKAGE_NAME[. You can specify "--enable-experimental-platform" to enable an experimental build and report success to <AC_PACKAGE_BUGREPORT>. Thanks.])])
+])# SCOREP_EXPERIMENTAL_PLATFORM
