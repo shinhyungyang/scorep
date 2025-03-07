@@ -476,7 +476,7 @@ various Score-P components.
         processed.
     If the application crashes or hangs because of the mentioned issues,
     please try to disable the device tracing interface by setting
-    `SCOREP_OMPT_TARGET_DEVICE_TRACING_ENABLE=false` and record events with
+    `SCOREP_OPENMP_TARGET_DEVICE_TRACING_ENABLE=false` and record events with
     the respective native accelerator adapter.
 
   - Not all runtimes offering support for the OpenMP Tools Interface support
@@ -492,6 +492,15 @@ various Score-P components.
     using `#pragma omp single nowait` or `#pragma omp masked` might cause Score-P
     to abort when using LLVM based compilers due to missing implicit barriers
     in the runtime. As a workaround, please use `#pragma omp single` instead.
+
+  - When instrumenting an application with NVHPC 24.11 or 25.1, the OpenMP
+    runtime may dispatch a target-begin event before device initialization.
+    This was observed with codes, where no data transfer is done, or small
+    variables on the stack were copied. Since Score-P requires having
+    OpenMP target devices initialized when a target-begin event is dispatched,
+    the program will abort. Please disable the instrumentation of target
+    directives via `SCOREP_OPENMP_TARGET_ENABLE=no` and record events with
+    the CUDA adapter instead.
 
 --------------------------------------------------------------------------------
 
