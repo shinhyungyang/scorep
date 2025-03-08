@@ -485,7 +485,7 @@ write_definitions( void )
      * and #metrics. Hence we determine a local maximum out of all local definitions
      * for which we write ID mappings and use this as the #locations. Use @locations
      * as it is uint64_t. */
-    uint64_t local_max_definition_count = scorep_tracing_get_max_local_definition_count();
+    uint64_t local_max_definition_count = scorep_tracing_get_mapped_definitions_upper_bound();
     uint64_t max_definition_count       = 0;
     SCOREP_Ipc_Reduce( &local_max_definition_count,
                        &max_definition_count,
