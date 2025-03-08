@@ -1529,7 +1529,7 @@ scorep_write_io_handle_definitions( void*                     writerHandle,
 
 
 uint64_t
-scorep_tracing_get_max_local_definition_count( void )
+scorep_tracing_get_mapped_definitions_upper_bound( void )
 {
     uint64_t max_definition_count = 0;
 
