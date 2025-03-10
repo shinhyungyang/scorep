@@ -16,6 +16,7 @@
 
 AC_DEFUN([SCOREP_CHECK_LIBGOTCHA], [
 AC_REQUIRE([AC_PROG_SED])dnl
+AC_REQUIRE([SCOREP_EXPERIMENTAL_PLATFORM])dnl
 
 AC_ARG_VAR([CMAKE], [CMake to use for building external dependencies])
 AS_IF([test "x${ac_cv_env_CMAKE_set}" != "xset"],
@@ -24,10 +25,28 @@ AS_IF([test "x${ac_cv_env_CMAKE_set}" != "xset"],
 scorep_gotcha_summary_reason=
 
 AC_LANG_PUSH([C])
-AFS_EXTERNAL_LIB([gotcha], [_LIBGOTCHA_CHECK], [gotcha/gotcha.h], [_LIBGOTCHA_DOWNLOAD])dnl
+AFS_EXTERNAL_LIB([gotcha], [_LIBGOTCHA_CHECK], [gotcha/gotcha.h], [_LIBGOTCHA_DOWNLOAD], [dnl
+AS_HELP_STRING([--with-]_afs_lib_name[@<:@=yes|download|<path to ]_afs_lib_name[ installation>@:>@],
+    [A ]_afs_lib_name[ installation is required. Option defaults to [yes]
+     on non-cross-compile systems and expects library and headers
+     to be found in system locations. Provide ]_afs_lib_name['s
+     installation prefix [path] to override this default.
+     --with-]_afs_lib_name[=<path> is a shorthand for
+     --with-]_afs_lib_name[-include=<path/include> and
+     --with-]_afs_lib_name[-lib=<path/(lib64|lib)>. If this
+     not the case, use the explicit
+     options directly or provide paths via ]_afs_lib_NAME[_LIB
+     and ]_afs_lib_NAME[_INCLUDE. Use [download] to automatically
+     obtain and use ]_afs_lib_name[ via external tarball. See
+     --with-package-cache=<path> how to provide the tarball
+     for an offline installation.])])dnl
 AC_LANG_POP([C])
 
 scorep_gotcha_support=${scorep_libgotcha_success}
+AS_CASE([${scorep_gotcha_support},${scorep_enable_experimental_platform}],
+    [yes,*], [: accept],
+    [no,yes], [: accept for experimentals platforms],
+    [AC_MSG_ERROR([GOTCHA support is mandatory for Score-P. Try '--with-libgotcha=download'.])])
 
 ])dnl SCOREP_CHECK_LIBGOTCHA
 
@@ -72,8 +91,7 @@ dnl ----------------------------------------------------------------------------
 m4_define([_LIBGOTCHA_CHECK], [
 AS_IF([test "x${_afs_lib_prevent_check}" = xyes], [
     AS_IF([test "x${_afs_lib_prevent_check_reason}" = xdisabled],
-        [AS_CASE([${ac_scorep_platform}],
-            [mac|mingw], [:],
+        [AS_IF([test x${scorep_enable_experimental_platform} = xno],
             [AC_MSG_ERROR([A working _afs_lib_name installation is required, --without-_afs_lib_name is not a valid option. See --with-_afs_lib_name in INSTALL.])])],
     [test "x${_afs_lib_prevent_check_reason}" = xcrosscompile],
         [AC_MSG_ERROR([A working _afs_lib_name installation is required. Either provide a path or use the download option, see --with-_afs_lib_name in INSTALL.])],

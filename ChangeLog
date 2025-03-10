@@ -18,9 +18,9 @@ Major features:
   information about runtime limitations, please take a look at the
   OPEN_ISSUES section regarding known issues with OpenMP target.
 - Most instrumentation adapters that intercept library calls
-  now use the GOTCHA library, notable the Pthreads, POSIX I/O,
-  and memory tracking instrumentation, enabling them to intercept
-  calls into shared libraries as well.
+  now require the mandatory GOTCHA library, notable the Pthreads, POSIX
+  I/O, and memory tracking instrumentation, enabling them to intercept
+  calls from within shared libraries as well.
   To fulfill the build requirement for GOTCHA, use the `--with-libgotcha=`
   configure flag with the argument `download` to download, build, and
   install the library during make time. Please note that CMake 3+ is
@@ -139,7 +139,7 @@ Compatibility:
   at configure time, can now be provided via `build-config/packages` or
   `--with-package-cache=<path>`. Run `build-config/packages.sh` to list
   all packages and their respective download URL.
-- For unwind, bfd and lustreapi additional `LIBS`, `LDFLAGS` and
+- For unwind, bfd, lustreapi, and gotcha additional `LIBS`, `LDFLAGS` and
   `CPPFLAGS` can be passed during configure (e.g. via `LIBBFD_EXTRA_LIBS`) to
   ensure that these libraries are detected correctly.
 - Score-P's installed libraries can be built either shared or static,
