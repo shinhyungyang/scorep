@@ -298,7 +298,7 @@ via:
               is not the case, use the explicit options directly
               or provide paths via LIBNVTOOLSEXT_LIB and
               LIBNVTOOLSEXT_INCLUDE.
-  --with-libnvToolsExt-include=<Path to libnvToolsExt headers>
+  --with-libnvToolsExt-include=<Path to libnvToolsExt headers: nvtx3/nvToolsExt.h or nvToolsExt.h>
   --with-libnvToolsExt-lib=<Path to libnvToolsExt libraries>
 
 To enable support for HIP measurement via ROCm configure with
@@ -509,21 +509,21 @@ be used to build Score-P are as follows:
   --with-libbfd-lib=<Path to libbfd libraries>
   Please note that if a Score-P installation uses libbfd, the Score-P
   instrumented binaries may only be distributed under GPLv3 licensing.
-  --with-libgotcha[=yes|no|download|<path to libgotcha installation>]
-               Try to use libgotcha. Defaults to [yes] on
-               non-cross-compile systems and expects library and
-               headers to be found in system locations. Defaults to
-               [no] on cross-compile systems. Provide libgotcha's
-               installation prefix [path] to override the defaults.
+  --with-libgotcha[=yes|download|<path to libgotcha installation>]
+               A libgotcha installation is required. Option
+               defaults to [yes] on non-cross-compile systems and
+               expects library and headers to be found in system
+               locations. Provide libgotcha's installation prefix
+               [path] to override this default.
                --with-libgotcha=<path> is a shorthand for
                --with-libgotcha-include=<path/include> and
-               --with-libgotcha-lib=<path/(lib64|lib)>. If this is
-               not the case, use the explicit options directly or
+               --with-libgotcha-lib=<path/(lib64|lib)>. If this not
+               the case, use the explicit options directly or
                provide paths via LIBGOTCHA_LIB and
                LIBGOTCHA_INCLUDE. Use [download] to automatically
-               obtain and use libgotcha via an external package. See
-               --with-package-cache=<path> how to provide the tarball
-               for an offline installation.
+               obtain and use libgotcha via external tarball. See
+               --with-package-cache=<path> how to provide the
+               tarball for an offline installation.
   --with-libgotcha-include=<Path to libgotcha headers: gotcha/gotcha.h>
   --with-libgotcha-lib=<Path to libgotcha libraries>
   --with-llvm[=<llvm-bindir>]
@@ -693,8 +693,8 @@ variables:
   LIBNVIDIA_ML_LIB
               Path to libnvidia-ml libraries.
   LIBNVTOOLSEXT_INCLUDE
-              Path to libnvToolsExt headers. Superseded by
-              --with-libnvToolsExt variants.
+              Path to libnvToolsExt headers: nvtx3/nvToolsExt.h or
+              nvToolsExt.h. Superseded by --with-libnvToolsExt variants.
   LIBNVTOOLSEXT_LIB
               Path to libnvToolsExt libraries. Superseded by
               --with-libnvToolsExt variants.
@@ -746,8 +746,8 @@ variables:
   LIBPMI_LIB  Path to libpmi libraries.
   LIBRCA_LIB  Path to librca libraries.
   LIBGOTCHA_INCLUDE
-              Path to libgotcha headers. Superseded by --with-libgotcha
-              variants.
+              Path to libgotcha headers: gotcha/gotcha.h. Superseded by
+              --with-libgotcha variants.
   LIBGOTCHA_LIB
               Path to libgotcha libraries. Superseded by --with-libgotcha
               variants.
