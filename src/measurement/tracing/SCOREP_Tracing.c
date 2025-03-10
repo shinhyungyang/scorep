@@ -7,7 +7,7 @@
  * Copyright (c) 2009-2013,
  * Gesellschaft fuer numerische Simulation mbH Braunschweig, Germany
  *
- * Copyright (c) 2009-2016, 2019-2020,
+ * Copyright (c) 2009-2016, 2019-2020, 2025,
  * Technische Universitaet Dresden, Germany
  *
  * Copyright (c) 2009-2013,
@@ -55,6 +55,7 @@
 #include "scorep_tracing_definitions.h"
 #include <scorep_clock_synchronization.h>
 #include "scorep_tracing_internal.h"
+#include <scorep_ipc.h>
 
 #include <SCOREP_Substrates_Management.h>
 #include <scorep_substrates_definition.h>
@@ -477,14 +478,46 @@ write_definitions( void )
 
     OTF2_ErrorCode ret;
 
+    /* Local definition ID mappings needs to be considered here too. The estimator
+     * does not provide this directly. But ID maps are written either as a dense
+     * or sparse array, whatever is smaller. So taking the dense array as the
+     * upper bound should be ok. The estimator only honors #locations, #regions,
+     * and #metrics. Hence we determine a local maximum out of all local definitions
+     * for which we write ID mappings and use this as the #locations. Use @locations
+     * as it is uint64_t. */
+    uint64_t local_max_definition_count = scorep_tracing_get_mapped_definitions_upper_bound();
+    uint64_t max_definition_count       = 0;
+    SCOREP_Ipc_Reduce( &local_max_definition_count,
+                       &max_definition_count,
+                       1,
+                       SCOREP_IPC_UINT64_T,
+                       SCOREP_IPC_MAX,
+                       0 );
     uint64_t definition_chunk_size = OTF2_UNDEFINED_UINT64;
     if ( SCOREP_Status_GetRank() == 0 )
     {
+        /* The estimator takes the maximum of the Location, Region, and Metric
+         * definitions. For Locations it always takes the 9 bytes, but since
+         * they do not have to be consecutive, they create a potentially tight
+         * estimate. Both Metric and Region must be consecutive, so we combine
+         * the maximum number of local definitions with the unified Region
+         * definition count and keep the number of Location and Metric
+         * definitions to the unified count. */
         OTF2_EventSizeEstimator* estimator = OTF2_EventSizeEstimator_New();
-        /* We do not write metric or region groups, thus we set only the number of locations */
+        UTILS_ASSERT( estimator );
         OTF2_EventSizeEstimator_SetNumberOfLocationDefinitions(
             estimator,
             scorep_unified_definition_manager->location.counter );
+        if ( scorep_unified_definition_manager->region.counter > max_definition_count )
+        {
+            max_definition_count = scorep_unified_definition_manager->region.counter;
+        }
+        OTF2_EventSizeEstimator_SetNumberOfRegionDefinitions(
+            estimator,
+            max_definition_count );
+        OTF2_EventSizeEstimator_SetNumberOfMetricDefinitions(
+            estimator,
+            scorep_unified_definition_manager->metric.counter );
         definition_chunk_size = OTF2_EventSizeEstimator_GetDefChunkSize( estimator );
         OTF2_EventSizeEstimator_Delete( estimator );
     }

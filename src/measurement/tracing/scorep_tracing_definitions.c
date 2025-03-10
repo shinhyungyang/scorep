@@ -7,7 +7,7 @@
  * Copyright (c) 2009-2013,
  * Gesellschaft fuer numerische Simulation mbH Braunschweig, Germany
  *
- * Copyright (c) 2009-2019, 2022, 2024,
+ * Copyright (c) 2009-2019, 2022, 2024-2025,
  * Technische Universitaet Dresden, Germany
  *
  * Copyright (c) 2009-2013,
@@ -1525,6 +1525,39 @@ scorep_write_io_handle_definitions( void*                     writerHandle,
         }
     }
     SCOREP_DEFINITIONS_MANAGER_FOREACH_DEFINITION_END();
+}
+
+
+uint64_t
+scorep_tracing_get_mapped_definitions_upper_bound( void )
+{
+    uint64_t max_definition_count = 0;
+
+    #define MAX_DEFINITION_COUNT( type ) \
+    if ( scorep_local_definition_manager.type.counter > max_definition_count ) \
+    { \
+        max_definition_count = scorep_local_definition_manager.type.counter; \
+    }
+
+    MAX_DEFINITION_COUNT( string )
+    MAX_DEFINITION_COUNT( location )
+    MAX_DEFINITION_COUNT( location_group )
+    MAX_DEFINITION_COUNT( region )
+    MAX_DEFINITION_COUNT( group )
+    MAX_DEFINITION_COUNT( interim_communicator )
+    MAX_DEFINITION_COUNT( rma_window )
+    MAX_DEFINITION_COUNT( sampling_set )
+    MAX_DEFINITION_COUNT( attribute )
+    MAX_DEFINITION_COUNT( source_code_location )
+    MAX_DEFINITION_COUNT( calling_context )
+    MAX_DEFINITION_COUNT( interrupt_generator )
+    MAX_DEFINITION_COUNT( io_file )
+    MAX_DEFINITION_COUNT( io_handle )
+    MAX_DEFINITION_COUNT( parameter )
+
+    #undef MAX_DEFINITION_COUNT
+
+    return max_definition_count;
 }
 
 
