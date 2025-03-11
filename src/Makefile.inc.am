@@ -187,7 +187,7 @@ $(FILES_THAT_INCLUDE_BFD_H): @SCOREP_LIBBFD_PREFIX@/include/bfd.h
 @SCOREP_LIBBFD_PREFIX@/include/bfd.h: @MAINTAINER_MODE_TRUE@ @SCOREP_LIBBFD_MAKEFILE@
 	@$(am__tty_colors); \
 	if $(AM_V_P); then echo "$(MAKE) all -f @SCOREP_LIBBFD_MAKEFILE@"; \
-	              else echo "  DEPLOY   $${blu}libbfd into @SCOREP_LIBBFD_PREFIX@$$std"; \
+	              else echo "  DEPLOY   $${blu}@binutils_package@ into @SCOREP_LIBBFD_PREFIX@$$std"; \
 	fi; \
 	{ eval CFLAGS=; unset CFLAGS; }; \
 	{ eval LDFLAGS=; unset LDFLAGS; }; \
@@ -209,7 +209,7 @@ $(FILES_THAT_INCLUDE_LIBUNWIND_H): @SCOREP_LIBUNWIND_PREFIX@/include/libunwind.h
 @SCOREP_LIBUNWIND_PREFIX@/include/libunwind.h: @MAINTAINER_MODE_TRUE@ @SCOREP_LIBUNWIND_MAKEFILE@
 	@$(am__tty_colors); \
 	if $(AM_V_P); then echo "$(MAKE) all -f @SCOREP_LIBUNWIND_MAKEFILE@"; \
-	              else echo "  DEPLOY   $${blu}libunwind into @SCOREP_LIBUNWIND_PREFIX@$$std"; \
+	              else echo "  DEPLOY   $${blu}@libunwind_package@ into @SCOREP_LIBUNWIND_PREFIX@$$std"; \
 	fi; \
 	{ eval CFLAGS=; unset CFLAGS; }; \
 	{ eval LDFLAGS=; unset LDFLAGS; }; \
@@ -232,7 +232,7 @@ $(FILES_THAT_INCLUDE_GOTCHA_H): @SCOREP_LIBGOTCHA_PREFIX@/include/gotcha/gotcha.
 @SCOREP_LIBGOTCHA_PREFIX@/include/gotcha/gotcha.h: @MAINTAINER_MODE_TRUE@ @SCOREP_LIBGOTCHA_MAKEFILE@
 	@$(am__tty_colors); \
 	if $(AM_V_P); then echo "$(MAKE) all -f @SCOREP_LIBGOTCHA_MAKEFILE@"; \
-	              else echo "  DEPLOY   $${grn}@libgotcha_package@ into @SCOREP_LIBGOTCHA_PREFIX@$$std"; \
+	              else echo "  DEPLOY   $${blu}@libgotcha_package@ into @SCOREP_LIBGOTCHA_PREFIX@$$std"; \
 	fi; \
 	{ eval CFLAGS=; unset CFLAGS; }; \
 	{ eval LDFLAGS=; unset LDFLAGS; }; \
