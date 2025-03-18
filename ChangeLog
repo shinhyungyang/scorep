@@ -209,6 +209,7 @@ Bugfixes:
   and no global paradigm group. This affects the CUDA, Kokkos, and
   OpenCL adapters.
 - Do not fail writing a trace with too many definitions.
+- Accept filter files with either CRLF or LF line endings.
 
 ------------------- Released version 8.4 -----------------------------
 
