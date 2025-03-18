@@ -30,7 +30,7 @@
 ##
 ##
 
-## file       run_filter_test.sh
+## file       run_filter_f_test.sh
 
 OTF2_PRINT="@OTF2_BINDIR@/otf2-print"
 SRC_ROOT="@abs_top_srcdir@/.."
