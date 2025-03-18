@@ -371,6 +371,8 @@ AC_CONFIG_FILES([../test/unification/run_serial_sequence_definitions_test.sh], \
                 [chmod +x ../test/unification/run_serial_sequence_definitions_test.sh])
 AC_CONFIG_FILES([../test/filtering/run_filter_test.sh], \
                 [chmod +x ../test/filtering/run_filter_test.sh])
+AC_CONFIG_FILES([../test/filtering/run_filter_test_crlf.sh], \
+                [chmod +x ../test/filtering/run_filter_test_crlf.sh])
 AC_CONFIG_FILES([../test/filtering/run_filter_f_test.sh], \
                 [chmod +x ../test/filtering/run_filter_f_test.sh])
 AC_CONFIG_FILES([../test/filtering/run_compiler_filter_test.sh], \
