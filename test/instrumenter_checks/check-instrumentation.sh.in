@@ -5,7 +5,7 @@
 ##
 ## This file is part of the Score-P software (http://www.score-p.org)
 ##
-## Copyright (c) 2013-2014, 2020, 2022, 2024,
+## Copyright (c) 2013-2014, 2020, 2022, 2024-2025,
 ## Forschungszentrum Juelich GmbH, Germany
 ##
 ## Copyright (c) 2014, 2016, 2019, 2021, 2025,
@@ -408,7 +408,7 @@ if test -n "${STATIC}${SHARED}"; then
 fi
 
 # POMP user instrumentation?     (custom check)
-STATIC=`${NM}  ${EXE} 2>/dev/null | ${GREP} POMP2_Begin`
+STATIC=`${NM}  ${EXE} 2>/dev/null | ${GREP} SCOREP_Subsystem_Opari2UserAdapter`
 SHARED=`${LDD} ${EXE} 2>/dev/null | ${GREP} libscorep_adapter_opari2_user_mgmt.`
 if test -n "${STATIC}${SHARED}"; then
     INST_FOUND="${INST_FOUND}${INST_FOUND:+ }opari2_user"
