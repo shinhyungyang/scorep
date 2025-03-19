@@ -31,7 +31,7 @@ MODS            = SCOREP_Wrapgen_Funcparam.o SCOREP_Wrapgen_Func.o SCOREP_Wrapge
 
 MPI_FILES_C     = $(patsubst $(MPI_TMPL_DIR)/%.tmpl,%,$(wildcard $(MPI_TMPL_DIR)/SCOREP_Mpi_C_*.tmpl))
 MPI_FILES_F     = $(patsubst $(MPI_TMPL_DIR)/%.tmpl,%,$(wildcard $(MPI_TMPL_DIR)/SCOREP_Mpi_F_*.tmpl))
-MPI_FILES       = $(MPI_FILES_C) $(MPI_FILES_F)
+MPI_FILES       = $(MPI_FILES_C) $(MPI_FILES_F) SCOREP_Mpi_Reg.h SCOREP_Mpi_Reg.c
 DOC_FILES       = $(patsubst $(DOC_TMPL_DIR)/%.tmpl,%,$(wildcard $(DOC_TMPL_DIR)/*.tmpl))
 
 
@@ -82,6 +82,8 @@ clean-files:
 install-files: all-files
 	@(cd $(MPI_OUTPUTDIR) && $(INSTALL) -m 644 $(MPI_FILES_C) $(MPI_INSTALLDIR)/c/wrappers)
 	@(cd $(MPI_OUTPUTDIR) && $(INSTALL) -m 644 $(MPI_FILES_F) $(MPI_INSTALLDIR)/f/wrappers)
+	@(cd $(MPI_OUTPUTDIR) && $(INSTALL) -m 644 SCOREP_Mpi_Reg.h $(MPI_INSTALLDIR)/include)
+	@(cd $(MPI_OUTPUTDIR) && $(INSTALL) -m 644 SCOREP_Mpi_Reg.c $(MPI_INSTALLDIR)/c)
 	@(cd $(DOC_OUTPUTDIR) && $(INSTALL) -m 644 $(DOC_FILES) $(DOC_INSTALLDIR))
 
 # Auto-gerenation targets for MPI wrappers

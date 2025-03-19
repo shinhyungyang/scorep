@@ -51,7 +51,7 @@
 #include <SCOREP_Location.h>
 #include <SCOREP_Definitions.h>
 
-#include "c/wrappers/SCOREP_Mpi_C_Reg.h"
+#include <SCOREP_Mpi_Reg.h>
 #include <scorep_mpi_groups.h>
 #include <scorep_mpi_c.h>
 #include <scorep_mpi_fortran.h>
