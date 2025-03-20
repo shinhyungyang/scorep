@@ -92,17 +92,32 @@ extern THREAD_LOCAL_STORAGE_SPECIFIER volatile sig_atomic_t scorep_in_signal_con
  * Enter a wrapped region.
  *
  * This is only eligible if the corresponding enter event was also triggered.
+ *
+ * @{
  */
+#define SCOREP_ENTER_WRAPPED_REGION_( var ) \
+    var                   = scorep_in_measurement; \
+    scorep_in_measurement = 0
+
 #define SCOREP_ENTER_WRAPPED_REGION() \
-    sig_atomic_t scorep_in_measurement_save = scorep_in_measurement; \
-    scorep_in_measurement                   = 0
+    SCOREP_ENTER_WRAPPED_REGION_( sig_atomic_t scorep_in_measurement_save )
+/**
+ * @}
+ */
 
 /**
  * @def SCOREP_ENTER_WRAPPED_REGION
  * Leave a wrapped region
+ * @{
  */
+#define SCOREP_EXIT_WRAPPED_REGION_( var ) \
+    scorep_in_measurement = var
+
 #define SCOREP_EXIT_WRAPPED_REGION() \
-    scorep_in_measurement = scorep_in_measurement_save
+    SCOREP_EXIT_WRAPPED_REGION_( scorep_in_measurement_save )
+/**
+ * @}
+ */
 
 #if HAVE( SAMPLING_SUPPORT )
 
@@ -129,7 +144,11 @@ extern THREAD_LOCAL_STORAGE_SPECIFIER volatile sig_atomic_t scorep_in_signal_con
 
 #define SCOREP_IN_MEASUREMENT() 0
 
+#define SCOREP_ENTER_WRAPPED_REGION_( var ) do { var = 0; } while ( 0 )
+
 #define SCOREP_ENTER_WRAPPED_REGION() do {} while ( 0 )
+
+#define SCOREP_EXIT_WRAPPED_REGION_( var ) do { ( void )var; } while ( 0 )
 
 #define SCOREP_EXIT_WRAPPED_REGION() do {} while ( 0 )
 
