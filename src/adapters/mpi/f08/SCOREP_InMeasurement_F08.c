@@ -43,3 +43,15 @@ scorep_in_measurement_decrement_fromF08( void )
 {
     SCOREP_IN_MEASUREMENT_DECREMENT();
 }
+
+void
+scorep_enter_wrapped_region_fromF08( int* inMeasurementSave )
+{
+    SCOREP_ENTER_WRAPPED_REGION_( *inMeasurementSave );
+}
+
+void
+scorep_exit_wrapped_region_fromF08( const int* inMeasurementSave )
+{
+    SCOREP_EXIT_WRAPPED_REGION_( *inMeasurementSave );
+}

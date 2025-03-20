@@ -19,7 +19,9 @@ module SCOREP_InMeasurement_H
     public :: &
         scorep_is_measurement_phase, &
         scorep_in_measurement_increment, &
-        scorep_in_measurement_decrement
+        scorep_in_measurement_decrement, &
+        scorep_enter_wrapped_region, &
+        scorep_exit_wrapped_region
 
     interface
         function scorep_is_measurement_phase(phase) result(flag) bind(c, name="scorep_is_measurement_phase_fromF08")
@@ -39,6 +41,22 @@ module SCOREP_InMeasurement_H
     interface
         subroutine scorep_in_measurement_decrement() bind(c, name="scorep_in_measurement_decrement_fromF08")
             implicit none
+        end subroutine
+    end interface
+
+    interface
+        subroutine scorep_enter_wrapped_region(inMeasurementSave) bind(c, name="scorep_enter_wrapped_region_fromF08")
+            import
+            implicit none
+            integer(c_int), intent(out) :: inMeasurementSave
+        end subroutine
+    end interface
+
+    interface
+        subroutine scorep_exit_wrapped_region(inMeasurementSave) bind(c, name="scorep_exit_wrapped_region_fromF08")
+            import
+            implicit none
+            integer(c_int), intent(in) :: inMeasurementSave
         end subroutine
     end interface
 
