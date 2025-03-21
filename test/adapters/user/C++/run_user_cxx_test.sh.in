@@ -29,7 +29,7 @@
 ## directory for details.
 ##
 
-## file       run_filter_test.sh
+## file       run_user_cxx_test.sh
 
 cleanup()
 {
