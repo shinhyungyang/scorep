@@ -9,7 +9,7 @@
 ## Copyright (c) 2009-2011,
 ## Gesellschaft fuer numerische Simulation mbH Braunschweig, Germany
 ##
-## Copyright (c) 2009-2011, 2022, 2024,
+## Copyright (c) 2009-2011, 2015, 2022, 2024-2025,
 ## Technische Universitaet Dresden, Germany
 ##
 ## Copyright (c) 2009-2011,
@@ -28,13 +28,14 @@
 ## a BSD-style license.  See the COPYING file in the package base
 ## directory for details.
 ##
-##
 
-## file       run_filter_f_test.sh
+## file       run_filter_test_dos.sh
+
+# Get SRC_ROOT and OTF2_PRINT
 
 OTF2_PRINT="@OTF2_BINDIR@/otf2-print"
 SRC_ROOT="@abs_top_srcdir@/.."
-RESULT_DIR=scorep-filter-f-test-dir
+RESULT_DIR=scorep-filter-test-dir
 
 cleanup()
 {
@@ -45,58 +46,42 @@ cleanup()
 ${KEEP_TEST_OUTPUT:+: }trap cleanup EXIT
 
 #-------------------------------------------------------------
-#                                          Fortran Filter test
+#                         C Filter test with CRLF line endings
 #-------------------------------------------------------------
 
 # Execute filter test
-SCOREP_EXPERIMENT_DIRECTORY=$RESULT_DIR \
-SCOREP_ENABLE_PROFILING=false \
-SCOREP_ENABLE_TRACING=true \
-SCOREP_FILTERING_FILE=$SRC_ROOT/test/filtering/filter_f.cfg \
-./filter_f_test
+SCOREP_EXPERIMENT_DIRECTORY=$RESULT_DIR SCOREP_ENABLE_PROFILING=false SCOREP_ENABLE_TRACING=true SCOREP_FILTERING_FILE=$SRC_ROOT/test/filtering/filter-crlf.cfg ./filter_test
 if [ $? -ne 0 ]; then
-    echo "./filter_f_test returned with errors"
+    echo "Execution of filter_test returned with errors"
     exit 1
 fi
-
-$OTF2_PRINT -A $RESULT_DIR/traces.otf2
 
 # Check output
 $OTF2_PRINT $RESULT_DIR/traces.otf2 | LC_ALL=C grep '^\(ENTER\|LEAVE\) ' > trace.txt
 
-if [ "`grep foo trace.txt`" ]; then
+if [ "`grep filtered trace.txt`" ]; then
     echo "The following events should be filtered:"
-    grep foo trace.txt
+    grep filtered trace.txt
     exit 1
 fi
 
-if [ "`grep FOO trace.txt`" ]; then
-    echo "The following events should be filtered:"
-    grep FOO trace.txt
+if [ "x`grep main trace.txt`" = "x" ]; then
+    echo "The main function should not be filtered."
     exit 1
 fi
 
-if [ "`grep bar trace.txt`" ]; then
-    echo "The following events should be filtered:"
-    grep bar trace.txt
+if [ "x`grep filter_not1 trace.txt`" = "x" ]; then
+    echo "The filter_not1 function should not be filtered."
     exit 1
 fi
 
-if [ "`grep BAR trace.txt`" ]; then
-    echo "The following events should be filtered:"
-    grep BAR trace.txt
+if [ "x`grep filter_not2 trace.txt`" = "x" ]; then
+    echo "The filter_not2 function should not be filtered."
     exit 1
 fi
 
-if [ "`grep baz trace.txt`" ]; then
-    echo "The following events should be filtered:"
-    grep baz trace.txt
-    exit 1
-fi
-
-if [ "`grep BAZ trace.txt`" ]; then
-    echo "The following events should be filtered:"
-    grep BAZ trace.txt
+if [ "x`grep filter_not3 trace.txt`" = "x" ]; then
+    echo "The filter_not3 function should not be filtered."
     exit 1
 fi
 

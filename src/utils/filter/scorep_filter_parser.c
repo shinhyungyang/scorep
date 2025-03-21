@@ -7,7 +7,7 @@
  * Copyright (c) 2009-2012,
  * Gesellschaft fuer numerische Simulation mbH Braunschweig, Germany
  *
- * Copyright (c) 2009-2012,
+ * Copyright (c) 2009-2012, 2025,
  * Technische Universitaet Dresden, Germany
  *
  * Copyright (c) 2009-2012,
@@ -429,7 +429,7 @@ SCOREP_Filter_ParseFile( SCOREP_Filter* filter,
         token_start = 0;
         while ( pos < length )
         {
-            pos += strcspn( &buffer[ pos ], " \t\n\0" );
+            pos += strcspn( &buffer[ pos ], " \t\n\r\0" );
 
             if ( ( pos <= length ) &&                                   // Whether whitespace appears
                  ( ( pos == 0 ) ||                                      // Cannot be escaped if first

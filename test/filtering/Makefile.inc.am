@@ -46,6 +46,9 @@ filter_test_LDADD    = $(serial_libadd)
 
 filter_test_LDFLAGS  = $(serial_ldflags)
 
+TESTS_SERIAL += ./../test/filtering/run_filter_test.sh
+TESTS_SERIAL += ./../test/filtering/run_filter_test_crlf.sh
+
 if HAVE_FORTRAN_SUPPORT
 
 check_PROGRAMS += filter_f_test
@@ -62,7 +65,7 @@ filter_f_test_LDADD    = $(serial_libadd)
 
 filter_f_test_LDFLAGS  = $(serial_ldflags)
 
-TESTS_SERIAL += ./../test/filtering/run_filter_test.sh
+TESTS_SERIAL += ./../test/filtering/run_filter_f_test.sh
 
 endif HAVE_FORTRAN_SUPPORT
 
@@ -74,8 +77,10 @@ endif HAVE_SCOREP_COMPILER_INSTRUMENTATION
 
 EXTRA_DIST += \
     $(SRC_ROOT)test/filtering/filter.cfg            \
+    $(SRC_ROOT)test/filtering/filter-crlf.cfg        \
     $(SRC_ROOT)test/filtering/filter_f.cfg          \
     $(SRC_ROOT)test/filtering/run_filter_test.sh.in \
+    $(SRC_ROOT)test/filtering/run_filter_test_crlf.sh.in \
     $(SRC_ROOT)test/filtering/run_filter_f_test.sh.in \
     $(SRC_ROOT)test/filtering/run_compiler_filter_test.sh.in \
     $(SRC_ROOT)test/filtering/compiler_filter_test_main.cpp \
