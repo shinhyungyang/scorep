@@ -3,7 +3,7 @@
 ##
 ## This file is part of the Score-P software ecosystem (http://www.score-p.org)
 ##
-## Copyright (c) 2021-2022, 2024,
+## Copyright (c) 2021-2022, 2024-2025,
 ## Forschungszentrum Juelich GmbH, Germany
 ##
 ## Copyright (c) 2022, 2024-2025,
@@ -360,7 +360,7 @@ AC_CHECK_PROG([AFS_LIB_DOWNLOAD_CMD], [wget], [$(which wget) \$(BUILD_V_QUIET) -
 AS_IF([test "x${AFS_LIB_DOWNLOAD_CMD}" = xno],
     [AS_UNSET([AFS_LIB_DOWNLOAD_CMD])
      AS_UNSET([ac_cv_prog_AFS_LIB_DOWNLOAD_CMD])
-     AC_CHECK_PROG([AFS_LIB_DOWNLOAD_CMD], [curl], [$(which curl) \$(BUILD_V_SILENT) -S -O -J -L -C -], [no])
+     AC_CHECK_PROG([AFS_LIB_DOWNLOAD_CMD], [curl], [$(which curl) \$(BUILD_V_SILENT) -S -O -J -L], [no])
      AS_IF([test "x${AFS_LIB_DOWNLOAD_CMD}" = xno],
          [AC_MSG_WARN([Neither wget nor curl found.])
           AFS_LIB_DOWNLOAD_CMD="echo \"Neither wget nor curl found. Cannot download package. See \$(THIS_FILE).\" && exit 1 && "])])
