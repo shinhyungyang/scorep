@@ -6,6 +6,9 @@
 ## Copyright (c) 2024,
 ## Technische Universitaet Dresden, Germany
 ##
+## Copyright (c) 2025,
+## Forschungszentrum Juelich GmbH, Germany
+##
 ## This software may be modified and distributed under the terms of
 ## a BSD-style license.  See the COPYING file in the package base
 ## directory for details.
@@ -72,7 +75,7 @@ then
     fi
 
     fetch="$(which wget) $quiet --content-disposition --continue" ||
-        fetch="$(which curl) $silent -S -O -J -L -C -" ||
+        fetch="$(which curl) $silent -S -O -J -L" ||
             die "neither wget nor curl found, cannot download packages"
 fi
 
