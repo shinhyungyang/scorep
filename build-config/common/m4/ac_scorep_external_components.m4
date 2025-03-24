@@ -15,7 +15,7 @@
 ## Copyright (c) 2009-2013,
 ## University of Oregon, Eugene, USA
 ##
-## Copyright (c) 2009-2013, 2021, 2024,
+## Copyright (c) 2009-2013, 2021, 2024-2025,
 ## Forschungszentrum Juelich GmbH, Germany
 ##
 ## Copyright (c) 2009-2013,
@@ -121,8 +121,8 @@ AC_DEFUN([AFS_CONFIG_TOOL_HAVE_OPTION], [
 m4_ifblank([$1], [m4_fatal([Component must be given])])dnl
 m4_ifblank([$2], [m4_fatal([Option must be given])])dnl
 dnl
-dnl use the same transformation as AC_ARG_WITH
-m4_pushdef([_afs_config_tool_have], $1[_config_have_]m4_translit($2, [-+.], [___]))dnl
+dnl use the transformation as in AC_ARG_WITH, add '=' -> '_'
+m4_pushdef([_afs_config_tool_have], $1[_config_have_]m4_translit($2, [-+.=], [____]))dnl
 dnl
 dnl Check if $scorep_have_$1_config has been previously set by
 dnl AC_SCOREP_HAVE_CONFIG_TOOL. Cannot use AC_REQUIRE here as

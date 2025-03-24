@@ -738,7 +738,7 @@ SCOREP_Config_Opari2Adapter::printOpariCFlags( bool                   build_chec
 #elif SCOREP_BACKEND_COMPILER_CC_FUJITSU
             compiler_type = "fujitsu";
 #elif SCOREP_BACKEND_COMPILER_CC_CLANG
-            compiler_type = "gnu";
+            compiler_type = "clang";
 #else
 #error "Missing compiler specific handling, extension required."
 #endif
@@ -761,7 +761,7 @@ SCOREP_Config_Opari2Adapter::printOpariCFlags( bool                   build_chec
 #elif SCOREP_BACKEND_COMPILER_CXX_FUJITSU
             compiler_type = "fujitsu";
 #elif SCOREP_BACKEND_COMPILER_CXX_CLANG
-            compiler_type = "gnu";
+            compiler_type = "clang";
 #else
 #error "Missing compiler specific handling, extension required."
 #endif
@@ -783,7 +783,7 @@ SCOREP_Config_Opari2Adapter::printOpariCFlags( bool                   build_chec
 #elif SCOREP_BACKEND_COMPILER_FC_FUJITSU
             compiler_type = "fujitsu";
 #elif SCOREP_BACKEND_COMPILER_FC_CLANG
-            compiler_type = "gnu";
+            compiler_type = "clang";
 #else
 #error "Missing compiler specific handling, extension required."
 #endif
