@@ -13,7 +13,7 @@ dnl
 dnl Copyright (c) 2009-2013,
 dnl University of Oregon, Eugene, USA
 dnl
-dnl Copyright (c) 2009-2019, 2021-2024,
+dnl Copyright (c) 2009-2019, 2021-2025,
 dnl Forschungszentrum Juelich GmbH, Germany
 dnl
 dnl Copyright (c) 2009-2014,
@@ -175,6 +175,10 @@ AS_IF([test -n "${scorep_otf2_config_bin}" && \
              [AC_MSG_ERROR([cannot detect MIC support for external OTF2 installation. Either provide a suitable OTF2 library or reconfigure ]AC_PACKAGE_NAME[ with the '--without-otf2' option to use the included OTF2 copy.])])
       ])
 AC_SCOREP_HAVE_CONFIG_TOOL([opari2], [3], [0])
+# Instrumentation fails for explicit --thread=omp:opari2 with
+# clang/clang++/flang and OPARI2 < 2.0.9.
+AFS_CONFIG_TOOL_HAVE_OPTION([opari2], [--cflags=clang], [],
+    [AC_MSG_ERROR([opari2-config lacks the option --cflags=clang. Please upgrade your external OPARI2 installation or configure --without-opari2.])])
 AC_SCOREP_HAVE_CONFIG_TOOL([cubew], [12], [2])
 AFS_CONFIG_TOOL_HAVE_OPTION([cubew], [--ltldflags], [],
     [AC_MSG_ERROR([cubew-config lacks the option --ltldflags. Please upgrade your CubeW installation.])])
