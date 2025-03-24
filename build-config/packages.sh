@@ -75,7 +75,7 @@ then
     fi
 
     fetch="$(which wget) $quiet --content-disposition --continue" ||
-        fetch="$(which curl) $silent -S -O -J -L" ||
+        fetch="$(which curl) $silent --show-error --remote-name --remote-header-name --location" ||
             die "neither wget nor curl found, cannot download packages"
 fi
 
