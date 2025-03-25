@@ -127,7 +127,7 @@ endif !CROSS_BUILD
 
 BUILT_SOURCES += $(BINDIR)/otf2-config
 $(BINDIR)/otf2-config: $(LOCAL_OTF2_CONFIG)
-	@if test -f ../vendor/otf2/Makefile; then $(am__cd) ../vendor/otf2 && $(MAKE) $(AM_MAKEFLAGS) install; else exit 1; fi
+	@if test -f ../vendor/otf2/Makefile; then $(am__cd) ../vendor/otf2 && $(MAKE) $(AM_MAKEFLAGS) -j 1 install; else exit 1; fi
 
 $(LOCAL_OTF2_CONFIG):
 	@if test -f ../vendor/otf2/Makefile; then $(am__cd) ../vendor/otf2 && $(MAKE) $(AM_MAKEFLAGS) all; else exit 1; fi
@@ -157,7 +157,7 @@ endif !CROSS_BUILD
 
 BUILT_SOURCES += $(BINDIR)/cubew-config
 $(BINDIR)/cubew-config: $(LOCAL_CUBEW_CONFIG)
-	@if test -f ../vendor/cubew/Makefile; then $(am__cd) ../vendor/cubew && $(MAKE) $(AM_MAKEFLAGS) install; else exit 1; fi
+	@if test -f ../vendor/cubew/Makefile; then $(am__cd) ../vendor/cubew && $(MAKE) $(AM_MAKEFLAGS) -j 1 install; else exit 1; fi
 
 $(LOCAL_CUBEW_CONFIG):
 	@if test -f ../vendor/cubew/Makefile; then $(am__cd) ../vendor/cubew && $(MAKE) $(AM_MAKEFLAGS) all; else exit 1; fi
