@@ -40,15 +40,15 @@ ${proto:c}
   SCOREP_ENTER_WRAPPED_REGION();
   return_val = ${call:pmpi};
   SCOREP_EXIT_WRAPPED_REGION();
-  if ( return_val == MPI_SUCCESS )
-  {
-    scorep_mpi_request_comm_idup_create( *request, comm, newcomm, reqid);
-  }
 
   if (event_gen_active)
   {
     if (event_gen_active_for_group)
     {
+      if ( return_val == MPI_SUCCESS )
+      {
+        scorep_mpi_request_comm_idup_create( *request, comm, newcomm, reqid);
+      }
       SCOREP_ExitRegion(scorep_mpi_regions[SCOREP_MPI_REGION__${name|uppercase}]);
     }
     else if ( SCOREP_IsUnwindingEnabled() )

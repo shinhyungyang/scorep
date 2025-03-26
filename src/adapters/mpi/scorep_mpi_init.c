@@ -13,7 +13,7 @@
  * Copyright (c) 2009-2013,
  * University of Oregon, Eugene, USA
  *
- * Copyright (c) 2009-2015, 2017, 2019, 2022,
+ * Copyright (c) 2009-2015, 2017, 2019, 2022, 2025,
  * Forschungszentrum Juelich GmbH, Germany
  *
  * Copyright (c) 2009-2013,
@@ -23,8 +23,9 @@
  * Technische Universitaet Muenchen, Germany
  *
  * This software may be modified and distributed under the terms of
- * a BSD-style license.  See the COPYING file in the package base
+ * a BSD-style license. See the COPYING file in the package base
  * directory for details.
+ *
  */
 
 /**
@@ -50,12 +51,16 @@
 #include <SCOREP_Location.h>
 #include <SCOREP_Definitions.h>
 
-#include "SCOREP_Mpi.h"
-#include "scorep_mpi_fortran.h"
-#include "scorep_mpi_communicator.h"
-#include "scorep_mpi_communicator_mgmt.h"
-#include "scorep_mpi_request_mgmt.h"
-#include "scorep_mpi_io_mgmt.h"
+#include <SCOREP_Mpi_Reg.h>
+#include <scorep_mpi_groups.h>
+#include <scorep_mpi_c.h>
+#include <scorep_mpi_fortran.h>
+#include <scorep_mpi_f08.h>
+#include <scorep_mpi_communicator.h>
+#include <scorep_mpi_communicator_mgmt.h>
+#include <scorep_mpi_request_mgmt.h>
+#include <scorep_mpi_io_mgmt.h>
+
 
 #include <stdlib.h>
 
@@ -88,42 +93,6 @@ SCOREP_AttributeHandle scorep_mpi_memory_dealloc_size_attribute = SCOREP_INVALID
 #include "scorep_mpi_confvars.inc.c"
 
 size_t scorep_mpi_subsystem_id;
-
-static void
-enable_derived_groups( void )
-{
-    /* See derived groups in enum scorep_mpi_groups. */
-    #define ENABLE_DERIVED_GROUP( G1, G2 ) \
-    if ( ( scorep_mpi_enabled & SCOREP_MPI_ENABLED_##G1 ) && ( scorep_mpi_enabled & SCOREP_MPI_ENABLED_##G2 ) ) \
-    { \
-        scorep_mpi_enabled |= SCOREP_MPI_ENABLED_##G1##_##G2; \
-    }
-
-    ENABLE_DERIVED_GROUP( CG, ERR );
-    ENABLE_DERIVED_GROUP( CG, EXT );
-    ENABLE_DERIVED_GROUP( CG, MISC );
-    ENABLE_DERIVED_GROUP( IO, ERR );
-    ENABLE_DERIVED_GROUP( IO, MISC );
-    ENABLE_DERIVED_GROUP( RMA, ERR );
-    ENABLE_DERIVED_GROUP( RMA, EXT );
-    ENABLE_DERIVED_GROUP( RMA, MISC );
-    ENABLE_DERIVED_GROUP( TYPE, EXT );
-    ENABLE_DERIVED_GROUP( TYPE, MISC );
-
-    #undef ENABLE_DERIVED_GROUP
-
-    /* Enable REQUEST group if any of its depending groups is enabled */
-    uint64_t enable_request_mask = SCOREP_MPI_ENABLED_CG   |
-                                   SCOREP_MPI_ENABLED_COLL |
-                                   SCOREP_MPI_ENABLED_EXT  |
-                                   SCOREP_MPI_ENABLED_IO   |
-                                   SCOREP_MPI_ENABLED_P2P  |
-                                   SCOREP_MPI_ENABLED_RMA;
-    if ( scorep_mpi_enabled & enable_request_mask )
-    {
-        scorep_mpi_enabled |= SCOREP_MPI_ENABLED_REQUEST;
-    }
-}
 
 static void
 deprecate_xnonblock( void )
@@ -194,6 +163,9 @@ mpi_subsystem_init( void )
     /* Set Fortran constants */
     scorep_mpi_fortran_init();
 
+    /* initialize Fortran 08 wrapper */
+    scorep_mpi_f08_init();
+
     /*
      * Order is important!
      *
@@ -204,7 +176,7 @@ mpi_subsystem_init( void )
      * needs to run after `enable_derived_groups`.
      */
     scorep_mpi_win_init();
-    enable_derived_groups();
+    scorep_mpi_enable_derived_groups();
     scorep_mpi_register_regions();
 
     if ( scorep_mpi_memory_recording )
@@ -347,13 +319,13 @@ mpi_init_location( struct SCOREP_Location* newLocation,
 
     if ( SCOREP_Location_GetId( newLocation ) == 0 )
     {
-        storage->req_arr_size = SCOREP_Memory_GetPageSize() / sizeof( MPI_Request );
-        storage->req_arr      = SCOREP_Location_AllocForMisc( newLocation,
-                                                              SCOREP_Memory_GetPageSize() );
-
-        storage->status_arr_size = SCOREP_Memory_GetPageSize() / sizeof( MPI_Status );
-        storage->status_arr      = SCOREP_Location_AllocForMisc( newLocation,
-                                                                 SCOREP_Memory_GetPageSize() );
+        scorep_mpi_req_mgmt_storage_array_init( newLocation, sizeof( MPI_Request ), &( storage->request_array ) );
+        scorep_mpi_req_mgmt_storage_array_init( newLocation, sizeof( MPI_Request ), &( storage->f2c_request_array ) );
+        scorep_mpi_req_mgmt_storage_array_init( newLocation, sizeof( MPI_Status ), &( storage->status_array ) );
+#if HAVE( MPI_USEMPIF08_SUPPORT )
+        scorep_mpi_req_mgmt_storage_array_init( newLocation, sizeof( MPI_Request ), &( storage->f08_request_array ) );
+        scorep_mpi_req_mgmt_storage_array_init( newLocation, scorep_mpi_sizeof_f08_status_toF08(), &( storage->f08_status_array ) );
+#endif /* HAVE( MPI_USEMPIF08_SUPPORT ) */
     }
 
     SCOREP_Location_SetSubsystemData( newLocation,

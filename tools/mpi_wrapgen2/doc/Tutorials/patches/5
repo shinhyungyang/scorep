@@ -1,0 +1,41 @@
+diff --git a/tools/mpi_wrapgen2/wrapgen/data/scorep/scorep.json b/tools/mpi_wrapgen2/wrapgen/data/scorep/scorep.json
+index 696d61d97..452b6a7d2 100644
+--- a/tools/mpi_wrapgen2/wrapgen/data/scorep/scorep.json
++++ b/tools/mpi_wrapgen2/wrapgen/data/scorep/scorep.json
+@@ -3694,7 +3694,7 @@
+         "mpi_version": "2.0",
+         "tasks": [
+             {
+-                "typename": "TaskDefault"
++                "typename": "TaskPrintInfoNkeys"
+             }
+         ]
+     },
+diff --git a/tools/mpi_wrapgen2/wrapgen/generator/f08/wrapper_tasks/common.py b/tools/mpi_wrapgen2/wrapgen/generator/f08/wrapper_tasks/common.py
+index a4c987161..400bb0d5f 100644
+--- a/tools/mpi_wrapgen2/wrapgen/generator/f08/wrapper_tasks/common.py
++++ b/tools/mpi_wrapgen2/wrapgen/generator/f08/wrapper_tasks/common.py
+@@ -8,7 +8,7 @@
+ # a BSD-style license. See the COPYING file in the package base
+ # directory for details.
+ #
+-__all__ = ['TaskDefault', 'TaskTodo', 'TaskFatal', 'TaskGetRequestId']
++__all__ = ['TaskPrintInfoNkeys', 'TaskDefault', 'TaskTodo', 'TaskFatal', 'TaskGetRequestId']
+
+ from typing import Type, Dict
+
+@@ -20,6 +20,14 @@ from wrapgen.generator.task import AuxiliaryTaskMixin
+ from wrapgen.generator.scope import Scope
+
+
++class TaskPrintInfoNkeys(F08Task):
++    def generate_comment(self) -> GeneratorOutput:
++        yield "!> Prints the number of keys to the console\n"
++
++    def generate_post_pmpi_call(self) -> GeneratorOutput:
++        yield "print '(a, i2)', 'nkeys = ', nkeys\n"
++
++
+ class TaskDefault(F08Task):
+     """
+     To mark that the default behavior is explicitly required.

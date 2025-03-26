@@ -1,0 +1,95 @@
+/*
+ * This file is part of the Score-P software (http://www.score-p.org)
+ *
+ * Copyright (c) 2009-2013,
+ * RWTH Aachen University, Germany
+ *
+ * Copyright (c) 2009-2013,
+ * Gesellschaft fuer numerische Simulation mbH Braunschweig, Germany
+ *
+ * Copyright (c) 2009-2019, 2022,
+ * Technische Universitaet Dresden, Germany
+ *
+ * Copyright (c) 2009-2013,
+ * University of Oregon, Eugene, USA
+ *
+ * Copyright (c) 2009-2016, 2018-2019, 2023, 2025,
+ * Forschungszentrum Juelich GmbH, Germany
+ *
+ * Copyright (c) 2009-2014,
+ * German Research School for Simulation Sciences GmbH, Juelich/Aachen, Germany
+ *
+ * Copyright (c) 2009-2013,
+ * Technische Universitaet Muenchen, Germany
+ *
+ * Copyright (c) 2016,
+ * Technische Universitaet Darmstadt, Germany
+ *
+ * This software may be modified and distributed under the terms of
+ * a BSD-style license. See the COPYING file in the package base
+ * directory for details.
+ *
+ */
+
+/****************************************************************************
+**  SCALASCA    http://www.scalasca.org/                                   **
+*****************************************************************************
+**  Copyright (c) 1998-2011                                                **
+**  Forschungszentrum Juelich GmbH, Juelich Supercomputing Centre          **
+**                                                                         **
+**  Copyright (c) 2010-2011                                                **
+**  German Research School for Simulation Sciences GmbH,                   **
+**  Laboratory for Parallel Programming                                    **
+**                                                                         **
+**  Copyright (c) 2003-2008                                                **
+**  University of Tennessee, Innovative Computing Laboratory               **
+**                                                                         **
+**  See the file COPYRIGHT in the package base directory for details       **
+****************************************************************************/
+
+
+/**
+ * @file
+ * @ingroup    MPI_Wrapper
+ *
+ * @brief Fortran interface wrappers for miscellaneous and handler conversion
+ *        functions
+ */
+
+#include <config.h>
+#include <scorep_mpi_f.h>
+
+#include <UTILS_Debug.h>
+
+/* uppercase defines */
+#pragma wrapgen multiple restrict(gmisc+!n_c2f+!n_c2f08+!n_f082c+!n_f082f+!n_f2c+!n_f2f08+!nddress+!nInfo_create_env) skel/SCOREP_Fmpi_DefineU.w
+#pragma wrapgen single MPI_Alloc_mem skel/SCOREP_Fmpi_DefineU_Cptr.w
+
+/* lowercase defines */
+#pragma wrapgen multiple restrict(gmisc+!n_c2f+!n_c2f08+!n_f082c+!n_f082f+!n_f2c+!n_f2f08+!nddress+!nInfo_create_env) skel/SCOREP_Fmpi_DefineL.w
+#pragma wrapgen single MPI_Alloc_mem skel/SCOREP_Fmpi_DefineL_Cptr.w
+
+/**
+ * @name Fortran wrappers
+ * @{
+ */
+
+#ifndef NEED_F2C_CONV
+
+/* If MPI_Comm_f2c is HAVE as a simple macro (which typically does nothing)
+ * as it would require a "real" function if it is really needed
+ * => we can save the f2c and c2s conversions */
+
+#pragma wrapgen multiple restrict(gmisc+!n_c2f+!n_c2f08+!n_f082c+!n_f082f+!n_f2c+!n_f2f08+!nddress+!nInfo_create_env) skel/SCOREP_Fmpi_Std.w
+#pragma wrapgen single MPI_Alloc_mem skel/SCOREP_Fmpi_Std_Cptr.w
+
+#else /* !NEED_F2C_CONV */
+
+#pragma wrapgen multiple restrict(gmisc+!n_c2f+!n_c2f08+!n_f082c+!n_f082f+!n_f2c+!n_f2f08+!nddress+!nInfo_create_env) skel/SCOREP_Mpi_F2c_C2f.w
+#pragma wrapgen single MPI_Alloc_mem skel/SCOREP_Mpi_F2c_C2f_Cptr.w
+
+#endif
+
+/**
+ * @}
+ */

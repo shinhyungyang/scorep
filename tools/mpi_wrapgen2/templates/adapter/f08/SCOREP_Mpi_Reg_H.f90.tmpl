@@ -1,0 +1,29 @@
+!
+! This file is part of the Score-P software (http://www.score-p.org)
+!
+! Copyright (c) 2025,
+! Forschungszentrum Juelich GmbH, Germany
+!
+! This software may be modified and distributed under the terms of
+! a BSD-style license. See the COPYING file in the package base
+! directory for details.
+!
+{% import '_common/file_macros_f.tmpl' as file_macros %}
+{{ file_macros.generator_comment(self._TemplateReference__context.name) }}
+
+{{ file_macros.doxy_file_header('Registration of MPI regions') }}
+
+module SCOREP_Mpi_Reg_H
+    use :: SCOREP_PublicTypes_H, only:SCOREP_RegionHandle
+
+    implicit none
+
+    private :: SCOREP_RegionHandle
+
+    ! The parameter values have to be the same as the corresponding values
+    ! in the scorep_mpi_regions enum in SCOREP_Mpi_Reg.h.
+    {{ wrapgen.generate_for_procedures(wrapgen.ProcedureSets.ALL, wrapgen.callbacks.generator_callback_f08_register, sort=True) }}
+    integer, parameter :: SCOREP_MPI_NUM_REGIONS = {{wrapgen.get_num_procedures_in_set(wrapgen.ProcedureSets.ALL)}}
+
+    integer(SCOREP_RegionHandle), bind(c, name="scorep_mpi_regions") :: scorep_mpi_regions(SCOREP_MPI_NUM_REGIONS)
+end module

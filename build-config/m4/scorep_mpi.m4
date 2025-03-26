@@ -15,7 +15,7 @@
 ## Copyright (c) 2009-2013,
 ##    University of Oregon, Eugene, USA
 ##
-## Copyright (c) 2009-2015, 2023,
+## Copyright (c) 2009-2015, 2023, 2025,
 ##    Forschungszentrum Juelich GmbH, Germany
 ##
 ## Copyright (c) 2009-2013,
@@ -210,55 +210,7 @@ AC_DEFUN([AC_SCOREP_MPI_COMPLIANCE], [
         [AC_MSG_RESULT(no)]
     ) # AC_LINK_IF_ELSE
 
-    _SCOREP_MPI_CHECK_COMPLIANCE(
-    [int], [return 0],
-    [MPI_Address], [void*, location, MPI_Aint* address],
-    [CONST],       [const void*, location, MPI_Aint*, address])
-
-    _SCOREP_MPI_CHECK_COMPLIANCE(
-    [int], [return 0],
-    [MPI_Type_hindexed], [int, count, int*, array_of_blocklengths, MPI_Aint*, array_of_displacements, MPI_Datatype, oldtype, MPI_Datatype*, newtype],
-    [CONST],             [int, count, const int*, array_of_blocklengths, const MPI_Aint*, array_of_displacements, MPI_Datatype, oldtype, MPI_Datatype*, newtype])
-
-    _SCOREP_MPI_CHECK_COMPLIANCE(
-    [int], [return 0],
-    [MPI_Type_struct], [int, count, int*, array_of_blocklengths, MPI_Aint*, array_of_displacements, MPI_Datatype*, array_of_types, MPI_Datatype*, newtype],
-    [CONST],           [int, count, const int*, array_of_blocklengths, const MPI_Aint*, array_of_displacements, const MPI_Datatype*, array_of_types, MPI_Datatype*, newtype])
-
-    _SCOREP_MPI_CHECK_COMPLIANCE(
-    [int], [return 0],
-    [MPI_Add_error_string], [int, errorcode, char*, string],
-    [CONST],                [int, errorcode, const char*, string])
-
-    _SCOREP_MPI_CHECK_COMPLIANCE(
-    [int], [return 0],
-    [MPI_Compare_and_swap], [void*, origin_addr, void*, compare_addr, void*, result_addr, MPI_Datatype, datatype, int, target_rank, MPI_Aint, target_disp, MPI_Win, win],
-    [CONST],                [const void*, origin_addr, const void*, compare_addr, void*, result_addr, MPI_Datatype, datatype, int, target_rank, MPI_Aint, target_disp, MPI_Win, win])
-
-    _SCOREP_MPI_CHECK_COMPLIANCE(
-    [int], [return 0],
-    [MPI_Fetch_and_op], [void*, origin_addr, void*, result_addr, MPI_Datatype, datatype, int, target_rank, MPI_Aint, target_disp, MPI_Op, op, MPI_Win, win],
-    [CONST],            [const void*, origin_addr, void*, result_addr, MPI_Datatype, datatype, int, target_rank, MPI_Aint, target_disp, MPI_Op, op, MPI_Win, win])
-
-    _SCOREP_MPI_CHECK_COMPLIANCE(
-    [int], [return 0],
-    [MPI_Raccumulate], [void*, origin_addr, int, origin_count, MPI_Datatype, origin_datatype, int, target_rank, MPI_Aint, target_disp, int, target_count, MPI_Datatype, target_datatype, MPI_Op, op, MPI_Win, win, MPI_Request*, request],
-    [CONST],           [const void*, origin_addr, int, origin_count, MPI_Datatype, origin_datatype, int, target_rank, MPI_Aint, target_disp, int, target_count, MPI_Datatype, target_datatype, MPI_Op, op, MPI_Win, win, MPI_Request*, request])
-
-    _SCOREP_MPI_CHECK_COMPLIANCE(
-    [int], [return 0],
-    [MPI_Win_detach], [MPI_Win, win, void*, base],
-    [CONST],          [MPI_Win, win, const void*, base])
-
-    _SCOREP_MPI_CHECK_COMPLIANCE(
-    [int], [return 0],
-    [MPI_Psend_init], [( const void* buf, int partitions, MPI_Count count, MPI_Datatype datatype, int dest, int tag, MPI_Comm comm, MPI_Info info, MPI_Request* request )],
-    [NOT_CONST],      [(       void* buf, int partitions, MPI_Count count, MPI_Datatype datatype, int dest, int tag, MPI_Comm comm, MPI_Info info, MPI_Request* request )])
-
-    _SCOREP_MPI_CHECK_COMPLIANCE(
-    [int], [return 0],
-    [MPI_Pready_list], [( int length, const int array_of_partitions[], MPI_Request request )],
-    [NOT_CONST],       [( int length,       int* array_of_partitions, MPI_Request request )])
+    _SCOREP_MPI_COMPLIANCE_CHECKS
 
     AC_LANG_POP(C)
 ]) # AC_DEFUN(AC_SCOREP_MPI_COMPLIANCE)
@@ -272,23 +224,29 @@ AC_DEFUN([AC_SCOREP_MPI], [
 AC_DEFINE([OMPI_WANT_MPI_INTERFACE_WARNING], [0], [Disable deprecation warnings in Open MPI])
 AC_DEFINE([OMPI_OMIT_MPI1_COMPAT_DECLS],     [0], [Possibly expose deprecated MPI-1 bindings in Open MPI 4.0+])
 
+scorep_mpi_usempif08_supported="no"
 if test "x${scorep_mpi_c_supported}" = "xyes"; then
   scorep_mpi_supported="yes"
   if test "x${scorep_mpi_f77_supported}" = "xyes" && test "x${scorep_mpi_f90_supported}" = "xyes"; then
-    scorep_mpi_fortran_supported="yes"
+    scorep_mpi_usempi_supported="yes"
   else
-    scorep_mpi_fortran_supported="no"
+    scorep_mpi_usempi_supported="no"
   fi
+  _MPI_F08_WORKING
 else
   scorep_mpi_supported="no"
-  scorep_mpi_fortran_supported="no"
+  scorep_mpi_usempi_supported="no"
 fi
 
 if test "x${scorep_mpi_supported}" = "xno"; then
   AC_MSG_WARN([No suitable MPI compilers found. SCOREP MPI and hybrid libraries will not be build.])
 fi
 AM_CONDITIONAL([HAVE_MPI_SUPPORT], [test "x${scorep_mpi_supported}" = "xyes"])
-AM_CONDITIONAL([HAVE_MPI_FORTRAN_SUPPORT], [test "x${scorep_mpi_fortran_supported}" = "xyes"])
+AM_CONDITIONAL([HAVE_MPI_USEMPI_SUPPORT], [test "x${scorep_mpi_usempi_supported}" = "xyes"])
+AC_SCOREP_COND_HAVE([MPI_USEMPIF08_SUPPORT],
+    [test "x${scorep_mpi_usempif08_supported}" = "xyes"],
+    [Defined if Score-P is built with support for the F08 interface of MPI])
+AM_CONDITIONAL([HAVE_MPI_FORTRAN_SUPPORT], [test "x${scorep_mpi_usempi_supported}" = "xyes" || test "x${scorep_mpi_usempif08_supported}" = "xyes"])
 
 if test "x${scorep_mpi_supported}" = "xyes"; then
 
@@ -300,459 +258,110 @@ if test "x${scorep_mpi_supported}" = "xyes"; then
         [AC_MSG_ERROR([MPI version is incompatible (< 2.2)])],
         [AC_MSG_NOTICE([MPI version is ${scorep_mpi_version}.])])
 
-  SCOREP_CHECK_SYMBOLS([MPI 1.0], [], [],
-                       [PMPI_Abort,
-                        PMPI_Address,
-                        PMPI_Allgather,
-                        PMPI_Allgatherv,
-                        PMPI_Allreduce,
-                        PMPI_Alltoall,
-                        PMPI_Alltoallv,
-                        PMPI_Attr_delete,
-                        PMPI_Attr_get,
-                        PMPI_Attr_put,
-                        PMPI_Barrier,
-                        PMPI_Bcast,
-                        PMPI_Bsend,
-                        PMPI_Bsend_init,
-                        PMPI_Buffer_attach,
-                        PMPI_Buffer_detach,
-                        PMPI_Cancel,
-                        PMPI_Cart_coords,
-                        PMPI_Cart_create,
-                        PMPI_Cart_get,
-                        PMPI_Cart_map,
-                        PMPI_Cart_rank,
-                        PMPI_Cart_shift,
-                        PMPI_Cart_sub,
-                        PMPI_Cartdim_get,
-                        PMPI_Comm_compare,
-                        PMPI_Comm_create,
-                        PMPI_Comm_dup,
-                        PMPI_Comm_free,
-                        PMPI_Comm_group,
-                        PMPI_Comm_rank,
-                        PMPI_Comm_remote_group,
-                        PMPI_Comm_remote_size,
-                        PMPI_Comm_size,
-                        PMPI_Comm_split,
-                        PMPI_Comm_test_inter,
-                        PMPI_Dims_create,
-                        PMPI_Errhandler_create,
-                        PMPI_Errhandler_free,
-                        PMPI_Errhandler_get,
-                        PMPI_Errhandler_set,
-                        PMPI_Error_class,
-                        PMPI_Error_string,
-                        PMPI_Finalize,
-                        PMPI_Gather,
-                        PMPI_Gatherv,
-                        PMPI_Get_count,
-                        PMPI_Get_elements,
-                        PMPI_Get_processor_name,
-                        PMPI_Get_version,
-                        PMPI_Graph_create,
-                        PMPI_Graph_get,
-                        PMPI_Graph_map,
-                        PMPI_Graph_neighbors,
-                        PMPI_Graph_neighbors_count,
-                        PMPI_Graphdims_get,
-                        PMPI_Group_compare,
-                        PMPI_Group_difference,
-                        PMPI_Group_excl,
-                        PMPI_Group_free,
-                        PMPI_Group_incl,
-                        PMPI_Group_intersection,
-                        PMPI_Group_range_excl,
-                        PMPI_Group_range_incl,
-                        PMPI_Group_rank,
-                        PMPI_Group_size,
-                        PMPI_Group_translate_ranks,
-                        PMPI_Group_union,
-                        PMPI_Ibsend,
-                        PMPI_Init,
-                        PMPI_Initialized,
-                        PMPI_Intercomm_create,
-                        PMPI_Intercomm_merge,
-                        PMPI_Iprobe,
-                        PMPI_Irecv,
-                        PMPI_Irsend,
-                        PMPI_Isend,
-                        PMPI_Issend,
-                        PMPI_Keyval_create,
-                        PMPI_Keyval_free,
-                        PMPI_Op_create,
-                        PMPI_Op_free,
-                        PMPI_Pack,
-                        PMPI_Pack_size,
-                        PMPI_Pcontrol,
-                        PMPI_Probe,
-                        PMPI_Recv,
-                        PMPI_Recv_init,
-                        PMPI_Reduce,
-                        PMPI_Reduce_scatter,
-                        PMPI_Request_free,
-                        PMPI_Rsend,
-                        PMPI_Rsend_init,
-                        PMPI_Scan,
-                        PMPI_Scatter,
-                        PMPI_Scatterv,
-                        PMPI_Send,
-                        PMPI_Send_init,
-                        PMPI_Sendrecv,
-                        PMPI_Sendrecv_replace,
-                        PMPI_Ssend,
-                        PMPI_Ssend_init,
-                        PMPI_Start,
-                        PMPI_Startall,
-                        PMPI_Test,
-                        PMPI_Test_cancelled,
-                        PMPI_Testall,
-                        PMPI_Testany,
-                        PMPI_Testsome,
-                        PMPI_Topo_test,
-                        PMPI_Type_commit,
-                        PMPI_Type_contiguous,
-                        PMPI_Type_extent,
-                        PMPI_Type_free,
-                        PMPI_Type_hindexed,
-                        PMPI_Type_hvector,
-                        PMPI_Type_indexed,
-                        PMPI_Type_lb,
-                        PMPI_Type_size,
-                        PMPI_Type_struct,
-                        PMPI_Type_ub,
-                        PMPI_Type_vector,
-                        PMPI_Unpack,
-                        PMPI_Wait,
-                        PMPI_Waitall,
-                        PMPI_Waitany,
-                        PMPI_Waitsome,
-                        PMPI_Wtick,
-                        PMPI_Wtime])
 
-  SCOREP_CHECK_SYMBOLS([MPI 2.0], [], [],
-                       [PMPI_Accumulate,
-                        PMPI_Add_error_class,
-                        PMPI_Add_error_code,
-                        PMPI_Add_error_string,
-                        PMPI_Alloc_mem,
-                        PMPI_Alltoallw,
-                        PMPI_Close_port,
-                        PMPI_Comm_accept,
-                        PMPI_Comm_c2f,
-                        PMPI_Comm_call_errhandler,
-                        PMPI_Comm_connect,
-                        PMPI_Comm_create_errhandler,
-                        PMPI_Comm_create_keyval,
-                        PMPI_Comm_delete_attr,
-                        PMPI_Comm_disconnect,
-                        PMPI_Comm_f2c,
-                        PMPI_Comm_free_keyval,
-                        PMPI_Comm_get_attr,
-                        PMPI_Comm_get_errhandler,
-                        PMPI_Comm_get_name,
-                        PMPI_Comm_get_parent,
-                        PMPI_Comm_join,
-                        PMPI_Comm_set_attr,
-                        PMPI_Comm_set_errhandler,
-                        PMPI_Comm_set_name,
-                        PMPI_Comm_spawn,
-                        PMPI_Comm_spawn_multiple,
-                        PMPI_Exscan,
-                        PMPI_File_c2f,
-                        PMPI_File_call_errhandler,
-                        PMPI_File_close,
-                        PMPI_File_create_errhandler,
-                        PMPI_File_delete,
-                        PMPI_File_f2c,
-                        PMPI_File_get_amode,
-                        PMPI_File_get_atomicity,
-                        PMPI_File_get_byte_offset,
-                        PMPI_File_get_errhandler,
-                        PMPI_File_get_group,
-                        PMPI_File_get_info,
-                        PMPI_File_get_position,
-                        PMPI_File_get_position_shared,
-                        PMPI_File_get_size,
-                        PMPI_File_get_type_extent,
-                        PMPI_File_get_view,
-                        PMPI_File_iread,
-                        PMPI_File_iread_at,
-                        PMPI_File_iread_shared,
-                        PMPI_File_iwrite,
-                        PMPI_File_iwrite_at,
-                        PMPI_File_iwrite_shared,
-                        PMPI_File_open,
-                        PMPI_File_preallocate,
-                        PMPI_File_read,
-                        PMPI_File_read_all,
-                        PMPI_File_read_all_begin,
-                        PMPI_File_read_all_end,
-                        PMPI_File_read_at,
-                        PMPI_File_read_at_all,
-                        PMPI_File_read_at_all_begin,
-                        PMPI_File_read_at_all_end,
-                        PMPI_File_read_ordered,
-                        PMPI_File_read_ordered_begin,
-                        PMPI_File_read_ordered_end,
-                        PMPI_File_read_shared,
-                        PMPI_File_seek,
-                        PMPI_File_seek_shared,
-                        PMPI_File_set_atomicity,
-                        PMPI_File_set_errhandler,
-                        PMPI_File_set_info,
-                        PMPI_File_set_size,
-                        PMPI_File_set_view,
-                        PMPI_File_sync,
-                        PMPI_File_write,
-                        PMPI_File_write_all,
-                        PMPI_File_write_all_begin,
-                        PMPI_File_write_all_end,
-                        PMPI_File_write_at,
-                        PMPI_File_write_at_all,
-                        PMPI_File_write_at_all_begin,
-                        PMPI_File_write_at_all_end,
-                        PMPI_File_write_ordered,
-                        PMPI_File_write_ordered_begin,
-                        PMPI_File_write_ordered_end,
-                        PMPI_File_write_shared,
-                        PMPI_Finalized,
-                        PMPI_Free_mem,
-                        PMPI_Get,
-                        PMPI_Get_address,
-                        PMPI_Grequest_complete,
-                        PMPI_Grequest_start,
-                        PMPI_Group_c2f,
-                        PMPI_Group_f2c,
-                        PMPI_Info_c2f,
-                        PMPI_Info_create,
-                        PMPI_Info_delete,
-                        PMPI_Info_dup,
-                        PMPI_Info_f2c,
-                        PMPI_Info_free,
-                        PMPI_Info_get,
-                        PMPI_Info_get_nkeys,
-                        PMPI_Info_get_nthkey,
-                        PMPI_Info_get_valuelen,
-                        PMPI_Info_set,
-                        PMPI_Init_thread,
-                        PMPI_Is_thread_main,
-                        PMPI_Lookup_name,
-                        PMPI_Op_c2f,
-                        PMPI_Op_f2c,
-                        PMPI_Open_port,
-                        PMPI_Pack_external,
-                        PMPI_Pack_external_size,
-                        PMPI_Publish_name,
-                        PMPI_Put,
-                        PMPI_Query_thread,
-                        PMPI_Register_datarep,
-                        PMPI_Request_c2f,
-                        PMPI_Request_f2c,
-                        PMPI_Request_get_status,
-                        PMPI_Status_c2f,
-                        PMPI_Status_f2c,
-                        PMPI_Status_set_cancelled,
-                        PMPI_Status_set_elements,
-                        PMPI_Type_c2f,
-                        PMPI_Type_create_darray,
-                        PMPI_Type_create_f90_complex,
-                        PMPI_Type_create_f90_integer,
-                        PMPI_Type_create_f90_real,
-                        PMPI_Type_create_hindexed,
-                        PMPI_Type_create_hvector,
-                        PMPI_Type_create_indexed_block,
-                        PMPI_Type_create_keyval,
-                        PMPI_Type_create_resized,
-                        PMPI_Type_create_struct,
-                        PMPI_Type_create_subarray,
-                        PMPI_Type_delete_attr,
-                        PMPI_Type_dup,
-                        PMPI_Type_f2c,
-                        PMPI_Type_free_keyval,
-                        PMPI_Type_get_attr,
-                        PMPI_Type_get_contents,
-                        PMPI_Type_get_envelope,
-                        PMPI_Type_get_extent,
-                        PMPI_Type_get_name,
-                        PMPI_Type_get_true_extent,
-                        PMPI_Type_match_size,
-                        PMPI_Type_set_attr,
-                        PMPI_Type_set_name,
-                        PMPI_Unpack_external,
-                        PMPI_Unpublish_name,
-                        PMPI_Win_c2f,
-                        PMPI_Win_call_errhandler,
-                        PMPI_Win_complete,
-                        PMPI_Win_create,
-                        PMPI_Win_create_errhandler,
-                        PMPI_Win_create_keyval,
-                        PMPI_Win_delete_attr,
-                        PMPI_Win_f2c,
-                        PMPI_Win_fence,
-                        PMPI_Win_free,
-                        PMPI_Win_free_keyval,
-                        PMPI_Win_get_attr,
-                        PMPI_Win_get_errhandler,
-                        PMPI_Win_get_group,
-                        PMPI_Win_get_name,
-                        PMPI_Win_lock,
-                        PMPI_Win_post,
-                        PMPI_Win_set_attr,
-                        PMPI_Win_set_errhandler,
-                        PMPI_Win_set_name,
-                        PMPI_Win_start,
-                        PMPI_Win_test,
-                        PMPI_Win_unlock,
-                        PMPI_Win_wait])
-
-  SCOREP_CHECK_SYMBOLS([MPI 2.1], [], [],
-                       [PMPI_Errhandler_c2f,
-                        PMPI_Errhandler_f2c])
-
-  SCOREP_CHECK_SYMBOLS([MPI 2.2], [], [],
-                       [PMPI_Dist_graph_create,
-                        PMPI_Dist_graph_create_adjacent,
-                        PMPI_Dist_graph_neighbors,
-                        PMPI_Dist_graph_neighbors_count,
-                        PMPI_Op_commutative,
-                        PMPI_Reduce_local,
-                        PMPI_Reduce_scatter_block])
-
-  SCOREP_CHECK_SYMBOLS([MPI 3.0], [], [],
-                       [PMPI_Comm_create_group,
-                        PMPI_Comm_dup_with_info,
-                        PMPI_Comm_get_info,
-                        PMPI_Comm_idup,
-                        PMPI_Comm_set_info,
-                        PMPI_Comm_split_type,
-                        PMPI_Compare_and_swap,
-                        PMPI_Fetch_and_op,
-                        PMPI_Get_accumulate,
-                        PMPI_Get_elements_x,
-                        PMPI_Get_library_version,
-                        PMPI_Iallgather,
-                        PMPI_Iallgatherv,
-                        PMPI_Iallreduce,
-                        PMPI_Ialltoall,
-                        PMPI_Ialltoallv,
-                        PMPI_Ialltoallw,
-                        PMPI_Ibarrier,
-                        PMPI_Ibcast,
-                        PMPI_Iexscan,
-                        PMPI_Igather,
-                        PMPI_Igatherv,
-                        PMPI_Improbe,
-                        PMPI_Imrecv,
-                        PMPI_Ineighbor_allgather,
-                        PMPI_Ineighbor_allgatherv,
-                        PMPI_Ineighbor_alltoall,
-                        PMPI_Ineighbor_alltoallv,
-                        PMPI_Ineighbor_alltoallw,
-                        PMPI_Ireduce,
-                        PMPI_Ireduce_scatter,
-                        PMPI_Ireduce_scatter_block,
-                        PMPI_Iscan,
-                        PMPI_Iscatter,
-                        PMPI_Iscatterv,
-                        PMPI_Message_c2f,
-                        PMPI_Message_f2c,
-                        PMPI_Mprobe,
-                        PMPI_Mrecv,
-                        PMPI_Neighbor_allgather,
-                        PMPI_Neighbor_allgatherv,
-                        PMPI_Neighbor_alltoall,
-                        PMPI_Neighbor_alltoallv,
-                        PMPI_Neighbor_alltoallw,
-                        PMPI_Raccumulate,
-                        PMPI_Rget,
-                        PMPI_Rget_accumulate,
-                        PMPI_Rput,
-                        PMPI_Status_set_elements_x,
-                        PMPI_Type_create_hindexed_block,
-                        PMPI_Type_get_extent_x,
-                        PMPI_Type_get_true_extent_x,
-                        PMPI_Type_size_x,
-                        PMPI_Win_allocate,
-                        PMPI_Win_allocate_shared,
-                        PMPI_Win_attach,
-                        PMPI_Win_create_dynamic,
-                        PMPI_Win_detach,
-                        PMPI_Win_flush,
-                        PMPI_Win_flush_all,
-                        PMPI_Win_flush_local,
-                        PMPI_Win_flush_local_all,
-                        PMPI_Win_get_info,
-                        PMPI_Win_lock_all,
-                        PMPI_Win_set_info,
-                        PMPI_Win_shared_query,
-                        PMPI_Win_sync,
-                        PMPI_Win_unlock_all])
-
-  SCOREP_CHECK_SYMBOLS([MPI 3.1], [], [],
-                       [PMPI_File_iread_all,
-                        PMPI_File_iread_at_all,
-                        PMPI_File_iwrite_all,
-                        PMPI_File_iwrite_at_all])
-
-  SCOREP_CHECK_SYMBOLS([MPI 4.0], [], [], [
-                        PMPI_Allgather_init,
-                        PMPI_Allgatherv_init,
-                        PMPI_Allreduce_init,
-                        PMPI_Alltoall_init,
-                        PMPI_Alltoallv_init,
-                        PMPI_Alltoallw_init,
-                        PMPI_Barrier_init,
-                        PMPI_Bcast_init,
-                        PMPI_Comm_create_from_group,
-                        PMPI_Comm_idup_with_info,
-                        PMPI_Exscan_init,
-                        PMPI_Gather_init,
-                        PMPI_Gatherv_init,
-                        PMPI_Group_from_session_pset,
-                        PMPI_Info_create_env,
-                        PMPI_Info_get_string,
-                        PMPI_Intercomm_create_from_groups,
-                        PMPI_Isendrecv,
-                        PMPI_Isendrecv_replace,
-                        PMPI_Neighbor_allgather_init,
-                        PMPI_Neighbor_allgatherv_init,
-                        PMPI_Neighbor_alltoall_init,
-                        PMPI_Neighbor_alltoallv_init,
-                        PMPI_Neighbor_alltoallw_init,
-                        PMPI_Parrived,
-                        PMPI_Pready,
-                        PMPI_Pready_list,
-                        PMPI_Pready_range,
-                        PMPI_Precv_init,
-                        PMPI_Psend_init,
-                        PMPI_Reduce_init,
-                        PMPI_Reduce_scatter_block_init,
-                        PMPI_Reduce_scatter_init,
-                        PMPI_Scan_init,
-                        PMPI_Scatter_init,
-                        PMPI_Scatterv_init,
-                        PMPI_Session_c2f,
-                        PMPI_Session_call_errhandler,
-                        PMPI_Session_create_errhandler,
-                        PMPI_Session_f2c,
-                        PMPI_Session_finalize,
-                        PMPI_Session_get_errhandler,
-                        PMPI_Session_get_info,
-                        PMPI_Session_get_nth_pset,
-                        PMPI_Session_get_num_psets,
-                        PMPI_Session_get_pset_info,
-                        PMPI_Session_init,
-                        PMPI_Session_set_errhandler,
-                        PMPI_Status_c2f08,
-                        PMPI_Status_f082c])
-
+  SCOREP_MPI_C_DECLS
   AC_SCOREP_MPI_C_DATATYPES
   AC_SCOREP_MPI_COMPLIANCE
+  AS_IF([test "x${scorep_mpi_usempif08_supported}" = xyes],
+  [
+    SCOREP_MPI_F08_FEATURES
+  ])
+
+  AFS_SUMMARY_PUSH
+  AFS_SUMMARY([C bindings], [$scorep_mpi_c_supported])
+  AFS_SUMMARY([Fortran bindings], [$scorep_mpi_usempi_supported])
+  AFS_SUMMARY([Fortran 2008 bindings], [$scorep_mpi_usempif08_supported])
+  AFS_SUMMARY_POP([MPI support], [$scorep_mpi_supported])
 
 fi # if test "x${scorep_mpi_supported}" = "xyes"
 ])
+
+
+# _MPI_F08_WORKING()
+# ------------------
+# Checks the minimum required compiler and MPI features to enable wrapping
+# procedures from the MPI Fortran 2008 bindings.
+#
+# Outputs:
+# - Set the shell variable scorep_mpi_usempif08_supported to 'yes' on success, or
+#   'no, <reason>' on failure.
+#
+m4_define([_MPI_F08_WORKING],[
+AC_LANG_PUSH([Fortran])
+ac_ext_save="${ac_ext}"
+ac_ext=f90
+AC_MSG_CHECKING([for useable mpi_f08])
+
+scorep_mpi_usempif08_supported="yes"
+
+if test x"$scorep_mpi_usempif08_supported" = xyes; then
+AC_COMPILE_IFELSE(AC_LANG_SOURCE([[program f08
+    use :: mpi_f08
+end program]]), [], [scorep_mpi_usempif08_supported="no, cannot use mpi_f08 module"])
+fi
+
+if test x"$scorep_mpi_usempif08_supported" = xyes; then
+AC_COMPILE_IFELSE(AC_LANG_SOURCE([[program assumed_type
+    implicit none
+    interface
+    subroutine sub_with_assumed_type(buf)
+        type(*) :: buf
+    end subroutine
+    end interface
+end program]]), [], [scorep_mpi_usempif08_supported="no, Fortran compiler does not support assumed type"])
+fi
+
+if test x"$scorep_mpi_usempif08_supported" = xyes; then
+AC_LINK_IFELSE(AC_LANG_SOURCE([[program pmpi_funcs
+    implicit none
+
+    call check_pmpi_comm_size()
+    call check_pmpi_type_size()
+    call check_pmpi_get_count()
+    call check_pmpi_test_cancelled()
+
+    contains
+
+    subroutine check_pmpi_comm_size()
+        use :: mpi_f08, only: MPI_Comm, PMPI_Comm_size
+
+        type(MPI_Comm) :: comm
+        integer :: size, ierror
+        call PMPI_Comm_size(comm, size, ierror)
+    end subroutine
+
+    subroutine check_pmpi_type_size()
+        use :: mpi_f08, only: MPI_Datatype, PMPI_Type_size
+
+        integer :: size, ierror
+        type(MPI_Datatype) :: type
+        call PMPI_Type_size(type, size, ierror)
+    end subroutine
+
+    subroutine check_pmpi_get_count()
+        use :: mpi_f08, only: MPI_Status, MPI_Datatype, PMPI_Get_count
+        type(MPI_Status) :: status
+        type(MPI_Datatype) :: datatype
+        integer :: count, ierror
+        call PMPI_Get_count(status, datatype, count, ierror)
+    end subroutine
+
+    subroutine check_pmpi_test_cancelled()
+        use :: mpi_f08, only: MPI_Status, PMPI_Test_cancelled
+
+        type(MPI_Status) :: status
+        logical :: flag
+        integer :: ierror
+        call PMPI_Test_cancelled(status, flag, ierror)
+    end subroutine
+end program]]), [], [scorep_mpi_usempif08_supported="no, MPI library does not provide all required PMPI procedures"])
+fi
+
+AC_MSG_RESULT([$scorep_mpi_usempif08_supported])
+ac_ext="${ac_ext_save}"
+AC_LANG_POP([Fortran])
+])dnl _MPI_F08_WORKING
+
 
 
 dnl ----------------------------------------------------------------------------

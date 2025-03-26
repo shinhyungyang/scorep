@@ -1,0 +1,261 @@
+/*
+ * This file is part of the Score-P software (http://www.score-p.org)
+ *
+ * Copyright (c) 2009-2013,
+ * RWTH Aachen University, Germany
+ *
+ * Copyright (c) 2009-2013,
+ * Gesellschaft fuer numerische Simulation mbH Braunschweig, Germany
+ *
+ * Copyright (c) 2009-2018,
+ * Technische Universitaet Dresden, Germany
+ *
+ * Copyright (c) 2009-2013,
+ * University of Oregon, Eugene, USA
+ *
+ * Copyright (c) 2009-2016, 2018-2019, 2023, 2025,
+ * Forschungszentrum Juelich GmbH, Germany
+ *
+ * Copyright (c) 2009-2014,
+ * German Research School for Simulation Sciences GmbH, Juelich/Aachen, Germany
+ *
+ * Copyright (c) 2009-2013,
+ * Technische Universitaet Muenchen, Germany
+ *
+ * Copyright (c) 2016,
+ * Technische Universitaet Darmstadt, Germany
+ *
+ * This software may be modified and distributed under the terms of
+ * a BSD-style license. See the COPYING file in the package base
+ * directory for details.
+ *
+ */
+
+/****************************************************************************
+**  SCALASCA    http://www.scalasca.org/                                   **
+*****************************************************************************
+**  Copyright (c) 1998-2011                                                **
+**  Forschungszentrum Juelich GmbH, Juelich Supercomputing Centre          **
+**                                                                         **
+**  Copyright (c) 2010-2011                                                **
+**  German Research School for Simulation Sciences GmbH,                   **
+**  Laboratory for Parallel Programming                                    **
+**                                                                         **
+**  Copyright (c) 2003-2008                                                **
+**  University of Tennessee, Innovative Computing Laboratory               **
+**                                                                         **
+**  See the file COPYRIGHT in the package base directory for details       **
+****************************************************************************/
+
+
+/**
+ * @file
+ * @ingroup    MPI_Wrapper
+ *
+ * @brief C interface wrappers for miscellaneous and handler conversion
+ *        functions
+ */
+
+#include <config.h>
+#include <SCOREP_Mpi_Reg.h>
+#include <scorep_mpi_groups.h>
+#include <scorep_mpi_c.h>
+#include <SCOREP_RuntimeManagement.h>
+#include <SCOREP_InMeasurement.h>
+#include <SCOREP_Events.h>
+#include <SCOREP_AllocMetric.h>
+
+/**
+ * @name C wrappers
+ * @{
+ */
+
+#pragma wrapgen single MPI_Address skel/SCOREP_Mpi_StdWithProto.w
+
+#if HAVE( MPI_2_0_SYMBOL_PMPI_ALLOC_MEM ) && !defined( SCOREP_MPI_NO_EXTRA ) && !defined( SCOREP_MPI_NO_MISC ) && !defined( MPI_Alloc_mem )
+/**
+ * Declaration of PMPI-symbol for MPI_Alloc_mem
+ */
+int PMPI_Alloc_mem( MPI_Aint size, MPI_Info info, void* baseptr );
+
+/**
+ * Measurement wrapper for MPI_Alloc_mem
+ * @note Manually adapted wrapper
+ * @note C interface
+ * @note Introduced with MPI-2.0
+ * @ingroup misc
+ * Triggers an enter and exit event.
+ * It wraps the MPI_Alloc_mem call with enter and exit events.
+ */
+int
+MPI_Alloc_mem( MPI_Aint size, MPI_Info info, void* baseptr )
+{
+    SCOREP_IN_MEASUREMENT_INCREMENT();
+    const int event_gen_active = SCOREP_MPI_IS_EVENT_GEN_ON;
+    const int event_gen_active_for_group = SCOREP_MPI_IS_EVENT_GEN_ON_FOR(SCOREP_MPI_ENABLED_MISC);
+    int return_val;
+
+    if ( event_gen_active )
+    {
+        SCOREP_MPI_EVENT_GEN_OFF();
+
+        if ( event_gen_active_for_group )
+        {
+            if ( scorep_mpi_memory_recording )
+            {
+                uint64_t size_as_uint64 = size;
+                SCOREP_AddAttribute( scorep_mpi_memory_alloc_size_attribute,
+                                     &size_as_uint64 );
+            }
+            SCOREP_EnterWrappedRegion( scorep_mpi_regions[ SCOREP_MPI_REGION__MPI_ALLOC_MEM ] );
+        }
+        else if ( SCOREP_IsUnwindingEnabled() )
+        {
+            SCOREP_EnterWrapper( scorep_mpi_regions[ SCOREP_MPI_REGION__MPI_ALLOC_MEM ] );
+        }
+    }
+
+    SCOREP_ENTER_WRAPPED_REGION();
+    return_val = PMPI_Alloc_mem( size, info, baseptr );
+    SCOREP_EXIT_WRAPPED_REGION();
+
+    if ( event_gen_active )
+    {
+        if ( event_gen_active_for_group )
+        {
+            if ( scorep_mpi_memory_recording && size > 0 && MPI_SUCCESS == return_val )
+            {
+                SCOREP_AllocMetric_HandleAlloc( scorep_mpi_allocations_metric,
+                                                ( uint64_t )( *( void** )baseptr ),
+                                                size );
+            }
+
+            SCOREP_ExitRegion( scorep_mpi_regions[ SCOREP_MPI_REGION__MPI_ALLOC_MEM ] );
+        }
+        else if ( SCOREP_IsUnwindingEnabled() )
+        {
+            SCOREP_ExitWrapper( scorep_mpi_regions[ SCOREP_MPI_REGION__MPI_ALLOC_MEM ] );
+        }
+        SCOREP_MPI_EVENT_GEN_ON();
+    }
+
+    SCOREP_IN_MEASUREMENT_DECREMENT();
+    return return_val;
+}
+#endif
+
+#if HAVE( MPI_2_0_SYMBOL_PMPI_FREE_MEM ) && !defined( SCOREP_MPI_NO_EXTRA ) && !defined( SCOREP_MPI_NO_MISC ) && !defined( MPI_Free_mem )
+/**
+ * Declaration of PMPI-symbol for MPI_Free_mem
+ */
+int PMPI_Free_mem( void* base );
+
+/**
+ * Measurement wrapper for MPI_Free_mem
+ * @note Manually adapted wrapper
+ * @note C interface
+ * @note Introduced with MPI-2.0
+ * @ingroup misc
+ * Triggers an enter and exit event.
+ * It wraps the MPI_Free_mem call with enter and exit events.
+ */
+int
+MPI_Free_mem( void* base )
+{
+    SCOREP_IN_MEASUREMENT_INCREMENT();
+    const int event_gen_active = SCOREP_MPI_IS_EVENT_GEN_ON;
+    const int event_gen_active_for_group = SCOREP_MPI_IS_EVENT_GEN_ON_FOR(SCOREP_MPI_ENABLED_MISC);
+    int return_val;
+    void* allocation = NULL;
+
+    if ( event_gen_active )
+    {
+        SCOREP_MPI_EVENT_GEN_OFF();
+        if ( event_gen_active_for_group )
+        {
+            SCOREP_EnterWrappedRegion( scorep_mpi_regions[ SCOREP_MPI_REGION__MPI_FREE_MEM ] );
+
+            if ( scorep_mpi_memory_recording && base )
+            {
+                SCOREP_AllocMetric_AcquireAlloc( scorep_mpi_allocations_metric,
+                                                 ( uint64_t )base, &allocation );
+            }
+        }
+        else if ( SCOREP_IsUnwindingEnabled() )
+        {
+            SCOREP_EnterWrapper( scorep_mpi_regions[ SCOREP_MPI_REGION__MPI_FREE_MEM ] );
+        }
+    }
+
+    SCOREP_ENTER_WRAPPED_REGION();
+    return_val = PMPI_Free_mem( base );
+    SCOREP_EXIT_WRAPPED_REGION();
+
+    if ( event_gen_active )
+    {
+        if ( event_gen_active_for_group )
+        {
+            if ( scorep_mpi_memory_recording )
+            {
+                uint64_t dealloc_size = 0;
+                if ( base && MPI_SUCCESS == return_val )
+                {
+                    SCOREP_AllocMetric_HandleFree( scorep_mpi_allocations_metric,
+                                                   allocation, &dealloc_size );
+                }
+                SCOREP_AddAttribute( scorep_mpi_memory_dealloc_size_attribute,
+                                     &dealloc_size );
+            }
+
+            SCOREP_ExitRegion( scorep_mpi_regions[ SCOREP_MPI_REGION__MPI_FREE_MEM ] );
+        }
+        else if ( SCOREP_IsUnwindingEnabled() )
+        {
+            SCOREP_ExitWrapper( scorep_mpi_regions[ SCOREP_MPI_REGION__MPI_FREE_MEM ] );
+        }
+        SCOREP_MPI_EVENT_GEN_ON();
+    }
+
+    SCOREP_IN_MEASUREMENT_DECREMENT();
+    return return_val;
+}
+#endif
+
+#pragma wrapgen multiple restrict(gmisc+!n_c2f+!n_c2f08+!n_f082c+!n_f082f+!n_f2c+!n_f2f08+!n_Info+!nMPI_Address+!nMPI_Alloc_mem+!nMPI_Free_mem) skel/SCOREP_Mpi_Std.w
+
+#pragma wrapgen single MPI_Errhandler_c2f skel/SCOREP_Mpi_Std.w
+#pragma wrapgen single MPI_Errhandler_f2c skel/SCOREP_Mpi_Std.w
+#pragma wrapgen single MPI_Message_c2f skel/SCOREP_Mpi_Std.w
+#pragma wrapgen single MPI_Message_f2c skel/SCOREP_Mpi_Std.w
+#pragma wrapgen single MPI_Op_c2f skel/SCOREP_Mpi_Std.w
+#pragma wrapgen single MPI_Op_f2c skel/SCOREP_Mpi_Std.w
+#pragma wrapgen single MPI_Request_c2f skel/SCOREP_Mpi_Std.w
+#pragma wrapgen single MPI_Request_f2c skel/SCOREP_Mpi_Std.w
+#pragma wrapgen single MPI_Session_c2f skel/SCOREP_Mpi_Std.w
+#pragma wrapgen single MPI_Session_f2c skel/SCOREP_Mpi_Std.w
+#pragma wrapgen single MPI_Status_c2f skel/SCOREP_Mpi_Std.w
+#pragma wrapgen single MPI_Status_c2f08 skel/SCOREP_Mpi_Std.w
+#pragma wrapgen single MPI_Status_f082c skel/SCOREP_Mpi_Std.w
+#pragma wrapgen single MPI_Status_f082f skel/SCOREP_Mpi_StdWithProto.w
+#pragma wrapgen single MPI_Status_f2c skel/SCOREP_Mpi_Std.w
+#pragma wrapgen single MPI_Status_f2f08 skel/SCOREP_Mpi_StdWithProto.w
+
+#pragma wrapgen multiple restrict(gmisc+n_Info+!nMPI_Info_delete+!nMPI_Info_get+!nMPI_Info_get_valuelen+!nMPI_Info_set+!nMPI_Address) skel/SCOREP_Mpi_Std.w
+
+#pragma wrapgen single MPI_Info_delete skel/SCOREP_Mpi_StdCompl.w
+
+#pragma wrapgen single MPI_Info_get_nkeys skel/SCOREP_Mpi_Std.w
+
+#pragma wrapgen single MPI_Info_get_nthkey skel/SCOREP_Mpi_Std.w
+
+#pragma wrapgen single MPI_Info_get skel/SCOREP_Mpi_StdCompl.w
+
+#pragma wrapgen single MPI_Info_get_string skel/SCOREP_Mpi_Std.w
+
+#pragma wrapgen single MPI_Info_get_valuelen skel/SCOREP_Mpi_StdCompl.w
+
+#pragma wrapgen single MPI_Info_set skel/SCOREP_Mpi_StdCompl.w
+
+/**
+ * @}
+ */
