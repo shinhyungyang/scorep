@@ -266,6 +266,11 @@ various Score-P components.
     - `MPI_ALLTOALLW` allocates temporary arrays for type conversions from F08
       to C. On large communicators, this might consume a large amount of memory.
 
+    - Compilation of Score-P fails with oneAPI's mpiifx (several versions
+      affected) due to an error in their F08 bindings. A workaround is
+      described here:
+      https://community.intel.com/t5/Intel-MPI-Library/MPI-f08-with-polymorphic-argument-CLASS/m-p/1590421/highlight/true#M11660
+
 --------------------------------------------------------------------------------
 
 * OpenMP support
