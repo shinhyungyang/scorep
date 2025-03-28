@@ -67,6 +67,9 @@ libscorep_adapter_posix_io_event_la_CPPFLAGS = \
     -I$(INC_DIR_DEFINITIONS)                 \
     -D_GNU_SOURCE
 
+libscorep_adapter_posix_io_event_la_LDFLAGS = \
+    $(library_api_version_ldflags)
+
 endif HAVE_POSIX_IO_SUPPORT
 
 EXTRA_DIST += \

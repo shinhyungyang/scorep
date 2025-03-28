@@ -17,7 +17,7 @@ libgotcha
 
 # Given --with-libbfd=download, we download this binutils tarball
 binutils_libname=bfd
-binutils_version=2.43.1
+binutils_version=2.44
 binutils_package=binutils-${binutils_version}
 binutils_base_url=https://ftp.gnu.org/gnu/binutils
 binutils_url=${binutils_base_url}/${binutils_package}.tar.gz
@@ -29,7 +29,7 @@ libunwind_base_url=https://github.com/libunwind/libunwind/releases/download/v${l
 libunwind_url=${libunwind_base_url}/${libunwind_package}.tar.gz
 
 # Given --with-libgotcha=download, we download this GOTCHA tarball
-libgotcha_version=1.0.7
+libgotcha_version=1.0.8
 libgotcha_package=GOTCHA-${libgotcha_version}
 libgotcha_base_url=https://github.com/LLNL/GOTCHA/archive/refs/tags
 libgotcha_url=${libgotcha_base_url}/${libgotcha_version}.tar.gz

@@ -9,7 +9,7 @@ library interface version:
 
 package.major=9
 package.bugfix=0
-package.suffix=beta
+package.suffix=
 
 library.current=14
 library.revision=0

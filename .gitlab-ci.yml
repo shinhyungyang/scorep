@@ -14,7 +14,7 @@ stages:
     CLICOLOR_FORCE: 1
     # Adapt when creating a release branch (check
     # availability at https://hub.docker.com/u/scorep)
-    SCOREP_BUILD_TAG: latest
+    SCOREP_BUILD_TAG: "9.0"
   before_script:
     - LOGDIR="${PWD}/${LOG}/"
     - mkdir "${LOG}"
