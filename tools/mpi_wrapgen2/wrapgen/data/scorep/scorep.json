@@ -1,0 +1,6867 @@
+{
+    "mpi_abort": {
+        "group": "ext",
+        "guards": [],
+        "mpi_version": "1.0",
+        "tasks": [
+            {
+                "typename": "TaskAbort"
+            }
+        ]
+    },
+    "mpi_accumulate": {
+        "group": "rma",
+        "guards": [
+            "rma"
+        ],
+        "large_mpi_version": "4.0",
+        "mpi_version": "2.0",
+        "region": "atomic",
+        "tasks": [
+            {
+                "typename": "TaskRmaAtomicBytesAccumulate"
+            },
+            {
+                "attributes": {
+                    "rma_completion_type": "separate"
+                },
+                "typename": "TaskRmaRequestTrackingImplicit"
+            },
+            {
+                "attributes": {
+                    "atomic_type": "accumulate"
+                },
+                "typename": "TaskRmaAtomic"
+            }
+        ]
+    },
+    "mpi_add_error_class": {
+        "group": "err",
+        "guards": [
+            "extra",
+            "err"
+        ],
+        "mpi_version": "2.0",
+        "tasks": [
+            {
+                "attributes": {},
+                "typename": "TaskDefault"
+            }
+        ]
+    },
+    "mpi_add_error_code": {
+        "group": "err",
+        "guards": [
+            "extra",
+            "err"
+        ],
+        "mpi_version": "2.0",
+        "tasks": [
+            {
+                "attributes": {},
+                "typename": "TaskDefault"
+            }
+        ]
+    },
+    "mpi_add_error_string": {
+        "c_variants": [
+            {
+                "args": "int, errorcode, char*, string",
+                "name": "NOT_CONST"
+            }
+        ],
+        "group": "err",
+        "guards": [
+            "extra",
+            "err"
+        ],
+        "mpi_version": "2.0",
+        "tasks": [
+            {
+                "typename": "TaskDefault"
+            }
+        ],
+        "template": "ProtoArgsWrapper"
+    },
+    "mpi_address": {
+        "c_variants": [
+            {
+                "args": "void*, location, MPI_Aint*, address",
+                "name": "NOT_CONST"
+            }
+        ],
+        "group": "misc",
+        "guards": [
+            "extra",
+            "misc"
+        ],
+        "mpi_version": "1.0",
+        "tasks": [
+            {
+                "typename": "TaskDefault"
+            }
+        ],
+        "template": "ProtoArgsWrapper"
+    },
+    "mpi_allgather": {
+        "group": "coll",
+        "guards": [],
+        "large_mpi_version": "4.0",
+        "mpi_version": "1.0",
+        "region": "coll_all2all",
+        "tasks": [
+            {
+                "attributes": {},
+                "typename": "TaskCollectiveCommunication"
+            }
+        ]
+    },
+    "mpi_allgather_init": {
+        "group": "coll",
+        "guards": [
+            "coll"
+        ],
+        "large_mpi_version": "4.0",
+        "mpi_version": "4.0",
+        "region": "coll_all2all",
+        "tasks": [
+            {
+                "typename": "TaskDefault"
+            }
+        ]
+    },
+    "mpi_allgatherv": {
+        "group": "coll",
+        "guards": [
+            "coll"
+        ],
+        "large_mpi_version": "4.0",
+        "mpi_version": "1.0",
+        "region": "coll_all2all",
+        "tasks": [
+            {
+                "attributes": {},
+                "typename": "TaskCollectiveCommunication"
+            }
+        ]
+    },
+    "mpi_allgatherv_init": {
+        "group": "coll",
+        "guards": [
+            "coll"
+        ],
+        "large_mpi_version": "4.0",
+        "mpi_version": "4.0",
+        "region": "coll_all2all",
+        "tasks": [
+            {
+                "typename": "TaskDefault"
+            }
+        ]
+    },
+    "mpi_alloc_mem": {
+        "group": "misc",
+        "guards": [
+            "extra",
+            "misc"
+        ],
+        "mpi_version": "2.0",
+        "region": "allocate",
+        "tasks": [
+            {
+                "attributes": {},
+                "typename": "TaskDefault"
+            }
+        ]
+    },
+    "mpi_allreduce": {
+        "group": "coll",
+        "guards": [
+            "coll"
+        ],
+        "large_mpi_version": "4.0",
+        "mpi_version": "1.0",
+        "region": "coll_all2all",
+        "tasks": [
+            {
+                "attributes": {},
+                "typename": "TaskCollectiveCommunication"
+            }
+        ]
+    },
+    "mpi_allreduce_init": {
+        "group": "coll",
+        "guards": [
+            "coll"
+        ],
+        "large_mpi_version": "4.0",
+        "mpi_version": "4.0",
+        "region": "coll_all2all",
+        "tasks": [
+            {
+                "typename": "TaskDefault"
+            }
+        ]
+    },
+    "mpi_alltoall": {
+        "group": "coll",
+        "guards": [
+            "coll"
+        ],
+        "large_mpi_version": "4.0",
+        "mpi_version": "1.0",
+        "region": "coll_all2all",
+        "tasks": [
+            {
+                "attributes": {},
+                "typename": "TaskCollectiveCommunication"
+            }
+        ]
+    },
+    "mpi_alltoall_init": {
+        "group": "coll",
+        "guards": [
+            "coll"
+        ],
+        "large_mpi_version": "4.0",
+        "mpi_version": "4.0",
+        "region": "coll_all2all",
+        "tasks": [
+            {
+                "typename": "TaskDefault"
+            }
+        ]
+    },
+    "mpi_alltoallv": {
+        "group": "coll",
+        "guards": [
+            "coll"
+        ],
+        "large_mpi_version": "4.0",
+        "mpi_version": "1.0",
+        "region": "coll_all2all",
+        "tasks": [
+            {
+                "attributes": {},
+                "typename": "TaskCollectiveCommunication"
+            }
+        ]
+    },
+    "mpi_alltoallv_init": {
+        "group": "coll",
+        "guards": [
+            "coll"
+        ],
+        "large_mpi_version": "4.0",
+        "mpi_version": "4.0",
+        "region": "coll_all2all",
+        "tasks": [
+            {
+                "typename": "TaskDefault"
+            }
+        ]
+    },
+    "mpi_alltoallw": {
+        "group": "coll",
+        "guards": [
+            "coll"
+        ],
+        "large_mpi_version": "4.0",
+        "mpi_version": "2.0",
+        "region": "coll_all2all",
+        "tasks": [
+            {
+                "attributes": {},
+                "typename": "TaskCollectiveCommunication"
+            }
+        ]
+    },
+    "mpi_alltoallw_init": {
+        "group": "coll",
+        "guards": [
+            "coll"
+        ],
+        "large_mpi_version": "4.0",
+        "mpi_version": "4.0",
+        "region": "coll_all2all",
+        "tasks": [
+            {
+                "typename": "TaskDefault"
+            }
+        ]
+    },
+    "mpi_attr_delete": {
+        "group": "cg_ext",
+        "guards": [
+            "extra",
+            "cg",
+            "ext"
+        ],
+        "mpi_version": "1.0",
+        "tasks": [
+            {
+                "attributes": {},
+                "typename": "TaskDefault"
+            }
+        ]
+    },
+    "mpi_attr_get": {
+        "group": "cg_ext",
+        "guards": [
+            "extra",
+            "cg",
+            "ext"
+        ],
+        "mpi_version": "1.0",
+        "tasks": [
+            {
+                "attributes": {},
+                "typename": "TaskDefault"
+            }
+        ]
+    },
+    "mpi_attr_put": {
+        "group": "cg_ext",
+        "guards": [
+            "extra",
+            "cg",
+            "ext"
+        ],
+        "mpi_version": "1.0",
+        "tasks": [
+            {
+                "attributes": {},
+                "typename": "TaskDefault"
+            }
+        ]
+    },
+    "mpi_barrier": {
+        "group": "coll",
+        "guards": [
+            "coll"
+        ],
+        "mpi_version": "1.0",
+        "region": "barrier",
+        "tasks": [
+            {
+                "attributes": {},
+                "typename": "TaskCollectiveCommunication"
+            }
+        ]
+    },
+    "mpi_barrier_init": {
+        "group": "coll",
+        "guards": [
+            "coll"
+        ],
+        "mpi_version": "4.0",
+        "region": "barrier",
+        "tasks": [
+            {
+                "typename": "TaskDefault"
+            }
+        ]
+    },
+    "mpi_bcast": {
+        "group": "coll",
+        "guards": [
+            "coll"
+        ],
+        "large_mpi_version": "4.0",
+        "mpi_version": "1.0",
+        "region": "coll_one2all",
+        "tasks": [
+            {
+                "attributes": {},
+                "typename": "TaskCollectiveCommunication"
+            }
+        ]
+    },
+    "mpi_bcast_init": {
+        "group": "coll",
+        "guards": [
+            "coll"
+        ],
+        "large_mpi_version": "4.0",
+        "mpi_version": "4.0",
+        "region": "coll_one2all",
+        "tasks": [
+            {
+                "typename": "TaskDefault"
+            }
+        ]
+    },
+    "mpi_bsend": {
+        "group": "p2p",
+        "guards": [
+            "p2p"
+        ],
+        "large_mpi_version": "4.0",
+        "mpi_version": "1.0",
+        "region": "point2point",
+        "tasks": [
+            {
+                "attributes": {},
+                "typename": "TaskSend"
+            }
+        ]
+    },
+    "mpi_bsend_init": {
+        "group": "p2p",
+        "guards": [
+            "p2p"
+        ],
+        "large_mpi_version": "4.0",
+        "mpi_version": "1.0",
+        "region": "point2point",
+        "tasks": [
+            {
+                "typename": "TaskSendInit"
+            }
+        ]
+    },
+    "mpi_buffer_attach": {
+        "group": "p2p",
+        "guards": [
+            "extra",
+            "p2p"
+        ],
+        "large_mpi_version": "4.0",
+        "mpi_version": "1.0",
+        "tasks": [
+            {
+                "attributes": {},
+                "typename": "TaskDefault"
+            }
+        ]
+    },
+    "mpi_buffer_detach": {
+        "group": "p2p",
+        "guards": [
+            "extra",
+            "p2p"
+        ],
+        "large_mpi_version": "4.0",
+        "mpi_version": "1.0",
+        "tasks": [
+            {
+                "attributes": {},
+                "typename": "TaskDefault"
+            }
+        ]
+    },
+    "mpi_cancel": {
+        "group": "request",
+        "guards": [
+            "request"
+        ],
+        "mpi_version": "1.0",
+        "tasks": [
+            {
+                "typename": "TaskCancel"
+            }
+        ]
+    },
+    "mpi_cart_coords": {
+        "group": "topo",
+        "guards": [
+            "extra",
+            "topo"
+        ],
+        "mpi_version": "1.0",
+        "tasks": [
+            {
+                "attributes": {},
+                "typename": "TaskDefault"
+            }
+        ]
+    },
+    "mpi_cart_create": {
+        "group": "topo",
+        "guards": [],
+        "mpi_version": "1.0",
+        "tasks": [
+            {
+                "attributes": {
+                    "collective_end_mode": "parent",
+                    "new": "comm_cart",
+                    "parent": "comm_old"
+                },
+                "typename": "TaskCommCreate"
+            },
+            {
+                "attributes": {
+                    "prefix": "MPI_Cartesian"
+                },
+                "typename": "TaskCartCreate"
+            }
+        ]
+    },
+    "mpi_cart_get": {
+        "group": "topo",
+        "guards": [
+            "extra",
+            "topo"
+        ],
+        "mpi_version": "1.0",
+        "tasks": [
+            {
+                "attributes": {},
+                "typename": "TaskDefault"
+            }
+        ]
+    },
+    "mpi_cart_map": {
+        "group": "topo",
+        "guards": [
+            "extra",
+            "topo"
+        ],
+        "mpi_version": "1.0",
+        "tasks": [
+            {
+                "attributes": {},
+                "typename": "TaskDefault"
+            }
+        ]
+    },
+    "mpi_cart_rank": {
+        "group": "topo",
+        "guards": [
+            "extra",
+            "topo"
+        ],
+        "mpi_version": "1.0",
+        "tasks": [
+            {
+                "attributes": {},
+                "typename": "TaskDefault"
+            }
+        ]
+    },
+    "mpi_cart_shift": {
+        "group": "topo",
+        "guards": [
+            "extra",
+            "topo"
+        ],
+        "mpi_version": "1.0",
+        "tasks": [
+            {
+                "attributes": {},
+                "typename": "TaskDefault"
+            }
+        ]
+    },
+    "mpi_cart_sub": {
+        "group": "topo",
+        "guards": [],
+        "mpi_version": "1.0",
+        "tasks": [
+            {
+                "attributes": {
+                    "collective_end_mode": "parent",
+                    "new": "newcomm",
+                    "parent": "comm"
+                },
+                "typename": "TaskCommCreate"
+            },
+            {
+                "attributes": {
+                    "prefix": "Sub MPI_Cartesian"
+                },
+                "typename": "TaskCartCreate"
+            }
+        ]
+    },
+    "mpi_cartdim_get": {
+        "group": "topo",
+        "guards": [
+            "extra",
+            "topo"
+        ],
+        "mpi_version": "1.0",
+        "tasks": [
+            {
+                "attributes": {},
+                "typename": "TaskDefault"
+            }
+        ]
+    },
+    "mpi_close_port": {
+        "group": "spawn",
+        "guards": [
+            "spawn",
+            "extra"
+        ],
+        "mpi_version": "2.0",
+        "tasks": [
+            {
+                "attributes": {},
+                "typename": "TaskDefault"
+            }
+        ]
+    },
+    "mpi_comm_accept": {
+        "group": "spawn",
+        "guards": [
+            "spawn",
+            "extra"
+        ],
+        "mpi_version": "2.0",
+        "tasks": [
+            {
+                "attributes": {
+                    "collective_end_mode": "parent",
+                    "new": "newcomm",
+                    "parent": "comm"
+                },
+                "typename": "TaskCommCreate"
+            }
+        ]
+    },
+    "mpi_comm_c2f": {
+        "group": "cg_misc",
+        "guards": [
+            "extra",
+            "cg",
+            "misc"
+        ],
+        "mpi_version": "2.0",
+        "tasks": [
+            {
+                "typename": "TaskDefault"
+            }
+        ]
+    },
+    "mpi_comm_call_errhandler": {
+        "group": "cg_err",
+        "guards": [
+            "extra",
+            "cg",
+            "err"
+        ],
+        "mpi_version": "2.0",
+        "tasks": [
+            {
+                "attributes": {},
+                "typename": "TaskDefault"
+            }
+        ]
+    },
+    "mpi_comm_compare": {
+        "group": "cg",
+        "guards": [
+            "extra",
+            "cg"
+        ],
+        "mpi_version": "1.0",
+        "tasks": [
+            {
+                "attributes": {},
+                "typename": "TaskDefault"
+            }
+        ]
+    },
+    "mpi_comm_connect": {
+        "group": "spawn",
+        "guards": [
+            "spawn",
+            "extra"
+        ],
+        "mpi_version": "2.0",
+        "tasks": [
+            {
+                "attributes": {
+                    "collective_end_mode": "parent",
+                    "new": "newcomm",
+                    "parent": "comm"
+                },
+                "typename": "TaskCommCreate"
+            }
+        ]
+    },
+    "mpi_comm_create": {
+        "group": "cg",
+        "guards": [],
+        "mpi_version": "1.0",
+        "tasks": [
+            {
+                "attributes": {
+                    "collective_end_mode": "parent",
+                    "new": "newcomm",
+                    "parent": "comm"
+                },
+                "typename": "TaskCommCreate"
+            }
+        ]
+    },
+    "mpi_comm_create_errhandler": {
+        "group": "cg_err",
+        "guards": [
+            "extra",
+            "cg",
+            "err"
+        ],
+        "mpi_version": "2.0",
+        "tasks": [
+            {
+                "attributes": {},
+                "typename": "TaskDefault"
+            }
+        ]
+    },
+    "mpi_comm_create_from_group": {
+        "group": "cg",
+        "guards": [
+            "cg"
+        ],
+        "mpi_version": "4.0",
+        "tasks": [
+            {
+                "attributes": {
+                    "collective_end_mode": "new_or_self",
+                    "new": "newcomm",
+                    "parent": null
+                },
+                "typename": "TaskCommCreate"
+            }
+        ]
+    },
+    "mpi_comm_create_group": {
+        "group": "cg",
+        "guards": [],
+        "mpi_version": "3.0",
+        "tasks": [
+            {
+                "attributes": {
+                    "collective_end_mode": "new_or_self",
+                    "new": "newcomm",
+                    "parent": "comm"
+                },
+                "typename": "TaskCommCreate"
+            }
+        ]
+    },
+    "mpi_comm_create_keyval": {
+        "group": "cg_ext",
+        "guards": [
+            "extra",
+            "cg",
+            "ext"
+        ],
+        "mpi_version": "2.0",
+        "tasks": [
+            {
+                "attributes": {},
+                "typename": "TaskDefault"
+            }
+        ]
+    },
+    "mpi_comm_delete_attr": {
+        "group": "cg_ext",
+        "guards": [
+            "extra",
+            "cg",
+            "ext"
+        ],
+        "mpi_version": "2.0",
+        "tasks": [
+            {
+                "attributes": {},
+                "typename": "TaskDefault"
+            }
+        ]
+    },
+    "mpi_comm_disconnect": {
+        "group": "spawn",
+        "guards": [
+            "spawn",
+            "extra"
+        ],
+        "mpi_version": "2.0",
+        "tasks": [
+            {
+                "typename": "TaskCommFree"
+            }
+        ]
+    },
+    "mpi_comm_dup": {
+        "group": "cg",
+        "guards": [],
+        "mpi_version": "1.0",
+        "tasks": [
+            {
+                "attributes": {
+                    "collective_end_mode": "parent",
+                    "new": "newcomm",
+                    "parent": "comm"
+                },
+                "typename": "TaskCommCreate"
+            }
+        ]
+    },
+    "mpi_comm_dup_with_info": {
+        "group": "cg",
+        "guards": [],
+        "mpi_version": "3.0",
+        "tasks": [
+            {
+                "attributes": {
+                    "collective_end_mode": "parent",
+                    "new": "newcomm",
+                    "parent": "comm"
+                },
+                "typename": "TaskCommCreate"
+            }
+        ]
+    },
+    "mpi_comm_f2c": {
+        "group": "cg_misc",
+        "guards": [
+            "extra",
+            "cg",
+            "misc"
+        ],
+        "mpi_version": "2.0",
+        "tasks": [
+            {
+                "typename": "TaskDefault"
+            }
+        ]
+    },
+    "mpi_comm_free": {
+        "group": "cg",
+        "guards": [],
+        "mpi_version": "1.0",
+        "tasks": [
+            {
+                "attributes": {},
+                "typename": "TaskCommFree"
+            }
+        ]
+    },
+    "mpi_comm_free_keyval": {
+        "group": "cg_ext",
+        "guards": [
+            "extra",
+            "cg",
+            "ext"
+        ],
+        "mpi_version": "2.0",
+        "tasks": [
+            {
+                "attributes": {},
+                "typename": "TaskDefault"
+            }
+        ]
+    },
+    "mpi_comm_get_attr": {
+        "group": "cg_ext",
+        "guards": [
+            "extra",
+            "cg",
+            "ext"
+        ],
+        "mpi_version": "2.0",
+        "tasks": [
+            {
+                "attributes": {},
+                "typename": "TaskDefault"
+            }
+        ]
+    },
+    "mpi_comm_get_errhandler": {
+        "group": "cg_err",
+        "guards": [
+            "extra",
+            "cg",
+            "err"
+        ],
+        "mpi_version": "2.0",
+        "tasks": [
+            {
+                "attributes": {},
+                "typename": "TaskDefault"
+            }
+        ]
+    },
+    "mpi_comm_get_info": {
+        "group": "cg_ext",
+        "guards": [
+            "extra",
+            "cg",
+            "ext"
+        ],
+        "mpi_version": "3.0",
+        "tasks": [
+            {
+                "attributes": {},
+                "typename": "TaskDefault"
+            }
+        ]
+    },
+    "mpi_comm_get_name": {
+        "group": "cg_ext",
+        "guards": [
+            "extra",
+            "cg",
+            "ext"
+        ],
+        "mpi_version": "2.0",
+        "tasks": [
+            {
+                "attributes": {},
+                "typename": "TaskDefault"
+            }
+        ]
+    },
+    "mpi_comm_get_parent": {
+        "group": "spawn",
+        "guards": [
+            "spawn",
+            "extra"
+        ],
+        "mpi_version": "2.0",
+        "tasks": [
+            {
+                "attributes": {},
+                "typename": "TaskDefault"
+            }
+        ]
+    },
+    "mpi_comm_group": {
+        "group": "cg",
+        "guards": [],
+        "mpi_version": "1.0",
+        "tasks": [
+            {
+                "attributes": {
+                    "new": "group"
+                },
+                "typename": "TaskGroupCreate"
+            }
+        ]
+    },
+    "mpi_comm_idup": {
+        "group": "cg",
+        "guards": [],
+        "mpi_version": "3.0",
+        "tasks": [
+            {
+                "attributes": {
+                    "new": "newcomm",
+                    "parent": "comm"
+                },
+                "typename": "TaskCommCreateRequest"
+            }
+        ]
+    },
+    "mpi_comm_idup_with_info": {
+        "group": "cg",
+        "guards": [],
+        "mpi_version": "4.0",
+        "tasks": [
+            {
+                "attributes": {
+                    "new": "newcomm",
+                    "parent": "comm"
+                },
+                "typename": "TaskCommCreateRequest"
+            }
+        ]
+    },
+    "mpi_comm_join": {
+        "group": "spawn",
+        "guards": [
+            "spawn",
+            "extra"
+        ],
+        "mpi_version": "2.0",
+        "tasks": [
+            {
+                "attributes": {
+                    "collective_end_mode": "new_or_self",
+                    "new": "intercomm",
+                    "parent": null
+                },
+                "typename": "TaskCommCreate"
+            }
+        ]
+    },
+    "mpi_comm_rank": {
+        "group": "cg",
+        "guards": [
+            "extra",
+            "mini",
+            "cg"
+        ],
+        "mpi_version": "1.0",
+        "tasks": [
+            {
+                "attributes": {},
+                "typename": "TaskDefault"
+            }
+        ]
+    },
+    "mpi_comm_remote_group": {
+        "group": "cg",
+        "guards": [],
+        "mpi_version": "1.0",
+        "tasks": [
+            {
+                "attributes": {
+                    "new": "group"
+                },
+                "typename": "TaskGroupCreate"
+            }
+        ]
+    },
+    "mpi_comm_remote_size": {
+        "group": "cg",
+        "guards": [
+            "extra",
+            "mini",
+            "cg"
+        ],
+        "mpi_version": "1.0",
+        "tasks": [
+            {
+                "attributes": {},
+                "typename": "TaskDefault"
+            }
+        ]
+    },
+    "mpi_comm_set_attr": {
+        "group": "cg_ext",
+        "guards": [
+            "extra",
+            "cg",
+            "ext"
+        ],
+        "mpi_version": "2.0",
+        "tasks": [
+            {
+                "attributes": {},
+                "typename": "TaskDefault"
+            }
+        ]
+    },
+    "mpi_comm_set_errhandler": {
+        "group": "cg_err",
+        "guards": [
+            "extra",
+            "cg",
+            "err"
+        ],
+        "mpi_version": "2.0",
+        "tasks": [
+            {
+                "attributes": {},
+                "typename": "TaskDefault"
+            }
+        ]
+    },
+    "mpi_comm_set_info": {
+        "group": "cg_ext",
+        "guards": [
+            "extra",
+            "cg",
+            "ext"
+        ],
+        "mpi_version": "3.0",
+        "tasks": [
+            {
+                "attributes": {},
+                "typename": "TaskDefault"
+            }
+        ]
+    },
+    "mpi_comm_set_name": {
+        "group": "cg_ext",
+        "guards": [
+            "extra",
+            "cg",
+            "ext"
+        ],
+        "mpi_version": "2.0",
+        "tasks": [
+            {
+                "attributes": {},
+                "typename": "TaskCommSetName"
+            }
+        ]
+    },
+    "mpi_comm_size": {
+        "group": "cg",
+        "guards": [
+            "extra",
+            "mini",
+            "cg"
+        ],
+        "mpi_version": "1.0",
+        "tasks": [
+            {
+                "attributes": {},
+                "typename": "TaskDefault"
+            }
+        ]
+    },
+    "mpi_comm_spawn": {
+        "group": "spawn",
+        "guards": [
+            "spawn",
+            "extra"
+        ],
+        "mpi_version": "2.0",
+        "tasks": [
+            {
+                "attributes": {
+                    "collective_end_mode": "parent",
+                    "new": "intercomm",
+                    "parent": "comm"
+                },
+                "typename": "TaskCommCreate"
+            }
+        ]
+    },
+    "mpi_comm_spawn_multiple": {
+        "group": "spawn",
+        "guards": [
+            "spawn",
+            "extra"
+        ],
+        "mpi_version": "2.0",
+        "tasks": [
+            {
+                "attributes": {
+                    "collective_end_mode": "parent",
+                    "new": "intercomm",
+                    "parent": "comm"
+                },
+                "typename": "TaskCommCreate"
+            }
+        ]
+    },
+    "mpi_comm_split": {
+        "group": "cg",
+        "guards": [],
+        "mpi_version": "1.0",
+        "tasks": [
+            {
+                "attributes": {
+                    "collective_end_mode": "parent",
+                    "new": "newcomm",
+                    "parent": "comm"
+                },
+                "typename": "TaskCommCreate"
+            }
+        ]
+    },
+    "mpi_comm_split_type": {
+        "group": "cg",
+        "guards": [],
+        "mpi_version": "3.0",
+        "tasks": [
+            {
+                "attributes": {
+                    "collective_end_mode": "parent",
+                    "new": "newcomm",
+                    "parent": "comm"
+                },
+                "typename": "TaskCommCreate"
+            }
+        ]
+    },
+    "mpi_comm_test_inter": {
+        "group": "cg",
+        "guards": [
+            "extra",
+            "cg"
+        ],
+        "mpi_version": "1.0",
+        "tasks": [
+            {
+                "attributes": {},
+                "typename": "TaskDefault"
+            }
+        ]
+    },
+    "mpi_compare_and_swap": {
+        "c_variants": [
+            {
+                "args": "void*, origin_addr, void*, compare_addr, void*, result_addr, MPI_Datatype, datatype, int, target_rank, MPI_Aint, target_disp, MPI_Win, win",
+                "name": "NOT_CONST"
+            }
+        ],
+        "group": "rma",
+        "guards": [
+            "rma"
+        ],
+        "mpi_version": "3.0",
+        "region": "atomic",
+        "tasks": [
+            {
+                "typename": "TaskRmaAtomicBytesScalar"
+            },
+            {
+                "attributes": {
+                    "rma_completion_type": "separate"
+                },
+                "typename": "TaskRmaRequestTrackingImplicit"
+            },
+            {
+                "attributes": {
+                    "atomic_type": "compare_and_swap"
+                },
+                "typename": "TaskRmaAtomic"
+            }
+        ],
+        "template": "ProtoArgsWrapper"
+    },
+    "mpi_dims_create": {
+        "group": "topo",
+        "guards": [
+            "extra",
+            "topo"
+        ],
+        "mpi_version": "1.0",
+        "tasks": [
+            {
+                "attributes": {},
+                "typename": "TaskDefault"
+            }
+        ]
+    },
+    "mpi_dist_graph_create": {
+        "group": "topo",
+        "guards": [
+            "topo"
+        ],
+        "mpi_version": "2.2",
+        "tasks": [
+            {
+                "attributes": {
+                    "collective_end_mode": "parent",
+                    "new": "comm_dist_graph",
+                    "parent": "comm_old"
+                },
+                "typename": "TaskCommCreate"
+            }
+        ]
+    },
+    "mpi_dist_graph_create_adjacent": {
+        "group": "topo",
+        "guards": [
+            "topo"
+        ],
+        "mpi_version": "2.2",
+        "tasks": [
+            {
+                "attributes": {
+                    "collective_end_mode": "parent",
+                    "new": "comm_dist_graph",
+                    "parent": "comm_old"
+                },
+                "typename": "TaskCommCreate"
+            }
+        ]
+    },
+    "mpi_dist_graph_neighbors": {
+        "group": "topo",
+        "guards": [
+            "extra",
+            "topo"
+        ],
+        "mpi_version": "2.2",
+        "tasks": [
+            {
+                "attributes": {},
+                "typename": "TaskDefault"
+            }
+        ]
+    },
+    "mpi_dist_graph_neighbors_count": {
+        "group": "topo",
+        "guards": [
+            "extra",
+            "topo"
+        ],
+        "mpi_version": "2.2",
+        "tasks": [
+            {
+                "attributes": {},
+                "typename": "TaskDefault"
+            }
+        ]
+    },
+    "mpi_errhandler_c2f": {
+        "group": "misc",
+        "guards": [
+            "extra",
+            "err",
+            "misc"
+        ],
+        "mpi_version": "2.1",
+        "tasks": [
+            {
+                "typename": "TaskDefault"
+            }
+        ]
+    },
+    "mpi_errhandler_create": {
+        "group": "err",
+        "guards": [
+            "extra",
+            "err"
+        ],
+        "mpi_version": "1.0",
+        "tasks": [
+            {
+                "attributes": {},
+                "typename": "TaskDefault"
+            }
+        ]
+    },
+    "mpi_errhandler_f2c": {
+        "group": "misc",
+        "guards": [
+            "extra",
+            "err",
+            "misc"
+        ],
+        "mpi_version": "2.1",
+        "tasks": [
+            {
+                "typename": "TaskDefault"
+            }
+        ]
+    },
+    "mpi_errhandler_free": {
+        "group": "err",
+        "guards": [
+            "extra",
+            "err"
+        ],
+        "mpi_version": "1.0",
+        "tasks": [
+            {
+                "attributes": {},
+                "typename": "TaskDefault"
+            }
+        ]
+    },
+    "mpi_errhandler_get": {
+        "group": "err",
+        "guards": [
+            "extra",
+            "err"
+        ],
+        "mpi_version": "1.0",
+        "tasks": [
+            {
+                "attributes": {},
+                "typename": "TaskDefault"
+            }
+        ]
+    },
+    "mpi_errhandler_set": {
+        "group": "err",
+        "guards": [
+            "extra",
+            "err"
+        ],
+        "mpi_version": "1.0",
+        "tasks": [
+            {
+                "attributes": {},
+                "typename": "TaskDefault"
+            }
+        ]
+    },
+    "mpi_error_class": {
+        "group": "err",
+        "guards": [
+            "extra",
+            "err"
+        ],
+        "mpi_version": "1.0",
+        "tasks": [
+            {
+                "attributes": {},
+                "typename": "TaskDefault"
+            }
+        ]
+    },
+    "mpi_error_string": {
+        "group": "err",
+        "guards": [
+            "extra",
+            "err"
+        ],
+        "mpi_version": "1.0",
+        "tasks": [
+            {
+                "attributes": {},
+                "typename": "TaskDefault"
+            }
+        ]
+    },
+    "mpi_exscan": {
+        "group": "coll",
+        "guards": [
+            "coll"
+        ],
+        "large_mpi_version": "4.0",
+        "mpi_version": "2.0",
+        "region": "coll_other",
+        "tasks": [
+            {
+                "attributes": {},
+                "typename": "TaskCollectiveCommunication"
+            }
+        ]
+    },
+    "mpi_exscan_init": {
+        "group": "coll",
+        "guards": [
+            "coll"
+        ],
+        "large_mpi_version": "4.0",
+        "mpi_version": "4.0",
+        "region": "coll_other",
+        "tasks": [
+            {
+                "typename": "TaskDefault"
+            }
+        ]
+    },
+    "mpi_fetch_and_op": {
+        "c_variants": [
+            {
+                "args": "void*, origin_addr, void*, result_addr, MPI_Datatype, datatype, int, target_rank, MPI_Aint, target_disp, MPI_Op, op, MPI_Win, win",
+                "name": "NOT_CONST"
+            }
+        ],
+        "group": "rma",
+        "guards": [
+            "rma"
+        ],
+        "mpi_version": "3.0",
+        "region": "atomic",
+        "tasks": [
+            {
+                "typename": "TaskRmaAtomicBytesScalar"
+            },
+            {
+                "attributes": {
+                    "rma_completion_type": "separate"
+                },
+                "typename": "TaskRmaRequestTrackingImplicit"
+            },
+            {
+                "attributes": {
+                    "atomic_type": "fetch_and_accumulate"
+                },
+                "typename": "TaskRmaAtomic"
+            }
+        ],
+        "template": "ProtoArgsWrapper"
+    },
+    "mpi_file_c2f": {
+        "group": "io_misc",
+        "guards": [
+            "io",
+            "extra",
+            "misc"
+        ],
+        "mpi_version": "2.0",
+        "tasks": [
+            {
+                "typename": "TaskDefault"
+            }
+        ]
+    },
+    "mpi_file_call_errhandler": {
+        "group": "io_err",
+        "guards": [
+            "io",
+            "extra",
+            "err"
+        ],
+        "mpi_version": "2.0",
+        "tasks": [
+            {
+                "attributes": {},
+                "typename": "TaskDefault"
+            }
+        ]
+    },
+    "mpi_file_close": {
+        "group": "io",
+        "guards": [
+            "io"
+        ],
+        "mpi_version": "2.0",
+        "region": "file_io_metadata",
+        "tasks": [
+            {
+                "typename": "TaskFileClose"
+            }
+        ]
+    },
+    "mpi_file_create_errhandler": {
+        "group": "io_err",
+        "guards": [
+            "io",
+            "extra",
+            "err"
+        ],
+        "mpi_version": "2.0",
+        "tasks": [
+            {
+                "attributes": {},
+                "typename": "TaskDefault"
+            }
+        ]
+    },
+    "mpi_file_delete": {
+        "group": "io",
+        "guards": [
+            "io"
+        ],
+        "mpi_version": "2.0",
+        "region": "file_io_metadata",
+        "tasks": [
+            {
+                "typename": "TaskFileDelete"
+            }
+        ]
+    },
+    "mpi_file_f2c": {
+        "group": "io_misc",
+        "guards": [
+            "io",
+            "extra",
+            "misc"
+        ],
+        "mpi_version": "2.0",
+        "tasks": [
+            {
+                "typename": "TaskDefault"
+            }
+        ]
+    },
+    "mpi_file_get_amode": {
+        "group": "io",
+        "guards": [
+            "io"
+        ],
+        "mpi_version": "2.0",
+        "tasks": [
+            {
+                "attributes": {},
+                "typename": "TaskDefault"
+            }
+        ]
+    },
+    "mpi_file_get_atomicity": {
+        "group": "io",
+        "guards": [
+            "io"
+        ],
+        "mpi_version": "2.0",
+        "tasks": [
+            {
+                "attributes": {},
+                "typename": "TaskDefault"
+            }
+        ]
+    },
+    "mpi_file_get_byte_offset": {
+        "group": "io",
+        "guards": [
+            "io"
+        ],
+        "mpi_version": "2.0",
+        "tasks": [
+            {
+                "attributes": {},
+                "typename": "TaskDefault"
+            }
+        ]
+    },
+    "mpi_file_get_errhandler": {
+        "group": "io_err",
+        "guards": [
+            "io",
+            "extra",
+            "err"
+        ],
+        "mpi_version": "2.0",
+        "tasks": [
+            {
+                "attributes": {},
+                "typename": "TaskDefault"
+            }
+        ]
+    },
+    "mpi_file_get_group": {
+        "group": "io",
+        "guards": [
+            "io"
+        ],
+        "mpi_version": "2.0",
+        "tasks": [
+            {
+                "attributes": {
+                    "new": "group"
+                },
+                "typename": "TaskGroupCreate"
+            }
+        ]
+    },
+    "mpi_file_get_info": {
+        "group": "io",
+        "guards": [
+            "io"
+        ],
+        "mpi_version": "2.0",
+        "tasks": [
+            {
+                "attributes": {},
+                "typename": "TaskDefault"
+            }
+        ]
+    },
+    "mpi_file_get_position": {
+        "group": "io",
+        "guards": [
+            "io"
+        ],
+        "mpi_version": "2.0",
+        "tasks": [
+            {
+                "attributes": {},
+                "typename": "TaskDefault"
+            }
+        ]
+    },
+    "mpi_file_get_position_shared": {
+        "group": "io",
+        "guards": [
+            "io"
+        ],
+        "mpi_version": "2.0",
+        "tasks": [
+            {
+                "attributes": {},
+                "typename": "TaskDefault"
+            }
+        ]
+    },
+    "mpi_file_get_size": {
+        "group": "io",
+        "guards": [
+            "io"
+        ],
+        "mpi_version": "2.0",
+        "tasks": [
+            {
+                "attributes": {},
+                "typename": "TaskDefault"
+            }
+        ]
+    },
+    "mpi_file_get_type_extent": {
+        "group": "io",
+        "guards": [
+            "io"
+        ],
+        "large_mpi_version": "4.0",
+        "mpi_version": "2.0",
+        "tasks": [
+            {
+                "attributes": {},
+                "typename": "TaskDefault"
+            }
+        ]
+    },
+    "mpi_file_get_view": {
+        "group": "io",
+        "guards": [
+            "io"
+        ],
+        "mpi_version": "2.0",
+        "tasks": [
+            {
+                "attributes": {},
+                "typename": "TaskDefault"
+            }
+        ]
+    },
+    "mpi_file_iread": {
+        "group": "io",
+        "guards": [
+            "io"
+        ],
+        "large_mpi_version": "4.0",
+        "mpi_version": "2.0",
+        "region": "file_io",
+        "tasks": [
+            {
+                "attributes": {
+                    "blocking": false,
+                    "collective": false,
+                    "mode": "read"
+                },
+                "typename": "TaskIoBegin"
+            },
+            {
+                "attributes": {
+                    "mode": "read"
+                },
+                "typename": "TaskIoNonBlocking"
+            }
+        ]
+    },
+    "mpi_file_iread_all": {
+        "group": "io",
+        "guards": [
+            "io"
+        ],
+        "large_mpi_version": "4.0",
+        "mpi_version": "3.1",
+        "region": "file_io",
+        "tasks": [
+            {
+                "attributes": {
+                    "blocking": false,
+                    "collective": true,
+                    "mode": "read"
+                },
+                "typename": "TaskIoBegin"
+            },
+            {
+                "attributes": {
+                    "mode": "read"
+                },
+                "typename": "TaskIoNonBlocking"
+            }
+        ]
+    },
+    "mpi_file_iread_at": {
+        "group": "io",
+        "guards": [
+            "io"
+        ],
+        "large_mpi_version": "4.0",
+        "mpi_version": "2.0",
+        "region": "file_io",
+        "tasks": [
+            {
+                "attributes": {
+                    "blocking": false,
+                    "collective": false,
+                    "mode": "read"
+                },
+                "typename": "TaskIoBegin"
+            },
+            {
+                "attributes": {
+                    "mode": "read"
+                },
+                "typename": "TaskIoNonBlocking"
+            }
+        ]
+    },
+    "mpi_file_iread_at_all": {
+        "group": "io",
+        "guards": [
+            "io"
+        ],
+        "large_mpi_version": "4.0",
+        "mpi_version": "3.1",
+        "region": "file_io",
+        "tasks": [
+            {
+                "attributes": {
+                    "blocking": false,
+                    "collective": true,
+                    "mode": "read"
+                },
+                "typename": "TaskIoBegin"
+            },
+            {
+                "attributes": {
+                    "mode": "read"
+                },
+                "typename": "TaskIoNonBlocking"
+            }
+        ]
+    },
+    "mpi_file_iread_shared": {
+        "group": "io",
+        "guards": [
+            "io"
+        ],
+        "large_mpi_version": "4.0",
+        "mpi_version": "2.0",
+        "region": "file_io",
+        "tasks": [
+            {
+                "attributes": {
+                    "blocking": false,
+                    "collective": false,
+                    "mode": "read"
+                },
+                "typename": "TaskIoBegin"
+            },
+            {
+                "attributes": {
+                    "mode": "read"
+                },
+                "typename": "TaskIoNonBlocking"
+            }
+        ]
+    },
+    "mpi_file_iwrite": {
+        "group": "io",
+        "guards": [
+            "io"
+        ],
+        "large_mpi_version": "4.0",
+        "mpi_version": "2.0",
+        "region": "file_io",
+        "tasks": [
+            {
+                "attributes": {
+                    "blocking": false,
+                    "collective": false,
+                    "mode": "write"
+                },
+                "typename": "TaskIoBegin"
+            },
+            {
+                "attributes": {
+                    "mode": "write"
+                },
+                "typename": "TaskIoNonBlocking"
+            }
+        ]
+    },
+    "mpi_file_iwrite_all": {
+        "group": "io",
+        "guards": [
+            "io"
+        ],
+        "large_mpi_version": "4.0",
+        "mpi_version": "3.1",
+        "region": "file_io",
+        "tasks": [
+            {
+                "attributes": {
+                    "blocking": false,
+                    "collective": true,
+                    "mode": "write"
+                },
+                "typename": "TaskIoBegin"
+            },
+            {
+                "attributes": {
+                    "mode": "write"
+                },
+                "typename": "TaskIoNonBlocking"
+            }
+        ]
+    },
+    "mpi_file_iwrite_at": {
+        "group": "io",
+        "guards": [
+            "io"
+        ],
+        "large_mpi_version": "4.0",
+        "mpi_version": "2.0",
+        "region": "file_io",
+        "tasks": [
+            {
+                "attributes": {
+                    "blocking": false,
+                    "collective": false,
+                    "mode": "write"
+                },
+                "typename": "TaskIoBegin"
+            },
+            {
+                "attributes": {
+                    "mode": "write"
+                },
+                "typename": "TaskIoNonBlocking"
+            }
+        ]
+    },
+    "mpi_file_iwrite_at_all": {
+        "group": "io",
+        "guards": [
+            "io"
+        ],
+        "large_mpi_version": "4.0",
+        "mpi_version": "3.1",
+        "region": "file_io",
+        "tasks": [
+            {
+                "attributes": {
+                    "blocking": false,
+                    "collective": true,
+                    "mode": "write"
+                },
+                "typename": "TaskIoBegin"
+            },
+            {
+                "attributes": {
+                    "mode": "write"
+                },
+                "typename": "TaskIoNonBlocking"
+            }
+        ]
+    },
+    "mpi_file_iwrite_shared": {
+        "group": "io",
+        "guards": [
+            "io"
+        ],
+        "large_mpi_version": "4.0",
+        "mpi_version": "2.0",
+        "region": "file_io",
+        "tasks": [
+            {
+                "attributes": {
+                    "blocking": false,
+                    "collective": false,
+                    "mode": "write"
+                },
+                "typename": "TaskIoBegin"
+            },
+            {
+                "attributes": {
+                    "mode": "write"
+                },
+                "typename": "TaskIoNonBlocking"
+            }
+        ]
+    },
+    "mpi_file_open": {
+        "group": "io",
+        "guards": [
+            "io"
+        ],
+        "mpi_version": "2.0",
+        "region": "file_io_metadata",
+        "tasks": [
+            {
+                "typename": "TaskFileOpen"
+            }
+        ]
+    },
+    "mpi_file_preallocate": {
+        "group": "io",
+        "guards": [
+            "io"
+        ],
+        "mpi_version": "2.0",
+        "tasks": [
+            {
+                "attributes": {},
+                "typename": "TaskDefault"
+            }
+        ]
+    },
+    "mpi_file_read": {
+        "group": "io",
+        "guards": [
+            "io"
+        ],
+        "large_mpi_version": "4.0",
+        "mpi_version": "2.0",
+        "parameters": {
+            "status": {
+                "handle-status-ignore": true
+            }
+        },
+        "region": "file_io",
+        "tasks": [
+            {
+                "attributes": {
+                    "blocking": true,
+                    "collective": false,
+                    "mode": "read"
+                },
+                "typename": "TaskIoBegin"
+            },
+            {
+                "attributes": {
+                    "mode": "read"
+                },
+                "typename": "TaskIoBlocking"
+            }
+        ]
+    },
+    "mpi_file_read_all": {
+        "group": "io",
+        "guards": [
+            "io"
+        ],
+        "large_mpi_version": "4.0",
+        "mpi_version": "2.0",
+        "parameters": {
+            "status": {
+                "handle-status-ignore": true
+            }
+        },
+        "region": "file_io",
+        "tasks": [
+            {
+                "attributes": {
+                    "blocking": true,
+                    "collective": true,
+                    "mode": "read"
+                },
+                "typename": "TaskIoBegin"
+            },
+            {
+                "attributes": {
+                    "mode": "read"
+                },
+                "typename": "TaskIoBlocking"
+            }
+        ]
+    },
+    "mpi_file_read_all_begin": {
+        "group": "io",
+        "guards": [
+            "io"
+        ],
+        "large_mpi_version": "4.0",
+        "mpi_version": "2.0",
+        "region": "file_io",
+        "tasks": [
+            {
+                "attributes": {
+                    "blocking": false,
+                    "collective": true,
+                    "mode": "read"
+                },
+                "typename": "TaskIoBegin"
+            },
+            {
+                "typename": "TaskIoSplitBegin"
+            }
+        ]
+    },
+    "mpi_file_read_all_end": {
+        "group": "io",
+        "guards": [
+            "io"
+        ],
+        "mpi_version": "2.0",
+        "parameters": {
+            "status": {
+                "handle-status-ignore": true
+            }
+        },
+        "region": "file_io",
+        "tasks": [
+            {
+                "attributes": {
+                    "mode": "read"
+                },
+                "typename": "TaskIoSplitEnd"
+            }
+        ]
+    },
+    "mpi_file_read_at": {
+        "group": "io",
+        "guards": [
+            "io"
+        ],
+        "large_mpi_version": "4.0",
+        "mpi_version": "2.0",
+        "parameters": {
+            "status": {
+                "handle-status-ignore": true
+            }
+        },
+        "region": "file_io",
+        "tasks": [
+            {
+                "attributes": {
+                    "blocking": true,
+                    "collective": false,
+                    "mode": "read"
+                },
+                "typename": "TaskIoBegin"
+            },
+            {
+                "attributes": {
+                    "mode": "read"
+                },
+                "typename": "TaskIoBlocking"
+            }
+        ]
+    },
+    "mpi_file_read_at_all": {
+        "group": "io",
+        "guards": [
+            "io"
+        ],
+        "large_mpi_version": "4.0",
+        "mpi_version": "2.0",
+        "parameters": {
+            "status": {
+                "handle-status-ignore": true
+            }
+        },
+        "region": "file_io",
+        "tasks": [
+            {
+                "attributes": {
+                    "blocking": true,
+                    "collective": true,
+                    "mode": "read"
+                },
+                "typename": "TaskIoBegin"
+            },
+            {
+                "attributes": {
+                    "mode": "read"
+                },
+                "typename": "TaskIoBlocking"
+            }
+        ]
+    },
+    "mpi_file_read_at_all_begin": {
+        "group": "io",
+        "guards": [
+            "io"
+        ],
+        "large_mpi_version": "4.0",
+        "mpi_version": "2.0",
+        "region": "file_io",
+        "tasks": [
+            {
+                "attributes": {
+                    "blocking": false,
+                    "collective": true,
+                    "mode": "read"
+                },
+                "typename": "TaskIoBegin"
+            },
+            {
+                "typename": "TaskIoSplitBegin"
+            }
+        ]
+    },
+    "mpi_file_read_at_all_end": {
+        "group": "io",
+        "guards": [
+            "io"
+        ],
+        "mpi_version": "2.0",
+        "parameters": {
+            "status": {
+                "handle-status-ignore": true
+            }
+        },
+        "region": "file_io",
+        "tasks": [
+            {
+                "attributes": {
+                    "mode": "read"
+                },
+                "typename": "TaskIoSplitEnd"
+            }
+        ]
+    },
+    "mpi_file_read_ordered": {
+        "group": "io",
+        "guards": [
+            "io"
+        ],
+        "large_mpi_version": "4.0",
+        "mpi_version": "2.0",
+        "parameters": {
+            "status": {
+                "handle-status-ignore": true
+            }
+        },
+        "region": "file_io",
+        "tasks": [
+            {
+                "attributes": {
+                    "blocking": true,
+                    "collective": true,
+                    "mode": "read"
+                },
+                "typename": "TaskIoBegin"
+            },
+            {
+                "attributes": {
+                    "mode": "read"
+                },
+                "typename": "TaskIoBlocking"
+            }
+        ]
+    },
+    "mpi_file_read_ordered_begin": {
+        "group": "io",
+        "guards": [
+            "io"
+        ],
+        "large_mpi_version": "4.0",
+        "mpi_version": "2.0",
+        "region": "file_io",
+        "tasks": [
+            {
+                "attributes": {
+                    "blocking": false,
+                    "collective": true,
+                    "mode": "read"
+                },
+                "typename": "TaskIoBegin"
+            },
+            {
+                "typename": "TaskIoSplitBegin"
+            }
+        ]
+    },
+    "mpi_file_read_ordered_end": {
+        "group": "io",
+        "guards": [
+            "io"
+        ],
+        "mpi_version": "2.0",
+        "parameters": {
+            "status": {
+                "handle-status-ignore": true
+            }
+        },
+        "region": "file_io",
+        "tasks": [
+            {
+                "attributes": {
+                    "mode": "read"
+                },
+                "typename": "TaskIoSplitEnd"
+            }
+        ]
+    },
+    "mpi_file_read_shared": {
+        "group": "io",
+        "guards": [
+            "io"
+        ],
+        "large_mpi_version": "4.0",
+        "mpi_version": "2.0",
+        "parameters": {
+            "status": {
+                "handle-status-ignore": true
+            }
+        },
+        "region": "file_io",
+        "tasks": [
+            {
+                "attributes": {
+                    "blocking": true,
+                    "collective": false,
+                    "mode": "read"
+                },
+                "typename": "TaskIoBegin"
+            },
+            {
+                "attributes": {
+                    "mode": "read"
+                },
+                "typename": "TaskIoBlocking"
+            }
+        ]
+    },
+    "mpi_file_seek": {
+        "group": "io",
+        "guards": [
+            "io"
+        ],
+        "mpi_version": "2.0",
+        "region": "file_io_metadata",
+        "tasks": [
+            {
+                "typename": "TaskFileSeek"
+            }
+        ]
+    },
+    "mpi_file_seek_shared": {
+        "group": "io",
+        "guards": [
+            "io"
+        ],
+        "mpi_version": "2.0",
+        "region": "file_io_metadata",
+        "tasks": [
+            {
+                "typename": "TaskFileSeek"
+            }
+        ]
+    },
+    "mpi_file_set_atomicity": {
+        "group": "io",
+        "guards": [
+            "io"
+        ],
+        "mpi_version": "2.0",
+        "tasks": [
+            {
+                "attributes": {},
+                "typename": "TaskDefault"
+            }
+        ]
+    },
+    "mpi_file_set_errhandler": {
+        "group": "io_err",
+        "guards": [
+            "io",
+            "extra",
+            "err"
+        ],
+        "mpi_version": "2.0",
+        "tasks": [
+            {
+                "attributes": {},
+                "typename": "TaskDefault"
+            }
+        ]
+    },
+    "mpi_file_set_info": {
+        "group": "io",
+        "guards": [
+            "io"
+        ],
+        "mpi_version": "2.0",
+        "tasks": [
+            {
+                "attributes": {},
+                "typename": "TaskDefault"
+            }
+        ]
+    },
+    "mpi_file_set_size": {
+        "group": "io",
+        "guards": [
+            "io"
+        ],
+        "mpi_version": "2.0",
+        "tasks": [
+            {
+                "attributes": {},
+                "typename": "TaskDefault"
+            }
+        ]
+    },
+    "mpi_file_set_view": {
+        "group": "io",
+        "guards": [
+            "io"
+        ],
+        "mpi_version": "2.0",
+        "tasks": [
+            {
+                "attributes": {},
+                "typename": "TaskDefault"
+            }
+        ]
+    },
+    "mpi_file_sync": {
+        "group": "io",
+        "guards": [
+            "io"
+        ],
+        "mpi_version": "2.0",
+        "region": "file_io",
+        "tasks": [
+            {
+                "attributes": {},
+                "typename": "TaskDefault"
+            }
+        ]
+    },
+    "mpi_file_write": {
+        "group": "io",
+        "guards": [
+            "io"
+        ],
+        "large_mpi_version": "4.0",
+        "mpi_version": "2.0",
+        "parameters": {
+            "status": {
+                "handle-status-ignore": true
+            }
+        },
+        "region": "file_io",
+        "tasks": [
+            {
+                "attributes": {
+                    "blocking": true,
+                    "collective": false,
+                    "mode": "write"
+                },
+                "typename": "TaskIoBegin"
+            },
+            {
+                "attributes": {
+                    "mode": "write"
+                },
+                "typename": "TaskIoBlocking"
+            }
+        ]
+    },
+    "mpi_file_write_all": {
+        "group": "io",
+        "guards": [
+            "io"
+        ],
+        "large_mpi_version": "4.0",
+        "mpi_version": "2.0",
+        "parameters": {
+            "status": {
+                "handle-status-ignore": true
+            }
+        },
+        "region": "file_io",
+        "tasks": [
+            {
+                "attributes": {
+                    "blocking": true,
+                    "collective": true,
+                    "mode": "write"
+                },
+                "typename": "TaskIoBegin"
+            },
+            {
+                "attributes": {
+                    "mode": "write"
+                },
+                "typename": "TaskIoBlocking"
+            }
+        ]
+    },
+    "mpi_file_write_all_begin": {
+        "group": "io",
+        "guards": [
+            "io"
+        ],
+        "large_mpi_version": "4.0",
+        "mpi_version": "2.0",
+        "region": "file_io",
+        "tasks": [
+            {
+                "attributes": {
+                    "blocking": false,
+                    "collective": true,
+                    "mode": "write"
+                },
+                "typename": "TaskIoBegin"
+            },
+            {
+                "typename": "TaskIoSplitBegin"
+            }
+        ]
+    },
+    "mpi_file_write_all_end": {
+        "group": "io",
+        "guards": [
+            "io"
+        ],
+        "mpi_version": "2.0",
+        "parameters": {
+            "status": {
+                "handle-status-ignore": true
+            }
+        },
+        "region": "file_io",
+        "tasks": [
+            {
+                "attributes": {
+                    "mode": "write"
+                },
+                "typename": "TaskIoSplitEnd"
+            }
+        ]
+    },
+    "mpi_file_write_at": {
+        "group": "io",
+        "guards": [
+            "io"
+        ],
+        "large_mpi_version": "4.0",
+        "mpi_version": "2.0",
+        "parameters": {
+            "status": {
+                "handle-status-ignore": true
+            }
+        },
+        "region": "file_io",
+        "tasks": [
+            {
+                "attributes": {
+                    "blocking": true,
+                    "collective": false,
+                    "mode": "write"
+                },
+                "typename": "TaskIoBegin"
+            },
+            {
+                "attributes": {
+                    "mode": "write"
+                },
+                "typename": "TaskIoBlocking"
+            }
+        ]
+    },
+    "mpi_file_write_at_all": {
+        "group": "io",
+        "guards": [
+            "io"
+        ],
+        "large_mpi_version": "4.0",
+        "mpi_version": "2.0",
+        "parameters": {
+            "status": {
+                "handle-status-ignore": true
+            }
+        },
+        "region": "file_io",
+        "tasks": [
+            {
+                "attributes": {
+                    "blocking": true,
+                    "collective": true,
+                    "mode": "write"
+                },
+                "typename": "TaskIoBegin"
+            },
+            {
+                "attributes": {
+                    "mode": "write"
+                },
+                "typename": "TaskIoBlocking"
+            }
+        ]
+    },
+    "mpi_file_write_at_all_begin": {
+        "group": "io",
+        "guards": [
+            "io"
+        ],
+        "large_mpi_version": "4.0",
+        "mpi_version": "2.0",
+        "region": "file_io",
+        "tasks": [
+            {
+                "attributes": {
+                    "blocking": false,
+                    "collective": true,
+                    "mode": "write"
+                },
+                "typename": "TaskIoBegin"
+            },
+            {
+                "typename": "TaskIoSplitBegin"
+            }
+        ]
+    },
+    "mpi_file_write_at_all_end": {
+        "group": "io",
+        "guards": [
+            "io"
+        ],
+        "mpi_version": "2.0",
+        "parameters": {
+            "status": {
+                "handle-status-ignore": true
+            }
+        },
+        "region": "file_io",
+        "tasks": [
+            {
+                "attributes": {
+                    "mode": "write"
+                },
+                "typename": "TaskIoSplitEnd"
+            }
+        ]
+    },
+    "mpi_file_write_ordered": {
+        "group": "io",
+        "guards": [
+            "io"
+        ],
+        "large_mpi_version": "4.0",
+        "mpi_version": "2.0",
+        "parameters": {
+            "status": {
+                "handle-status-ignore": true
+            }
+        },
+        "region": "file_io",
+        "tasks": [
+            {
+                "attributes": {
+                    "blocking": true,
+                    "collective": true,
+                    "mode": "write"
+                },
+                "typename": "TaskIoBegin"
+            },
+            {
+                "attributes": {
+                    "mode": "write"
+                },
+                "typename": "TaskIoBlocking"
+            }
+        ]
+    },
+    "mpi_file_write_ordered_begin": {
+        "group": "io",
+        "guards": [
+            "io"
+        ],
+        "large_mpi_version": "4.0",
+        "mpi_version": "2.0",
+        "region": "file_io",
+        "tasks": [
+            {
+                "attributes": {
+                    "blocking": false,
+                    "collective": true,
+                    "mode": "write"
+                },
+                "typename": "TaskIoBegin"
+            },
+            {
+                "typename": "TaskIoSplitBegin"
+            }
+        ]
+    },
+    "mpi_file_write_ordered_end": {
+        "group": "io",
+        "guards": [
+            "io"
+        ],
+        "mpi_version": "2.0",
+        "parameters": {
+            "status": {
+                "handle-status-ignore": true
+            }
+        },
+        "region": "file_io",
+        "tasks": [
+            {
+                "attributes": {
+                    "mode": "write"
+                },
+                "typename": "TaskIoSplitEnd"
+            }
+        ]
+    },
+    "mpi_file_write_shared": {
+        "group": "io",
+        "guards": [
+            "io"
+        ],
+        "large_mpi_version": "4.0",
+        "mpi_version": "2.0",
+        "parameters": {
+            "status": {
+                "handle-status-ignore": true
+            }
+        },
+        "region": "file_io",
+        "tasks": [
+            {
+                "attributes": {
+                    "blocking": true,
+                    "collective": false,
+                    "mode": "write"
+                },
+                "typename": "TaskIoBegin"
+            },
+            {
+                "attributes": {
+                    "mode": "write"
+                },
+                "typename": "TaskIoBlocking"
+            }
+        ]
+    },
+    "mpi_finalize": {
+        "group": "env",
+        "guards": [],
+        "mpi_version": "1.0",
+        "tasks": [
+            {
+                "attributes": {},
+                "typename": "TaskFinalize"
+            }
+        ],
+        "template": "FakeFinalizationWrapper"
+    },
+    "mpi_finalized": {
+        "group": "env",
+        "guards": [
+            "extra",
+            "env"
+        ],
+        "mpi_version": "2.0",
+        "tasks": [
+            {
+                "attributes": {},
+                "typename": "TaskCheckFinalized"
+            }
+        ]
+    },
+    "mpi_free_mem": {
+        "group": "misc",
+        "guards": [
+            "extra",
+            "misc"
+        ],
+        "mpi_version": "2.0",
+        "region": "deallocate",
+        "tasks": [
+            {
+                "attributes": {},
+                "typename": "TaskDefault"
+            }
+        ]
+    },
+    "mpi_gather": {
+        "group": "coll",
+        "guards": [
+            "coll"
+        ],
+        "large_mpi_version": "4.0",
+        "mpi_version": "1.0",
+        "region": "coll_all2one",
+        "tasks": [
+            {
+                "attributes": {},
+                "typename": "TaskCollectiveCommunication"
+            }
+        ]
+    },
+    "mpi_gather_init": {
+        "group": "coll",
+        "guards": [
+            "coll"
+        ],
+        "large_mpi_version": "4.0",
+        "mpi_version": "4.0",
+        "region": "coll_all2one",
+        "tasks": [
+            {
+                "typename": "TaskDefault"
+            }
+        ]
+    },
+    "mpi_gatherv": {
+        "group": "coll",
+        "guards": [
+            "coll"
+        ],
+        "large_mpi_version": "4.0",
+        "mpi_version": "1.0",
+        "region": "coll_all2one",
+        "tasks": [
+            {
+                "attributes": {},
+                "typename": "TaskCollectiveCommunication"
+            }
+        ]
+    },
+    "mpi_gatherv_init": {
+        "group": "coll",
+        "guards": [
+            "coll"
+        ],
+        "large_mpi_version": "4.0",
+        "mpi_version": "4.0",
+        "region": "coll_all2one",
+        "tasks": [
+            {
+                "typename": "TaskDefault"
+            }
+        ]
+    },
+    "mpi_get": {
+        "group": "rma",
+        "guards": [
+            "rma"
+        ],
+        "large_mpi_version": "4.0",
+        "mpi_version": "2.0",
+        "region": "rma",
+        "tasks": [
+            {
+                "attributes": {
+                    "rma_completion_type": "combined"
+                },
+                "typename": "TaskRmaRequestTrackingImplicit"
+            },
+            {
+                "typename": "TaskRmaGet"
+            }
+        ]
+    },
+    "mpi_get_accumulate": {
+        "group": "rma",
+        "guards": [
+            "rma"
+        ],
+        "large_mpi_version": "4.0",
+        "mpi_version": "3.0",
+        "region": "atomic",
+        "tasks": [
+            {
+                "typename": "TaskRmaAtomicBytesGetAccumulate"
+            },
+            {
+                "attributes": {
+                    "rma_completion_type": "separate"
+                },
+                "typename": "TaskRmaRequestTrackingImplicit"
+            },
+            {
+                "attributes": {
+                    "atomic_type": "fetch_and_accumulate"
+                },
+                "typename": "TaskRmaAtomic"
+            }
+        ]
+    },
+    "mpi_get_address": {
+        "group": "misc",
+        "guards": [
+            "extra",
+            "misc"
+        ],
+        "mpi_version": "2.0",
+        "tasks": [
+            {
+                "attributes": {},
+                "typename": "TaskDefault"
+            }
+        ]
+    },
+    "mpi_get_count": {
+        "group": "ext",
+        "guards": [
+            "extra",
+            "ext"
+        ],
+        "large_mpi_version": "4.0",
+        "mpi_version": "1.0",
+        "tasks": [
+            {
+                "attributes": {},
+                "typename": "TaskDefault"
+            }
+        ]
+    },
+    "mpi_get_elements": {
+        "group": "ext",
+        "guards": [
+            "extra",
+            "ext"
+        ],
+        "large_mpi_version": "4.0",
+        "mpi_version": "1.0",
+        "tasks": [
+            {
+                "attributes": {},
+                "typename": "TaskDefault"
+            }
+        ]
+    },
+    "mpi_get_elements_x": {
+        "group": "ext",
+        "guards": [
+            "extra",
+            "ext"
+        ],
+        "mpi_version": "3.0",
+        "tasks": [
+            {
+                "attributes": {},
+                "typename": "TaskDefault"
+            }
+        ]
+    },
+    "mpi_get_library_version": {
+        "group": "env",
+        "guards": [
+            "env"
+        ],
+        "mpi_version": "3.0",
+        "tasks": [
+            {
+                "attributes": {},
+                "typename": "TaskDefault"
+            }
+        ]
+    },
+    "mpi_get_processor_name": {
+        "group": "ext",
+        "guards": [
+            "extra",
+            "ext"
+        ],
+        "mpi_version": "1.0",
+        "tasks": [
+            {
+                "attributes": {},
+                "typename": "TaskDefault"
+            }
+        ]
+    },
+    "mpi_get_version": {
+        "group": "misc",
+        "guards": [
+            "extra",
+            "misc"
+        ],
+        "mpi_version": "1.0",
+        "tasks": [
+            {
+                "attributes": {},
+                "typename": "TaskDefault"
+            }
+        ]
+    },
+    "mpi_graph_create": {
+        "group": "topo",
+        "guards": [],
+        "mpi_version": "1.0",
+        "tasks": [
+            {
+                "attributes": {
+                    "collective_end_mode": "parent",
+                    "new": "comm_graph",
+                    "parent": "comm_old"
+                },
+                "typename": "TaskCommCreate"
+            }
+        ]
+    },
+    "mpi_graph_get": {
+        "group": "topo",
+        "guards": [
+            "extra",
+            "topo"
+        ],
+        "mpi_version": "1.0",
+        "tasks": [
+            {
+                "attributes": {},
+                "typename": "TaskDefault"
+            }
+        ]
+    },
+    "mpi_graph_map": {
+        "group": "topo",
+        "guards": [
+            "extra",
+            "topo"
+        ],
+        "mpi_version": "1.0",
+        "tasks": [
+            {
+                "attributes": {},
+                "typename": "TaskDefault"
+            }
+        ]
+    },
+    "mpi_graph_neighbors": {
+        "group": "topo",
+        "guards": [
+            "extra",
+            "topo"
+        ],
+        "mpi_version": "1.0",
+        "tasks": [
+            {
+                "attributes": {},
+                "typename": "TaskDefault"
+            }
+        ]
+    },
+    "mpi_graph_neighbors_count": {
+        "group": "topo",
+        "guards": [
+            "extra",
+            "topo"
+        ],
+        "mpi_version": "1.0",
+        "tasks": [
+            {
+                "attributes": {},
+                "typename": "TaskDefault"
+            }
+        ]
+    },
+    "mpi_graphdims_get": {
+        "group": "topo",
+        "guards": [
+            "extra",
+            "topo"
+        ],
+        "mpi_version": "1.0",
+        "tasks": [
+            {
+                "attributes": {},
+                "typename": "TaskDefault"
+            }
+        ]
+    },
+    "mpi_grequest_complete": {
+        "group": "ext",
+        "guards": [
+            "extra",
+            "ext"
+        ],
+        "mpi_version": "2.0",
+        "tasks": [
+            {
+                "attributes": {},
+                "typename": "TaskDefault"
+            }
+        ],
+        "template": "GuardComplianceWrapper"
+    },
+    "mpi_grequest_start": {
+        "group": "ext",
+        "guards": [
+            "extra",
+            "ext"
+        ],
+        "mpi_version": "2.0",
+        "tasks": [
+            {
+                "attributes": {},
+                "typename": "TaskDefault"
+            }
+        ]
+    },
+    "mpi_group_c2f": {
+        "group": "cg_misc",
+        "guards": [
+            "extra",
+            "cg",
+            "misc"
+        ],
+        "mpi_version": "2.0",
+        "tasks": [
+            {
+                "typename": "TaskDefault"
+            }
+        ]
+    },
+    "mpi_group_compare": {
+        "group": "cg",
+        "guards": [
+            "extra",
+            "cg"
+        ],
+        "mpi_version": "1.0",
+        "tasks": [
+            {
+                "attributes": {},
+                "typename": "TaskDefault"
+            }
+        ]
+    },
+    "mpi_group_difference": {
+        "group": "cg",
+        "guards": [
+            "cg"
+        ],
+        "mpi_version": "1.0",
+        "tasks": [
+            {
+                "attributes": {
+                    "new": "newgroup"
+                },
+                "typename": "TaskGroupCreate"
+            }
+        ]
+    },
+    "mpi_group_excl": {
+        "group": "cg",
+        "guards": [
+            "cg"
+        ],
+        "mpi_version": "1.0",
+        "tasks": [
+            {
+                "attributes": {
+                    "new": "newgroup"
+                },
+                "typename": "TaskGroupCreate"
+            }
+        ]
+    },
+    "mpi_group_f2c": {
+        "group": "cg_misc",
+        "guards": [
+            "extra",
+            "cg",
+            "misc"
+        ],
+        "mpi_version": "2.0",
+        "tasks": [
+            {
+                "typename": "TaskDefault"
+            }
+        ]
+    },
+    "mpi_group_free": {
+        "group": "cg",
+        "guards": [
+            "cg"
+        ],
+        "mpi_version": "1.0",
+        "tasks": [
+            {
+                "attributes": {},
+                "typename": "TaskGroupFree"
+            }
+        ]
+    },
+    "mpi_group_from_session_pset": {
+        "group": "cg",
+        "guards": [
+            "cg"
+        ],
+        "mpi_version": "4.0",
+        "tasks": [
+            {
+                "attributes": {
+                    "new": "newgroup"
+                },
+                "typename": "TaskGroupCreate"
+            }
+        ]
+    },
+    "mpi_group_incl": {
+        "group": "cg",
+        "guards": [
+            "cg"
+        ],
+        "mpi_version": "1.0",
+        "tasks": [
+            {
+                "attributes": {
+                    "new": "newgroup"
+                },
+                "typename": "TaskGroupCreate"
+            }
+        ]
+    },
+    "mpi_group_intersection": {
+        "group": "cg",
+        "guards": [
+            "cg"
+        ],
+        "mpi_version": "1.0",
+        "tasks": [
+            {
+                "attributes": {
+                    "new": "newgroup"
+                },
+                "typename": "TaskGroupCreate"
+            }
+        ]
+    },
+    "mpi_group_range_excl": {
+        "group": "cg",
+        "guards": [
+            "cg"
+        ],
+        "mpi_version": "1.0",
+        "tasks": [
+            {
+                "attributes": {
+                    "new": "newgroup"
+                },
+                "typename": "TaskGroupCreate"
+            }
+        ]
+    },
+    "mpi_group_range_incl": {
+        "group": "cg",
+        "guards": [
+            "cg"
+        ],
+        "mpi_version": "1.0",
+        "tasks": [
+            {
+                "attributes": {
+                    "new": "newgroup"
+                },
+                "typename": "TaskGroupCreate"
+            }
+        ]
+    },
+    "mpi_group_rank": {
+        "group": "cg",
+        "guards": [
+            "extra",
+            "cg"
+        ],
+        "mpi_version": "1.0",
+        "tasks": [
+            {
+                "attributes": {},
+                "typename": "TaskDefault"
+            }
+        ]
+    },
+    "mpi_group_size": {
+        "group": "cg",
+        "guards": [
+            "extra",
+            "cg"
+        ],
+        "mpi_version": "1.0",
+        "tasks": [
+            {
+                "attributes": {},
+                "typename": "TaskDefault"
+            }
+        ]
+    },
+    "mpi_group_translate_ranks": {
+        "group": "cg",
+        "guards": [
+            "extra",
+            "cg"
+        ],
+        "mpi_version": "1.0",
+        "tasks": [
+            {
+                "attributes": {},
+                "typename": "TaskDefault"
+            }
+        ]
+    },
+    "mpi_group_union": {
+        "group": "cg",
+        "guards": [
+            "cg"
+        ],
+        "mpi_version": "1.0",
+        "tasks": [
+            {
+                "attributes": {
+                    "new": "newgroup"
+                },
+                "typename": "TaskGroupCreate"
+            }
+        ]
+    },
+    "mpi_iallgather": {
+        "group": "coll",
+        "guards": [
+            "coll"
+        ],
+        "large_mpi_version": "4.0",
+        "mpi_version": "3.0",
+        "region": "coll_all2all",
+        "tasks": [
+            {
+                "attributes": {},
+                "typename": "TaskNonblockingCollectiveCommunication"
+            }
+        ]
+    },
+    "mpi_iallgatherv": {
+        "group": "coll",
+        "guards": [
+            "coll"
+        ],
+        "large_mpi_version": "4.0",
+        "mpi_version": "3.0",
+        "region": "coll_all2all",
+        "tasks": [
+            {
+                "attributes": {},
+                "typename": "TaskNonblockingCollectiveCommunication"
+            }
+        ]
+    },
+    "mpi_iallreduce": {
+        "group": "coll",
+        "guards": [
+            "coll"
+        ],
+        "large_mpi_version": "4.0",
+        "mpi_version": "3.0",
+        "region": "coll_all2all",
+        "tasks": [
+            {
+                "attributes": {},
+                "typename": "TaskNonblockingCollectiveCommunication"
+            }
+        ]
+    },
+    "mpi_ialltoall": {
+        "group": "coll",
+        "guards": [
+            "coll"
+        ],
+        "large_mpi_version": "4.0",
+        "mpi_version": "3.0",
+        "region": "coll_all2all",
+        "tasks": [
+            {
+                "attributes": {},
+                "typename": "TaskNonblockingCollectiveCommunication"
+            }
+        ]
+    },
+    "mpi_ialltoallv": {
+        "group": "coll",
+        "guards": [
+            "coll"
+        ],
+        "large_mpi_version": "4.0",
+        "mpi_version": "3.0",
+        "region": "coll_all2all",
+        "tasks": [
+            {
+                "attributes": {},
+                "typename": "TaskNonblockingCollectiveCommunication"
+            }
+        ]
+    },
+    "mpi_ialltoallw": {
+        "group": "coll",
+        "guards": [
+            "coll"
+        ],
+        "large_mpi_version": "4.0",
+        "mpi_version": "3.0",
+        "region": "coll_all2all",
+        "tasks": [
+            {
+                "attributes": {},
+                "typename": "TaskNonblockingCollectiveCommunication"
+            }
+        ]
+    },
+    "mpi_ibarrier": {
+        "group": "coll",
+        "guards": [
+            "coll"
+        ],
+        "mpi_version": "3.0",
+        "region": "barrier",
+        "tasks": [
+            {
+                "attributes": {},
+                "typename": "TaskNonblockingCollectiveCommunication"
+            }
+        ]
+    },
+    "mpi_ibcast": {
+        "group": "coll",
+        "guards": [
+            "coll"
+        ],
+        "large_mpi_version": "4.0",
+        "mpi_version": "3.0",
+        "region": "coll_one2all",
+        "tasks": [
+            {
+                "attributes": {},
+                "typename": "TaskNonblockingCollectiveCommunication"
+            }
+        ]
+    },
+    "mpi_ibsend": {
+        "group": "p2p",
+        "guards": [
+            "p2p"
+        ],
+        "large_mpi_version": "4.0",
+        "mpi_version": "1.0",
+        "region": "point2point",
+        "tasks": [
+            {
+                "attributes": {},
+                "typename": "TaskIsend"
+            }
+        ]
+    },
+    "mpi_iexscan": {
+        "group": "coll",
+        "guards": [
+            "coll"
+        ],
+        "large_mpi_version": "4.0",
+        "mpi_version": "3.0",
+        "region": "coll_other",
+        "tasks": [
+            {
+                "attributes": {},
+                "typename": "TaskNonblockingCollectiveCommunication"
+            }
+        ]
+    },
+    "mpi_igather": {
+        "group": "coll",
+        "guards": [
+            "coll"
+        ],
+        "large_mpi_version": "4.0",
+        "mpi_version": "3.0",
+        "region": "coll_all2one",
+        "tasks": [
+            {
+                "attributes": {},
+                "typename": "TaskNonblockingCollectiveCommunication"
+            }
+        ]
+    },
+    "mpi_igatherv": {
+        "group": "coll",
+        "guards": [
+            "coll"
+        ],
+        "large_mpi_version": "4.0",
+        "mpi_version": "3.0",
+        "region": "coll_all2one",
+        "tasks": [
+            {
+                "attributes": {},
+                "typename": "TaskNonblockingCollectiveCommunication"
+            }
+        ]
+    },
+    "mpi_improbe": {
+        "group": "p2p",
+        "guards": [
+            "extra",
+            "p2p"
+        ],
+        "mpi_version": "3.0",
+        "parameters": {
+            "status": {
+                "handle-status-ignore": true
+            }
+        },
+        "region": "point2point",
+        "tasks": [
+            {
+                "attributes": {},
+                "typename": "TaskDefault"
+            }
+        ]
+    },
+    "mpi_imrecv": {
+        "group": "p2p",
+        "guards": [
+            "p2p"
+        ],
+        "large_mpi_version": "4.0",
+        "mpi_version": "3.0",
+        "region": "point2point",
+        "tasks": [
+            {
+                "attributes": {},
+                "typename": "TaskDefault"
+            }
+        ]
+    },
+    "mpi_ineighbor_allgather": {
+        "group": "topo",
+        "guards": [],
+        "large_mpi_version": "4.0",
+        "mpi_version": "3.0",
+        "region": "coll_all2all",
+        "tasks": [
+            {
+                "attributes": {},
+                "typename": "TaskNonblockingCollectiveCommunication"
+            }
+        ]
+    },
+    "mpi_ineighbor_allgatherv": {
+        "group": "topo",
+        "guards": [
+            "topo"
+        ],
+        "large_mpi_version": "4.0",
+        "mpi_version": "3.0",
+        "region": "coll_all2all",
+        "tasks": [
+            {
+                "attributes": {},
+                "typename": "TaskNonblockingCollectiveCommunication"
+            }
+        ]
+    },
+    "mpi_ineighbor_alltoall": {
+        "group": "topo",
+        "guards": [
+            "topo"
+        ],
+        "large_mpi_version": "4.0",
+        "mpi_version": "3.0",
+        "region": "coll_all2all",
+        "tasks": [
+            {
+                "attributes": {},
+                "typename": "TaskNonblockingCollectiveCommunication"
+            }
+        ]
+    },
+    "mpi_ineighbor_alltoallv": {
+        "group": "topo",
+        "guards": [
+            "topo"
+        ],
+        "large_mpi_version": "4.0",
+        "mpi_version": "3.0",
+        "region": "coll_all2all",
+        "tasks": [
+            {
+                "attributes": {},
+                "typename": "TaskNonblockingCollectiveCommunication"
+            }
+        ]
+    },
+    "mpi_ineighbor_alltoallw": {
+        "group": "topo",
+        "guards": [
+            "topo"
+        ],
+        "large_mpi_version": "4.0",
+        "mpi_version": "3.0",
+        "region": "coll_all2all",
+        "tasks": [
+            {
+                "attributes": {},
+                "typename": "TaskNonblockingCollectiveCommunication"
+            }
+        ]
+    },
+    "mpi_info_c2f": {
+        "group": "misc",
+        "guards": [
+            "extra",
+            "misc"
+        ],
+        "mpi_version": "2.0",
+        "tasks": [
+            {
+                "attributes": {},
+                "typename": "TaskDefault"
+            }
+        ]
+    },
+    "mpi_info_create": {
+        "group": "misc",
+        "guards": [
+            "extra",
+            "misc"
+        ],
+        "mpi_version": "2.0",
+        "tasks": [
+            {
+                "attributes": {},
+                "typename": "TaskDefault"
+            }
+        ]
+    },
+    "mpi_info_create_env": {
+        "c_variants": [
+            {
+                "args": "int, argc, char**, argv, MPI_Info*, info",
+                "name": "MPI_4_0_ERRATA"
+            },
+            {
+                "args": "int*, argc, char***, argv, MPI_Info*, info",
+                "name": "MPICH_PRE_c04ba203"
+            }
+        ],
+        "group": "misc",
+        "guards": [
+            "extra",
+            "misc"
+        ],
+        "mpi_version": "4.0",
+        "tasks": [
+            {
+                "typename": "TaskDefault"
+            }
+        ],
+        "template": "ProtoArgsWrapper"
+    },
+    "mpi_info_delete": {
+        "group": "misc",
+        "guards": [
+            "extra",
+            "misc"
+        ],
+        "mpi_version": "2.0",
+        "tasks": [
+            {
+                "typename": "TaskDefault"
+            }
+        ],
+        "template": "GuardComplianceWrapper"
+    },
+    "mpi_info_dup": {
+        "group": "misc",
+        "guards": [
+            "extra",
+            "misc"
+        ],
+        "mpi_version": "2.0",
+        "tasks": [
+            {
+                "attributes": {},
+                "typename": "TaskDefault"
+            }
+        ]
+    },
+    "mpi_info_f2c": {
+        "group": "misc",
+        "guards": [
+            "extra",
+            "misc"
+        ],
+        "mpi_version": "2.0",
+        "tasks": [
+            {
+                "attributes": {},
+                "typename": "TaskDefault"
+            }
+        ]
+    },
+    "mpi_info_free": {
+        "group": "misc",
+        "guards": [
+            "extra",
+            "misc"
+        ],
+        "mpi_version": "2.0",
+        "tasks": [
+            {
+                "attributes": {},
+                "typename": "TaskDefault"
+            }
+        ]
+    },
+    "mpi_info_get": {
+        "group": "misc",
+        "guards": [
+            "extra",
+            "misc"
+        ],
+        "mpi_version": "2.0",
+        "tasks": [
+            {
+                "typename": "TaskDefault"
+            }
+        ],
+        "template": "GuardComplianceWrapper"
+    },
+    "mpi_info_get_nkeys": {
+        "group": "misc",
+        "guards": [
+            "extra",
+            "misc"
+        ],
+        "mpi_version": "2.0",
+        "tasks": [
+            {
+                "typename": "TaskDefault"
+            }
+        ]
+    },
+    "mpi_info_get_nthkey": {
+        "group": "misc",
+        "guards": [
+            "extra",
+            "misc"
+        ],
+        "mpi_version": "2.0",
+        "tasks": [
+            {
+                "typename": "TaskDefault"
+            }
+        ]
+    },
+    "mpi_info_get_string": {
+        "group": "misc",
+        "guards": [
+            "extra",
+            "misc"
+        ],
+        "mpi_version": "4.0",
+        "tasks": [
+            {
+                "typename": "TaskDefault"
+            }
+        ]
+    },
+    "mpi_info_get_valuelen": {
+        "group": "misc",
+        "guards": [
+            "extra",
+            "misc"
+        ],
+        "mpi_version": "2.0",
+        "tasks": [
+            {
+                "typename": "TaskDefault"
+            }
+        ],
+        "template": "GuardComplianceWrapper"
+    },
+    "mpi_info_set": {
+        "group": "misc",
+        "guards": [
+            "extra",
+            "misc"
+        ],
+        "mpi_version": "2.0",
+        "tasks": [
+            {
+                "typename": "TaskDefault"
+            }
+        ],
+        "template": "GuardComplianceWrapper"
+    },
+    "mpi_init": {
+        "group": "env",
+        "guards": [],
+        "mpi_version": "1.0",
+        "tasks": [
+            {
+                "attributes": {},
+                "typename": "TaskInitialize"
+            }
+        ]
+    },
+    "mpi_init_thread": {
+        "group": "env",
+        "guards": [],
+        "mpi_version": "2.0",
+        "tasks": [
+            {
+                "attributes": {},
+                "typename": "TaskInitialize"
+            }
+        ]
+    },
+    "mpi_initialized": {
+        "group": "env",
+        "guards": [
+            "extra",
+            "env"
+        ],
+        "mpi_version": "1.0",
+        "tasks": [
+            {
+                "typename": "TaskDisableEventsOutsideMeasurement"
+            }
+        ]
+    },
+    "mpi_intercomm_create": {
+        "group": "cg",
+        "guards": [],
+        "mpi_version": "1.0",
+        "tasks": [
+            {
+                "attributes": {
+                    "collective_end_mode": "new_or_self",
+                    "new": "newintercomm",
+                    "parent": "peer_comm"
+                },
+                "typename": "TaskIntercommCreate"
+            }
+        ]
+    },
+    "mpi_intercomm_create_from_groups": {
+        "group": "cg",
+        "guards": [
+            "cg"
+        ],
+        "mpi_version": "4.0",
+        "tasks": [
+            {
+                "attributes": {
+                    "collective_end_mode": "new_or_self",
+                    "new": "newintercomm",
+                    "parent": null
+                },
+                "typename": "TaskCommCreate"
+            }
+        ]
+    },
+    "mpi_intercomm_merge": {
+        "group": "cg",
+        "guards": [],
+        "mpi_version": "1.0",
+        "tasks": [
+            {
+                "attributes": {
+                    "collective_end_mode": "parent",
+                    "new": "newintracomm",
+                    "parent": "intercomm"
+                },
+                "typename": "TaskCommCreate"
+            }
+        ]
+    },
+    "mpi_iprobe": {
+        "group": "p2p",
+        "guards": [
+            "extra",
+            "p2p"
+        ],
+        "mpi_version": "1.0",
+        "parameters": {
+            "status": {
+                "handle-status-ignore": true
+            }
+        },
+        "region": "point2point",
+        "tasks": [
+            {
+                "attributes": {},
+                "typename": "TaskDefault"
+            }
+        ]
+    },
+    "mpi_irecv": {
+        "group": "p2p",
+        "guards": [
+            "p2p"
+        ],
+        "large_mpi_version": "4.0",
+        "mpi_version": "1.0",
+        "region": "point2point",
+        "tasks": [
+            {
+                "attributes": {},
+                "typename": "TaskIrecv"
+            }
+        ]
+    },
+    "mpi_ireduce": {
+        "group": "coll",
+        "guards": [
+            "coll"
+        ],
+        "large_mpi_version": "4.0",
+        "mpi_version": "3.0",
+        "region": "coll_all2one",
+        "tasks": [
+            {
+                "attributes": {},
+                "typename": "TaskNonblockingCollectiveCommunication"
+            }
+        ]
+    },
+    "mpi_ireduce_scatter": {
+        "group": "coll",
+        "guards": [
+            "coll"
+        ],
+        "large_mpi_version": "4.0",
+        "mpi_version": "3.0",
+        "region": "coll_all2all",
+        "tasks": [
+            {
+                "attributes": {},
+                "typename": "TaskNonblockingCollectiveCommunication"
+            }
+        ]
+    },
+    "mpi_ireduce_scatter_block": {
+        "group": "coll",
+        "guards": [
+            "coll"
+        ],
+        "large_mpi_version": "4.0",
+        "mpi_version": "3.0",
+        "region": "coll_all2all",
+        "tasks": [
+            {
+                "attributes": {},
+                "typename": "TaskNonblockingCollectiveCommunication"
+            }
+        ]
+    },
+    "mpi_irsend": {
+        "group": "p2p",
+        "guards": [
+            "p2p"
+        ],
+        "large_mpi_version": "4.0",
+        "mpi_version": "1.0",
+        "region": "point2point",
+        "tasks": [
+            {
+                "attributes": {},
+                "typename": "TaskIsend"
+            }
+        ]
+    },
+    "mpi_is_thread_main": {
+        "group": "env",
+        "guards": [
+            "extra",
+            "env"
+        ],
+        "mpi_version": "2.0",
+        "tasks": [
+            {
+                "attributes": {},
+                "typename": "TaskDefault"
+            }
+        ]
+    },
+    "mpi_iscan": {
+        "group": "coll",
+        "guards": [
+            "coll"
+        ],
+        "large_mpi_version": "4.0",
+        "mpi_version": "3.0",
+        "region": "coll_other",
+        "tasks": [
+            {
+                "attributes": {},
+                "typename": "TaskNonblockingCollectiveCommunication"
+            }
+        ]
+    },
+    "mpi_iscatter": {
+        "group": "coll",
+        "guards": [
+            "coll"
+        ],
+        "large_mpi_version": "4.0",
+        "mpi_version": "3.0",
+        "region": "coll_one2all",
+        "tasks": [
+            {
+                "attributes": {},
+                "typename": "TaskNonblockingCollectiveCommunication"
+            }
+        ]
+    },
+    "mpi_iscatterv": {
+        "group": "coll",
+        "guards": [
+            "coll"
+        ],
+        "large_mpi_version": "4.0",
+        "mpi_version": "3.0",
+        "region": "coll_one2all",
+        "tasks": [
+            {
+                "attributes": {},
+                "typename": "TaskNonblockingCollectiveCommunication"
+            }
+        ]
+    },
+    "mpi_isend": {
+        "group": "p2p",
+        "guards": [
+            "p2p"
+        ],
+        "large_mpi_version": "4.0",
+        "mpi_version": "1.0",
+        "region": "point2point",
+        "tasks": [
+            {
+                "attributes": {},
+                "typename": "TaskIsend"
+            }
+        ]
+    },
+    "mpi_isendrecv": {
+        "group": "p2p",
+        "guards": [
+            "p2p"
+        ],
+        "large_mpi_version": "4.0",
+        "mpi_version": "4.0",
+        "region": "point2point",
+        "tasks": [
+            {
+                "typename": "TaskDefault"
+            }
+        ]
+    },
+    "mpi_isendrecv_replace": {
+        "group": "p2p",
+        "guards": [
+            "p2p"
+        ],
+        "large_mpi_version": "4.0",
+        "mpi_version": "4.0",
+        "region": "point2point",
+        "tasks": [
+            {
+                "typename": "TaskDefault"
+            }
+        ]
+    },
+    "mpi_issend": {
+        "group": "p2p",
+        "guards": [
+            "p2p"
+        ],
+        "large_mpi_version": "4.0",
+        "mpi_version": "1.0",
+        "region": "point2point",
+        "tasks": [
+            {
+                "attributes": {},
+                "typename": "TaskIsend"
+            }
+        ]
+    },
+    "mpi_keyval_create": {
+        "group": "cg_ext",
+        "guards": [
+            "extra",
+            "cg",
+            "ext"
+        ],
+        "mpi_version": "1.0",
+        "tasks": [
+            {
+                "attributes": {},
+                "typename": "TaskDefault"
+            }
+        ]
+    },
+    "mpi_keyval_free": {
+        "group": "cg_ext",
+        "guards": [
+            "extra",
+            "cg",
+            "ext"
+        ],
+        "mpi_version": "1.0",
+        "tasks": [
+            {
+                "attributes": {},
+                "typename": "TaskDefault"
+            }
+        ]
+    },
+    "mpi_lookup_name": {
+        "group": "spawn",
+        "guards": [
+            "spawn",
+            "extra"
+        ],
+        "mpi_version": "2.0",
+        "tasks": [
+            {
+                "attributes": {},
+                "typename": "TaskDefault"
+            }
+        ]
+    },
+    "mpi_message_c2f": {
+        "group": "misc",
+        "guards": [
+            "extra",
+            "p2p",
+            "misc"
+        ],
+        "mpi_version": "3.0",
+        "tasks": [
+            {
+                "typename": "TaskDefault"
+            }
+        ]
+    },
+    "mpi_message_f2c": {
+        "group": "misc",
+        "guards": [
+            "extra",
+            "p2p",
+            "misc"
+        ],
+        "mpi_version": "3.0",
+        "tasks": [
+            {
+                "typename": "TaskDefault"
+            }
+        ]
+    },
+    "mpi_mprobe": {
+        "group": "p2p",
+        "guards": [
+            "p2p"
+        ],
+        "mpi_version": "3.0",
+        "parameters": {
+            "status": {
+                "handle-status-ignore": true
+            }
+        },
+        "region": "point2point",
+        "tasks": [
+            {
+                "attributes": {},
+                "typename": "TaskDefault"
+            }
+        ]
+    },
+    "mpi_mrecv": {
+        "group": "p2p",
+        "guards": [
+            "p2p"
+        ],
+        "large_mpi_version": "4.0",
+        "mpi_version": "3.0",
+        "parameters": {
+            "status": {
+                "handle-status-ignore": true
+            }
+        },
+        "region": "point2point",
+        "tasks": [
+            {
+                "attributes": {},
+                "typename": "TaskDefault"
+            }
+        ]
+    },
+    "mpi_neighbor_allgather": {
+        "group": "topo",
+        "guards": [],
+        "large_mpi_version": "4.0",
+        "mpi_version": "3.0",
+        "region": "coll_all2all",
+        "tasks": [
+            {
+                "attributes": {},
+                "typename": "TaskCollectiveCommunication"
+            }
+        ]
+    },
+    "mpi_neighbor_allgather_init": {
+        "group": "topo",
+        "guards": [
+            "topo"
+        ],
+        "large_mpi_version": "4.0",
+        "mpi_version": "4.0",
+        "region": "coll_all2all",
+        "tasks": [
+            {
+                "typename": "TaskDefault"
+            }
+        ]
+    },
+    "mpi_neighbor_allgatherv": {
+        "group": "topo",
+        "guards": [
+            "topo"
+        ],
+        "large_mpi_version": "4.0",
+        "mpi_version": "3.0",
+        "region": "coll_all2all",
+        "tasks": [
+            {
+                "attributes": {},
+                "typename": "TaskCollectiveCommunication"
+            }
+        ]
+    },
+    "mpi_neighbor_allgatherv_init": {
+        "group": "topo",
+        "guards": [
+            "topo"
+        ],
+        "large_mpi_version": "4.0",
+        "mpi_version": "4.0",
+        "region": "coll_all2all",
+        "tasks": [
+            {
+                "typename": "TaskDefault"
+            }
+        ]
+    },
+    "mpi_neighbor_alltoall": {
+        "group": "topo",
+        "guards": [
+            "topo"
+        ],
+        "large_mpi_version": "4.0",
+        "mpi_version": "3.0",
+        "region": "coll_all2all",
+        "tasks": [
+            {
+                "attributes": {},
+                "typename": "TaskCollectiveCommunication"
+            }
+        ]
+    },
+    "mpi_neighbor_alltoall_init": {
+        "group": "topo",
+        "guards": [
+            "topo"
+        ],
+        "large_mpi_version": "4.0",
+        "mpi_version": "4.0",
+        "region": "coll_all2all",
+        "tasks": [
+            {
+                "typename": "TaskDefault"
+            }
+        ]
+    },
+    "mpi_neighbor_alltoallv": {
+        "group": "topo",
+        "guards": [
+            "topo"
+        ],
+        "large_mpi_version": "4.0",
+        "mpi_version": "3.0",
+        "region": "coll_all2all",
+        "tasks": [
+            {
+                "attributes": {},
+                "typename": "TaskCollectiveCommunication"
+            }
+        ]
+    },
+    "mpi_neighbor_alltoallv_init": {
+        "group": "topo",
+        "guards": [
+            "topo"
+        ],
+        "large_mpi_version": "4.0",
+        "mpi_version": "4.0",
+        "region": "coll_all2all",
+        "tasks": [
+            {
+                "typename": "TaskDefault"
+            }
+        ]
+    },
+    "mpi_neighbor_alltoallw": {
+        "group": "topo",
+        "guards": [
+            "topo"
+        ],
+        "large_mpi_version": "4.0",
+        "mpi_version": "3.0",
+        "region": "coll_all2all",
+        "tasks": [
+            {
+                "attributes": {},
+                "typename": "TaskCollectiveCommunication"
+            }
+        ]
+    },
+    "mpi_neighbor_alltoallw_init": {
+        "group": "topo",
+        "guards": [
+            "topo"
+        ],
+        "large_mpi_version": "4.0",
+        "mpi_version": "4.0",
+        "region": "coll_all2all",
+        "tasks": [
+            {
+                "typename": "TaskDefault"
+            }
+        ]
+    },
+    "mpi_op_c2f": {
+        "group": "misc",
+        "guards": [
+            "extra",
+            "misc"
+        ],
+        "mpi_version": "2.0",
+        "tasks": [
+            {
+                "typename": "TaskDefault"
+            }
+        ]
+    },
+    "mpi_op_commutative": {
+        "group": "misc",
+        "guards": [
+            "extra",
+            "misc"
+        ],
+        "mpi_version": "2.2",
+        "tasks": [
+            {
+                "attributes": {},
+                "typename": "TaskDefault"
+            }
+        ]
+    },
+    "mpi_op_create": {
+        "group": "misc",
+        "guards": [
+            "extra",
+            "misc"
+        ],
+        "large_mpi_version": "4.0",
+        "mpi_version": "1.0",
+        "tasks": [
+            {
+                "attributes": {},
+                "typename": "TaskDefault"
+            }
+        ]
+    },
+    "mpi_op_f2c": {
+        "group": "misc",
+        "guards": [
+            "extra",
+            "misc"
+        ],
+        "mpi_version": "2.0",
+        "tasks": [
+            {
+                "typename": "TaskDefault"
+            }
+        ]
+    },
+    "mpi_op_free": {
+        "group": "misc",
+        "guards": [
+            "extra",
+            "misc"
+        ],
+        "mpi_version": "1.0",
+        "tasks": [
+            {
+                "attributes": {},
+                "typename": "TaskDefault"
+            }
+        ]
+    },
+    "mpi_open_port": {
+        "group": "spawn",
+        "guards": [
+            "spawn",
+            "extra"
+        ],
+        "mpi_version": "2.0",
+        "tasks": [
+            {
+                "attributes": {},
+                "typename": "TaskDefault"
+            }
+        ]
+    },
+    "mpi_pack": {
+        "group": "type",
+        "guards": [
+            "extra"
+        ],
+        "large_mpi_version": "4.0",
+        "mpi_version": "1.0",
+        "tasks": [
+            {
+                "attributes": {},
+                "typename": "TaskDefault"
+            }
+        ]
+    },
+    "mpi_pack_external": {
+        "group": "type",
+        "guards": [
+            "extra",
+            "type"
+        ],
+        "large_mpi_version": "4.0",
+        "mpi_version": "2.0",
+        "tasks": [
+            {
+                "attributes": {},
+                "typename": "TaskDefault"
+            }
+        ]
+    },
+    "mpi_pack_external_size": {
+        "group": "type",
+        "guards": [
+            "extra",
+            "type"
+        ],
+        "large_mpi_version": "4.0",
+        "mpi_version": "2.0",
+        "tasks": [
+            {
+                "attributes": {},
+                "typename": "TaskDefault"
+            }
+        ]
+    },
+    "mpi_pack_size": {
+        "group": "type",
+        "guards": [
+            "extra",
+            "type"
+        ],
+        "large_mpi_version": "4.0",
+        "mpi_version": "1.0",
+        "tasks": [
+            {
+                "attributes": {},
+                "typename": "TaskDefault"
+            }
+        ]
+    },
+    "mpi_parrived": {
+        "group": "request",
+        "guards": [
+            "request"
+        ],
+        "mpi_version": "4.0",
+        "region": "point2point",
+        "tasks": [
+            {
+                "typename": "TaskDefault"
+            }
+        ]
+    },
+    "mpi_pready": {
+        "group": "request",
+        "guards": [
+            "request"
+        ],
+        "mpi_version": "4.0",
+        "region": "point2point",
+        "tasks": [
+            {
+                "typename": "TaskDefault"
+            }
+        ]
+    },
+    "mpi_pready_list": {
+        "c_variants": [
+            {
+                "args": "int, length, int*, array_of_partitions, MPI_Request, request",
+                "name": "NOT_CONST"
+            }
+        ],
+        "group": "request",
+        "guards": [
+            "request"
+        ],
+        "mpi_version": "4.0",
+        "region": "point2point",
+        "tasks": [
+            {
+                "typename": "TaskDefault"
+            }
+        ],
+        "template": "ProtoArgsWrapper"
+    },
+    "mpi_pready_range": {
+        "group": "request",
+        "guards": [
+            "request"
+        ],
+        "mpi_version": "4.0",
+        "region": "point2point",
+        "tasks": [
+            {
+                "typename": "TaskDefault"
+            }
+        ]
+    },
+    "mpi_precv_init": {
+        "group": "p2p",
+        "guards": [
+            "p2p"
+        ],
+        "mpi_version": "4.0",
+        "region": "point2point",
+        "tasks": [
+            {
+                "typename": "TaskDefault"
+            }
+        ]
+    },
+    "mpi_probe": {
+        "group": "p2p",
+        "guards": [
+            "p2p"
+        ],
+        "mpi_version": "1.0",
+        "parameters": {
+            "status": {
+                "handle-status-ignore": true
+            }
+        },
+        "region": "point2point",
+        "tasks": [
+            {
+                "attributes": {},
+                "typename": "TaskDefault"
+            }
+        ]
+    },
+    "mpi_psend_init": {
+        "c_variants": [
+            {
+                "args": "void*, buf, int, partitions, MPI_Count, count, MPI_Datatype, datatype, int, dest, int, tag, MPI_Comm, comm, MPI_Info, info, MPI_Request*, request",
+                "name": "NOT_CONST"
+            }
+        ],
+        "group": "p2p",
+        "guards": [
+            "p2p"
+        ],
+        "mpi_version": "4.0",
+        "region": "point2point",
+        "tasks": [
+            {
+                "typename": "TaskDefault"
+            }
+        ],
+        "template": "ProtoArgsWrapper"
+    },
+    "mpi_publish_name": {
+        "group": "spawn",
+        "guards": [
+            "spawn",
+            "extra"
+        ],
+        "mpi_version": "2.0",
+        "tasks": [
+            {
+                "attributes": {},
+                "typename": "TaskDefault"
+            }
+        ]
+    },
+    "mpi_put": {
+        "group": "rma",
+        "guards": [
+            "rma"
+        ],
+        "large_mpi_version": "4.0",
+        "mpi_version": "2.0",
+        "region": "rma",
+        "tasks": [
+            {
+                "attributes": {
+                    "rma_completion_type": "separate"
+                },
+                "typename": "TaskRmaRequestTrackingImplicit"
+            },
+            {
+                "typename": "TaskRmaPut"
+            }
+        ]
+    },
+    "mpi_query_thread": {
+        "group": "env",
+        "guards": [
+            "extra",
+            "env"
+        ],
+        "mpi_version": "2.0",
+        "tasks": [
+            {
+                "attributes": {},
+                "typename": "TaskDefault"
+            }
+        ]
+    },
+    "mpi_raccumulate": {
+        "c_variants": [
+            {
+                "args": "void*, origin_addr, int, origin_count, MPI_Datatype, origin_datatype, int, target_rank, MPI_Aint, target_disp, int, target_count, MPI_Datatype, target_datatype, MPI_Op, op, MPI_Win, win, MPI_Request, *request",
+                "name": "NOT_CONST"
+            }
+        ],
+        "group": "rma",
+        "guards": [
+            "rma"
+        ],
+        "large_mpi_version": "4.0",
+        "mpi_version": "3.0",
+        "region": "atomic",
+        "tasks": [
+            {
+                "typename": "TaskRmaAtomicBytesAccumulate"
+            },
+            {
+                "attributes": {
+                    "rma_completion_type": "separate"
+                },
+                "typename": "TaskRmaRequestTrackingExplicit"
+            },
+            {
+                "attributes": {
+                    "atomic_type": "accumulate"
+                },
+                "typename": "TaskRmaAtomic"
+            }
+        ],
+        "template": "ProtoArgsWrapper"
+    },
+    "mpi_recv": {
+        "group": "p2p",
+        "guards": [
+            "p2p"
+        ],
+        "large_mpi_version": "4.0",
+        "mpi_version": "1.0",
+        "parameters": {
+            "status": {
+                "handle-status-ignore": true
+            }
+        },
+        "region": "point2point",
+        "tasks": [
+            {
+                "attributes": {},
+                "typename": "TaskRecv"
+            }
+        ]
+    },
+    "mpi_recv_init": {
+        "group": "p2p",
+        "guards": [
+            "p2p"
+        ],
+        "large_mpi_version": "4.0",
+        "mpi_version": "1.0",
+        "region": "point2point",
+        "tasks": [
+            {
+                "typename": "TaskRecvInit"
+            }
+        ]
+    },
+    "mpi_reduce": {
+        "group": "coll",
+        "guards": [
+            "coll"
+        ],
+        "large_mpi_version": "4.0",
+        "mpi_version": "1.0",
+        "region": "coll_all2one",
+        "tasks": [
+            {
+                "attributes": {},
+                "typename": "TaskCollectiveCommunication"
+            }
+        ]
+    },
+    "mpi_reduce_init": {
+        "group": "coll",
+        "guards": [
+            "coll"
+        ],
+        "large_mpi_version": "4.0",
+        "mpi_version": "4.0",
+        "region": "coll_all2one",
+        "tasks": [
+            {
+                "typename": "TaskDefault"
+            }
+        ]
+    },
+    "mpi_reduce_local": {
+        "group": "coll",
+        "guards": [
+            "coll"
+        ],
+        "large_mpi_version": "4.0",
+        "mpi_version": "2.2",
+        "tasks": [
+            {
+                "attributes": {},
+                "typename": "TaskDefault"
+            }
+        ]
+    },
+    "mpi_reduce_scatter": {
+        "group": "coll",
+        "guards": [
+            "coll"
+        ],
+        "large_mpi_version": "4.0",
+        "mpi_version": "1.0",
+        "region": "coll_all2all",
+        "tasks": [
+            {
+                "attributes": {},
+                "typename": "TaskCollectiveCommunication"
+            }
+        ]
+    },
+    "mpi_reduce_scatter_block": {
+        "group": "coll",
+        "guards": [
+            "coll"
+        ],
+        "large_mpi_version": "4.0",
+        "mpi_version": "2.2",
+        "region": "coll_all2all",
+        "tasks": [
+            {
+                "attributes": {},
+                "typename": "TaskCollectiveCommunication"
+            }
+        ]
+    },
+    "mpi_reduce_scatter_block_init": {
+        "group": "coll",
+        "guards": [
+            "coll"
+        ],
+        "large_mpi_version": "4.0",
+        "mpi_version": "4.0",
+        "region": "coll_all2all",
+        "tasks": [
+            {
+                "typename": "TaskDefault"
+            }
+        ]
+    },
+    "mpi_reduce_scatter_init": {
+        "group": "coll",
+        "guards": [
+            "coll"
+        ],
+        "large_mpi_version": "4.0",
+        "mpi_version": "4.0",
+        "region": "coll_all2all",
+        "tasks": [
+            {
+                "typename": "TaskDefault"
+            }
+        ]
+    },
+    "mpi_register_datarep": {
+        "group": "io",
+        "guards": [
+            "io",
+            "extra"
+        ],
+        "large_mpi_version": "4.0",
+        "mpi_version": "2.0",
+        "tasks": [
+            {
+                "attributes": {},
+                "typename": "TaskDefault"
+            }
+        ]
+    },
+    "mpi_request_c2f": {
+        "group": "misc",
+        "guards": [
+            "extra",
+            "misc"
+        ],
+        "mpi_version": "2.0",
+        "tasks": [
+            {
+                "typename": "TaskDefault"
+            }
+        ]
+    },
+    "mpi_request_f2c": {
+        "group": "misc",
+        "guards": [
+            "extra",
+            "misc"
+        ],
+        "mpi_version": "2.0",
+        "tasks": [
+            {
+                "typename": "TaskDefault"
+            }
+        ]
+    },
+    "mpi_request_free": {
+        "group": "request",
+        "guards": [
+            "request"
+        ],
+        "mpi_version": "1.0",
+        "tasks": [
+            {
+                "typename": "TaskRequestFree"
+            }
+        ]
+    },
+    "mpi_request_get_status": {
+        "group": "request",
+        "guards": [
+            "request"
+        ],
+        "mpi_version": "2.0",
+        "parameters": {
+            "status": {
+                "handle-status-ignore": true
+            }
+        },
+        "tasks": [
+            {
+                "typename": "TaskRequestGetStatus"
+            }
+        ]
+    },
+    "mpi_rget": {
+        "group": "rma",
+        "guards": [
+            "rma"
+        ],
+        "large_mpi_version": "4.0",
+        "mpi_version": "3.0",
+        "region": "rma",
+        "tasks": [
+            {
+                "attributes": {
+                    "rma_completion_type": "combined"
+                },
+                "typename": "TaskRmaRequestTrackingExplicit"
+            },
+            {
+                "typename": "TaskRmaGet"
+            }
+        ]
+    },
+    "mpi_rget_accumulate": {
+        "group": "rma",
+        "guards": [
+            "rma"
+        ],
+        "large_mpi_version": "4.0",
+        "mpi_version": "3.0",
+        "region": "atomic",
+        "tasks": [
+            {
+                "typename": "TaskRmaAtomicBytesGetAccumulate"
+            },
+            {
+                "attributes": {
+                    "rma_completion_type": "separate"
+                },
+                "typename": "TaskRmaRequestTrackingExplicit"
+            },
+            {
+                "attributes": {
+                    "atomic_type": "fetch_and_accumulate"
+                },
+                "typename": "TaskRmaAtomic"
+            }
+        ]
+    },
+    "mpi_rput": {
+        "group": "rma",
+        "guards": [
+            "rma"
+        ],
+        "large_mpi_version": "4.0",
+        "mpi_version": "3.0",
+        "region": "rma",
+        "tasks": [
+            {
+                "attributes": {
+                    "rma_completion_type": "separate"
+                },
+                "typename": "TaskRmaRequestTrackingExplicit"
+            },
+            {
+                "typename": "TaskRmaPut"
+            }
+        ]
+    },
+    "mpi_rsend": {
+        "group": "p2p",
+        "guards": [
+            "p2p"
+        ],
+        "large_mpi_version": "4.0",
+        "mpi_version": "1.0",
+        "region": "point2point",
+        "tasks": [
+            {
+                "attributes": {},
+                "typename": "TaskSend"
+            }
+        ]
+    },
+    "mpi_rsend_init": {
+        "group": "p2p",
+        "guards": [
+            "p2p"
+        ],
+        "large_mpi_version": "4.0",
+        "mpi_version": "1.0",
+        "region": "point2point",
+        "tasks": [
+            {
+                "typename": "TaskSendInit"
+            }
+        ]
+    },
+    "mpi_scan": {
+        "group": "coll",
+        "guards": [
+            "coll"
+        ],
+        "large_mpi_version": "4.0",
+        "mpi_version": "1.0",
+        "region": "coll_other",
+        "tasks": [
+            {
+                "attributes": {},
+                "typename": "TaskCollectiveCommunication"
+            }
+        ]
+    },
+    "mpi_scan_init": {
+        "group": "coll",
+        "guards": [
+            "coll"
+        ],
+        "large_mpi_version": "4.0",
+        "mpi_version": "4.0",
+        "region": "coll_other",
+        "tasks": [
+            {
+                "typename": "TaskDefault"
+            }
+        ]
+    },
+    "mpi_scatter": {
+        "group": "coll",
+        "guards": [
+            "coll"
+        ],
+        "large_mpi_version": "4.0",
+        "mpi_version": "1.0",
+        "region": "coll_one2all",
+        "tasks": [
+            {
+                "attributes": {},
+                "typename": "TaskCollectiveCommunication"
+            }
+        ]
+    },
+    "mpi_scatter_init": {
+        "group": "coll",
+        "guards": [
+            "coll"
+        ],
+        "large_mpi_version": "4.0",
+        "mpi_version": "4.0",
+        "region": "coll_one2all",
+        "tasks": [
+            {
+                "typename": "TaskDefault"
+            }
+        ]
+    },
+    "mpi_scatterv": {
+        "group": "coll",
+        "guards": [
+            "coll"
+        ],
+        "large_mpi_version": "4.0",
+        "mpi_version": "1.0",
+        "region": "coll_one2all",
+        "tasks": [
+            {
+                "attributes": {},
+                "typename": "TaskCollectiveCommunication"
+            }
+        ]
+    },
+    "mpi_scatterv_init": {
+        "group": "coll",
+        "guards": [
+            "coll"
+        ],
+        "large_mpi_version": "4.0",
+        "mpi_version": "4.0",
+        "region": "coll_one2all",
+        "tasks": [
+            {
+                "typename": "TaskDefault"
+            }
+        ]
+    },
+    "mpi_send": {
+        "group": "p2p",
+        "guards": [
+            "p2p"
+        ],
+        "large_mpi_version": "4.0",
+        "mpi_version": "1.0",
+        "region": "point2point",
+        "tasks": [
+            {
+                "attributes": {},
+                "typename": "TaskSend"
+            }
+        ]
+    },
+    "mpi_send_init": {
+        "group": "p2p",
+        "guards": [
+            "p2p"
+        ],
+        "large_mpi_version": "4.0",
+        "mpi_version": "1.0",
+        "region": "point2point",
+        "tasks": [
+            {
+                "typename": "TaskSendInit"
+            }
+        ]
+    },
+    "mpi_sendrecv": {
+        "group": "p2p",
+        "guards": [
+            "p2p"
+        ],
+        "large_mpi_version": "4.0",
+        "mpi_version": "1.0",
+        "parameters": {
+            "status": {
+                "handle-status-ignore": true
+            }
+        },
+        "region": "point2point",
+        "tasks": [
+            {
+                "attributes": {},
+                "typename": "TaskSend"
+            },
+            {
+                "attributes": {},
+                "typename": "TaskRecv"
+            }
+        ]
+    },
+    "mpi_sendrecv_replace": {
+        "group": "p2p",
+        "guards": [
+            "p2p"
+        ],
+        "large_mpi_version": "4.0",
+        "mpi_version": "1.0",
+        "parameters": {
+            "status": {
+                "handle-status-ignore": true
+            }
+        },
+        "region": "point2point",
+        "tasks": [
+            {
+                "typename": "TaskSend"
+            },
+            {
+                "typename": "TaskRecv"
+            }
+        ]
+    },
+    "mpi_session_c2f": {
+        "group": "misc",
+        "guards": [
+            "extra",
+            "env",
+            "misc"
+        ],
+        "mpi_version": "4.0",
+        "tasks": [
+            {
+                "typename": "TaskDefault"
+            }
+        ]
+    },
+    "mpi_session_call_errhandler": {
+        "group": "env",
+        "guards": [
+            "env",
+            "err"
+        ],
+        "mpi_version": "4.0",
+        "tasks": [
+            {
+                "typename": "TaskDefault"
+            }
+        ]
+    },
+    "mpi_session_create_errhandler": {
+        "group": "env",
+        "guards": [
+            "env",
+            "err"
+        ],
+        "mpi_version": "4.0",
+        "tasks": [
+            {
+                "typename": "TaskDefault"
+            }
+        ]
+    },
+    "mpi_session_f2c": {
+        "group": "misc",
+        "guards": [
+            "extra",
+            "env",
+            "misc"
+        ],
+        "mpi_version": "4.0",
+        "tasks": [
+            {
+                "typename": "TaskDefault"
+            }
+        ]
+    },
+    "mpi_session_finalize": {
+        "group": "env",
+        "guards": [],
+        "mpi_version": "4.0",
+        "tasks": [
+            {
+                "typename": "TaskDefault"
+            }
+        ]
+    },
+    "mpi_session_get_errhandler": {
+        "group": "env",
+        "guards": [
+            "env",
+            "err"
+        ],
+        "mpi_version": "4.0",
+        "tasks": [
+            {
+                "typename": "TaskDefault"
+            }
+        ]
+    },
+    "mpi_session_get_info": {
+        "group": "env",
+        "guards": [
+            "env",
+            "ext"
+        ],
+        "mpi_version": "4.0",
+        "tasks": [
+            {
+                "typename": "TaskDefault"
+            }
+        ]
+    },
+    "mpi_session_get_nth_pset": {
+        "group": "env",
+        "guards": [
+            "env",
+            "ext"
+        ],
+        "mpi_version": "4.0",
+        "tasks": [
+            {
+                "typename": "TaskDefault"
+            }
+        ]
+    },
+    "mpi_session_get_num_psets": {
+        "group": "env",
+        "guards": [
+            "env",
+            "ext"
+        ],
+        "mpi_version": "4.0",
+        "tasks": [
+            {
+                "typename": "TaskDefault"
+            }
+        ]
+    },
+    "mpi_session_get_pset_info": {
+        "group": "env",
+        "guards": [
+            "env",
+            "ext"
+        ],
+        "mpi_version": "4.0",
+        "tasks": [
+            {
+                "typename": "TaskDefault"
+            }
+        ]
+    },
+    "mpi_session_init": {
+        "group": "env",
+        "guards": [],
+        "mpi_version": "4.0",
+        "tasks": [
+            {
+                "attributes": {
+                    "message": "The MPI Sessions model is currently not supported by Score-P"
+                },
+                "typename": "TaskFatal"
+            }
+        ]
+    },
+    "mpi_session_set_errhandler": {
+        "group": "env",
+        "guards": [
+            "env",
+            "err"
+        ],
+        "mpi_version": "4.0",
+        "tasks": [
+            {
+                "typename": "TaskDefault"
+            }
+        ]
+    },
+    "mpi_sizeof": {
+        "group": "type",
+        "guards": [
+            "extra",
+            "type"
+        ],
+        "mpi_version": "2.0",
+        "tasks": [
+            {
+                "attributes": {},
+                "typename": "TaskDefault"
+            }
+        ]
+    },
+    "mpi_ssend": {
+        "group": "p2p",
+        "guards": [
+            "p2p"
+        ],
+        "large_mpi_version": "4.0",
+        "mpi_version": "1.0",
+        "region": "point2point",
+        "tasks": [
+            {
+                "attributes": {},
+                "typename": "TaskSend"
+            }
+        ]
+    },
+    "mpi_ssend_init": {
+        "group": "p2p",
+        "guards": [
+            "p2p"
+        ],
+        "large_mpi_version": "4.0",
+        "mpi_version": "1.0",
+        "region": "point2point",
+        "tasks": [
+            {
+                "typename": "TaskSendInit"
+            }
+        ]
+    },
+    "mpi_start": {
+        "group": "request",
+        "guards": [
+            "request"
+        ],
+        "mpi_version": "1.0",
+        "tasks": [
+            {
+                "typename": "TaskStart"
+            }
+        ]
+    },
+    "mpi_startall": {
+        "group": "request",
+        "guards": [
+            "request"
+        ],
+        "mpi_version": "1.0",
+        "tasks": [
+            {
+                "typename": "TaskStartall"
+            }
+        ]
+    },
+    "mpi_status_c2f": {
+        "group": "misc",
+        "guards": [
+            "extra",
+            "misc"
+        ],
+        "mpi_version": "2.0",
+        "tasks": [
+            {
+                "typename": "TaskDefault"
+            }
+        ]
+    },
+    "mpi_status_c2f08": {
+        "group": "misc",
+        "guards": [
+            "extra",
+            "misc"
+        ],
+        "mpi_version": "4.0",
+        "tasks": [
+            {
+                "typename": "TaskDefault"
+            }
+        ]
+    },
+    "mpi_status_f082c": {
+        "group": "misc",
+        "guards": [
+            "extra",
+            "misc"
+        ],
+        "mpi_version": "4.0",
+        "tasks": [
+            {
+                "typename": "TaskDefault"
+            }
+        ]
+    },
+    "mpi_status_f082f": {
+        "c_variants": [
+            {
+                "args": "MPI_F08_status*, f08_status, MPI_Fint*, f_status",
+                "name": "NOT_CONST"
+            }
+        ],
+        "group": "misc",
+        "guards": [
+            "extra",
+            "misc"
+        ],
+        "mpi_version": "4.0",
+        "tasks": [
+            {
+                "typename": "TaskDefault"
+            }
+        ],
+        "template": "ProtoArgsWrapper"
+    },
+    "mpi_status_f2c": {
+        "group": "misc",
+        "guards": [
+            "extra",
+            "misc"
+        ],
+        "mpi_version": "2.0",
+        "tasks": [
+            {
+                "typename": "TaskDefault"
+            }
+        ]
+    },
+    "mpi_status_f2f08": {
+        "c_variants": [
+            {
+                "args": "MPI_Fint*, f_status, MPI_F08_status*, f08_status",
+                "name": "NOT_CONST"
+            }
+        ],
+        "group": "misc",
+        "guards": [
+            "extra",
+            "misc"
+        ],
+        "mpi_version": "4.0",
+        "tasks": [
+            {
+                "typename": "TaskDefault"
+            }
+        ],
+        "template": "ProtoArgsWrapper"
+    },
+    "mpi_status_set_cancelled": {
+        "group": "ext",
+        "guards": [
+            "extra",
+            "ext"
+        ],
+        "mpi_version": "2.0",
+        "tasks": [
+            {
+                "attributes": {},
+                "typename": "TaskDefault"
+            }
+        ]
+    },
+    "mpi_status_set_elements": {
+        "group": "ext",
+        "guards": [
+            "extra",
+            "ext"
+        ],
+        "mpi_version": "2.0",
+        "tasks": [
+            {
+                "attributes": {},
+                "typename": "TaskDefault"
+            }
+        ]
+    },
+    "mpi_status_set_elements_x": {
+        "group": "ext",
+        "guards": [
+            "extra",
+            "ext"
+        ],
+        "mpi_version": "3.0",
+        "tasks": [
+            {
+                "attributes": {},
+                "typename": "TaskDefault"
+            }
+        ]
+    },
+    "mpi_test": {
+        "group": "request",
+        "guards": [
+            "request"
+        ],
+        "mpi_version": "1.0",
+        "parameters": {
+            "status": {
+                "handle-status-ignore": true
+            }
+        },
+        "tasks": [
+            {
+                "attributes": {},
+                "typename": "TaskTest"
+            }
+        ]
+    },
+    "mpi_test_cancelled": {
+        "group": "request",
+        "guards": [
+            "extra",
+            "request"
+        ],
+        "mpi_version": "1.0",
+        "tasks": [
+            {
+                "attributes": {},
+                "typename": "TaskDefault"
+            }
+        ]
+    },
+    "mpi_testall": {
+        "group": "request",
+        "guards": [
+            "request"
+        ],
+        "mpi_version": "1.0",
+        "parameters": {
+            "array_of_statuses": {
+                "handle-statuses-ignore": true,
+                "statuses-length": "count"
+            }
+        },
+        "tasks": [
+            {
+                "attributes": {},
+                "typename": "TaskTestall"
+            }
+        ]
+    },
+    "mpi_testany": {
+        "group": "request",
+        "guards": [
+            "request"
+        ],
+        "mpi_version": "1.0",
+        "parameters": {
+            "status": {
+                "handle-status-ignore": true
+            }
+        },
+        "tasks": [
+            {
+                "attributes": {},
+                "typename": "TaskTestany"
+            }
+        ]
+    },
+    "mpi_testsome": {
+        "group": "request",
+        "guards": [
+            "request"
+        ],
+        "mpi_version": "1.0",
+        "parameters": {
+            "array_of_statuses": {
+                "handle-statuses-ignore": true,
+                "statuses-length": "incount"
+            }
+        },
+        "tasks": [
+            {
+                "attributes": {},
+                "typename": "TaskTestWaitSome"
+            }
+        ]
+    },
+    "mpi_topo_test": {
+        "group": "topo",
+        "guards": [
+            "extra",
+            "topo"
+        ],
+        "mpi_version": "1.0",
+        "tasks": [
+            {
+                "attributes": {},
+                "typename": "TaskDefault"
+            }
+        ]
+    },
+    "mpi_type_c2f": {
+        "group": "type_misc",
+        "guards": [
+            "extra",
+            "type",
+            "misc"
+        ],
+        "mpi_version": "2.0",
+        "tasks": [
+            {
+                "typename": "TaskDefault"
+            }
+        ]
+    },
+    "mpi_type_commit": {
+        "group": "type",
+        "guards": [
+            "extra",
+            "type"
+        ],
+        "mpi_version": "1.0",
+        "tasks": [
+            {
+                "attributes": {},
+                "typename": "TaskDefault"
+            }
+        ]
+    },
+    "mpi_type_contiguous": {
+        "group": "type",
+        "guards": [
+            "extra",
+            "type"
+        ],
+        "large_mpi_version": "4.0",
+        "mpi_version": "1.0",
+        "tasks": [
+            {
+                "attributes": {},
+                "typename": "TaskDefault"
+            }
+        ]
+    },
+    "mpi_type_create_darray": {
+        "group": "type",
+        "guards": [
+            "extra",
+            "type"
+        ],
+        "large_mpi_version": "4.0",
+        "mpi_version": "2.0",
+        "tasks": [
+            {
+                "attributes": {},
+                "typename": "TaskDefault"
+            }
+        ]
+    },
+    "mpi_type_create_f90_complex": {
+        "group": "type",
+        "guards": [
+            "extra",
+            "type"
+        ],
+        "mpi_version": "2.0",
+        "tasks": [
+            {
+                "typename": "TaskDefault"
+            }
+        ],
+        "template": "GuardComplianceWrapper"
+    },
+    "mpi_type_create_f90_integer": {
+        "group": "type",
+        "guards": [
+            "extra",
+            "type"
+        ],
+        "mpi_version": "2.0",
+        "tasks": [
+            {
+                "typename": "TaskDefault"
+            }
+        ],
+        "template": "GuardComplianceWrapper"
+    },
+    "mpi_type_create_f90_real": {
+        "group": "type",
+        "guards": [
+            "extra",
+            "type"
+        ],
+        "mpi_version": "2.0",
+        "tasks": [
+            {
+                "typename": "TaskDefault"
+            }
+        ],
+        "template": "GuardComplianceWrapper"
+    },
+    "mpi_type_create_hindexed": {
+        "group": "type",
+        "guards": [
+            "extra",
+            "type"
+        ],
+        "large_mpi_version": "4.0",
+        "mpi_version": "2.0",
+        "tasks": [
+            {
+                "attributes": {},
+                "typename": "TaskDefault"
+            }
+        ]
+    },
+    "mpi_type_create_hindexed_block": {
+        "group": "type",
+        "guards": [
+            "extra",
+            "type"
+        ],
+        "large_mpi_version": "4.0",
+        "mpi_version": "3.0",
+        "tasks": [
+            {
+                "attributes": {},
+                "typename": "TaskDefault"
+            }
+        ]
+    },
+    "mpi_type_create_hvector": {
+        "group": "type",
+        "guards": [
+            "extra",
+            "type"
+        ],
+        "large_mpi_version": "4.0",
+        "mpi_version": "2.0",
+        "tasks": [
+            {
+                "attributes": {},
+                "typename": "TaskDefault"
+            }
+        ]
+    },
+    "mpi_type_create_indexed_block": {
+        "group": "type",
+        "guards": [
+            "extra",
+            "type"
+        ],
+        "large_mpi_version": "4.0",
+        "mpi_version": "2.0",
+        "tasks": [
+            {
+                "attributes": {},
+                "typename": "TaskDefault"
+            }
+        ]
+    },
+    "mpi_type_create_keyval": {
+        "group": "type_ext",
+        "guards": [
+            "extra",
+            "type",
+            "ext"
+        ],
+        "mpi_version": "2.0",
+        "tasks": [
+            {
+                "attributes": {},
+                "typename": "TaskDefault"
+            }
+        ]
+    },
+    "mpi_type_create_resized": {
+        "group": "type",
+        "guards": [
+            "extra",
+            "type"
+        ],
+        "large_mpi_version": "4.0",
+        "mpi_version": "2.0",
+        "tasks": [
+            {
+                "attributes": {},
+                "typename": "TaskDefault"
+            }
+        ]
+    },
+    "mpi_type_create_struct": {
+        "group": "type",
+        "guards": [
+            "extra",
+            "type"
+        ],
+        "large_mpi_version": "4.0",
+        "mpi_version": "2.0",
+        "tasks": [
+            {
+                "attributes": {},
+                "typename": "TaskDefault"
+            }
+        ]
+    },
+    "mpi_type_create_subarray": {
+        "group": "type",
+        "guards": [
+            "extra",
+            "type"
+        ],
+        "large_mpi_version": "4.0",
+        "mpi_version": "2.0",
+        "tasks": [
+            {
+                "attributes": {},
+                "typename": "TaskDefault"
+            }
+        ]
+    },
+    "mpi_type_delete_attr": {
+        "group": "type_ext",
+        "guards": [
+            "extra",
+            "type",
+            "ext"
+        ],
+        "mpi_version": "2.0",
+        "tasks": [
+            {
+                "attributes": {},
+                "typename": "TaskDefault"
+            }
+        ]
+    },
+    "mpi_type_dup": {
+        "group": "type",
+        "guards": [
+            "extra",
+            "type"
+        ],
+        "mpi_version": "2.0",
+        "tasks": [
+            {
+                "attributes": {},
+                "typename": "TaskDefault"
+            }
+        ]
+    },
+    "mpi_type_extent": {
+        "group": "type",
+        "guards": [
+            "extra",
+            "type"
+        ],
+        "mpi_version": "1.0",
+        "tasks": [
+            {
+                "attributes": {},
+                "typename": "TaskDefault"
+            }
+        ]
+    },
+    "mpi_type_f2c": {
+        "group": "type_misc",
+        "guards": [
+            "extra",
+            "type",
+            "misc"
+        ],
+        "mpi_version": "2.0",
+        "tasks": [
+            {
+                "typename": "TaskDefault"
+            }
+        ]
+    },
+    "mpi_type_free": {
+        "group": "type",
+        "guards": [
+            "extra",
+            "type"
+        ],
+        "mpi_version": "1.0",
+        "tasks": [
+            {
+                "attributes": {},
+                "typename": "TaskDefault"
+            }
+        ]
+    },
+    "mpi_type_free_keyval": {
+        "group": "type_ext",
+        "guards": [
+            "extra",
+            "type",
+            "ext"
+        ],
+        "mpi_version": "2.0",
+        "tasks": [
+            {
+                "attributes": {},
+                "typename": "TaskDefault"
+            }
+        ]
+    },
+    "mpi_type_get_attr": {
+        "group": "type_ext",
+        "guards": [
+            "extra",
+            "type",
+            "ext"
+        ],
+        "mpi_version": "2.0",
+        "tasks": [
+            {
+                "attributes": {},
+                "typename": "TaskDefault"
+            }
+        ]
+    },
+    "mpi_type_get_contents": {
+        "group": "type",
+        "guards": [
+            "extra",
+            "type"
+        ],
+        "large_mpi_version": "4.0",
+        "mpi_version": "2.0",
+        "tasks": [
+            {
+                "attributes": {},
+                "typename": "TaskDefault"
+            }
+        ]
+    },
+    "mpi_type_get_envelope": {
+        "group": "type",
+        "guards": [
+            "extra",
+            "type"
+        ],
+        "large_mpi_version": "4.0",
+        "mpi_version": "2.0",
+        "tasks": [
+            {
+                "attributes": {},
+                "typename": "TaskDefault"
+            }
+        ]
+    },
+    "mpi_type_get_extent": {
+        "group": "type",
+        "guards": [
+            "extra",
+            "type"
+        ],
+        "large_mpi_version": "4.0",
+        "mpi_version": "2.0",
+        "tasks": [
+            {
+                "attributes": {},
+                "typename": "TaskDefault"
+            }
+        ]
+    },
+    "mpi_type_get_extent_x": {
+        "group": "type",
+        "guards": [
+            "extra",
+            "type"
+        ],
+        "mpi_version": "3.0",
+        "tasks": [
+            {
+                "attributes": {},
+                "typename": "TaskDefault"
+            }
+        ]
+    },
+    "mpi_type_get_name": {
+        "group": "type_ext",
+        "guards": [
+            "extra",
+            "type",
+            "ext"
+        ],
+        "mpi_version": "2.0",
+        "tasks": [
+            {
+                "attributes": {},
+                "typename": "TaskDefault"
+            }
+        ]
+    },
+    "mpi_type_get_true_extent": {
+        "group": "type",
+        "guards": [
+            "extra",
+            "type"
+        ],
+        "large_mpi_version": "4.0",
+        "mpi_version": "2.0",
+        "tasks": [
+            {
+                "attributes": {},
+                "typename": "TaskDefault"
+            }
+        ]
+    },
+    "mpi_type_get_true_extent_x": {
+        "group": "type",
+        "guards": [
+            "extra",
+            "type"
+        ],
+        "mpi_version": "3.0",
+        "tasks": [
+            {
+                "attributes": {},
+                "typename": "TaskDefault"
+            }
+        ]
+    },
+    "mpi_type_hindexed": {
+        "c_variants": [
+            {
+                "args": "int, count, int*, array_of_blocklengths, MPI_Aint*, array_of_displacements, MPI_Datatype, oldtype, MPI_Datatype*, newtype",
+                "name": "NOT_CONST"
+            }
+        ],
+        "group": "type",
+        "guards": [
+            "extra",
+            "type"
+        ],
+        "mpi_version": "1.0",
+        "tasks": [
+            {
+                "typename": "TaskDefault"
+            }
+        ],
+        "template": "ProtoArgsWrapper"
+    },
+    "mpi_type_hvector": {
+        "group": "type",
+        "guards": [
+            "extra",
+            "type"
+        ],
+        "mpi_version": "1.0",
+        "tasks": [
+            {
+                "attributes": {},
+                "typename": "TaskDefault"
+            }
+        ]
+    },
+    "mpi_type_indexed": {
+        "group": "type",
+        "guards": [
+            "extra",
+            "type"
+        ],
+        "large_mpi_version": "4.0",
+        "mpi_version": "1.0",
+        "tasks": [
+            {
+                "attributes": {},
+                "typename": "TaskDefault"
+            }
+        ]
+    },
+    "mpi_type_lb": {
+        "group": "type",
+        "guards": [
+            "extra",
+            "type"
+        ],
+        "mpi_version": "1.0",
+        "tasks": [
+            {
+                "attributes": {},
+                "typename": "TaskDefault"
+            }
+        ]
+    },
+    "mpi_type_match_size": {
+        "group": "type",
+        "guards": [
+            "extra",
+            "type"
+        ],
+        "mpi_version": "2.0",
+        "tasks": [
+            {
+                "attributes": {},
+                "typename": "TaskDefault"
+            }
+        ]
+    },
+    "mpi_type_set_attr": {
+        "group": "type_ext",
+        "guards": [
+            "extra",
+            "type",
+            "ext"
+        ],
+        "mpi_version": "2.0",
+        "tasks": [
+            {
+                "attributes": {},
+                "typename": "TaskDefault"
+            }
+        ]
+    },
+    "mpi_type_set_name": {
+        "group": "type_ext",
+        "guards": [
+            "extra",
+            "type",
+            "ext"
+        ],
+        "mpi_version": "2.0",
+        "tasks": [
+            {
+                "attributes": {},
+                "typename": "TaskDefault"
+            }
+        ]
+    },
+    "mpi_type_size": {
+        "group": "type",
+        "guards": [
+            "extra",
+            "type"
+        ],
+        "large_mpi_version": "4.0",
+        "mpi_version": "1.0",
+        "tasks": [
+            {
+                "attributes": {},
+                "typename": "TaskDefault"
+            }
+        ]
+    },
+    "mpi_type_size_x": {
+        "group": "type",
+        "guards": [
+            "extra",
+            "type"
+        ],
+        "mpi_version": "3.0",
+        "tasks": [
+            {
+                "attributes": {},
+                "typename": "TaskDefault"
+            }
+        ]
+    },
+    "mpi_type_struct": {
+        "c_variants": [
+            {
+                "args": "int, count, int*, array_of_blocklengths, MPI_Aint*, array_of_displacements, MPI_Datatype*, array_of_types, MPI_Datatype*, newtype",
+                "name": "NOT_CONST"
+            }
+        ],
+        "group": "type",
+        "guards": [
+            "extra",
+            "type"
+        ],
+        "mpi_version": "1.0",
+        "tasks": [
+            {
+                "typename": "TaskDefault"
+            }
+        ],
+        "template": "ProtoArgsWrapper"
+    },
+    "mpi_type_ub": {
+        "group": "type",
+        "guards": [
+            "extra",
+            "type"
+        ],
+        "mpi_version": "1.0",
+        "tasks": [
+            {
+                "attributes": {},
+                "typename": "TaskDefault"
+            }
+        ]
+    },
+    "mpi_type_vector": {
+        "group": "type",
+        "guards": [
+            "extra",
+            "type"
+        ],
+        "large_mpi_version": "4.0",
+        "mpi_version": "1.0",
+        "tasks": [
+            {
+                "attributes": {},
+                "typename": "TaskDefault"
+            }
+        ]
+    },
+    "mpi_unpack": {
+        "group": "type",
+        "guards": [
+            "extra",
+            "type"
+        ],
+        "large_mpi_version": "4.0",
+        "mpi_version": "1.0",
+        "tasks": [
+            {
+                "attributes": {},
+                "typename": "TaskDefault"
+            }
+        ]
+    },
+    "mpi_unpack_external": {
+        "group": "type",
+        "guards": [
+            "extra",
+            "type"
+        ],
+        "large_mpi_version": "4.0",
+        "mpi_version": "2.0",
+        "tasks": [
+            {
+                "attributes": {},
+                "typename": "TaskDefault"
+            }
+        ]
+    },
+    "mpi_unpublish_name": {
+        "group": "spawn",
+        "guards": [
+            "spawn",
+            "extra"
+        ],
+        "mpi_version": "2.0",
+        "tasks": [
+            {
+                "attributes": {},
+                "typename": "TaskDefault"
+            }
+        ]
+    },
+    "mpi_wait": {
+        "group": "request",
+        "guards": [
+            "request"
+        ],
+        "mpi_version": "1.0",
+        "parameters": {
+            "status": {
+                "handle-status-ignore": true
+            }
+        },
+        "tasks": [
+            {
+                "attributes": {},
+                "typename": "TaskWait"
+            }
+        ]
+    },
+    "mpi_waitall": {
+        "group": "request",
+        "guards": [
+            "request"
+        ],
+        "mpi_version": "1.0",
+        "parameters": {
+            "array_of_statuses": {
+                "handle-statuses-ignore": true,
+                "statuses-length": "count"
+            }
+        },
+        "tasks": [
+            {
+                "attributes": {},
+                "typename": "TaskWaitall"
+            }
+        ]
+    },
+    "mpi_waitany": {
+        "group": "request",
+        "guards": [
+            "request"
+        ],
+        "mpi_version": "1.0",
+        "parameters": {
+            "status": {
+                "handle-status-ignore": true
+            }
+        },
+        "tasks": [
+            {
+                "attributes": {},
+                "typename": "TaskWaitany"
+            }
+        ]
+    },
+    "mpi_waitsome": {
+        "group": "request",
+        "guards": [
+            "request"
+        ],
+        "mpi_version": "1.0",
+        "parameters": {
+            "array_of_statuses": {
+                "handle-statuses-ignore": true,
+                "statuses-length": "incount"
+            }
+        },
+        "tasks": [
+            {
+                "attributes": {},
+                "typename": "TaskTestWaitSome"
+            }
+        ]
+    },
+    "mpi_win_allocate": {
+        "group": "rma",
+        "guards": [
+            "rma"
+        ],
+        "large_mpi_version": "4.0",
+        "mpi_version": "3.0",
+        "region": "allocate",
+        "tasks": [
+            {
+                "typename": "TaskWinAllocate"
+            }
+        ]
+    },
+    "mpi_win_allocate_shared": {
+        "group": "rma",
+        "guards": [
+            "rma"
+        ],
+        "large_mpi_version": "4.0",
+        "mpi_version": "3.0",
+        "region": "allocate",
+        "tasks": [
+            {
+                "typename": "TaskWinAllocate"
+            }
+        ]
+    },
+    "mpi_win_attach": {
+        "group": "rma",
+        "guards": [
+            "rma"
+        ],
+        "mpi_version": "3.0",
+        "tasks": [
+            {
+                "attributes": {},
+                "typename": "TaskDefault"
+            }
+        ]
+    },
+    "mpi_win_c2f": {
+        "group": "rma_misc",
+        "guards": [
+            "rma",
+            "misc",
+            "extra"
+        ],
+        "mpi_version": "2.0",
+        "tasks": [
+            {
+                "attributes": {},
+                "typename": "TaskDefault"
+            }
+        ]
+    },
+    "mpi_win_call_errhandler": {
+        "group": "rma_err",
+        "guards": [
+            "rma",
+            "extra",
+            "err"
+        ],
+        "mpi_version": "2.0",
+        "tasks": [
+            {
+                "attributes": {},
+                "typename": "TaskDefault"
+            }
+        ]
+    },
+    "mpi_win_complete": {
+        "group": "rma",
+        "guards": [
+            "rma"
+        ],
+        "mpi_version": "2.0",
+        "tasks": [
+            {
+                "attributes": {
+                    "callback": "scorep_mpi_rma_request_write_standard_completion_and_remove"
+                },
+                "typename": "TaskRmaRequestForeachOnWindow"
+            },
+            {
+                "attributes": {
+                    "epoch_type": "access"
+                },
+                "typename": "TaskEpochEnd"
+            }
+        ]
+    },
+    "mpi_win_create": {
+        "group": "rma",
+        "guards": [
+            "rma"
+        ],
+        "large_mpi_version": "4.0",
+        "mpi_version": "2.0",
+        "tasks": [
+            {
+                "typename": "TaskWinCreate"
+            }
+        ]
+    },
+    "mpi_win_create_dynamic": {
+        "group": "rma",
+        "guards": [
+            "rma"
+        ],
+        "mpi_version": "3.0",
+        "tasks": [
+            {
+                "typename": "TaskWinCreate"
+            }
+        ]
+    },
+    "mpi_win_create_errhandler": {
+        "group": "rma_err",
+        "guards": [
+            "rma",
+            "extra",
+            "err"
+        ],
+        "mpi_version": "2.0",
+        "tasks": [
+            {
+                "attributes": {},
+                "typename": "TaskDefault"
+            }
+        ]
+    },
+    "mpi_win_create_keyval": {
+        "group": "rma_ext",
+        "guards": [
+            "rma",
+            "ext",
+            "extra"
+        ],
+        "mpi_version": "2.0",
+        "tasks": [
+            {
+                "attributes": {},
+                "typename": "TaskDefault"
+            }
+        ]
+    },
+    "mpi_win_delete_attr": {
+        "group": "rma_ext",
+        "guards": [
+            "rma",
+            "ext",
+            "extra"
+        ],
+        "mpi_version": "2.0",
+        "tasks": [
+            {
+                "attributes": {},
+                "typename": "TaskDefault"
+            }
+        ]
+    },
+    "mpi_win_detach": {
+        "c_variants": [
+            {
+                "args": "MPI_Win, win, void, *base",
+                "name": "NOT_CONST"
+            }
+        ],
+        "group": "rma",
+        "guards": [
+            "rma"
+        ],
+        "mpi_version": "3.0",
+        "tasks": [
+            {
+                "typename": "TaskDefault"
+            }
+        ],
+        "template": "ProtoArgsWrapper"
+    },
+    "mpi_win_f2c": {
+        "group": "rma_misc",
+        "guards": [
+            "rma",
+            "misc",
+            "extra"
+        ],
+        "mpi_version": "2.0",
+        "tasks": [
+            {
+                "attributes": {},
+                "typename": "TaskDefault"
+            }
+        ]
+    },
+    "mpi_win_fence": {
+        "group": "rma",
+        "guards": [
+            "rma"
+        ],
+        "mpi_version": "2.0",
+        "tasks": [
+            {
+                "attributes": {
+                    "callback": "scorep_mpi_rma_request_write_standard_completion_and_remove"
+                },
+                "typename": "TaskRmaRequestForeachOnWindow"
+            },
+            {
+                "typename": "TaskWinFence"
+            }
+        ]
+    },
+    "mpi_win_flush": {
+        "group": "rma",
+        "guards": [
+            "rma"
+        ],
+        "mpi_version": "3.0",
+        "tasks": [
+            {
+                "attributes": {
+                    "callback": "scorep_mpi_rma_request_write_full_completion"
+                },
+                "typename": "TaskRmaRequestForeachToTarget"
+            }
+        ]
+    },
+    "mpi_win_flush_all": {
+        "group": "rma",
+        "guards": [
+            "rma"
+        ],
+        "mpi_version": "3.0",
+        "tasks": [
+            {
+                "attributes": {
+                    "callback": "scorep_mpi_rma_request_write_full_completion"
+                },
+                "typename": "TaskRmaRequestForeachOnWindow"
+            }
+        ]
+    },
+    "mpi_win_flush_local": {
+        "group": "rma",
+        "guards": [
+            "rma"
+        ],
+        "mpi_version": "3.0",
+        "tasks": [
+            {
+                "attributes": {
+                    "callback": "scorep_mpi_rma_request_write_standard_completion"
+                },
+                "typename": "TaskRmaRequestForeachToTarget"
+            }
+        ]
+    },
+    "mpi_win_flush_local_all": {
+        "group": "rma",
+        "guards": [
+            "rma"
+        ],
+        "mpi_version": "3.0",
+        "tasks": [
+            {
+                "attributes": {
+                    "callback": "scorep_mpi_rma_request_write_standard_completion"
+                },
+                "typename": "TaskRmaRequestForeachOnWindow"
+            }
+        ]
+    },
+    "mpi_win_free": {
+        "group": "rma",
+        "guards": [
+            "rma"
+        ],
+        "mpi_version": "2.0",
+        "tasks": [
+            {
+                "typename": "TaskWinFree"
+            }
+        ]
+    },
+    "mpi_win_free_keyval": {
+        "group": "rma_ext",
+        "guards": [
+            "rma",
+            "ext",
+            "extra"
+        ],
+        "mpi_version": "2.0",
+        "tasks": [
+            {
+                "attributes": {},
+                "typename": "TaskDefault"
+            }
+        ]
+    },
+    "mpi_win_get_attr": {
+        "group": "rma_ext",
+        "guards": [
+            "rma",
+            "ext",
+            "extra"
+        ],
+        "mpi_version": "2.0",
+        "tasks": [
+            {
+                "attributes": {},
+                "typename": "TaskDefault"
+            }
+        ]
+    },
+    "mpi_win_get_errhandler": {
+        "group": "rma_err",
+        "guards": [
+            "rma",
+            "extra",
+            "err"
+        ],
+        "mpi_version": "2.0",
+        "tasks": [
+            {
+                "attributes": {},
+                "typename": "TaskDefault"
+            }
+        ]
+    },
+    "mpi_win_get_group": {
+        "group": "rma",
+        "guards": [
+            "rma",
+            "extra"
+        ],
+        "mpi_version": "2.0",
+        "tasks": [
+            {
+                "attributes": {
+                    "new": "group"
+                },
+                "typename": "TaskGroupCreate"
+            }
+        ]
+    },
+    "mpi_win_get_info": {
+        "group": "rma_ext",
+        "guards": [
+            "rma",
+            "extra"
+        ],
+        "mpi_version": "3.0",
+        "tasks": [
+            {
+                "attributes": {},
+                "typename": "TaskDefault"
+            }
+        ]
+    },
+    "mpi_win_get_name": {
+        "group": "rma_ext",
+        "guards": [
+            "rma",
+            "extra"
+        ],
+        "mpi_version": "2.0",
+        "tasks": [
+            {
+                "attributes": {},
+                "typename": "TaskDefault"
+            }
+        ]
+    },
+    "mpi_win_lock": {
+        "group": "rma",
+        "guards": [
+            "rma"
+        ],
+        "mpi_version": "2.0",
+        "tasks": [
+            {
+                "typename": "TaskWinLock"
+            }
+        ]
+    },
+    "mpi_win_lock_all": {
+        "group": "rma",
+        "guards": [
+            "rma"
+        ],
+        "mpi_version": "3.0",
+        "tasks": [
+            {
+                "typename": "TaskWinLockAll"
+            }
+        ]
+    },
+    "mpi_win_post": {
+        "group": "rma",
+        "guards": [
+            "rma"
+        ],
+        "mpi_version": "2.0",
+        "tasks": [
+            {
+                "attributes": {
+                    "epoch_type": "exposure"
+                },
+                "typename": "TaskEpochStart"
+            }
+        ]
+    },
+    "mpi_win_set_attr": {
+        "group": "rma_ext",
+        "guards": [
+            "rma",
+            "extra",
+            "ext"
+        ],
+        "mpi_version": "2.0",
+        "tasks": [
+            {
+                "attributes": {},
+                "typename": "TaskDefault"
+            }
+        ]
+    },
+    "mpi_win_set_errhandler": {
+        "group": "rma_err",
+        "guards": [
+            "rma",
+            "extra",
+            "err"
+        ],
+        "mpi_version": "2.0",
+        "tasks": [
+            {
+                "attributes": {},
+                "typename": "TaskDefault"
+            }
+        ]
+    },
+    "mpi_win_set_info": {
+        "group": "rma_ext",
+        "guards": [
+            "rma",
+            "extra"
+        ],
+        "mpi_version": "3.0",
+        "tasks": [
+            {
+                "attributes": {},
+                "typename": "TaskDefault"
+            }
+        ]
+    },
+    "mpi_win_set_name": {
+        "group": "rma_ext",
+        "guards": [
+            "rma",
+            "ext",
+            "extra"
+        ],
+        "mpi_version": "2.0",
+        "tasks": [
+            {
+                "typename": "TaskWinSetName"
+            }
+        ]
+    },
+    "mpi_win_shared_query": {
+        "group": "rma",
+        "guards": [
+            "rma"
+        ],
+        "large_mpi_version": "4.0",
+        "mpi_version": "3.0",
+        "tasks": [
+            {
+                "attributes": {},
+                "typename": "TaskDefault"
+            }
+        ]
+    },
+    "mpi_win_start": {
+        "group": "rma",
+        "guards": [
+            "rma"
+        ],
+        "mpi_version": "2.0",
+        "tasks": [
+            {
+                "attributes": {
+                    "epoch_type": "access"
+                },
+                "typename": "TaskEpochStart"
+            }
+        ]
+    },
+    "mpi_win_sync": {
+        "group": "rma",
+        "guards": [
+            "rma"
+        ],
+        "mpi_version": "3.0",
+        "tasks": [
+            {
+                "attributes": {},
+                "typename": "TaskDefault"
+            }
+        ]
+    },
+    "mpi_win_test": {
+        "group": "rma",
+        "guards": [
+            "rma"
+        ],
+        "mpi_version": "2.0",
+        "tasks": [
+            {
+                "typename": "TaskWinTest"
+            }
+        ]
+    },
+    "mpi_win_unlock": {
+        "group": "rma",
+        "guards": [
+            "rma"
+        ],
+        "mpi_version": "2.0",
+        "tasks": [
+            {
+                "attributes": {
+                    "callback": "scorep_mpi_rma_request_write_full_completion"
+                },
+                "typename": "TaskRmaRequestForeachToTarget"
+            },
+            {
+                "typename": "TaskWinUnlock"
+            }
+        ]
+    },
+    "mpi_win_unlock_all": {
+        "group": "rma",
+        "guards": [
+            "rma"
+        ],
+        "mpi_version": "3.0",
+        "tasks": [
+            {
+                "attributes": {
+                    "callback": "scorep_mpi_rma_request_write_full_completion"
+                },
+                "typename": "TaskRmaRequestForeachOnWindow"
+            },
+            {
+                "typename": "TaskWinUnlockAll"
+            }
+        ]
+    },
+    "mpi_win_wait": {
+        "group": "rma",
+        "guards": [
+            "rma"
+        ],
+        "mpi_version": "2.0",
+        "tasks": [
+            {
+                "attributes": {
+                    "callback": "scorep_mpi_rma_request_write_standard_completion_and_remove"
+                },
+                "typename": "TaskRmaRequestForeachOnWindow"
+            },
+            {
+                "attributes": {
+                    "epoch_type": "exposure"
+                },
+                "typename": "TaskEpochEnd"
+            }
+        ]
+    }
+}

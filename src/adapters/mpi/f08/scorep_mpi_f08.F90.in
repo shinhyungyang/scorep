@@ -1,0 +1,242 @@
+!
+! This file is part of the Score-P software (http://www.score-p.org)
+!
+! Copyright (c) 2025,
+! Forschungszentrum Juelich GmbH, Germany
+!
+! This software may be modified and distributed under the terms of
+! a BSD-style license. See the COPYING file in the package base
+! directory for details.
+!
+#include <config.h>
+
+
+module scorep_mpi_f08
+    use, intrinsic :: iso_c_binding, only: &
+        c_bool, &
+        c_int, &
+        c_int32_t, &
+        c_int64_t, &
+        c_ptr, &
+        c_null_ptr, &
+        c_associated
+
+    use :: scorep_mpi_f08_handles
+
+    !
+    ! Fortran 08 interface to other parts of Score-P
+    !
+    use :: SCOREP_AllocMetric_H
+    use :: SCOREP_Definitions_H
+    use :: SCOREP_DefinitionHandles_H
+    use :: SCOREP_Events_H
+    use :: SCOREP_Location_H
+    use :: SCOREP_PublicHandles_H
+    use :: SCOREP_PublicTypes_H
+    use :: SCOREP_RuntimeManagement_H
+    use :: SCOREP_Types_H
+    use :: SCOREP_InMeasurement_H
+    use :: SCOREP_IoManagement_H
+
+    !
+    ! Fortran 08 interface to the MPI adapter
+    !
+    use :: SCOREP_Mpi_Reg_H
+    use :: scorep_mpi_groups_h
+    use :: scorep_mpi_coll_h
+    use :: scorep_mpi_communicator_h
+    use :: scorep_mpi_communicator_mgmt_h
+    use :: scorep_mpi_io_h
+    use :: scorep_mpi_io_mgmt_h
+    use :: scorep_mpi_request_mgmt_h
+    use :: scorep_mpi_rma_request_h
+    use :: scorep_mpi_topo_h
+
+    implicit none
+
+    interface scorep_mpi_f08_init
+        module procedure scorep_mpi_f08_init
+    end interface
+
+    !
+    ! Event generation
+    !
+    interface
+        function scorep_mpi_is_event_gen_on() result(flag) &
+            bind(c, name="scorep_mpi_is_event_gen_on_fromF08")
+            use, intrinsic :: iso_c_binding, only: c_bool
+            implicit none
+            logical(c_bool) :: flag
+        end function
+    end interface
+
+    interface
+        subroutine scorep_mpi_event_gen_on() &
+            bind(c, name="scorep_mpi_event_gen_on_fromF08")
+            implicit none
+        end subroutine
+    end interface
+
+    interface
+        subroutine scorep_mpi_event_gen_off() &
+            bind(c, name="scorep_mpi_event_gen_off_fromF08")
+            implicit none
+        end subroutine
+    end interface
+
+
+    !
+    ! Initialization of special constants
+    !
+    interface
+        subroutine scorep_mpi_f08_init_status_ignore(status) &
+            bind(c, name="scorep_mpi_f08_init_status_ignore_fromF08")
+            use :: mpi_f08, only:MPI_Status
+            implicit none
+            type(MPI_Status) :: status
+        end subroutine
+    end interface
+
+    interface
+        subroutine scorep_mpi_f08_init_statuses_ignore(statusArray) &
+            bind(c, name="scorep_mpi_f08_init_statuses_ignore_fromF08")
+            use :: mpi_f08, only:MPI_Status
+            implicit none
+            type(MPI_Status), dimension(*) :: statusArray
+        end subroutine
+    end interface
+
+    interface
+        subroutine scorep_mpi_f08_init_in_place_ext(buffer) &
+            bind(c, name="scorep_mpi_f08_init_in_place_ext_fromF08")
+            implicit none
+            @SCOREP_FORTRAN_IGNORE_TKR_PREDECL@ buffer
+            @SCOREP_FORTRAN_IGNORE_TKR_TYPE@, intent(in) :: buffer
+        end subroutine
+    end interface
+
+#if defined(HAVE_FORTRAN_TS_BUFFERS) && HAVE_FORTRAN_TS_BUFFERS
+    interface
+        subroutine scorep_mpi_f08_init_in_place_ts(buffer) &
+            bind(c, name="scorep_mpi_f08_init_in_place_ts_fromF08")
+            implicit none
+            type(*), dimension(..), intent(in) :: buffer
+        end subroutine
+    end interface
+#endif
+
+
+    !
+    ! Test for special constants
+    !
+    interface
+        function scorep_mpi_is_status_ignore(status) result(flag) &
+            bind(c, name="scorep_mpi_is_status_ignore_fromF08")
+            use :: mpi_f08, only:MPI_Status
+            use, intrinsic :: iso_c_binding, only: c_bool
+            implicit none
+            type(MPI_Status), intent(in) :: status
+            logical(c_bool) :: flag
+        end function
+    end interface
+
+    interface
+        function scorep_mpi_is_statuses_ignore(statusArray) result(flag) &
+            bind(c, name="scorep_mpi_is_statuses_ignore_fromF08")
+            use :: mpi_f08, only:MPI_Status
+            use, intrinsic :: iso_c_binding, only: c_bool
+            implicit none
+            type(MPI_Status), dimension(*), intent(in) :: statusArray
+            logical(c_bool) :: flag
+        end function
+    end interface
+
+    interface
+        function scorep_mpi_is_in_place(buffer) result(flag) &
+            bind(c, name="scorep_mpi_is_in_place_fromF08")
+            use, intrinsic :: iso_c_binding, only: c_bool
+            implicit none
+            @SCOREP_FORTRAN_IGNORE_TKR_PREDECL@ buffer
+            @SCOREP_FORTRAN_IGNORE_TKR_TYPE@, intent(in) :: buffer
+            logical(c_bool) :: flag
+        end function
+    end interface
+
+#if defined(HAVE_FORTRAN_TS_BUFFERS) && HAVE_FORTRAN_TS_BUFFERS
+    interface
+        function scorep_mpi_is_in_place_ts(buffer) result(flag) &
+            bind(c, name="scorep_mpi_is_in_place_fromF08ts")
+            use, intrinsic :: iso_c_binding, only: c_bool
+            implicit none
+            type(*), dimension(..), intent(in) :: buffer
+            logical(c_bool) :: flag
+        end function
+    end interface
+#endif
+
+    interface get_datatype_size
+        module procedure get_datatype_size
+    end interface
+
+#if defined(SCOREP_F08_SYMBOL_NAME_MPI_TYPE_SIZE_C)
+    interface get_datatype_size_c
+        module procedure get_datatype_size_c
+    end interface
+#endif
+
+    logical(c_bool), bind(c) :: scorep_mpi_memory_recording
+    logical(c_bool), bind(c) :: scorep_mpi_enable_topologies
+    type(c_ptr), bind(c) :: scorep_mpi_allocations_metric
+    integer(SCOREP_AttributeHandle), bind(c) :: scorep_mpi_memory_alloc_size_attribute
+    integer(SCOREP_AttributeHandle), bind(c) :: scorep_mpi_memory_dealloc_size_attribute
+
+contains
+
+    !
+    ! Initialization part that has to be done in Fortran
+    !
+    subroutine scorep_mpi_f08_init() &
+        bind(c, name="scorep_mpi_f08_init_toF08")
+        use :: mpi_f08, only:MPI_STATUS_IGNORE, MPI_STATUSES_IGNORE, MPI_IN_PLACE
+
+        call scorep_mpi_f08_init_status_ignore(MPI_STATUS_IGNORE)
+        call scorep_mpi_f08_init_statuses_ignore(MPI_STATUSES_IGNORE)
+#if defined(HAVE_FORTRAN_TS_BUFFERS) && HAVE_FORTRAN_TS_BUFFERS
+        call scorep_mpi_f08_init_in_place_ts(MPI_IN_PLACE)
+#else
+        call scorep_mpi_f08_init_in_place_ext(MPI_IN_PLACE)
+#endif
+    end subroutine
+
+    function get_datatype_size(datatype) result(typeSize)
+        use, intrinsic :: iso_c_binding, only: c_int, c_int64_t
+        use :: mpi_f08, only:MPI_Datatype, MPI_DATATYPE_NULL, PMPI_Type_size
+        type(MPI_Datatype), intent(in) :: datatype
+        integer(c_int64_t) :: typeSize
+
+        integer :: native_size
+
+        native_size = 0
+        if ( datatype%MPI_VAL .ne. MPI_DATATYPE_NULL%MPI_VAL ) then
+            call PMPI_Type_size(datatype, native_size)
+        end if
+        typeSize = int(native_size, c_int64_t)
+    end function
+
+#if defined(SCOREP_F08_SYMBOL_NAME_MPI_TYPE_SIZE_C)
+    function get_datatype_size_c(datatype) result(typeSize)
+        use, intrinsic :: iso_c_binding, only: c_int64_t
+        use :: mpi_f08, only:MPI_Datatype, MPI_DATATYPE_NULL, PMPI_Type_size, MPI_Count_kind
+        type(MPI_Datatype), intent(in) :: datatype
+        integer(c_int64_t) :: typeSize
+
+        integer(MPI_Count_kind) :: native_size
+
+        native_size = 0
+        if ( datatype%MPI_VAL .ne. MPI_DATATYPE_NULL%MPI_VAL ) then
+            call PMPI_Type_size(datatype, native_size)
+        end if
+        typeSize = int(native_size, c_int64_t)
+    end function
+#endif
+end module

@@ -1,0 +1,70 @@
+!
+! This file is part of the Score-P software (http://www.score-p.org)
+!
+! Copyright (c) 2025,
+! Forschungszentrum Juelich GmbH, Germany
+!
+! This software may be modified and distributed under the terms of
+! a BSD-style license. See the COPYING file in the package base
+! directory for details.
+!
+{% import '_common/file_macros_f.tmpl' as file_macros %}
+{{ file_macros.generator_comment(self._TemplateReference__context.name) }}
+
+{{ file_macros.doxy_file_header('F08 wrappers for one-sided communication') }}
+
+{{ file_macros.common_includes_f08() }}
+
+{% set procedures = [
+'MPI_Accumulate',
+'MPI_Compare_and_swap',
+'MPI_Fetch_and_op',
+'MPI_Get',
+'MPI_Get_accumulate',
+'MPI_Put',
+'MPI_Raccumulate',
+'MPI_Rget',
+'MPI_Rget_accumulate',
+'MPI_Rput',
+'MPI_Win_allocate',
+'MPI_Win_allocate_shared',
+'MPI_Win_attach',
+'MPI_Win_call_errhandler',
+'MPI_Win_complete',
+'MPI_Win_create',
+'MPI_Win_create_dynamic',
+'MPI_Win_create_errhandler',
+'MPI_Win_detach',
+'MPI_Win_fence',
+'MPI_Win_flush',
+'MPI_Win_flush_all',
+'MPI_Win_flush_local',
+'MPI_Win_flush_local_all',
+'MPI_Win_free',
+'MPI_Win_get_errhandler',
+'MPI_Win_get_group',
+'MPI_Win_lock',
+'MPI_Win_lock_all',
+'MPI_Win_post',
+'MPI_Win_set_errhandler',
+'MPI_Win_shared_query',
+'MPI_Win_start',
+'MPI_Win_sync',
+'MPI_Win_test',
+'MPI_Win_unlock',
+'MPI_Win_unlock_all',
+'MPI_Win_wait',
+'MPI_Win_create_keyval',
+'MPI_Win_delete_attr',
+'MPI_Win_free_keyval',
+'MPI_Win_get_attr',
+'MPI_Win_get_info',
+'MPI_Win_get_name',
+'MPI_Win_set_attr',
+'MPI_Win_set_info',
+'MPI_Win_set_name'
+] %}
+
+{% call file_macros.doxy_name_space('F08 wrappers', '') %}
+{{ wrapgen.generate_for_procedures(procedures, wrapgen.callbacks.generator_callback_f08_wrapper) }}
+{% endcall %}

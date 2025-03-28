@@ -13,7 +13,7 @@ dnl
 dnl Copyright (c) 2009-2013,
 dnl University of Oregon, Eugene, USA
 dnl
-dnl Copyright (c) 2009-2016, 2018-2024,
+dnl Copyright (c) 2009-2016, 2018-2025,
 dnl Forschungszentrum Juelich GmbH, Germany
 dnl
 dnl Copyright (c) 2009-2013,
@@ -26,7 +26,7 @@ dnl Copyright (c) 2016,
 dnl Technische Universitaet Darmstadt, Germany
 dnl
 dnl This software may be modified and distributed under the terms of
-dnl a BSD-style license.  See the COPYING file in the package base
+dnl a BSD-style license. See the COPYING file in the package base
 dnl directory for details.
 dnl
 
@@ -94,6 +94,7 @@ AFS_PROG_FC_SUMMARY([MPI])
 SCOREP_COMPUTENODE_F77
 AFS_PROG_F77_SUMMARY([MPI])
 
+AC_FC_MODULE_EXTENSION
 SCOREP_FORTRAN_ARGUMENT_MISMATCH
 
 LT_PREREQ([2.4.6])
@@ -149,6 +150,7 @@ AC_SCOREP_MPI_WORKING(
     [scorep_mpi_f90_supported="yes"],
     [scorep_mpi_f90_supported="no"])
 AC_LANG_POP([Fortran])
+
 
 AS_IF([test "x$scorep_mpi_c_supported$scorep_mpi_cxx_supported$scorep_mpi_f77_supported$scorep_mpi_f90_supported" != "xnononono"], [
     AFS_SUMMARY([Library used for MPI], [$MPI_LIBS])
@@ -226,6 +228,7 @@ AC_SCOREP_PACKAGE_AND_LIBRARY_VERSION
 AFS_SET_SILENT_RULE_PREFIX([MPI])
 AFS_CONFIG_MAKEFILE
 
+AC_CONFIG_FILES([../src/adapters/mpi/f08/scorep_mpi_f08.F90])
 AC_CONFIG_FILES([run_otf2_speed_test.sh \
                  ../installcheck/instrumenter_checks/mpi/Makefile:../test/instrumenter_checks/mpi/Makefile.in
                  ../installcheck/instrumenter_checks/mpi_omp/Makefile:../test/instrumenter_checks/mpi_omp/Makefile.in
@@ -251,6 +254,29 @@ AS_CASE([${ac_scorep_platform}],
               [sed -e 's/for search_ext in \.la /for search_ext in /' \
                libtool > libtool.fix && mv libtool.fix libtool])
          ])
+
+# Libtool determines some variables at configure time by parsing verbose
+# compiler output. For FC, these variables are not needed and sometimes contain
+# garbage (e.g. postdeps contains '-l -l' with GNU, or '-L -L' with Cray).
+# Therefore, we set the contents of these variables to the empty string.
+# See https://lists.gnu.org/archive/html/libtool/2025-02/msg00003.html and
+# https://lists.gnu.org/archive/html/bug-libtool/2025-02/msg00000.html.
+#
+# Configurations for different tags are included in the libtool script itself
+# in sections delimited with special comments.
+# Find the section for the FC tag, and replace the RHS of the assignment with ""
+# for some variables.
+AC_CONFIG_COMMANDS([libtool-fix-fc-postdeps], [[sed -e '/^# ### BEGIN LIBTOOL TAG CONFIG: FC$/bfc_section
+{ p; d }
+:fc_section
+n
+s/^predep_objects=.*/predep_objects=""/
+s/^postdep_objects=.*/postdep_objects=""/
+s/^predeps=.*/predeps=""/
+s/^postdeps=.*/postdeps=""/
+s/^compiler_lib_search_path=.*/compiler_lib_search_path=""/
+/^# ### END LIBTOOL TAG CONFIG: FC$/ { p; d }
+bfc_section' libtool > libtool.fix && mv libtool.fix libtool]])
 
 dnl Linux
 SCOREP_CHECK_SYSCALL([SYS_gettid],

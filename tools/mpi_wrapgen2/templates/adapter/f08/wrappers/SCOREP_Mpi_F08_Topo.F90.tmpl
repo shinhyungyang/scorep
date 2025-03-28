@@ -1,0 +1,58 @@
+!
+! This file is part of the Score-P software (http://www.score-p.org)
+!
+! Copyright (c) 2025,
+! Forschungszentrum Juelich GmbH, Germany
+!
+! This software may be modified and distributed under the terms of
+! a BSD-style license. See the COPYING file in the package base
+! directory for details.
+!
+{% import '_common/file_macros_f.tmpl' as file_macros %}
+{{ file_macros.generator_comment(self._TemplateReference__context.name) }}
+
+{{ file_macros.doxy_file_header('F08 wrappers for topologies') }}
+
+{{ file_macros.common_includes_f08() }}
+
+{% set procedures = [
+'MPI_Cart_coords',
+'MPI_Cart_create',
+'MPI_Cart_get',
+'MPI_Cart_map',
+'MPI_Cart_rank',
+'MPI_Cart_shift',
+'MPI_Cart_sub',
+'MPI_Cartdim_get',
+'MPI_Dims_create',
+'MPI_Dist_graph_create',
+'MPI_Dist_graph_create_adjacent',
+'MPI_Dist_graph_neighbors',
+'MPI_Dist_graph_neighbors_count',
+'MPI_Graph_create',
+'MPI_Graph_get',
+'MPI_Graph_map',
+'MPI_Graph_neighbors',
+'MPI_Graph_neighbors_count',
+'MPI_Graphdims_get',
+'MPI_Ineighbor_allgather',
+'MPI_Ineighbor_allgatherv',
+'MPI_Ineighbor_alltoall',
+'MPI_Ineighbor_alltoallv',
+'MPI_Ineighbor_alltoallw',
+'MPI_Neighbor_allgather',
+'MPI_Neighbor_allgather_init',
+'MPI_Neighbor_allgatherv',
+'MPI_Neighbor_allgatherv_init',
+'MPI_Neighbor_alltoall',
+'MPI_Neighbor_alltoall_init',
+'MPI_Neighbor_alltoallv',
+'MPI_Neighbor_alltoallv_init',
+'MPI_Neighbor_alltoallw',
+'MPI_Neighbor_alltoallw_init',
+'MPI_Topo_test'
+] %}
+
+{% call file_macros.doxy_name_space('F08 wrappers', '') %}
+{{ wrapgen.generate_for_procedures(procedures, wrapgen.callbacks.generator_callback_f08_wrapper) }}
+{% endcall %}
