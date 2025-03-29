@@ -4,7 +4,7 @@ dnl
 dnl Copyright (c) 2013-2018, 2020, 2022, 2025,
 dnl Technische Universitaet Dresden, Germany
 dnl
-dnl Copyright (c) 2015-2016, 2018-2024,
+dnl Copyright (c) 2015-2016, 2018-2025,
 dnl Forschungszentrum Juelich GmbH, Germany
 dnl
 dnl This software may be modified and distributed under the terms of
@@ -191,7 +191,6 @@ SCOREP_SHMEM
 SCOREP_MEMORY_SUPPORT
 SCOREP_ALIGN
 
-#AC_SCOREP_MPI_PROFILING_HEADERS
 AC_SCOREP_PACKAGE_AND_LIBRARY_VERSION
 
 AFS_SET_SILENT_RULE_PREFIX([SHMEM])
