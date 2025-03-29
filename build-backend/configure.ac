@@ -13,7 +13,7 @@ dnl
 dnl Copyright (c) 2009-2013,
 dnl University of Oregon, Eugene, USA
 dnl
-dnl Copyright (c) 2009-2024,
+dnl Copyright (c) 2009-2025,
 dnl Forschungszentrum Juelich GmbH, Germany
 dnl
 dnl Copyright (c) 2009-2013,
@@ -138,7 +138,7 @@ SCOREP_EXPERIMENTAL_PLATFORM
 
 # <AC_SCOREP_COMMON_CHECKS>
 SCOREP_COMPILER_COND_AND_SUBST
-SCOREP_CHECK_FORTRAN_CHARLEN_TYPE
+SCOREP_FORTRAN_CHARLEN_TYPE
 
 AC_C_BIGENDIAN
 

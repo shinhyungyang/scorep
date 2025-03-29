@@ -137,7 +137,7 @@ AS_IF([test "x$scorep_shmem_c_supported$scorep_shmem_cxx_supported$scorep_shmem_
 
 # <AC_SCOREP_COMMON_CHECKS>
 SCOREP_COMPILER_COND_AND_SUBST
-SCOREP_CHECK_FORTRAN_CHARLEN_TYPE
+SCOREP_FORTRAN_CHARLEN_TYPE
 
 AC_C_BIGENDIAN
 
