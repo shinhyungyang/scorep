@@ -6,7 +6,7 @@
 ## Copyright (c) 2018-2019,
 ## Technische Universitaet Dresden, Germany
 ##
-## Copyright (c) 2020-2021,
+## Copyright (c) 2020-2021, 2025,
 ## Forschungszentrum Juelich GmbH, Germany
 ##
 ## This software may be modified and distributed under the terms of
@@ -17,10 +17,10 @@
 
 ## file build-config/m4/scorep_fortran_charlen_type.m4
 
-# SCOREP_CHECK_FORTRAN_CHARLEN_TYPE
-# -----------------------------------------------------------
+# SCOREP_FORTRAN_CHARLEN_TYPE()
+# -----------------------------
 # Determine the type for Fortran character lengths
-AC_DEFUN([SCOREP_CHECK_FORTRAN_CHARLEN_TYPE],
+AC_DEFUN([SCOREP_FORTRAN_CHARLEN_TYPE],
 [dnl FIX REQUIRE: Needs AFS_PROG_FC
 AS_IF([test "x${afs_cv_prog_fc_works}" = "xyes"], [
 AC_LANG_PUSH([Fortran])
@@ -54,4 +54,4 @@ ac_fcflags_srcext_save=$scorep_ac_fcflags_srcext
 AS_UNSET([scorep_ac_ext_save])
 AC_LANG_POP([Fortran])
 ])
-])# SCOREP_CHECK_FORTRAN_CHARLEN_TYPE
+])# SCOREP_FORTRAN_CHARLEN_TYPE
