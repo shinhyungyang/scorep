@@ -95,6 +95,10 @@ SCOREP_COMPUTENODE_F77
 AFS_PROG_F77_SUMMARY([MPI])
 
 AC_FC_MODULE_EXTENSION
+dnl The _AC_FC_IMPLICIT_NONE implementation uses $2 and $3 instead
+dnl of the documented $1 and $2, thus add a dummy $1 and set
+dnl ACTION-IF-FAILURE to a noop instead of the default-abort.
+AC_FC_IMPLICIT_NONE([], [], [:])
 SCOREP_FORTRAN_ARGUMENT_MISMATCH
 
 LT_PREREQ([2.4.6])
