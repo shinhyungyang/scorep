@@ -98,3 +98,51 @@ AS_UNSET([scorep_ac_ext_save])
 AC_LANG_POP([Fortran])
 ])
 ])# SCOREP_FORTRAN_CHARLEN_TYPE
+
+
+# SCOREP_FORTRAN_FC_NEEDS_FLAGS()
+# -------------------------------
+#
+AC_DEFUN([SCOREP_FORTRAN_FC_NEEDS_FLAGS], [
+# ifx complains:
+#
+#   error #5472: When passing logicals to C, specify '-fpscomp logicals' to
+#   get the zero/non-zero behavior of FALSE/TRUE.
+#
+# Thus, check if compiling  _LOGICALS_TO_C needs flags. If so, add it to
+# FCFLAGS to be used for every subsequent compilation unit.
+#
+AC_LANG_PUSH([Fortran])
+ac_ext_save="${ac_ext}"
+ac_ext=f90
+FCFLAGS_save="$FCFLAGS"
+success=no
+AC_MSG_CHECKING([whether Fortran needs logical-to-C flag])
+for flag in "" "-fpscomp logicals"; do
+    FCFLAGS="$FCFLAGS $flag"
+    AC_COMPILE_IFELSE([_LOGICALS_TO_C],
+        [success=yes
+         break])
+    FCFLAGS="$FCFLAGS_save"
+done
+ac_ext="${ac_ext_save}"
+AC_LANG_POP([Fortran])
+
+AS_IF([test "x$success" = xno],
+    [AC_MSG_RESULT([unable])
+     AC_MSG_ERROR([Fortran compiler cannot pass logicals to C.])],
+    [AS_IF([test "x$flag" = x],
+       [AC_MSG_RESULT([none])],
+       [AC_MSG_RESULT(["$flag"])])])
+AS_UNSET([success])
+AS_UNSET([flag])
+])dnl SCOREP_FORTRAN_FC_NEEDS_FLAGS
+
+
+# _LOGICALS_TO_C()
+# ----------------
+#
+m4_define([_LOGICALS_TO_C], [
+AC_LANG_SOURCE([[
+
+]])])# _LOGICALS_TO_C
