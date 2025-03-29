@@ -183,13 +183,6 @@ SCOREP_IO_RECORDING
 SCOREP_VENDOR_EXTERNALS_OTF2_FLAGS
 SCOREP_VENDOR_EXTERNALS_OPARI2_CPPFLAGS
 
-# we need an openmpi conditional because of a bug in the pgi-openmpi
-# configuration. We might extend this hack for other MPI
-# implementations.
-$CC -showme:version 2>&1 | grep -q "Open MPI" > /dev/null
-AM_CONDITIONAL([SCOREP_MPI_OPENMPI], [test $? -eq 0])
-
-
 AC_SCOREP_BUILD_MODE
 SCOREP_CUDA
 SCOREP_HIP
