@@ -144,5 +144,44 @@ AS_UNSET([flag])
 #
 m4_define([_LOGICALS_TO_C], [
 AC_LANG_SOURCE([[
+module conftest_bindc
+    use, intrinsic :: iso_c_binding, only: c_bool
 
+    implicit none
+
+    private :: c_bool
+
+    interface conftest_toC
+        subroutine conftest_toC_default(flag) &
+            bind(c, name="conftest_fromF08")
+            import
+            implicit none
+            logical(c_bool) :: flag
+        end subroutine
+    end interface
+end module
+
+module conftest_default
+    use, intrinsic :: iso_c_binding, only: c_bool
+
+    use conftest_bindc
+
+    implicit none
+
+    private
+
+    public :: conftest
+
+    interface conftest
+        module procedure conftest_impl
+    end interface
+
+    contains
+
+    subroutine conftest_impl(flag)
+        logical(c_bool), intent(in) :: flag
+
+        call conftest_toC(flag)
+    end subroutine
+end module
 ]])])# _LOGICALS_TO_C
