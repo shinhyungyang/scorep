@@ -221,61 +221,165 @@ dnl ----------------------------------------------------------------------------
 
 AC_DEFUN([AC_SCOREP_MPI], [
 
+_MPI_CC_WORKING(
+    [AFS_AM_CONDITIONAL([HAVE_MPI_SUPPORT], [test 1 -eq 1], [true])],
+    [AC_MSG_FAILURE([MPI compiler $CC does not work. To build Score-P without MPI support, configure --without-mpi.])])
+
 AC_DEFINE([OMPI_WANT_MPI_INTERFACE_WARNING], [0], [Disable deprecation warnings in Open MPI])
 AC_DEFINE([OMPI_OMIT_MPI1_COMPAT_DECLS],     [0], [Possibly expose deprecated MPI-1 bindings in Open MPI 4.0+])
+AC_LANG_PUSH([C])
+AC_COMPUTE_INT([scorep_mpi_version],
+    [MPI_VERSION * 100 + MPI_SUBVERSION],
+    [#include <mpi.h>],
+    [scorep_mpi_version=0])
+AC_LANG_POP([C])
+AS_IF([test ${scorep_mpi_version} -lt 202],
+    [AC_MSG_ERROR([MPI version is incompatible (< 2.2)])],
+    [AC_MSG_NOTICE([MPI version is ${scorep_mpi_version}.])])
+AC_LANG_PUSH([C])
+SCOREP_MPI_C_DECLS
+AC_LANG_POP([C])
+AC_SCOREP_MPI_C_DATATYPES
+AC_SCOREP_MPI_COMPLIANCE
+AC_SUBST([MPILIB_LDFLAGS], ["${MPILIB_LDFLAGS}"])
 
-scorep_mpi_usempif08_supported="no"
-if test "x${scorep_mpi_c_supported}" = "xyes"; then
-  scorep_mpi_supported="yes"
-  if test "x${scorep_mpi_f77_supported}" = "xyes" && test "x${scorep_mpi_f90_supported}" = "xyes"; then
-    scorep_mpi_usempi_supported="yes"
-  else
-    scorep_mpi_usempi_supported="no"
-  fi
-  _MPI_F08_WORKING
-else
-  scorep_mpi_supported="no"
-  scorep_mpi_usempi_supported="no"
-fi
+_MPI_CXX_WORKING([], [])
 
-if test "x${scorep_mpi_supported}" = "xno"; then
-  AC_MSG_WARN([No suitable MPI compilers found. SCOREP MPI and hybrid libraries will not be build.])
-fi
-AM_CONDITIONAL([HAVE_MPI_SUPPORT], [test "x${scorep_mpi_supported}" = "xyes"])
-AM_CONDITIONAL([HAVE_MPI_USEMPI_SUPPORT], [test "x${scorep_mpi_usempi_supported}" = "xyes"])
+_MPI_F77_WORKING([mpif77_supported=yes], [mpif77_supported=no])
+_MPI_FC_WORKING([mpifc_supported=yes], [mpifc_supported=no])
+usempi_supported=no
+AS_IF([test "x${mpif77_supported}${mpifc_supported}" = xyesyes],
+    [usempi_supported=yes
+     AFS_AM_CONDITIONAL([HAVE_MPI_USEMPI_SUPPORT], [test 1 -eq 1], [false])])
+
+_MPI_F08_WORKING
+AS_IF([test "x${scorep_mpi_usempif08_supported}" = xyes],
+    [SCOREP_MPI_F08_FEATURES])
 AC_SCOREP_COND_HAVE([MPI_USEMPIF08_SUPPORT],
-    [test "x${scorep_mpi_usempif08_supported}" = "xyes"],
+    [test "x${scorep_mpi_usempif08_supported}" = xyes],
     [Defined if Score-P is built with support for the F08 interface of MPI])
-AM_CONDITIONAL([HAVE_MPI_FORTRAN_SUPPORT], [test "x${scorep_mpi_usempi_supported}" = "xyes" || test "x${scorep_mpi_usempif08_supported}" = "xyes"])
 
-if test "x${scorep_mpi_supported}" = "xyes"; then
+AM_CONDITIONAL([HAVE_MPI_FORTRAN_SUPPORT],
+    [test "x${usempi_supported}" = xyes || test "x${scorep_mpi_usempif08_supported}" = xyes])
 
-  AC_COMPUTE_INT([scorep_mpi_version],
-                 [MPI_VERSION * 100 + MPI_SUBVERSION],
-                 [#include <mpi.h>],
-                 [scorep_mpi_version=0])
-  AS_IF([test ${scorep_mpi_version} -lt 202],
-        [AC_MSG_ERROR([MPI version is incompatible (< 2.2)])],
-        [AC_MSG_NOTICE([MPI version is ${scorep_mpi_version}.])])
+AFS_SUMMARY_PUSH
+AFS_SUMMARY([C bindings], [yes])
+AFS_SUMMARY([Fortran bindings], [$usempi_supported])
+AFS_SUMMARY([Fortran 2008 bindings], [$scorep_mpi_usempif08_supported])
+AS_IF([test "x${MPI_LIBS}" != x],
+    [AFS_SUMMARY([Library used], [$MPI_LIBS])])
+AFS_SUMMARY_POP([MPI support], [yes])
+])# AC_SCOREP_MPI
 
 
-  SCOREP_MPI_C_DECLS
-  AC_SCOREP_MPI_C_DATATYPES
-  AC_SCOREP_MPI_COMPLIANCE
-  AS_IF([test "x${scorep_mpi_usempif08_supported}" = xyes],
-  [
-    SCOREP_MPI_F08_FEATURES
-  ])
+# _MPI_CC_WORKING([ACTION-IF-TRUE], [ACTION-IF-FALSE])
+# ----------------------------------------------------
+#
+m4_define([_MPI_CC_WORKING],[
+AC_LANG_PUSH([C])
+AC_MSG_CHECKING([whether C compiler can build an MPI program])
+AC_LINK_IFELSE([_MPI_HELLO_WORLD_CC_CXX],
+    [AC_MSG_RESULT([yes])
+     $1],
+    [AC_MSG_RESULT([no])
+     $2])
+AC_LANG_POP([C])
+])# _MPI_CC_WORKING
 
-  AFS_SUMMARY_PUSH
-  AFS_SUMMARY([C bindings], [$scorep_mpi_c_supported])
-  AFS_SUMMARY([Fortran bindings], [$scorep_mpi_usempi_supported])
-  AFS_SUMMARY([Fortran 2008 bindings], [$scorep_mpi_usempif08_supported])
-  AFS_SUMMARY_POP([MPI support], [$scorep_mpi_supported])
+# _MPI_HELLO_WORLD_CC_CXX()
+# -------------------------
+#
+m4_define([_MPI_HELLO_WORLD_CC_CXX], [
+AC_LANG_SOURCE([[
+#include <mpi.h>
+#include <stdio.h>
+int main(int argc, char** argv) {
+    MPI_Init(NULL, NULL);
+    int world_size;
+    MPI_Comm_size(MPI_COMM_WORLD, &world_size);
+    int world_rank;
+    MPI_Comm_rank(MPI_COMM_WORLD, &world_rank);
+    char processor_name[MPI_MAX_PROCESSOR_NAME];
+    int name_len;
+    MPI_Get_processor_name(processor_name, &name_len);
+    printf("hello world rank %d/%d, %s\n",
+           world_rank, world_size, processor_name);
+    MPI_Finalize();
+}]])
+])# _MPI_HELLO_WORLD_CC_CXX
 
-fi # if test "x${scorep_mpi_supported}" = "xyes"
-])
+# _MPI_CXX_WORKING([ACTION-IF-TRUE], [ACTION-IF-FALSE])
+# -----------------------------------------------------
+#
+m4_define([_MPI_CXX_WORKING],[
+AC_LANG_PUSH([C++])
+AC_MSG_CHECKING([whether C++ compiler can build an MPI program])
+AC_LINK_IFELSE([_MPI_HELLO_WORLD_CC_CXX],
+    [AC_MSG_RESULT([yes])
+     $1],
+    [AC_MSG_RESULT([no])
+     $2])
+AC_LANG_POP([C++])
+])# _MPI_CXX_WORKING
 
+# _MPI_F77_WORKING([ACTION-IF-TRUE], [ACTION-IF-FALSE])
+# -----------------------------------------------------
+#
+m4_define([_MPI_F77_WORKING],[
+AC_LANG_PUSH([Fortran 77])
+AC_MSG_CHECKING([whether Fortran 77 compiler can build a use mpi program])
+AC_LINK_IFELSE([AC_LANG_SOURCE([[
+       program hello
+       use mpi
+       integer rank, size, ierror, tag, status(MPI_STATUS_SIZE)
+
+       call MPI_INIT(ierror)
+       call MPI_COMM_SIZE(MPI_COMM_WORLD, size, ierror)
+       call MPI_COMM_RANK(MPI_COMM_WORLD, rank, ierror)
+
+       print *, "Fortran mpi: hello world from rank ", rank,
+     & "/", size
+
+       call MPI_FINALIZE(ierror)
+       end program hello
+]])],
+    [AC_MSG_RESULT([yes])
+     $1],
+    [AC_MSG_RESULT([no])
+     $2])
+AC_LANG_POP([Fortran 77])
+])# _MPI_F77_WORKING
+
+# _MPI_FC_WORKING([ACTION-IF-TRUE], [ACTION-IF-FALSE])
+# ----------------------------------------------------
+#
+m4_define([_MPI_FC_WORKING],[
+AC_LANG_PUSH([Fortran])
+ac_ext_save="${ac_ext}"
+ac_ext=f90
+AC_MSG_CHECKING([whether Fortran compiler can build a use mpi program])
+AC_LINK_IFELSE([AC_LANG_SOURCE([[
+program helloworld
+  use mpi
+  implicit none
+  integer :: rank, comsize, ierr
+
+  call MPI_Init(ierr)
+  call MPI_Comm_size(MPI_COMM_WORLD, comsize, ierr)
+  call MPI_Comm_rank(MPI_COMM_WORLD, rank, ierr)
+
+  print *,'Hello World, from task ', rank, 'of', comsize
+
+  call MPI_Finalize(ierr)
+end program helloworld
+]])],
+    [AC_MSG_RESULT([yes])
+     $1],
+    [AC_MSG_RESULT([no])
+     $2])
+ac_ext="${ac_ext_save}"
+AC_LANG_POP([Fortran])
+])# _MPI_FC_WORKING
 
 # _MPI_F08_WORKING()
 # ------------------
@@ -290,7 +394,7 @@ m4_define([_MPI_F08_WORKING],[
 AC_LANG_PUSH([Fortran])
 ac_ext_save="${ac_ext}"
 ac_ext=f90
-AC_MSG_CHECKING([for useable mpi_f08])
+AC_MSG_CHECKING([whether Fortran compiler supports use mpi_f08])
 
 scorep_mpi_usempif08_supported="yes"
 
