@@ -156,8 +156,7 @@ libscorep_constructor_la_CFLAGS = \
     $(AM_CFLAGS) \
     $(SCOREP_COMPILER_CONSTRUCTOR_CFLAGS)
 libscorep_constructor_la_LDFLAGS = \
-    $(AM_LDFLAGS) \
-    -shared
+    $(library_api_version_ldflags)
 
 endif BUILD_SHARED_LIBRARIES
 

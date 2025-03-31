@@ -100,7 +100,7 @@ LOCAL_CUBELIB_CONFIG = ../vendor/cubelib/build-frontend/cubelib-config
 
 BUILT_SOURCES += $(BINDIR)/cubelib-config
 $(BINDIR)/cubelib-config: $(LOCAL_CUBELIB_CONFIG)
-	@if test -f ../vendor/cubelib/Makefile; then $(am__cd) ../vendor/cubelib && $(MAKE) $(AM_MAKEFLAGS) install; else exit 1; fi
+	@if test -f ../vendor/cubelib/Makefile; then $(am__cd) ../vendor/cubelib && $(MAKE) $(AM_MAKEFLAGS) -j 1 install; else exit 1; fi
 
 $(LOCAL_CUBELIB_CONFIG):
 	@if test -f ../vendor/cubelib/Makefile; then $(am__cd) ../vendor/cubelib && $(MAKE) $(AM_MAKEFLAGS) all; else exit 1; fi

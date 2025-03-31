@@ -211,6 +211,6 @@
 /test/tools/libwrap_init/target-lib-shmem/foo.c -hook-beautifier -hook-config
 /test/tools/libwrap_init/target-lib-shmem/foo.h -hook-beautifier
 # patch
-/build-config/patches/GOTCHA-1.0.7.patch -hook-trailing-ws -hook-trailing-nl
+/build-config/patches/GOTCHA-1.0.8.patch -hook-trailing-ws -hook-trailing-nl
 # CRLF line endings for filtering test
 /test/filtering/filter-crlf.cfg eol=crlf
