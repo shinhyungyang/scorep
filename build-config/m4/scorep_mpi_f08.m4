@@ -11,11 +11,11 @@
 
 # SCOREP_MPI_F08_FEATURES()
 # ----------------
-# Check optional features for the Fortran 2008 part of the MPI adapter.
+# Check features for the Fortran 2008 part of the MPI adapter.
 #
 AC_DEFUN([SCOREP_MPI_F08_FEATURES], [
 AC_FC_SRCEXT([f90])
-AC_FC_IMPLICIT_NONE
+SCOREP_FORTRAN_FC_NEEDS_FLAGS
 _FORTRAN_TS_BUFFERS
 _FORTRAN_IGNORE_TKR_DECL
 SCOREP_MPI_F08_SYMBOLS

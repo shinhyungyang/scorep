@@ -95,6 +95,10 @@ SCOREP_COMPUTENODE_F77
 AFS_PROG_F77_SUMMARY([MPI])
 
 AC_FC_MODULE_EXTENSION
+dnl The _AC_FC_IMPLICIT_NONE implementation uses $2 and $3 instead
+dnl of the documented $1 and $2, thus add a dummy $1 and set
+dnl ACTION-IF-FAILURE to a noop instead of the default-abort.
+AC_FC_IMPLICIT_NONE([], [], [:])
 SCOREP_FORTRAN_ARGUMENT_MISMATCH
 
 LT_PREREQ([2.4.6])
@@ -125,40 +129,11 @@ AC_SCOREP_PLATFORM_SETTINGS
 AC_SCOREP_PLATFORM_AND_MACHINE_NAMES
 SCOREP_EXPERIMENTAL_PLATFORM
 
-AC_LANG_PUSH([C])
-AC_SCOREP_MPI_WORKING(
-    [scorep_mpi_c_supported="yes"],
-    [AC_MSG_FAILURE([MPI C compiler does not work. If you intended to build Score-P without support for the MPI programming model, please reconfigure using --without-mpi.])])
-AC_SCOREP_CHECK_SIZEOF([void *])
-AC_LANG_POP([C])
-
-# C++ MPI is needed for the jacobi C++ tests only.
-AC_LANG_PUSH([C++])
-AC_SCOREP_MPI_WORKING(
-    [scorep_mpi_cxx_supported="yes"],
-    [scorep_mpi_cxx_supported="no"])
-AC_LANG_POP([C++])
-
-AC_LANG_PUSH([Fortran 77])
-AC_SCOREP_MPI_WORKING(
-    [scorep_mpi_f77_supported="yes"],
-    [scorep_mpi_f77_supported="no"])
-AC_LANG_POP([Fortran 77])
-
-AC_LANG_PUSH([Fortran])
-AC_SCOREP_MPI_WORKING(
-    [scorep_mpi_f90_supported="yes"],
-    [scorep_mpi_f90_supported="no"])
-AC_LANG_POP([Fortran])
-
-
-AS_IF([test "x$scorep_mpi_c_supported$scorep_mpi_cxx_supported$scorep_mpi_f77_supported$scorep_mpi_f90_supported" != "xnononono"], [
-    AFS_SUMMARY([Library used for MPI], [$MPI_LIBS])
-])
+AC_SCOREP_MPI
 
 # <AC_SCOREP_COMMON_CHECKS>
 SCOREP_COMPILER_COND_AND_SUBST
-SCOREP_CHECK_FORTRAN_CHARLEN_TYPE
+SCOREP_FORTRAN_CHARLEN_TYPE
 
 AC_C_BIGENDIAN
 
@@ -182,13 +157,6 @@ SCOREP_IO_RECORDING
 ## Configure internal/external libraries
 SCOREP_VENDOR_EXTERNALS_OTF2_FLAGS
 SCOREP_VENDOR_EXTERNALS_OPARI2_CPPFLAGS
-
-# we need an openmpi conditional because of a bug in the pgi-openmpi
-# configuration. We might extend this hack for other MPI
-# implementations.
-$CC -showme:version 2>&1 | grep -q "Open MPI" > /dev/null
-AM_CONDITIONAL([SCOREP_MPI_OPENMPI], [test $? -eq 0])
-
 
 AC_SCOREP_BUILD_MODE
 SCOREP_CUDA
@@ -214,15 +182,12 @@ SCOREP_OPENMP_TPD
 SCOREP_OPENMP_ANCESTRY
 AFS_SUMMARY_SECTION_END
 
-AC_SCOREP_MPI
-AC_SUBST([MPILIB_LDFLAGS], ["${MPILIB_LDFLAGS}"])
 # Need timer defines and substitution for mpi_unification_test
 SCOREP_TIMER
 
 SCOREP_MEMORY_SUPPORT
 SCOREP_ALIGN
 
-AC_SCOREP_MPI_PROFILING_HEADERS
 AC_SCOREP_PACKAGE_AND_LIBRARY_VERSION
 
 AFS_SET_SILENT_RULE_PREFIX([MPI])

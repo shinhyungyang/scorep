@@ -4,7 +4,7 @@ dnl
 dnl Copyright (c) 2013-2018, 2020, 2022, 2025,
 dnl Technische Universitaet Dresden, Germany
 dnl
-dnl Copyright (c) 2015-2016, 2018-2024,
+dnl Copyright (c) 2015-2016, 2018-2025,
 dnl Forschungszentrum Juelich GmbH, Germany
 dnl
 dnl This software may be modified and distributed under the terms of
@@ -137,7 +137,7 @@ AS_IF([test "x$scorep_shmem_c_supported$scorep_shmem_cxx_supported$scorep_shmem_
 
 # <AC_SCOREP_COMMON_CHECKS>
 SCOREP_COMPILER_COND_AND_SUBST
-SCOREP_CHECK_FORTRAN_CHARLEN_TYPE
+SCOREP_FORTRAN_CHARLEN_TYPE
 
 AC_C_BIGENDIAN
 
@@ -191,7 +191,6 @@ SCOREP_SHMEM
 SCOREP_MEMORY_SUPPORT
 SCOREP_ALIGN
 
-#AC_SCOREP_MPI_PROFILING_HEADERS
 AC_SCOREP_PACKAGE_AND_LIBRARY_VERSION
 
 AFS_SET_SILENT_RULE_PREFIX([SHMEM])
