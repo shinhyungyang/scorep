@@ -15,12 +15,6 @@ jobs:
     # Checkout this repository
     - name: Checkout Repository
       uses: actions/checkout@v4
-      
-    # Set up Git configuration
-    - name: Setup Git Config
-      run: |
-        git config user.name "GitHub Action"
-        git config user.email "action@github.com"
         
     # Add the upstream remote
     - name: Add Upstream Remote
@@ -32,5 +26,5 @@ jobs:
     - name: Push to Mirror
       run: |
         git checkout master
-        git reset --hard original/master
+        git reset --hard upstream/master
         git push origin HEAD --force
